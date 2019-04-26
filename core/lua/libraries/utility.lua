@@ -1,5 +1,30 @@
 local utility = _G.utility or {}
 
+do
+    local done = {}
+    
+    function utility.StartMonitorCoverage(file_path) 
+        debug.sethook(function(event, line)
+            for i = 2, math.huge do
+                local info = debug.getinfo(i)
+                if not info then 
+                    break 
+                end
+				if info.source:endswith(file_path) then 
+					done[info.currentline] = true
+                end
+            end
+        end, "l")
+    end
+
+	function utility.StopMonitorCoverage()
+		debug.sethook()
+        local res = done
+        done = {}
+        return res
+    end
+end
+
 function utility.NumberToBytes(num, endian, signed)
     if num<0 and not signed then num=-num print"warning, dropping sign from number converting to unsigned" end
     local res={}

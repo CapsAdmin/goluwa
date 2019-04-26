@@ -168,18 +168,6 @@ do
 		end
 	end
 
-	local keywords = {
-		"and", "break", "do", "else", "elseif", "end",
-		"false", "for", "function", "if", "in", "local",
-		"nil", "not", "or", "repeat", "return", "then",
-		"true", "until", "while", "goto", "...",
-	}
-	local temp = {}
-	for k,v in ipairs(keywords) do
-		temp[v] = true
-	end
-	keywords = temp
-
 	local colors = {
 		comment = "#8e8e8e",
 		number = "#4453da",
@@ -251,7 +239,7 @@ do
 
 				local chunk = table.concatrange(ustr, start, stop)
 
-				if type == "letter" and keywords[chunk]  then
+				if type == "letter" and oh.lua.syntax.Keywords[chunk] or oh.lua.syntax.KeywordValues[chunk] then
 						set_color("keyword")
 					else
 					set_color(type)

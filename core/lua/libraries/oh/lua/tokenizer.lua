@@ -101,7 +101,8 @@ do
 			if self:ReadChar() == "\n" or self.i-1 == self.code_length then
 				local code = self:GetCharsRange(i, self.i-1)
 				if code:startswith("T:") then
-					assert(loadstring("local self = ...;" .. code:sub(3)))(self)
+					local code = "local self = ...;" .. code:sub(3)
+					assert(loadstring(code))(self)
 				end
 				return true
 			end
@@ -512,6 +513,13 @@ end
 
 function config.OnError(tk, msg, start, stop)
 	table.insert(errors, {msg = msg, start = start, stop = stop})
+end
+
+
+if RELOAD then
+	RELOAD = nil
+	runfile("lua/libraries/oh/oh.lua")
+	runfile("lua/libraries/oh/lua/test.lua")
 end
 
 return builder:BuildTokenizer(config)

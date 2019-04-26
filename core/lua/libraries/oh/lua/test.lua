@@ -20,18 +20,47 @@ local function tokenize(code, capture_whitespace)
     return self:GetTokens()
 end
 
-local function parse(tokens, code)
+local function parse(tokens, code, halt)
     return runfile("parser.lua")(function(_, msg, start, stop)
-        log(oh.FormatError(code, "test", msg, start, stop))
+        error(oh.FormatError(code, "test", msg, start, stop))
     end):BuildAST(tokens)
 end
 
 local dump_ast do
-	local indent = 0
+    local indent = 0
+    
+    local function type2string(val)
+        if not val then 
+            return "any" 
+        end
+
+        local str = ""
+
+        for i,v in ipairs(val) do
+            str = str .. v.value.value
+            if i ~= #val then
+                str = str  .. "|"
+            end
+
+            if v.function_arguments then
+                str = str .. "("
+                for i, arg in ipairs(v.function_arguments) do
+                    str = str .. tostring(arg.value.value) .. ": " .. type2string(arg.data_type)
+                    if i ~= #v.function_arguments then
+                        str = str .. ", "
+                    end
+                end
+                str = str .. "): " .. type2string(v.function_return_type)
+            end
+        end
+
+        return str
+    end
+
     function dump_ast(tbl, blacklist)
         if tbl.type == "value" and tbl.value.type and tbl.value.value then
             log(("\t"):rep(indent))
-            log(tbl.value.type, ": ", tbl.value.value, "\n")
+            log(tbl.value.type, ": ", tbl.value.value, " as ", type2string(tbl.value.data_type), "\n")
         else
             for k,v in pairs(tbl) do
                 if type(v) ~= "table" then
@@ -44,7 +73,7 @@ local dump_ast do
                 if type(v) == "table" and k ~= "tokens" and k ~= "whitespace" then
                     if v.type == "value" and v.value.type and v.value.value then
                         log(("\t"):rep(indent))
-                        log(k, ": [", v.value.type, ": ", tostring(v.value.value), "]\n")
+                        log(k, ": [", v.value.type, ": ", tostring(v.value.value), " as ", type2string(v.data_type), "]\n")
                         if v.suffixes then
                             indent = indent + 1
                             log(("\t"):rep(indent))
@@ -91,7 +120,8 @@ local function transpile_fail_check(code)
     end
 end
 
-local function transpile_check(code)
+
+local function transpile_ok(code)
     local tokens, ast, new_code
 
     local ok = xpcall(function()
@@ -105,6 +135,25 @@ local function transpile_check(code)
         print("===================================")
     end)
 
+    if ok then
+        log(new_code, " - OK!\n")
+    end
+end
+
+local function transpile_check(code)
+    local tokens, ast, new_code
+
+    local ok = xpcall(function()
+        tokens = tokenize(code)
+        ast = parse(tokens, code)
+        new_code = transpile(ast)
+    end, function(err)
+        print("===================================")
+        print(debug.traceback(err))
+        print(code)
+        print("===================================")
+    end)
+    
     if ok and code ~= new_code then
         print("===================================")
         print("transpiled output doesn't match:")
@@ -145,8 +194,96 @@ local function check_tokens_separated_by_space(code)
     end
 end
 
+local function print_ast(code)    
+    local tokens = tokenize(code)
+    dump_ast(parse(tokens, code, true))
+end
 
+
+local function LinkTokensWithAST(tokens, ast)
+    -- if it quacks like a node, it is a node
+    local function walk(node, parent)
+        if node.tokens then
+            for _, token in pairs(node.tokens) do
+                token.ast_node = node
+            end
+
+            node.parent = parent
+
+            for key, val in pairs(node) do 
+                if type(val) == "table" and key ~= "ast_node" and key ~= "parent" then
+                    walk(val, node)
+                end
+            end
+
+
+            if type(node.value) == "table" then
+                node.value.ast_node = node
+            end
+        end
+    end
+
+    for k,v in ipairs(ast) do
+        walk(v,ast)
+    end
+end
+
+
+local code = "if true then lol=1 else foo=2 end"
+local tokens = tokenize(code)
+local ast = parse(tokens, code)
+
+
+
+--table.print(ast)
+
+do return end
+
+if true then
+
+    local code = "local a = 1"
+    local tokens = tokenize(code)
+    local ast = parse(tokens, code, true)
+    
+    LinkTokensWithAST(tokens, ast)
+    
+    for k,v in ipairs(tokens) do
+        print(v.value)
+    
+        if v.value == "a" then
+            table.print(v)
+        end
+    end
+
+end
+
+
+utility.StartMonitorCoverage("oh/lua/parser.lua")
+
+print("============TEST============")
+transpile_ok"@T:print(13371)"
+transpile_ok"@P:print(13372)"
+transpile_ok"@E:print(13373)"
+transpile_ok"for i = 1, 10 do continue end"
+transpile_ok"for i = 1, 10 do if lol then continue end end"
+transpile_ok"repeat if lol then continue end end until uhoh"
+transpile_ok"while true do if false then continue end end"
+transpile_ok"local a: foo|bar = 1 as foo"
+transpile_ok"local a: foo|bar = 1"
+transpile_ok"local test: __add(a: number, b: number): number = function() end"
+transpile_ok"local a: FOO|baz = (1 + 1 + adawdad) as fool"
+transpile_ok"function test(a: FOO|baz) return 1 + 2 as lol + adawdad as fool end"
+transpile_ok"interface foo { foo: bar, lol, lol:foo = 1 }"
+transpile_check"local a = 1;"
+transpile_check"local a,b,c"
+transpile_check"local a,b,c = 1,2,3"
+transpile_check"local a,c = 1,2,3"
+transpile_check"local a = 1,2,3"
+transpile_check"local a"
+transpile_check"local a = -c+1"
+transpile_check"local a = c"
 transpile_check"(a)[b] = c"
+transpile_check"local a = {[1+2+3] = 2}"
 transpile_check"foo = bar"
 transpile_check"foo--[[]].--[[]]bar--[[]]:--[[]]test--[[]](--[[]]1--[[]]--[[]],2--[[]])--------[[]]--[[]]--[[]]"
 transpile_check"function foo.testadw() end"
@@ -177,15 +314,28 @@ transpile_check"(function() end)(1,2,3)"
 transpile_check"(function() end)(1,2,3){4}'5'"
 transpile_check"(function() end)(1,2,3);(function() end)(1,2,3)"
 transpile_check"local tbl = {a; b; c,d,e,f}"
-transpile_check"as()"
+transpile_check"aslk()"
 transpile_check"#a();;"
-transpile_check"a();;"
+--transpile_check"a();;"
 
 assert(tokenize([[0xfFFF]])[1].value == "0xfFFF")
 check_tokens_separated_by_space([[while true do end]])
 check_tokens_separated_by_space([[if a == b and b + 4 and true or ( true and function ( ) end ) then :: foo :: end]])
 
 do
+    print("CODE COVERAGE")
+    local covered = utility.StopMonitorCoverage()
+    local code = vfs.Read("lua/libraries/oh/lua/parser.lua")
+    for i, line in ipairs(code:split("\n")) do
+        if not covered[i] then
+            print(line)
+        else
+            print("")
+        end
+    end
+end
+
+if false then
     log("generating random tokens ...")
     local tokens = {
         ",", "=", ".", "(", ")", "end", ":", "function", "self", "then", "}", "{", "[", "]",

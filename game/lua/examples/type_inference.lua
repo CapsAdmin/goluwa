@@ -65,9 +65,13 @@ code = [[
     end
 ]]
 
-local tokenizer = oh.Tokenizer(code)
+code = [[
+    local a: number|string = "" or 1
+]]
+
+local tokenizer = oh.lua.Tokenizer(code)
 local tokens = tokenizer:GetTokens()
-local parser = oh.Parser()
+local parser = oh.lua.Parser()
 local ast = parser:BuildAST(tokens)
 
 local found = {}
@@ -156,7 +160,19 @@ local function set_variable(key, val, type)
     })
 end
 
-local function get_value(node)
+local function get_value(node, identifier)
+    if identifier and identifier.data_type then
+        local types = {}
+        for i,v in ipairs(identifier.data_type) do
+            types[i] = v.value.value
+        end
+        return {
+            type = "constant",
+            value_types = types,
+            value = node.value
+        }
+    end
+
     if node.type == "value" then
         if node.value.type == "letter" then
             if node.value.value == "nil" then
@@ -284,8 +300,8 @@ local function walk(node)
             end
             pop_scope()
         else
-            local left = node.left
-            local right = node.right
+            local left = node.lvalues
+            local right = node.rvalues
 
             for i, node in ipairs(left) do
                 if node.type == "value" then
@@ -293,7 +309,7 @@ local function walk(node)
                     local val = nil
 
                     if right and right[i] then
-                        val = get_value(right[i])
+                        val = get_value(right[i], left[i])
                     end
 
                     if not val then
@@ -374,9 +390,9 @@ local function walk(node)
         end
     elseif node.type == "if" then
         for _, clause in ipairs(node.clauses) do
-            if clause.expr then -- !!
-                walk(clause.expr)
-                branch_evaluation = truthy(clause.expr)
+            if clause.condition then 
+                walk(clause.condition)
+                branch_evaluation = truthy(clause.condition)
             end
             if branch_evaluation == nil or branch_evaluation == true then
                 push_scope()
@@ -473,7 +489,7 @@ local function dump(scope)
         if v.type == "variable" then
             log(("       "):rep(level))
             if v.reassign then
-                log("change ")
+                log("mutate ")
             elseif v.variable_type == "upvalue" then
                 log("local  ")
             elseif v.variable_type == "global" then

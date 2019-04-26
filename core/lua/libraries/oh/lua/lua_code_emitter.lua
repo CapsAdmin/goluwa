@@ -104,6 +104,11 @@ function META:Expression(v)
 		self:Unary(v)
 	elseif v.type == "value" then
 		self:EmitToken(v.value)
+
+		if v.data_type then
+			print(v)
+			--self:Emit("--[[a]]")
+		end
 	else
 		error("unhandled token type " .. v.type)
 	end
@@ -390,6 +395,8 @@ function META:Block(tree)
 			self:EmitToken(data.tokens["end_of_file"])
 		elseif data.type == "shebang" then
 			self:EmitToken(data.tokens["shebang"])
+		elseif data.type == "interface" then
+			self:Emit("-- interface TODO")
 		elseif data.type == "compiler_option" then
 			self:Emit("--" .. data.lua)
 

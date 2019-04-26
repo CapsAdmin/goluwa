@@ -14,10 +14,6 @@ function META:Node(t, val)
 	node.type = t
 	node.tokens = {}
 
-	if val then
-		node.value = val
-	end
-
 	return node
 end
 
@@ -58,14 +54,6 @@ end
 function META:IsType(str)
 	local tk = self:GetToken()
 	return tk and tk.type == str
-end
-
-function META:ReadIfValue(str)
-	local b = self:IsValue(str)
-	if b then
-		self:Advance(1)
-	end
-	return b
 end
 
 function META:ReadExpectType(type, start, stop)
@@ -143,9 +131,18 @@ function META:ExpressionList()
 end
 
 do
-	function META:PushNode(type, val)
+	function META:PushNode(type)
+		local node = self:Node(type)
 		self.node_stack = self.node_stack or {}
-		table.insert(self.node_stack, self:Node(type, val))
+		node.parent = self.node_stack[#self.node_stack]
+		table.insert(self.node_stack, node)
+
+		if node.parent then
+			node.parent.children = node.parent.children or {}
+			table.insert(node.parent.children, node)
+	end
+
+		return node
 	end
 
 	function META:PopNode()
@@ -170,7 +167,8 @@ function META:Type()
 
 		if not token then return out end
 
-		local data = self:Node("value", token)
+		local data = self:Node("value")
+		data.value = token
 		table_insert(out, data)
 
 		if token.type == "letter" and self:IsValue("(") then
@@ -183,9 +181,7 @@ function META:Type()
 			data.function_return_type = self:Type()
 		end
 
---		table.print(data)
-
-		if not self:IsValue("|") or not self:IsType("letter") then
+		if not self:IsValue("|") then
 			break
 		end
 
@@ -206,7 +202,8 @@ function META:NameList(out)
 
 		if not token then return out end
 
-		local data = self:Node("value", token)
+		local data = self:Node("value")
+		data.value = token
 		table_insert(out, data)
 
 		if not self:IsValue(",") and not self:IsValue(":") then
@@ -214,7 +211,7 @@ function META:NameList(out)
 		end
 
 		if self:IsValue(":") then
-			data.tokens[":"] = self:ReadToken()
+			data.tokens[":"] = self:ReadToken(":")
 			data.data_type = self:Type()
 		end
 
@@ -249,11 +246,24 @@ function META:Table()
 		elseif self:IsType("letter") and self:GetTokenOffset(1).value == "=" then
 			data = self:Node("table_key_value")
 
-			data.key = self:Node("value", self:ReadToken())
+			data.key = self:Node("value")
+			data.key.value = self:ReadToken()
 			data.tokens["="] = self:ReadToken()
 			data.value = self:Expression()
+		elseif self:IsType("letter") and self:GetTokenOffset(1).value == ":" then
+			data = self:Node("table_key_value")
+			data.key = self:Node("value")
+			data.key.value = self:ReadToken()
+			data.tokens[":"] = self:ReadToken()
+			data.data_type = self:Type()
+
+			if self:IsValue("=") then
+				data.tokens["="] = self:ReadToken()
+				data.value = self:Expression()
+			end
 		else
-			data = self:Node("table_index_value", self:Expression())
+			data = self:Node("table_index_value")
+			data.value = self:Expression()
 			data.key = i
 			if not data.value then
 				self:Error("expected expression got nothing")
@@ -283,7 +293,8 @@ function META:Function(variant)
 	data.tokens["function"] = self:ReadExpectValue("function")
 
 	if variant == "simple_named" then
-		data.value = self:Node("value", self:ReadExpectType("letter"))
+		data.value = self:Node("value")
+		data.value.value = self:ReadExpectType("letter")
 	elseif variant == "expression_named" then
 		data.value = self:Expression(0, true)
 	end
@@ -332,7 +343,9 @@ function META:Expression(priority, stop_on_call)
 	elseif token.value == "function" then
 		val = self:Function("anonymous")
 	elseif lua.syntax.IsValue(token) or (token.type == "letter" and not lua.syntax.IsKeyword(token)) then
-		val = self:Node("value", self:ReadToken())
+		val = self:Node("value")
+		val.value = self:ReadToken()
+
 	elseif token.value == "{" then
 		val = self:Table()
 	end
@@ -341,7 +354,6 @@ function META:Expression(priority, stop_on_call)
 		val.tokens["as"] = self:ReadToken()
 		val.data_type = self:Type()
 	end
-
 
 	token = self:GetToken()
 
@@ -357,13 +369,15 @@ function META:Expression(priority, stop_on_call)
 				data = self:Node("index")
 
 				data.tokens["."] = self:ReadToken()
-				data.value = self:Node("value", self:ReadExpectType("letter"))
+				data.value = self:Node("value")
+				data.value.value = self:ReadExpectType("letter")
 			elseif self:IsValue(":") then
 				local nxt = self:GetTokenOffset(2)
 				if nxt.type == "string" or nxt.value == "(" or nxt.value == "{" then
 					data = self:Node("self_index")
 					data.tokens[":"] = self:ReadToken()
-					data.value = self:Node("value", self:ReadExpectType("letter"))
+					data.value = self:Node("value")
+					data.value.value = self:ReadExpectType("letter")
 				else
 					break
 				end
@@ -395,7 +409,8 @@ function META:Expression(priority, stop_on_call)
 				data.arguments = {self:Table()}
 			elseif self:IsType"string" then
 				data = self:Node("call")
-				data.arguments = {self:Node("value", self:ReadToken())}
+				data.arguments = {self:Node("value")}
+				data.arguments[1].value = self:ReadToken()
 			else
 				break
 			end
@@ -405,9 +420,6 @@ function META:Expression(priority, stop_on_call)
 
 		if suffixes[1] then
 			val.suffixes = suffixes
-		elseif self:IsValue(":") then
-			val.tokens[":"] = self:ReadToken()
-			val.data_type = self:Type()
 		end
 	end
 
@@ -457,18 +469,21 @@ function META:Block(stop)
 			data = self:Node("goto_label")
 
 			data.tokens["::left"] = self:ReadToken()
-			data.label = self:Node("value", self:ReadExpectType("letter"))
+			data.label = self:Node("value")
+			data.label.value = self:ReadExpectType("letter")
 			data.tokens["::right"]  = self:ReadExpectValue("::")
 
 		elseif self:IsValue("interface") then
 			data = self:Node("interface")
-			data.tokens = self:ReadToken()
+			data.tokens["interface"] = self:ReadToken()
+			data.name = self:ReadExpectType("letter")
 			data.interface = self:Table()
 		elseif self:IsValue("goto") then
 			data = self:Node("goto")
 
 			data.tokens["goto"] = self:ReadToken()
-			data.label = self:Node("value", self:ReadExpectType("letter"))
+			data.label = self:Node("value")
+			data.label.value = self:ReadExpectType("letter")
 
 		elseif self:IsValue("continue") then
 			data = self:Node("continue")
@@ -509,9 +524,8 @@ function META:Block(stop)
 
 				data.lvalues = self:NameList()
 
-				data.tokens["="] = self:ReadIfValue("=")
-
-				if data.tokens["="] then
+				if self:IsValue("=") then
+					data.tokens["="] = self:ReadToken("=")
 					data.rvalues = self:ExpressionList()
 				end
 			end
@@ -591,7 +605,8 @@ function META:Block(stop)
 
 			if self:IsValue("=") then
 				data = self:Node("for_i")
-				data.identifier = self:Node("value", identifier)
+				data.identifier = self:Node("value")
+				data.identifier.value = identifier
 				data.tokens["="] = self:ReadToken("=")
 				data.expression = self:Expression()
 				data.tokens[",1"] = self:ReadExpectValue(",")
@@ -604,7 +619,8 @@ function META:Block(stop)
 
 			else
 				data = self:Node("for_kv")
-				local name = self:Node("value", identifier)
+				local name = self:Node("value")
+				name.value = identifier
 
 				if self:IsValue(",") then
 					name.tokens[","] = self:ReadToken()
@@ -635,14 +651,6 @@ function META:Block(stop)
 				data = self:Node("assignment")
 				data.lvalues = {expr}
 				data.tokens["="] = self:ReadToken()
-				data.rvalues = self:ExpressionList()
-			elseif self:IsValue(",") then
-				data = self:Node("assignment")
-				expr.tokens[","] = self:ReadToken()
-				local list = self:ExpressionList()
-				table_insert(list, 1, expr)
-				data.lvalues = list
-				data.tokens["="] = self:ReadExpectValue("=")
 				data.rvalues = self:ExpressionList()
 			elseif expr.suffixes and expr.suffixes[#expr.suffixes].type == "call" then
 				data = self:Node("expression")
@@ -675,7 +683,6 @@ function META:Block(stop)
 	return out
 end
 
-
 function META:BuildAST(tokens)
 	self.chunks = tokens
 	self.chunks_length = #tokens
@@ -697,6 +704,7 @@ if RELOAD then
 	RELOAD = nil
 	runfile("lua/libraries/oh/oh.lua")
 	runfile("lua/libraries/oh/lua/test.lua")
+	return
 end
 
 return function(on_error)
