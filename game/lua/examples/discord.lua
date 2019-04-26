@@ -270,249 +270,247 @@ do return end
 
 META:Register()
 
-if RELOAD then
-	if not LOL then
-		--LOL:Remove()
-		LOL = DiscordBot(assert(vfs.Read("temp/discord_bot_token")))
-	end
+if not LOL then
+	--LOL:Remove()
+	LOL = DiscordBot(assert(vfs.Read("temp/discord_bot_token")))
+end
 
-	local ffi = require("ffi")
-	local freeimage = require("freeimage")
+local ffi = require("ffi")
+local freeimage = require("freeimage")
 
-	function LOL:SendImage(pixels, w,h, channel)
-		local image = {
-			buffer = pixels,
-			width = w,
-			height = h,
-			format = "rgba",
-		}
+function LOL:SendImage(pixels, w,h, channel)
+	local image = {
+		buffer = pixels,
+		width = w,
+		height = h,
+		format = "rgba",
+	}
 
-		local png_data = freeimage.ImageToBuffer(image, "png")
+	local png_data = freeimage.ImageToBuffer(image, "png")
 
-		vfs.Write("test.png", png_data)
+	vfs.Write("test.png", png_data)
 
-		local files = {}
+	local files = {}
 
-		table.insert(files, {
-			name = "payload_json",
-			type = "application/json",
-			data = serializer.Encode("json", {
-				file = {
-					image = {
-						url = "attachment://test.png",
-						width = image.width,
-						height = image.height,
-					},
+	table.insert(files, {
+		name = "payload_json",
+		type = "application/json",
+		data = serializer.Encode("json", {
+			file = {
+				image = {
+					url = "attachment://test.png",
+					width = image.width,
+					height = image.height,
 				},
-				--content = "sending " .. utility.FormatFileSize(#png_data) .. " image\n" .. serializer.Encode("luadata", image),
-			}),
-		})
-
-		table.insert(files, {
-			name = "test",
-			type = "application/octet-stream",
-			filename = "test.png",
-			data = png_data,
-		})
-
-		self.api.POST("channels/"..channel.."/messages", {
-			files = files,
-		}):Then(print)
-	end
-
-	function LOL:Say(channel, what)
-		self.api.POST("channels/"..channel.."/messages", {
-			body = {
-				content = what,
 			},
-		}):Then(print)
+			--content = "sending " .. utility.FormatFileSize(#png_data) .. " image\n" .. serializer.Encode("luadata", image),
+		}),
+	})
+
+	table.insert(files, {
+		name = "test",
+		type = "application/octet-stream",
+		filename = "test.png",
+		data = png_data,
+	})
+
+	self.api.POST("channels/"..channel.."/messages", {
+		files = files,
+	}):Then(print)
+end
+
+function LOL:Say(channel, what)
+	self.api.POST("channels/"..channel.."/messages", {
+		body = {
+			content = what,
+		},
+	}):Then(print)
+end
+
+function LOL:OnEvent(data)
+	if data.t == "VOICE_SERVER_UPDATE" then
+		self.voice_server = data
+	elseif data.t == "VOICE_STATE_UPDATE" then
+		self.voice_state = data
 	end
 
-	function LOL:OnEvent(data)
-		if data.t == "VOICE_SERVER_UPDATE" then
-			self.voice_server = data
-		elseif data.t == "VOICE_STATE_UPDATE" then
-			self.voice_state = data
-		end
+	if self.voice_server and self.voice_state then
+		if not self.voice_socket then
+			local socket = self:CreateWebsocket({
+				[0] = "Identify", --	client	begin a voice websocket connection
+				[1] = "SelectProtocol", --	client	select the voice protocol
+				[2] = "Ready", --	server	complete the websocket handshake
+				[3] = "Heartbeat", --	client	keep the websocket connection alive
+				[4] = "SessionDescription", --	server	describe the session
+				[5] = "Speaking", --	client and server	indicate which users are speaking
+				[6] = "HeartbeatACK", --	server	sent immediately following a received client heartbeat
+				[7] = "Resume", --	client	resume a connection
+				[8] = "Hello", --	server	the continuous interval in milliseconds after which the client should send a heartbeat
+				[9] = "Resumed", --	server	acknowledge Resume
+				[13] = "ClientDisconnect", --	server	a client has disconnected from the voice channel
+			}, "voice")
+			self.voice_socket = socket
 
-		if self.voice_server and self.voice_state then
-			if not self.voice_socket then
-				local socket = self:CreateWebsocket({
-					[0] = "Identify", --	client	begin a voice websocket connection
-					[1] = "SelectProtocol", --	client	select the voice protocol
-					[2] = "Ready", --	server	complete the websocket handshake
-					[3] = "Heartbeat", --	client	keep the websocket connection alive
-					[4] = "SessionDescription", --	server	describe the session
-					[5] = "Speaking", --	client and server	indicate which users are speaking
-					[6] = "HeartbeatACK", --	server	sent immediately following a received client heartbeat
-					[7] = "Resume", --	client	resume a connection
-					[8] = "Hello", --	server	the continuous interval in milliseconds after which the client should send a heartbeat
-					[9] = "Resumed", --	server	acknowledge Resume
-					[13] = "ClientDisconnect", --	server	a client has disconnected from the voice channel
-				}, "voice")
-				self.voice_socket = socket
+			local voice_server = self.voice_server
+			local voice_state = self.voice_state
 
-				local voice_server = self.voice_server
-				local voice_state = self.voice_state
-
-				local host, port = unpack(self.voice_server.d.endpoint:split(":"))
-				socket:Connect("wss://" .. host .. "/?v=3")
-				socket:SendIdentify({
-					server_id = voice_server.d.guild_id,
-					user_id = voice_state.d.user_id,
-					session_id = voice_state.d.session_id,
-					token = voice_server.d.token,
-				})
-
-				function socket:OnEvent(data)
-					if data.opcode == "Ready" then
-						self.ssrc = data.d.ssrc
-						self.key = "?"
-						self.ip = data.d.ip
-						self.port = data.d.port
-
-						local udp = sockets.UDPServer()
-
-						llog("connecting to voice chat " .. data.d.ip .. ":" .. data.d.port)
-
-						udp:SetAddress(data.d.ip, data.d.port)
-
-						function udp.OnReceiveChunk(_, chunk, address)
-							local buf = utility.CreateBuffer(chunk)
-							buf:Advance(4)
-							local ip = buf:ReadString()
-							buf:SetPosition(buf:GetSize()-2)
-							local port = buf:ReadUInt16_T()
-
-							self:SendSelectProtocol({
-								protocol = "udp",
-								data = {
-									address = ip,
-									port = port,
-									mode = "xsalsa20_poly1305"
-								}
-							})
-
-							llog("our voice chat address is " .. address:get_ip() .. ":" .. address:get_port())
-						end
-
-						udp:Send(string.rep("\0", 70))
-
-						local udp = sockets.UDPClient()
-						udp:SetAddress(data.d.ip, data.d.port)
-						self.udp = udp
-					end
-
-					if data.opcode == "SessionDescription" then
-						self.secret_key = data.d.secret_key
-
-						start_voicechat(self)
-					end
-				end
-			end
-		end
-
-		if data.t == "READY" then
-
-			--self.api.GET("guilds/"..server_id.."/roles"):Then(table.print)
-
-			--[[self.api.POST("channels/260911858133762048/messages", {
-				body = {
-					content = "hello"
-				}
-			}):Then(table.print)
-
-			self.api.GET(http.query("channels/260911858133762048/messages", {limit = 10})):Then(function(messages)
-				table.print(messages)
-				for k,v in pairs(messages) do
-					print(v.author.username, v.content)
-				end
-			end)
-			]]
-
-			self.socket:SendVoiceStateUpdate({
-				guild_id = server_id,
-				channel_id = channel_id,
-				self_mute = false,
-				self_deaf = false
+			local host, port = unpack(self.voice_server.d.endpoint:split(":"))
+			socket:Connect("wss://" .. host .. "/?v=3")
+			socket:SendIdentify({
+				server_id = voice_server.d.guild_id,
+				user_id = voice_state.d.user_id,
+				session_id = voice_state.d.session_id,
+				token = voice_server.d.token,
 			})
 
-			--[[self:Query("GET /guilds/"..server_id.."/members", function(data)
-				table.print(data)
-			end, {limit = 10})]]
-		else
-			if data.t == "MESSAGE_CREATE" or data.t == "MESSAGE_UPDATE" then
-				local ok, err = pcall(function()
+			function socket:OnEvent(data)
+				if data.opcode == "Ready" then
+					self.ssrc = data.d.ssrc
+					self.key = "?"
+					self.ip = data.d.ip
+					self.port = data.d.port
 
-					if data.d.channel_id == chatsounds_channel then
-						chatsounds.Say(data.d.content)
+					local udp = sockets.UDPServer()
+
+					llog("connecting to voice chat " .. data.d.ip .. ":" .. data.d.port)
+
+					udp:SetAddress(data.d.ip, data.d.port)
+
+					function udp.OnReceiveChunk(_, chunk, address)
+						local buf = utility.CreateBuffer(chunk)
+						buf:Advance(4)
+						local ip = buf:ReadString()
+						buf:SetPosition(buf:GetSize()-2)
+						local port = buf:ReadUInt16_T()
+
+						self:SendSelectProtocol({
+							protocol = "udp",
+							data = {
+								address = ip,
+								port = port,
+								mode = "xsalsa20_poly1305"
+							}
+						})
+
+						llog("our voice chat address is " .. address:get_ip() .. ":" .. address:get_port())
 					end
 
-					local cmd, rest = data.d.content:match("^!(%S+)%s(.+)")
-					if not rest then
-						cmd = data.d.content:match("^!(%S+)")
-					end
+					udp:Send(string.rep("\0", 70))
 
-					if data.d.member and table.hasvalue(data.d.member.roles, ADMIN_ROLE) then
-						if cmd == "l" and rest then
-							local func, err = loadstring(rest)
-							if func then
-								local ok, err = pcall(func)
-								if not ok then
-									print(err)
-								end
-							end
-						elseif cmd == "avatar" then
-							self.api.PATCH("users/@me", {
-								body = {
-									username = "goluwa",
-									avatar = "data:image/png;base64," .. crypto.Base64Encode(vfs.Read("/home/caps/Documents/Untitled.png"))
-								},
-								--avatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAVUlEQVR42mNgGAXYwSOB/ySJo4PMDRb/STYcGeg58/zHZzheC9BtACl2KVL5j2w4PgvgBqyB2kJYAw7biNaE7ncMjUheArkqH8k7JLmIZO+QpWFoAgAY9DgM7ldwswAAAABJRU5ErkJggg==",
-							}):Then(print)
-						elseif cmd == "screenshot" then
-							local w,h = render.GetWidth(), render.GetHeight()
-							local pixels = ffi.new("uint8_t[?]", (w*h*4))
-							require("opengl").ReadPixels(0,0,w,h,"GL_BGRA", "GL_UNSIGNED_BYTE", pixels)
+					local udp = sockets.UDPClient()
+					udp:SetAddress(data.d.ip, data.d.port)
+					self.udp = udp
+				end
 
-							self:SendImage(pixels, w, h, data.d.channel_id)
-						elseif cmd == "glsl" and rest then
-							local fb = render.CreateFrameBuffer()
-							fb:SetSize(Vec2()+128)
+				if data.opcode == "SessionDescription" then
+					self.secret_key = data.d.secret_key
 
-							local tex = render.CreateTexture("2d")
-							tex:SetSize(Vec2(128, 128))
-							tex:SetInternalFormat("rgba8")
-							tex:SetupStorage()
-							tex:Clear()
-							print(rest)
-							tex:Shade(rest)
-							local image = tex:Download()
-
-							self:SendImage(ffi.cast("uint8_t *", image.buffer), image.width, image.height, data.d.channel_id)
-						end
-					end
-
-					print(cmd, rest, "!!")
-
-					if cmd == "ac" and rest then
-						self:Say(data.d.channel_id, table.concat(autocomplete.Query("chatsounds", rest), "\n"))
-					end
-				end)
-
-				if not ok then
-					logn(err)
-					self.api.POST("channels/"..data.d.channel_id.."/messages", {
-						body = {
-							content = err,
-						},
-						files = files,
-					}):Then(print)
+					start_voicechat(self)
 				end
 			end
-			--table.print(data)
 		end
 	end
 
-	--LOL:Query("GET /users/260465579125768192", table.print)
+	if data.t == "READY" then
+
+		--self.api.GET("guilds/"..server_id.."/roles"):Then(table.print)
+
+		--[[self.api.POST("channels/260911858133762048/messages", {
+			body = {
+				content = "hello"
+			}
+		}):Then(table.print)
+
+		self.api.GET(http.query("channels/260911858133762048/messages", {limit = 10})):Then(function(messages)
+			table.print(messages)
+			for k,v in pairs(messages) do
+				print(v.author.username, v.content)
+			end
+		end)
+		]]
+
+		self.socket:SendVoiceStateUpdate({
+			guild_id = server_id,
+			channel_id = channel_id,
+			self_mute = false,
+			self_deaf = false
+		})
+
+		--[[self:Query("GET /guilds/"..server_id.."/members", function(data)
+			table.print(data)
+		end, {limit = 10})]]
+	else
+		if (data.t == "MESSAGE_CREATE" or data.t == "MESSAGE_UPDATE") and data.d.content then
+			local ok, err = pcall(function()
+
+				if data.d.channel_id == chatsounds_channel then
+					chatsounds.Say(data.d.content)
+				end
+
+				local cmd, rest = data.d.content:match("^!(%S+)%s(.+)")
+				if not rest then
+					cmd = data.d.content:match("^!(%S+)")
+				end
+
+				if data.d.member and table.hasvalue(data.d.member.roles, ADMIN_ROLE) then
+					if cmd == "l" and rest then
+						local func, err = loadstring(rest)
+						if func then
+							local ok, err = pcall(func)
+							if not ok then
+								print(err)
+							end
+						end
+					elseif cmd == "avatar" then
+						self.api.PATCH("users/@me", {
+							body = {
+								username = "goluwa",
+								avatar = "data:image/png;base64," .. crypto.Base64Encode(vfs.Read("/home/caps/Documents/Untitled.png"))
+							},
+							--avatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAVUlEQVR42mNgGAXYwSOB/ySJo4PMDRb/STYcGeg58/zHZzheC9BtACl2KVL5j2w4PgvgBqyB2kJYAw7biNaE7ncMjUheArkqH8k7JLmIZO+QpWFoAgAY9DgM7ldwswAAAABJRU5ErkJggg==",
+						}):Then(print)
+					elseif cmd == "screenshot" then
+						local w,h = render.GetWidth(), render.GetHeight()
+						local pixels = ffi.new("uint8_t[?]", (w*h*4))
+						require("opengl").ReadPixels(0,0,w,h,"GL_BGRA", "GL_UNSIGNED_BYTE", pixels)
+
+						self:SendImage(pixels, w, h, data.d.channel_id)
+					elseif cmd == "glsl" and rest then
+						local fb = render.CreateFrameBuffer()
+						fb:SetSize(Vec2()+128)
+
+						local tex = render.CreateTexture("2d")
+						tex:SetSize(Vec2(128, 128))
+						tex:SetInternalFormat("rgba8")
+						tex:SetupStorage()
+						tex:Clear()
+						print(rest)
+						tex:Shade(rest)
+						local image = tex:Download()
+
+						self:SendImage(ffi.cast("uint8_t *", image.buffer), image.width, image.height, data.d.channel_id)
+					end
+				end
+
+				print(cmd, rest, "!!")
+
+				if cmd == "ac" and rest then
+					self:Say(data.d.channel_id, table.concat(autocomplete.Query("chatsounds", rest), "\n"))
+				end
+			end)
+
+			if not ok then
+				logn(err)
+				self.api.POST("channels/"..data.d.channel_id.."/messages", {
+					body = {
+						content = err,
+					},
+					files = files,
+				}):Then(print)
+			end
+		end
+		--table.print(data)
+	end
 end
+
+--LOL:Query("GET /users/260465579125768192", table.print)
