@@ -167,6 +167,7 @@ local function transpile_check(code)
         print("===================================")
 
         dump_ast(ast)
+        --table.print(ast)
         for i,v in ipairs(tokens) do
             print("[" .. i .. "][" .. v.type .. "]: " .. v.value)
         end
@@ -253,6 +254,9 @@ end
 --utility.StartMonitorCoverage("oh/lua/parser.lua")
 
 print("============TEST============")
+
+transpile_check("a=(foo.bar)")
+transpile_check("a=(foo.bar)()")
 transpile_ok"@T:FOOBARRRR=true"if FOOBARRRR == true then else error("compile test failed") end FOOBARRRR=nil
 transpile_ok"@P:FOOBARRRR=true"if FOOBARRRR == true then else error("compile test failed") end FOOBARRRR=nil
 transpile_ok"@E:FOOBARRRR=true"if FOOBARRRR == true then else error("compile test failed") end FOOBARRRR=nil
@@ -329,8 +333,10 @@ transpile_check("tbl = {a = foo:asdf(), bar:LOL()}")
 transpile_check("foo = 1 // bar")
 transpile_check("foo = 1 /* bar */")
 transpile_check("foo = 1 /* bar */")
-
-
+transpile_check("if (player:IsValid()) then end")
+transpile_check("if ( IsValid( tr.Entity ) ) then end")
+transpile_check("local foo = (1+(2+(foo:bar())))")
+transpile_check("RunConsoleCommand ('hostname', (table.Random (hostname)))")
 assert(tokenize([[0xfFFF]])[1].value == "0xfFFF")
 check_tokens_separated_by_space([[while true do end]])
 check_tokens_separated_by_space([[if a == b and b + 4 and true or ( true and function ( ) end ) then :: foo :: end]])
@@ -343,17 +349,46 @@ if false then
     local covered = utility.StopMonitorCoverage()
     local code = vfs.Read("lua/libraries/oh/lua/parser.lua")
     for i, line in ipairs(code:split("\n")) do
-        if not covered[i] then
-            print(line)
-        else
-            print("")
+        if not line:find("gmod_wire_expression2/core/custom") then
+            if not covered[i] then
+                print(line)
+            else
+                print("")
+            end
         end
     end
 end
 
 if false then
     for _, path in ipairs(vfs.GetFilesRecursive(e.ROOT_FOLDER .. "metastruct_addons/addons/merged/lua/", {".lua"}))  do
-        transpile_ok(vfs.Read(path), path)
+        print("testing " .. path .. "...")
+        local code = vfs.Read(path)
+        if code then
+            if code:startswith("\xEF\xBB\xBF") then
+                code = code:sub(3)
+            end
+            local code2, err = transpile_ok(code, path)
+
+            if code2 and code2 ~= code then
+                print(path .. " differs!")
+
+                local name = vfs.GetFileNameFromPath(path)
+
+                vfs.Write("data/compare/" .. name .. crypto.CRC32(path).. "/original.lua", code)
+                vfs.Write("data/compare/" .. name .. crypto.CRC32(path).. "/new.lua", code2)
+                vfs.Write("data/compare/" .. name .. crypto.CRC32(path).. "/meld.sh", [[
+                    meld original.lua new.lua
+                ]])
+
+                if err then
+                    print("error: " .. err)
+                end
+            else
+                print(code2 == code, err)
+            end
+        else
+            print("unable to read " .. path)
+        end
     end
 end
 
