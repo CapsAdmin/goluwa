@@ -24,15 +24,15 @@ function META:Block(stop)
 
 		local statement = self:Statement(node)
 
-        if statement.type == "continue" then
-            node.has_continue = true
-
-            if self.loop_stack[1] then
-                self.loop_stack[#self.loop_stack].has_continue = true
-            end
-        end
 
 		if statement then
+			if statement.type == "continue" then
+				node.has_continue = true
+
+				if self.loop_stack[1] then
+					self.loop_stack[#self.loop_stack].has_continue = true
+				end
+			end
 			table_insert(node.statements, statement)
 		end
 	end
@@ -171,7 +171,7 @@ function META:Expression(priority, stop_on_call)
 	token = self:GetToken()
 
 	if token and (token.value == "." or token.value == ":" or token.value == "[" or token.value == "(" or token.value == "{" or token.type == "string") then
-		local suffixes = {}
+		local suffixes = val.suffixes or {}
 
 		for _ = 1, self:GetLength() do
 			if not self:GetToken() then break end
