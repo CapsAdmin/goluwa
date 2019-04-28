@@ -140,6 +140,58 @@ do
 end
 
 do
+	local Token = {}
+
+	Token.Type = "glua_line_comment"
+	Token.Whitespace = true
+	Token.Priority = 99
+
+	local line_comment = "//"
+
+	function Token:Is()
+		return self:GetCharsOffset(#line_comment - 1) == line_comment
+	end
+
+	function Token:Capture()
+		self:Advance(#line_comment)
+
+		for _ = self.i, self.code_length do
+			if self:ReadChar() == "\n" or self.i-1 == self.code_length then
+				return true
+			end
+		end
+	end
+
+	builder:RegisterTokenClass(Token)
+end
+
+do
+	local Token = {}
+
+	Token.Type = "glua_multiline_comment"
+	Token.Whitespace = true
+	Token.Priority = 99
+
+	function Token:Is()
+		return self:GetCharsOffset(1) == "/*"
+	end
+
+	function Token:Capture()
+		self:Advance(2)
+
+		for _ = self.i, self.code_length do
+			self:Advance(1)
+			if self:GetCharsOffset(1) == "*/" then
+				self:Advance(2)
+				return true
+			end
+		end
+	end
+
+	builder:RegisterTokenClass(Token)
+end
+
+do
 	local escape_character = "\\"
 	local quotes = {
 		double = [["]],

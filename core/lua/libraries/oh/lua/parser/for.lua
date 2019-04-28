@@ -8,8 +8,6 @@ function META:ReadForStatement()
     local node
     local for_token = self:ReadToken()
 
-    self:PushLoopBlock(node)
-
     local identifier = self:ReadIdentifier()
 
     if self:IsValue("=") then
@@ -39,13 +37,13 @@ function META:ReadForStatement()
         node.expressions = self:ExpressionList()
     end
 
-    node.tokens["do"] = self:ReadExpectValue("do")
+
     node.tokens["for"] = for_token
 
-    local block = self:Block({["end"] = true})
+    self:PushLoopBlock(node)
+    node.tokens["do"] = self:ReadExpectValue("do")
+    node.block = self:Block({["end"] = true})
     node.tokens["end"] = self:ReadExpectValue("end", for_token, for_token)
-    node.block = block
-
     self:PopLoopBlock()
 
     return node

@@ -196,8 +196,12 @@ function META:Table(v)
 					self:Expression(v.value)
 				elseif v.type == "table_key_value" then
 					self:Expression(v.key)
-					self:EmitToken(v.tokens["="])
-					self:Expression(v.value)
+					if v.tokens["="] then
+						self:EmitToken(v.tokens["="])
+						self:Expression(v.value)
+					else
+						self:Emit(" = nil")
+					end
 				elseif v.type == "table_expression_value" then
 
 					self:EmitToken(v.tokens["["])

@@ -7,7 +7,7 @@ local function transpile(ast)
     local res = self:BuildCode(ast)
     local ok, err = loadstring(res)
     if not ok then
-        log(err, "\n")
+        return res, err
     end
     return res
 end
@@ -104,7 +104,7 @@ local dump_ast do
 	end
 end
 
-local function dump_tokens(tokens)
+local function dump_tokens(tokens, code)
     for _, v in ipairs(tokens) do
         for _, v in ipairs(v.whitespace) do
             log(code:usub(v.start, v.stop))
@@ -123,32 +123,33 @@ local function transpile_fail_check(code)
 end
 
 
-local function transpile_ok(code)
-    local tokens, ast, new_code
+local function transpile_ok(code, path)
+    local tokens, ast, new_code, lua_err
 
     local ok = xpcall(function()
         tokens = tokenize(code)
         ast = parse(tokens, code)
-        new_code = transpile(ast)
+        new_code, lua_err = transpile(ast)
     end, function(err)
         print("===================================")
         print(debug.traceback(err))
-        print(code)
+        print(path or code)
         print("===================================")
     end)
 
     if ok then
         --log(new_code, " - OK!\n")
+        return new_code, lua_err
     end
 end
 
 local function transpile_check(code)
-    local tokens, ast, new_code
+    local tokens, ast, new_code, lua_err
 
     local ok = xpcall(function()
         tokens = tokenize(code)
         ast = parse(tokens, code)
-        new_code = transpile(ast)
+        new_code, lua_err = transpile(ast)
     end, function(err)
         print("===================================")
         print(debug.traceback(err))
@@ -177,7 +178,7 @@ local function transpile_check(code)
         --log(code, " - OK!\n")
     end
 
-    return ok
+    return ok, new_code
 end
 
 local function check_tokens_separated_by_space(code)
@@ -250,12 +251,11 @@ end
 
 
 --utility.StartMonitorCoverage("oh/lua/parser.lua")
-transpile_check"foo--[[]].--[[]]bar--[[]]:--[[]]test--[[]](--[[]]1--[[]]--[[]],2--[[]])--------[[]]--[[]]--[[]]"
 
 print("============TEST============")
-transpile_ok"@T:print(13371)"
-transpile_ok"@P:print(13372)"
-transpile_ok"@E:print(13373)"
+transpile_ok"@T:FOOBARRRR=true"if FOOBARRRR == true then else error("compile test failed") end FOOBARRRR=nil
+transpile_ok"@P:FOOBARRRR=true"if FOOBARRRR == true then else error("compile test failed") end FOOBARRRR=nil
+transpile_ok"@E:FOOBARRRR=true"if FOOBARRRR == true then else error("compile test failed") end FOOBARRRR=nil
 transpile_ok"for i = 1, 10 do continue end"
 transpile_ok"for i = 1, 10 do if lol then continue end end"
 transpile_ok"repeat if lol then continue end until uhoh"
@@ -266,6 +266,8 @@ transpile_ok"local test: __add(a: number, b: number): number = function() end"
 transpile_ok"local a: FOO|baz = (1 + 1 + adawdad) as fool"
 transpile_ok"function test(a: FOO|baz) return 1 + 2 as lol + adawdad as fool end"
 transpile_ok"interface foo { foo: bar, lol, lol:foo = 1 }"
+transpile_ok("tbl = {a = foo:asdf(), bar:LOL(), foo: a}")
+
 transpile_check"local a = 1;"
 transpile_check"local a,b,c"
 transpile_check"local a,b,c = 1,2,3"
@@ -307,12 +309,34 @@ transpile_check"(function() end)(1,2,3){4}'5'"
 transpile_check"(function() end)(1,2,3);(function() end)(1,2,3)"
 transpile_check"local tbl = {a; b; c,d,e,f}"
 transpile_check"aslk()"
-transpile_check"a = #a();;" print("!")
+transpile_check"a = #a();;"
 transpile_check"a();;"
+transpile_check"a();;"
+transpile_check("🐵=😍+🙅")
+transpile_check("print(･✿ヾ╲｡◕‿◕｡╱✿･ﾟ)")
+transpile_check("print(･✿ヾ╲｡◕‿◕｡╱✿･ﾟ)")
+transpile_check("print(ด้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็ด้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็ด้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็)")
+
+
+transpile_check("function global(...) end")
+transpile_check("local function printf(fmt, ...) end")
+transpile_check("local function printf(fmt, ...) end")
+transpile_check("self.IconWidth, self.IconHeight = spritesheet.GetIconSize( icon )")
+transpile_check("st, tok = LexLua(src)")
+transpile_check("if not self.Emitter then return end")
+transpile_check("if !self.Emitter && Aadw || then return end")
+transpile_check("tbl = {a = foo:asdf(), bar:LOL()}")
+transpile_check("foo = 1 // bar")
+transpile_check("foo = 1 /* bar */")
+transpile_check("foo = 1 /* bar */")
+
 
 assert(tokenize([[0xfFFF]])[1].value == "0xfFFF")
 check_tokens_separated_by_space([[while true do end]])
 check_tokens_separated_by_space([[if a == b and b + 4 and true or ( true and function ( ) end ) then :: foo :: end]])
+
+
+
 
 if false then
     print("CODE COVERAGE")
@@ -324,6 +348,12 @@ if false then
         else
             print("")
         end
+    end
+end
+
+if false then
+    for _, path in ipairs(vfs.GetFilesRecursive(e.ROOT_FOLDER .. "metastruct_addons/addons/merged/lua/", {".lua"}))  do
+        transpile_ok(vfs.Read(path), path)
     end
 end
 

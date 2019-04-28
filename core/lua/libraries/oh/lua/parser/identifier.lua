@@ -54,7 +54,18 @@ function META:IdentifierList(out)
 			break
 		end
 
-		local node = self:ReadIdentifier()
+		local node
+
+		if self:IsValue("...") then
+			node = self:Node("value")
+			node.value = self:ReadToken()
+			if self:IsValue(":") then
+				node.tokens[":"] = self:ReadToken(":")
+				node.data_type = self:Type()
+			end
+		else
+			node = self:ReadIdentifier()
+		end
 
 		table.insert(out, node)
 

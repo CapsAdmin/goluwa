@@ -93,6 +93,14 @@ function META:Statement(block)
 			node.lvalues = {expr}
 			node.tokens["="] = self:ReadToken()
 			node.rvalues = self:ExpressionList()
+		elseif self:IsValue(",") then
+			node = self:Node("assignment")
+			expr.tokens[","] = self:ReadToken()
+			local list = self:ExpressionList()
+			table_insert(list, 1, expr)
+			node.lvalues = list
+			node.tokens["="] = self:ReadExpectValue("=")
+			node.rvalues = self:ExpressionList()
 		elseif expr.suffixes and expr.suffixes[#expr.suffixes].type == "call" then
 			node = self:Node("expression")
 			node.value = expr
@@ -299,6 +307,22 @@ function META:Table()
 			node.key.value = self:ReadToken()
 			node.tokens["="] = self:ReadToken()
 			node.value = self:Expression()
+		elseif
+			self:IsType("letter") and
+			self:GetTokenOffset(1).value == ":" and
+			self:GetTokenOffset(2).type == "letter" and
+			(
+				self:GetTokenOffset(3).type == "string" or
+				self:GetTokenOffset(3).value == "(" or
+				self:GetTokenOffset(3).value == "{"
+			)
+		then
+			node = self:Node("table_index_value")
+			node.value = self:Expression()
+			node.key = i
+			if not node.value then
+				self:Error("expected expression got nothing")
+			end
 		elseif self:IsType("letter") and self:GetTokenOffset(1).value == ":" then
 			node = self:Node("table_key_value")
 			node.key = self:ReadIdentifier()

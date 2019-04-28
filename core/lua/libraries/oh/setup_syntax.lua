@@ -99,7 +99,7 @@ return function(syntax)
     do -- grammar rules
         if syntax.UTF8 then
             function syntax.GetCharacterType(char)
-                return syntax.CharacterMap[char] or (syntax.FallbackCharacterType and char:byte() < 128)
+                return syntax.CharacterMap[char] or (syntax.TokenizerSetup.FallbackCharacterType and char:byte() > 128 and syntax.TokenizerSetup.FallbackCharacterType)
             end
         else
             function syntax.GetCharacterType(char)
