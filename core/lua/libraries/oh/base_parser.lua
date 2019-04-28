@@ -161,7 +161,7 @@ function PARSER:BuildAST(tokens)
         table.insert(block.statements, 1, shebang)
     end
 
-    if tokens[#tokens].type == "end_of_file" then
+    if tokens[#tokens] and tokens[#tokens].type == "end_of_file" then
         local node = self:Node("end_of_file")
         node.tokens["end_of_file"] = tokens[#tokens]
         table.insert(block.statements, node)
