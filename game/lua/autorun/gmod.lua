@@ -121,21 +121,21 @@ if gmod_path then
 end
 
 commands.Add("setup_metastruct_addons", function()
-		if not vfs.IsDirectory(e.ROOT_FOLDER .. "metastruct_addons") then
-		vfs.CreateDirectory(e.ROOT_FOLDER .. "metastruct_addons")
+	if not vfs.IsDirectory("os:" .. e.ROOT_FOLDER .. "metastruct_addons") then
+		assert(vfs.CreateDirectory("os:" .. e.ROOT_FOLDER .. "metastruct_addons"))
 	end
 
-	vfs.Write(e.ROOT_FOLDER .. "metastruct_addons/build.sh", [[
+	assert(vfs.Write(e.ROOT_FOLDER .. "metastruct_addons/build.sh", [[
 #!/bin/sh
 
 #remove linked folder
 rm -f addons/
 mkdir -p addons/merged
 
-svn checkout svn://svn.metastruct.net/srvaddons __srvaddons
+git clone git@gitlab.com:metastruct/srvaddons.git __srvaddons
 cp -rl __srvaddons/*/* addons/merged/
 
-svn checkout svn://svn.metastruct.net/Metastruct2 __metastruct
+git clone git@gitlab.com:metastruct/metastruct.git __metastruct
 cp -rl __metastruct/Metastruct2/* addons/merged/
 
 git clone git@gitlab.threekelv.in:PotcFdk/MetaWorks.git
@@ -157,5 +157,5 @@ npm install
 cd ..
 cp -rl outfitter/dist/* addons/merged/
 
-	]])
+	]]))
 end)
