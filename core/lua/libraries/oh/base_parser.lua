@@ -59,7 +59,7 @@ function PARSER:ReadExpectType(type, start, stop)
     if not tk then
         self:Error("expected " .. oh.QuoteToken(type) .. " reached end of code", start, stop, 3, -1)
     elseif tk.type ~= type then
-        self:Error("expected " .. oh.QuoteToken(type) .. " got " .. oh.QuoteToken(tk.type), start, stop, 3, -1)
+        self:Error("expected " .. oh.QuoteToken(type) .. " got " .. oh.QuoteToken(tk.type) .. "(" .. tk.value .. ")", start, stop, 3, -1)
     end
     self:Advance(1)
     return tk
@@ -148,26 +148,26 @@ function PARSER:BuildAST(tokens)
     self.i = 1
     self.loop_stack = {}
 
-    local bang
+    local shebang
+
     if self:IsType("shebang") then
-        bang = self:Node("shebang")
-        bang.tokens["shebang"] = self:ReadToken()
+        shebang = self:Node("shebang")
+        shebang.tokens["shebang"] = self:ReadToken()
     end
 
-    local ast = self:Block()
+    local block = self:Block()
 
-    if bang then
-        table.insert(ast, 1, bang)
+    if shebang then
+        table.insert(block.statements, 1, shebang)
     end
 
-    -- HMMM
-    if ast[#ast] and ast[#ast].type ~= "end_of_file" then
-        local data = self:Node("end_of_file")
-        data.tokens["end_of_file"] = tokens[#tokens]
-        table.insert(ast, data)
+    if tokens[#tokens].type == "end_of_file" then
+        local node = self:Node("end_of_file")
+        node.tokens["end_of_file"] = tokens[#tokens]
+        table.insert(block.statements, node)
     end
 
-    return ast
+    return block
 end
 
 return PARSER

@@ -10,12 +10,11 @@ function META:ReadForStatement()
 
     self:PushLoopBlock(node)
 
-    local identifier = self:ReadExpectType("letter")
+    local identifier = self:ReadIdentifier()
 
     if self:IsValue("=") then
         node = self:Node("for_i")
-        node.identifier = self:Node("value")
-        node.identifier.value = identifier
+        node.identifier = identifier
         node.tokens["="] = self:ReadToken("=")
         node.expression = self:Expression()
         node.tokens[",1"] = self:ReadExpectValue(",")
@@ -28,14 +27,12 @@ function META:ReadForStatement()
 
     else
         node = self:Node("for_kv")
-        local name = self:Node("value")
-        name.value = identifier
 
         if self:IsValue(",") then
-            name.tokens[","] = self:ReadToken()
-            node.identifiers = self:NameList({name})
+            identifier.tokens[","] = self:ReadToken()
+            node.identifiers = self:IdentifierList({identifier})
         else
-            node.identifiers = {name}
+            node.identifiers = {identifier}
         end
 
         node.tokens["in"] = self:ReadExpectValue("in")

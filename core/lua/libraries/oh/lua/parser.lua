@@ -11,20 +11,21 @@ local META = oh.BaseParser
 -- try to couple functions
 -- Block, Statement, Expression, Value
 
-runfile("statements/*", META)
+runfile("parser/*", META)
 
 function META:Block(stop)
-	local out = {}
+	local node = self:Node("block")
+	node.statements = {}
 
 	for _ = 1, self:GetLength() do
 		if not self:GetToken() or stop and stop[self:GetToken().value] then
 			break
 		end
 
-		local statement = self:Statement(out)
+		local statement = self:Statement(node)
 
         if statement.type == "continue" then
-            out.has_continue = true
+            node.has_continue = true
 
             if self.loop_stack[1] then
                 self.loop_stack[#self.loop_stack].has_continue = true
@@ -32,61 +33,58 @@ function META:Block(stop)
         end
 
 		if statement then
-			table_insert(out, statement)
+			table_insert(node.statements, statement)
 		end
 	end
 
-	return out
+	return node
 end
 
-function META:Statement(out)
+function META:Statement(block)
 
 	do
 		if self:IsValue("return") then
 			local node = self:Node("return")
 			node.tokens["return"] = self:ReadToken()
 			node.expressions = self:ExpressionList()
-
 			return node
 		elseif self:IsValue("break") then
 			local node = self:Node("break")
-
 			node.tokens["break"] = self:ReadToken()
 			return node
 		elseif self:IsValue("continue") then
 			local node = self:Node("continue")
 			node.tokens["continue"] = self:ReadToken()
-
 			return node
 		end
 	end
 
-	local node
-
 	if self:IsCompilerOption() then
-		node = self:ReadCompilerOption()
+		return self:ReadCompilerOption()
 	elseif self:IsGotoLabelStatement() then
-		node = self:ReadGotoLabelStatement()
+		return self:ReadGotoLabelStatement()
 	elseif self:IsInterfaceStatemenet() then
-		node = self:ReadInterfaceStatement()
+		return self:ReadInterfaceStatement()
 	elseif self:IsGotoStatement() then
-		node = self:ReadGotoStatement()
+		return self:ReadGotoStatement()
 	elseif self:IsRepeatStatement() then
-		node = self:ReadRepeatStatement()
+		return self:ReadRepeatStatement()
 	elseif self:IsFunctionStatement() then
-		node = self:ReadFunctionStatement()
+		return self:ReadFunctionStatement()
 	elseif self:IsLocalAssignmentStatement() then
-		node = self:ReadLocalAssignmentStatement()
+		return self:ReadLocalAssignmentStatement()
 	elseif self:IsDoStatement() then
-		node = self:ReadDoStatement()
-		out.has_continue = node.block.has_continue
+		local node = self:ReadDoStatement()
+		block.has_continue = node.block.has_continue
+		return node
 	elseif self:IsIfStatement() then
-		node = self:ReadIfStatement(out)
+		return self:ReadIfStatement(block)
 	elseif self:IsWhileStatement() then
-		node = self:ReadWhileStatement()
+		return self:ReadWhileStatement()
 	elseif self:IsForStatement() then
-		node = self:ReadForStatement()
+		return self:ReadForStatement()
 	elseif (self:IsType("letter") or self:IsValue("(")) and not lua.syntax.IsKeyword(self:GetToken()) then
+		local node
 		local start_token = self:GetToken()
 		local expr = self:Expression()
 
@@ -101,23 +99,20 @@ function META:Statement(out)
 		else
 			self:Error("unexpected " .. start_token.type, start_token)
 		end
+		return node
 	elseif self:IsValue(";") then
-		node = self:Node("end_of_statement")
+		local node = self:Node("end_of_statement")
 		node.tokens[";"] = self:ReadToken()
-	elseif self:IsType("end_of_file") then
-		node = self:Node("end_of_file")
-		node.tokens["end_of_file"] = self:ReadToken()
-	else
-		local type = self:GetToken().type
-
-		if lua.syntax.IsKeyword(self:GetToken()) then
-			type = "keyword"
-		end
-
-		self:Error("unexpected " .. type)
+		return node
 	end
 
-	return node
+	local type = self:GetToken().type
+
+	if lua.syntax.IsKeyword(self:GetToken()) then
+		type = "keyword"
+	end
+
+	self:Error("unexpected " .. type)
 end
 
 function META:Expression(priority, stop_on_call)
@@ -255,71 +250,6 @@ function META:Expression(priority, stop_on_call)
 	return val
 end
 
-function META:Type()
-	local node = self:Node("type")
-
-	local out = {}
-	for _ = 1, self:GetLength() do
-		local token = self:ReadToken()
-
-		if not token then return out end
-
-		local node = self:Node("value")
-		node.value = token
-		table_insert(out, node)
-
-		if token.type == "letter" and self:IsValue("(") then
-			local start = self:GetToken()
-
-			node.tokens["func("] = self:ReadExpectValue("(")
-			node.function_arguments = self:NameList()
-			node.tokens["func)"] = self:ReadExpectValue(")", start, start)
-			node.tokens["return:"] = self:ReadExpectValue(":")
-			node.function_return_type = self:Type()
-		end
-
-		if not self:IsValue("|") then
-			break
-		end
-
-		node.tokens["|"] = self:ReadToken()
-	end
-
-	return out
-end
-
-function META:NameList(out)
-	out = out or {}
-	for _ = 1, self:GetLength() do
-		if not self:IsType("letter") and not self:IsValue("...") and not self:IsValue(":") then
-			break
-		end
-
-		local token = self:ReadToken()
-
-		if not token then return out end
-
-		local node = self:Node("value")
-		node.value = token
-		table_insert(out, node)
-
-		if not self:IsValue(",") and not self:IsValue(":") then
-			break
-		end
-
-		if self:IsValue(":") then
-			node.tokens[":"] = self:ReadToken(":")
-			node.data_type = self:Type()
-		end
-
-		if self:IsValue(",") then
-			node.tokens[","] = self:ReadToken()
-		end
-	end
-
-	return out
-end
-
 function META:ExpressionList()
     local out = {}
 
@@ -371,10 +301,7 @@ function META:Table()
 			node.value = self:Expression()
 		elseif self:IsType("letter") and self:GetTokenOffset(1).value == ":" then
 			node = self:Node("table_key_value")
-			node.key = self:Node("value")
-			node.key.value = self:ReadToken()
-			node.tokens[":"] = self:ReadToken()
-			node.data_type = self:Type()
+			node.key = self:ReadIdentifier()
 
 			if self:IsValue("=") then
 				node.tokens["="] = self:ReadToken()

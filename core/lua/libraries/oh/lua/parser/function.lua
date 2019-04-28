@@ -10,7 +10,7 @@ local function read_call_body(self, node)
     local start = self:GetToken()
 
     node.tokens["func("] = self:ReadExpectValue("(")
-    node.arguments = self:NameList()
+    node.arguments = self:IdentifierList()
     node.tokens["func)"] = self:ReadExpectValue(")", start, start)
     node.block = self:Block({["end"] = true})
     node.tokens["end"] = self:ReadExpectValue("end")

@@ -10,7 +10,7 @@ function META:ReadLocalAssignmentStatement()
     node.tokens["local"] = self:ReadToken()
     node.is_local = true
 
-    node.lvalues = self:NameList()
+    node.lvalues = self:IdentifierList()
 
     if self:IsValue("=") then
         node.tokens["="] = self:ReadToken("=")

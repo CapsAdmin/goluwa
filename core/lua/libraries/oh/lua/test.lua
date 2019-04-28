@@ -1,5 +1,7 @@
 local oh = ... or _G.oh
 
+RELOAD = nil
+
 local function transpile(ast)
     local self = runfile("lua_code_emitter.lua")({preserve_whitespace = true})
     local res = self:BuildCode(ast)
@@ -248,6 +250,7 @@ end
 
 
 --utility.StartMonitorCoverage("oh/lua/parser.lua")
+transpile_check"foo--[[]].--[[]]bar--[[]]:--[[]]test--[[]](--[[]]1--[[]]--[[]],2--[[]])--------[[]]--[[]]--[[]]"
 
 print("============TEST============")
 transpile_ok"@T:print(13371)"
@@ -304,8 +307,8 @@ transpile_check"(function() end)(1,2,3){4}'5'"
 transpile_check"(function() end)(1,2,3);(function() end)(1,2,3)"
 transpile_check"local tbl = {a; b; c,d,e,f}"
 transpile_check"aslk()"
-transpile_check"a = #a();;"
---transpile_check"a();;"
+transpile_check"a = #a();;" print("!")
+transpile_check"a();;"
 
 assert(tokenize([[0xfFFF]])[1].value == "0xfFFF")
 check_tokens_separated_by_space([[while true do end]])

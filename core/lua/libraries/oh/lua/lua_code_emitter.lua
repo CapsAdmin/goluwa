@@ -29,6 +29,8 @@ end
 
 
 function META:Emit(str)
+	if type(str) == "table" then table.print(str) end
+	assert(type(str) == "string")
 	self.out[self.i] = str or ""
 	self.i = self.i + 1
 end
@@ -106,7 +108,7 @@ function META:Expression(v)
 		self:EmitToken(v.value)
 
 		if v.data_type then
-			print(v)
+			--print(v)
 			--self:Emit("--[[a]]")
 		end
 	else
@@ -268,18 +270,18 @@ local function emit_block_with_continue(self, data, repeat_expression)
 	end
 end
 
-function META:BuildCode(ast)
+function META:BuildCode(block)
 	self.level = 0
 	self.out = {}
 	self.i = 1
 
-	self:Block(ast)
+	self:Block(block)
 
 	return table.concat(self.out)
 end
 
-function META:Block(tree)
-	for __, data in ipairs(tree) do
+function META:Block(block)
+	for __, data in ipairs(block.statements) do
 		if data.type == "if" then
 			for i,v in ipairs(data.clauses) do
 				self:Whitespace("\t")self:EmitToken(v.tokens["if/else/elseif"]) if v.condition then self:Expression(v.condition) self:Whitespace(" ") self:EmitToken(v.tokens["then"]) end self:Whitespace("\n")
@@ -324,10 +326,17 @@ function META:Block(tree)
 		elseif data.type == "continue" then
 			self:Whitespace("\t")self:Whitespace("?") self:EmitToken(data.tokens["continue"], "goto continue__oh")
 		elseif data.type == "for_i" or data.type == "for_kv" then
-			self:Whitespace("\t")self:EmitToken(data.tokens["for"])
+			self:Whitespace("\t")
+			self:EmitToken(data.tokens["for"])
 			if data.type == "for_i" then
-				self:EmitToken(data.identifier.value)self:Whitespace(" ") self:EmitToken(data.tokens["="]) self:Whitespace(" ")self:Expression(data.expression)self:EmitToken(data.tokens[",1"])self:Whitespace(" ")self:Expression(data.max)
-
+				self:EmitToken(data.identifier.value)
+				self:Whitespace(" ")
+				self:EmitToken(data.tokens["="])
+				self:Whitespace(" ")
+				self:Expression(data.expression)
+				self:EmitToken(data.tokens[",1"])
+				self:Whitespace(" ")
+				self:Expression(data.max)
 				if data.step then
 					self:EmitToken(data.tokens[",2"])self:Whitespace(" ")self:Expression(data.step)
 				end
