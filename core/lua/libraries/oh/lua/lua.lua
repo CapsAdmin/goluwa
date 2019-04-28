@@ -39,6 +39,7 @@ do
 
 		return self
 	end
+
 end
 
 do
@@ -61,7 +62,7 @@ function lua.CodeToAST(code, name, start, stop)
 
 	local tokenizer = lua.Tokenizer(code)
 	local tokens = tokenizer:GetTokens()
-	
+
 	if tokenizer.errors[1] then
 		local str = ""
 		for _, err in ipairs(tokenizer.errors) do
