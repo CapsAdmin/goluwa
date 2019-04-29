@@ -77,25 +77,42 @@ function META:Expression(v)
 end
 
 function META:Operator(v)
-	self:EmitToken(v.tokens.operator)
+	local translate
+
+	if v.tokens.operator.value == "==" then
+		translate = "==="
+	elseif v.tokens.operator.value == "and" then
+		translate = "&&"
+	elseif v.tokens.operator.value == "or" then
+		translate = "||"
+	end
+	self:EmitToken(v.tokens.operator, translate)
 end
 
 function META:Function(v)
 	self:Whitespace("\t")
 
 	if v.is_local then
-		self:EmitToken(v.tokens["local"])
+		self:EmitToken(v.tokens["local"], "let")
 	end
 
-	self:EmitToken(v.tokens["function"])
-	self:Whitespace(" ")
+	--self:EmitToken(v.tokens["function"])
+	--self:Whitespace(" ")
 
 	if v.value then
 		self:Expression(v.value)
 	end
 
-	self:EmitToken(v.tokens["func("])self:ExpressionList(v.arguments)self:EmitToken(v.tokens["func)"])
+	if v.is_local then
+		self:Emit(" = ")
+	end
 
+	self:EmitToken(v.tokens["func("])
+	self:ExpressionList(v.arguments)
+	self:EmitToken(v.tokens["func)"])
+
+	self:Emit(" => ")
+	
 	if v.return_types then
 		for i,args in ipairs(v.return_types) do
 			for i,v in ipairs(args) do
@@ -106,27 +123,51 @@ function META:Function(v)
 		end
 	end
 
+	self:Emit(" {")
+
 	self:Whitespace("\n")
 		self:Whitespace("\t+")
 			self:Block(v.block)
 		self:Whitespace("\t-")
-	self:Whitespace("\t")self:EmitToken(v.tokens["end"])
+	self:Whitespace("\t")
+
+	self:EmitToken(v.tokens["end"], "}")
 end
 
 function META:Table(v)
 	if not v.children[1] then
 		self:EmitToken(v.tokens["{"])self:EmitToken(v.tokens["}"])
 	else
-		self:EmitToken(v.tokens["{"])self:Whitespace("\n")
+		local guess = "array"
+
+		for i,v in ipairs(v.children) do
+			if v.type == "table_index_value" or v.type == "table_expression_value" then
+				guess = "array"
+			else
+				guess = "table"
+				break
+			end
+		end
+
+		if guess == "table" then
+			self:EmitToken(v.tokens["{"])
+		else
+			self:EmitToken(v.tokens["{"], "[")
+		end
+
+		self:Whitespace("\n")
 			self:Whitespace("\t+")
 			for i,v in ipairs(v.children) do
 				self:Whitespace("\t")
 				if v.type == "table_index_value" then
+					if guess == "table" then
+						self:Emit(v.key .. ":")
+					end
 					self:Expression(v.value)
 				elseif v.type == "table_key_value" then
 					self:Expression(v.key)
 					if v.tokens["="] then
-						self:EmitToken(v.tokens["="])
+						self:EmitToken(v.tokens["="], ":")
 						self:Expression(v.value)
 					else
 						self:Emit(" = nil")
@@ -139,7 +180,7 @@ function META:Table(v)
 					self:Whitespace(")")
 					self:EmitToken(v.tokens["]"])
 
-					self:EmitToken(v.tokens["="])
+					self:EmitToken(v.tokens["="], ":")
 
 					self:Expression(v.value)
 				end
@@ -151,7 +192,13 @@ function META:Table(v)
 				self:Whitespace("\n")
 			end
 			self:Whitespace("\t-")
-		self:Whitespace("\t")self:EmitToken(v.tokens["}"])
+		self:Whitespace("\t")
+		
+		if guess == "table" then
+			self:EmitToken(v.tokens["}"])
+		else
+			self:EmitToken(v.tokens["}"], "]")
+		end
 	end
 end
 
@@ -207,12 +254,24 @@ function META:Block(block)
 	for __, data in ipairs(block.statements) do
 		if data.type == "if" then
 			for i,v in ipairs(data.clauses) do
-				self:Whitespace("\t")self:EmitToken(v.tokens["if/else/elseif"]) if v.condition then self:Expression(v.condition) self:Whitespace(" ") self:EmitToken(v.tokens["then"]) end self:Whitespace("\n")
+
+				self:Whitespace("\t")self:EmitToken(v.tokens["if/else/elseif"], v.tokens["if/else/elseif"].value == "elseif" and "else if" or nil) 
+					if v.condition then 
+						self:Emit("(")
+						self:Expression(v.condition) 
+						self:Emit(")")
+						self:Whitespace(" ") 
+						self:EmitToken(v.tokens["then"], "{") 
+					else
+						self:Emit("{") 
+					end
+				self:Whitespace("\n")
 				self:Whitespace("\t+")
-					self:Block(v.block)
+				self:Block(v.block)
 				self:Whitespace("\t-")
+				
+				self:Emit("}") 
 			end
-			self:Whitespace("\t") self:EmitToken(data.tokens["end"])
 		elseif data.type == "goto" then
 			self:Whitespace("\t") self:EmitToken(data.tokens["goto"]) self:Whitespace(" ") self:Expression(data.label)
 		elseif data.type == "goto_label" then
@@ -252,31 +311,39 @@ function META:Block(block)
 			self:Whitespace("\t")
 			self:EmitToken(data.tokens["for"])
 			if data.type == "for_i" then
+				self:Emit("(let")
 				self:EmitToken(data.identifier.value)
 				self:Whitespace(" ")
 				self:EmitToken(data.tokens["="])
 				self:Whitespace(" ")
 				self:Expression(data.expression)
-				self:EmitToken(data.tokens[",1"])
+				self:EmitToken(data.tokens[",1"], ";")
 				self:Whitespace(" ")
+				self:Emit("i <=")
 				self:Expression(data.max)
 				if data.step then
 					self:EmitToken(data.tokens[",2"])self:Whitespace(" ")self:Expression(data.step)
+				else
+					self:Emit("; i++")
 				end
+				self:Emit(")")
 			else
+				self:Emit("(let [")
 				self:Whitespace("?")
 				self:ExpressionList(data.identifiers)
+				self:Emit("]")
 				self:Whitespace("?")
-				self:EmitToken(data.tokens["in"])
+				self:EmitToken(data.tokens["in"], "of")
 				self:Whitespace("?")
 				self:ExpressionList(data.expressions)
+				self:Emit(")")
 			end
 
-			self:Whitespace("?")self:EmitToken(data.tokens["do"])self:Whitespace("\n")
+			self:Whitespace("?")self:EmitToken(data.tokens["do"], "{")self:Whitespace("\n")
 				self:Whitespace("\t+")
 					emit_block_with_continue(self, data)
 				self:Whitespace("\t-")
-			self:Whitespace("\t")self:EmitToken(data.tokens["end"])
+			self:Whitespace("\t")self:EmitToken(data.tokens["end"], "}")
 
 		elseif data.type == "do" then
 			self:Whitespace("\t")self:EmitToken(data.tokens["do"])self:Whitespace("\n")
@@ -285,7 +352,7 @@ function META:Block(block)
 				self:Whitespace("\t-")
 			self:Whitespace("\t")self:EmitToken(data.tokens["end"])
 		elseif data.type == "assignment" then
-			self:Whitespace("\t") if data.is_local then self:EmitToken(data.tokens["local"])self:Whitespace(" ") end
+			self:Whitespace("\t") if data.is_local then self:EmitToken(data.tokens["local"], "let")self:Whitespace(" ") end
 
 			for i,v in ipairs(data.lvalues) do
 				if data.is_local then
@@ -351,6 +418,13 @@ function META:ExpressionList(tbl)
 			self:Whitespace(" ")
 		end
 	end
+end
+
+if RELOAD then
+	RELOAD = nil
+	runfile("lua/libraries/oh/oh.lua")
+	runfile("lua/libraries/oh/lua/test.lua")
+	return
 end
 
 return function(config)

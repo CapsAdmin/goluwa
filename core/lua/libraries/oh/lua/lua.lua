@@ -57,6 +57,21 @@ do
 	end
 end
 
+do
+	local JSEmitter = runfile("js_code_emitter.lua", lua, oh)
+
+	function lua.ASTToJSCode(ast, config)
+		config = config or {}
+
+		if config.preserve_whitespace == nil then
+			config.preserve_whitespace = true
+		end
+
+		local self = JSEmitter(config)
+		return self:BuildCode(ast)
+	end
+end
+
 function lua.CodeToAST(code, name, start, stop)
 	name = name or "unknown"
 

@@ -3,6 +3,7 @@ local oh = {}
 oh.utf8_tokenizer_config = runfile("utf8_tokenizer_config.lua", oh)
 oh.CreateBaseTokenizer = runfile("base_tokenizer.lua", oh)
 oh.BaseParser = runfile("base_parser.lua", oh)
+oh.BaseEmitter = runfile("base_emitter.lua", oh)
 oh.SetupSyntax = runfile("setup_syntax.lua", oh)
 oh.lua = runfile("lua/lua.lua", oh)
 
