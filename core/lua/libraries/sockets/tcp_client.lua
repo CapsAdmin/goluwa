@@ -32,96 +32,102 @@ function META:SocketRestart(socket)
     self.connecting = nil
 end
 
-function META:SetupTLS()
-    if self.tls_setup then return end
-
+do
     local tls = desire("libtls")
-    if not tls then
-        return self:Error("unable to find libtls")
-    end
-
-    self.tls_setup = true
-
     local ffi = require("ffi")
-    tls.init()
 
+    function META:SetupTLS()
+        if self.tls_setup then return end
 
-    local config = tls.config_new()
-    local err = tls.config_set_ca_file(config, e.ROOT_FOLDER .. "core/" .. e.BIN_PATH .. "ssl/cert.pem")
-    if err ~= 0 then
-        llog(ffi.string(tls.config_error(config)))
-        tls.config_insecure_noverifycert(config)
-        tls.config_insecure_noverifyname(config)
-    end
-
-    local tls_client = tls.client()
-
-    tls.configure(tls_client, config)
-
-    local function last_error(code, what)
-        local err = tls.error(tls_client)
-        if err ~= nil then
-            return ffi.string(err)
-        end
-        return "unknown tls "..what.." error (" .. tonumber(code) .. ")"
-    end
-
-    function self.socket:on_connect(host, serivce)
-        local code = tls.connect_socket(tls_client, self.fd, host)
-
-        if code < 0 then
-            return nil, last_error(code, "connect")
-        end
-
-        return true
-    end
-
-    function self:DoHandshake()
-        local ret = tls.handshake(tls_client)
-
-        if ret == tls.e.WANT_POLLOUT or ret == tls.e.WANT_POLLIN then
-            return nil, "timeout"
-        elseif ret < 0 then
-            local err = last_error(ret, "handshake")
-            if err ~= "handshake already completed" then
-                return nil, err
+        if not tls.config then
+            if not tls then
+                return self:Error("unable to find libtls")
             end
+
+            self.tls_setup = true
+
+            tls.init()
+
+            local config = tls.config_new()
+            local err = tls.config_set_ca_file(config, e.ROOT_FOLDER .. "core/" .. e.BIN_PATH .. "ssl/cert.pem")
+            if err ~= 0 then
+                llog(ffi.string(tls.config_error(config)))
+                tls.config_insecure_noverifycert(config)
+                tls.config_insecure_noverifyname(config)
+            end
+
+            tls.config = config
         end
 
-        self.DoHandshake = nil
+        local tls_client = tls.client()
 
-        return true
-    end
+        tls.configure(tls_client, tls.config)
 
-    function self.socket:on_send(data, flags)
-        local len = tls.write(tls_client, data, #data)
-        if len < 0 then
-            if len == tls.e.WANT_POLLOUT or len == tls.e.WANT_POLLIN then
+        local function last_error(code, what)
+            local err = tls.error(tls_client)
+            if err ~= nil then
+                return ffi.string(err)
+            end
+            return "unknown tls "..what.." error (" .. tonumber(code) .. ")"
+        end
+
+        function self.socket:on_connect(host, serivce)
+            local code = tls.connect_socket(tls_client, self.fd, host)
+
+            if code < 0 then
+                return nil, last_error(code, "connect")
+            end
+
+            return true
+        end
+
+        function self:DoHandshake()
+            local ret = tls.handshake(tls_client)
+
+            if ret == tls.e.WANT_POLLOUT or ret == tls.e.WANT_POLLIN then
                 return nil, "timeout"
+            elseif ret < 0 then
+                local err = last_error(ret, "handshake")
+                if err ~= "handshake already completed" then
+                    return nil, err
+                end
             end
-            return nil, last_error(len, "write")
-        end
-        return len
-    end
 
-    function self.socket:on_receive(buffer, max_size, flags)
-        local len = tls.read(tls_client, buffer, max_size)
-        if len < 0 then
-            if len == tls.e.WANT_POLLOUT or len == tls.e.WANT_POLLIN then
-                return nil, "timeout"
+            self.DoHandshake = nil
+
+            return true
+        end
+
+        function self.socket:on_send(data, flags)
+            local len = tls.write(tls_client, data, #data)
+            if len < 0 then
+                if len == tls.e.WANT_POLLOUT or len == tls.e.WANT_POLLIN then
+                    return nil, "timeout"
+                end
+                return nil, last_error(len, "write")
             end
-            return nil, last_error(len, "receive")
+            return len
         end
 
-        if len == 0 then
-            return nil, "closed"
+        function self.socket:on_receive(buffer, max_size, flags)
+            local len = tls.read(tls_client, buffer, max_size)
+            if len < 0 then
+                if len == tls.e.WANT_POLLOUT or len == tls.e.WANT_POLLIN then
+                    return nil, "timeout"
+                end
+                return nil, last_error(len, "receive")
+            end
+
+            if len == 0 then
+                return nil, "closed"
+            end
+
+            return ffi.string(buffer, len)
         end
 
-        return ffi.string(buffer, len)
-    end
-
-    function self.socket:on_close()
-        tls.close(tls_client)
+        function self.socket:on_close()
+            tls.close(tls_client)
+        end
     end
 end
 
