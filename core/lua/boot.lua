@@ -46,7 +46,10 @@ do
 	end
 
 	function os.readexecute(cmd)
-		return io.popen(cmd):read("*all")
+		local p = io.popen(cmd)
+		str = p:read("*all")
+		p:close()
+		return str
 	end
 
 	function os.checkexecute(cmd)
@@ -600,7 +603,7 @@ os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
 
 if UNIX then
 
-	if ARG_LINE == "gdb" then
+	if ARG_LINE:find("gdb") then
 		assert(os.iscmd("gdb"), "gdb is not installed")
 		assert(os.iscmd("git"), "git is not installed")
 
