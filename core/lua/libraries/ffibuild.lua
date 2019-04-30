@@ -113,7 +113,7 @@ function ffibuild.SourceControlClone(str, dir)
 
 		branch = branch or ""
 
-		if vfs.IsFile(dir .. ".git") then
+		if vfs.IsDirectory(dir .. ".git") then
 			os.execute(print("git -C " .. dir .. " pull"))
 		else
 			os.execute(print("git clone " .. str .. " " .. dir .. " --depth 1 " .. branch .. " "))
