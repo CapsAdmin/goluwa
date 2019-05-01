@@ -127,6 +127,7 @@ do
 
         function self.socket:on_close()
             tls.close(tls_client)
+            tls.free(tls_client)
         end
     end
 end
