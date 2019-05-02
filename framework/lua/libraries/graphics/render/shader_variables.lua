@@ -1,5 +1,5 @@
 local render = ... or _G.render
-local ffi = require("ffi")
+local ffi = desire("ffi")
 local META = prototype.CreateTemplate("shader_variables")
 
 function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)

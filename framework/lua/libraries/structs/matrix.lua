@@ -138,7 +138,7 @@ META.LoadIdentity = META.Identity
 
 structs.AddOperator(META, "==")
 
-local _, ffi = pcall(require, "ffi")
+local ffi = desire("ffi")
 
 if ffi then
 	META.Constructor = ffi.typeof("struct { $ ]==] .. generate_generic(function(x, y) return "m" .. x .. y .. ", " end, true):sub(0, -3)  .. [==[; }", ffi.typeof(META.NumberType))

@@ -1,4 +1,4 @@
-local ffi = require("ffi")
+local ffi = desire("ffi")
 local fonts = ... or _G.fonts
 
 local freetype = desire("freetype")

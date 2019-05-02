@@ -1,7 +1,7 @@
 local vfs = (...) or _G.vfs
 
 local fs = require("fs")
-local ffi = require("ffi")
+local ffi = desire("ffi")
 
 local CONTEXT = {}
 
@@ -58,7 +58,7 @@ local translate_mode = {
 	read_write = "",
 }
 
-if fs.open then
+if fs.open and ffi then
 
 	-- if CONTEXT:Open errors the virtual file system will assume
 	-- the file doesn't exist and will go to the next mounted context
@@ -174,7 +174,7 @@ else
 
 		if not mode then return false, "mode not supported" end
 
-		local f, err = io.open(path_info.full_path, mode .. "b")
+		local f, err = io.open(path_info.full_path, mode)
 
 		self.file = f
 

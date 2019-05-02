@@ -1,6 +1,6 @@
 local structs = _G.structs or {}
 
-local _, ffi = pcall(require, "ffi")
+local ffi = desire("ffi")
 
 local istype
 local gettype
@@ -16,7 +16,7 @@ end
 structs.IsType = istype
 
 structs.type_lookup = structs.type_lookup or {}
-if ffi then
+if kffi then
 	local tostring = tostring
 	local typeof = ffi.typeof
 

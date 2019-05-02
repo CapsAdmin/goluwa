@@ -133,16 +133,16 @@ do -- file
 	end
 end
 
-local current_file = io.stdin
+local current_file_in = io.stdin
 
 function io.input(var)
 	if io.type(var) == "file" then
-		current_file = var
+		current_file_in = var
 	else
-		current_file = io.open(var)
+		current_file_in = io.open(var)
 	end
 
-	return current_file
+	return current_file_in
 end
 
 function io.type(var)
@@ -152,6 +152,8 @@ function io.type(var)
 
 	return nil
 end
+
+local current_file_out = io.stdout
 
 function io.write(...)
 	local str = ""
@@ -166,15 +168,15 @@ function io.write(...)
 end
 
 function io.read(...)
-	return current_file:read(...)
+	return current_file_out:read(...)
 end
 
 function io.lines(...)
-	return current_file:lines(...)
+	return current_file_out:lines(...)
 end
 
 function io.flush(...)
-	return current_file:flush(...)
+--	return current_file_out:flush(...)
 end
 
 function io.popen(...)
@@ -182,7 +184,7 @@ function io.popen(...)
 end
 
 function io.close(...)
-	return current_file:close(...)
+	return current_file_out:close(...)
 end
 
 function io.tmpfile(...)

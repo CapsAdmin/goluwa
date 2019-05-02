@@ -272,7 +272,7 @@ do
 end
 
 
-local _, ffi = pcall(require, "ffi")
+local ffi = desire("ffi")
 
 if ffi then
 	do

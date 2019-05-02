@@ -1,5 +1,5 @@
 
-local ffi = require("ffi")
+local ffi = desire("ffi")
 local TMPL = prototype.CreateTemplate("array")
 
 TMPL:GetSet("Length", 0)

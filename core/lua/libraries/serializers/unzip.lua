@@ -1,4 +1,6 @@
-local ffi = require("ffi")
+local ffi = desire("ffi")
+
+if not ffi then return end
 
 local serializer = ...
 

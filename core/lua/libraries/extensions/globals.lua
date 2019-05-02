@@ -221,7 +221,7 @@ do -- logging
 				repl.StyledWrite(line)
 			else
 				io.write(line)
-				io.stdout:flush()
+				io.flush()
 			end
 		end
 	end

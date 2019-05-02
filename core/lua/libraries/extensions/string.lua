@@ -583,7 +583,7 @@ function string.getchar(self, pos)
 	return self:sub(pos, pos)
 end
 
-if desire("ffi") then
+if pcall(require, "ffi") then
     local ffi = require "ffi"
     local bit = require "bit"
     local band = bit.band

@@ -1,5 +1,4 @@
 local system = ... or _G.system
-local ffi = require("ffi")
 
 function system.OpenURL(url)
 	gmod.gui.OpenURL(url)

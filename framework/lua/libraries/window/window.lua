@@ -176,6 +176,8 @@ do
 		runfile("implementations/sdl2.lua", META)
 	elseif WINDOW_IMPLEMENTATION == "glfw" then
 		runfile("implementations/glfw.lua", META)
+	elseif WINDOW_IMPLEMENTATION == "gmod" then
+		runfile("implementations/gmod.lua", META)
 	end
 
 	function window.CreateWindow(width, height, title, flags)
