@@ -40,6 +40,14 @@ function vfs.FetchBniariesForAddon(addon, callback)
 			local to = bin_dir .. v.path:sub(#relative_bin_dir + 1)
 			if not vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) and vfs.IsFile(to) then
 				llog("%q already exists before a fetch was ran, skipping", to:sub(#e.ROOT_FOLDER+1))
+				done = done - 1
+
+				if done == 0 then
+					if callback and not vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) then
+						vfs.Write("shared/framework_binaries_downloaded_" .. signature, "")
+						callback()
+					end
+				end
 			else
 				resource.Download(v.url, nil,nil, true):Then(function(file_path, modified)
 					local name = vfs.GetFileNameFromPath(v.path)
@@ -47,9 +55,9 @@ function vfs.FetchBniariesForAddon(addon, callback)
 					if modified or not vfs.IsFile(to) then
 						local ok = vfs.CopyFileFileOnBoot(file_path, to)
 						if ok == "deferred" then
-							llog("%q will be replaced after restart", to:sub(#e.ROOT_FOLDER+1))
+							llog("%q will be replaced after restart", to:sub(#e.ROOT_FOLDER+1), " ", done, " downloads left")
 						else
-							llog("%q was added", to:sub(#e.ROOT_FOLDER+1))
+							llog("%q was added", to:sub(#e.ROOT_FOLDER+1), " ", done, " downloads left")
 						end
 					end
 
