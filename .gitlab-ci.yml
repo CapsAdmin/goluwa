@@ -1,0 +1,6 @@
+image: debian:stable
+
+test:
+  stage: test
+  script:
+    - ./goluwa RUN_TEST
