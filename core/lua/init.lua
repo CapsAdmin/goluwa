@@ -220,10 +220,10 @@ http = runfile("lua/libraries/http.lua")
 
 if TEST then
 	test = runfile("lua/libraries/test.lua")
+else
+	local ok, err = pcall(repl.Start)
+	if not ok then logn(err) end
 end
-
-local ok, err = pcall(repl.Start)
-if not ok then logn(err) end
 
 -- tries to load all addons
 -- some might not load depending on its info.lua file.
