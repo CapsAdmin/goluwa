@@ -34,7 +34,7 @@ end
 
 do
     local tls = desire("libtls")
-    local ffi = require("ffi")
+    local ffi = desire("ffi")
 
     function META:SetupTLS()
         if self.tls_setup then return end
