@@ -161,7 +161,11 @@ AlertBox() {
 	if [ "$OS" = osx ]; then
 		osascript -e "tell app \"System Events\" to display dialog \"$msg\" with title \"$title\""
 	else
-		echo "$msg" | xmessage -nearmouse -title "$title" -file -
+		if [ -x "$(command -v xmessage)" ]; then
+			echo "$msg" | xmessage -nearmouse -title "$title" -file -
+		else
+			echo "$title: $msg"
+		fi
 	fi
 }
 
