@@ -395,7 +395,7 @@ if ffi then
 		return unpack(res, 2)
 	end
 
-	local function handle_windows_symbols(path, clib, err, ...)
+	local function handle_windows_symbols(path, clib)
 		if WINDOWS and clib then
 			return setmetatable({}, {
 				__index = function(s, k)
@@ -414,7 +414,7 @@ if ffi then
 				__newindex = clib,
 			})
 		end
-		return clib, err, ...
+		return clib
 	end
 
 	local function indent_error(str)
@@ -432,62 +432,64 @@ if ffi then
 		return str
 	end
 
+	local function load(path, full_path)
+		-- look first in the vfs' bin directories
+		serializer.StoreInFile("luadata", "shared/library_crashes.lua", full_path, true)
+		local ok, clib = pcall(_OLD_G.ffi.load, full_path)
+		serializer.StoreInFile("luadata", "shared/library_crashes.lua", full_path, nil)
+		
+		if ok then
+			return handle_windows_symbols(path, clib)
+		end
+		
+		return nil, clib .. "\n" .. utility.GetLikelyLibraryDependenciesFormatted(full_path)
+	end
+
 	-- make ffi.load search using our file system
 	function vfs.FFILoadLibrary(path, ...)
-		local args = {}
-		local found
+		local errors = {}
 
 		if vfs and vfs and vfs.PushWorkingDirectory then
-			local where = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
-			found = vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})
-			for _, full_path in ipairs(found) do
-				-- look first in the vfs' bin directories
-				vfs.PushWorkingDirectory(full_path:match("(.+/)"))
-
+			local files = vfs.GetFiles({
+					path = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/", 
+					filter = path, 
+					filter_plain = true, 
+					full_path = true
+			})
+			for _, full_path in ipairs(files) do
 				if serializer.LookupInFile("luadata", "shared/library_crashes.lua", full_path) then
 					logn("ffi.load: refusing to load ", full_path, " as it crashed last time")
 					break
 				end
-
-				serializer.StoreInFile("luadata", "shared/library_crashes.lua", full_path, true)
-				args = {pcall(_OLD_G.ffi.load, full_path, ...)}
-				serializer.StoreInFile("luadata", "shared/library_crashes.lua", full_path, nil)
-				vfs.PopWorkingDirectory()
-
-				if args[1] then
-					return handle_windows_symbols(path, select(2, unpack(args)))
+				
+				do
+					vfs.PushWorkingDirectory(full_path:match("(.+/)"))
+					local clib, err = load(path, full_path)
+					vfs.PopWorkingDirectory()
+					if clib then
+						return clib
+					end
+					table.insert(errors, err)
 				end
 
-				local deps = utility.GetLikelyLibraryDependenciesFormatted(full_path)
-				if deps then
-					args[2] = args[2] .. "\n" .. deps
-				end
-
-				-- if not try the default OS specific dll directories
-				args = {pcall(_OLD_G.ffi.load, full_path, ...)}
-				if args[1] then
-					return handle_windows_symbols(path, select(2, unpack(args)))
-				end
-
-				local deps = utility.GetLikelyLibraryDependenciesFormatted(full_path)
-				if deps then
-					args[2] = args[2] .. "\n" .. deps
+				do
+					local clib, err = load(path, full_path)
+					if clib then
+						return clib
+					end
+					table.insert(errors, err)
 				end
 			end
-
-			if args[2] then
-				error(indent_error(args[2]), 2)
-			end
 		end
 
-		if not found or not found[1] then
-			args = {pcall(_OLD_G.ffi.load, path, ...)}
-		end
+		local ok, clib = pcall(_OLD_G.ffi.load, path)
 
-		if args[1] then
-			return handle_windows_symbols(path, args[2])
+		if ok then
+			return handle_windows_symbols(path, clib)
 		end
+		
+		table.insert(errors, clib)
 
-		return args[1], args[2]
+		return nil, table.concat(errors, "\n")
 	end
 end
