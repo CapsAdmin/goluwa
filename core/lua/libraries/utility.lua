@@ -139,6 +139,22 @@ function utility.GetLikelyLibraryDependencies(path)
 		end
 	end
 
+	if system.OSCommandExists("ldd") then 
+		local p = io.popen("ldd " .. path)
+		local msg = p:read("*all")
+		print(msg)
+		p:close()
+		local missing_glib = msg:match("(GLIBC_%S- not found)")
+		if missing_glib then
+			for k,v in pairs(found) do
+				if v.name:find("libc.so", nil, true) then
+					found[k].status = missing_glib
+					break
+				end
+			end
+		end
+	end
+
 	return {name = original, dependencies = found}
 end
 
