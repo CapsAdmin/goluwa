@@ -21,6 +21,9 @@ if [ "$OS" = linux ] && [ ! -t 1 ]; then
 	RAN_FROM_FILEBROWSER=0
 fi
 
+#NYI
+RAN_FROM_FILEBROWSER=0
+
 Main() {
 	GetLua "$URL" "$BINARY_DIR" "$BINARY_NAME"
     #CompileLua "https://github.com/LuaJIT/LuaJIT/archive/v2.1.tar.gz" "$BINARY_DIR" "$BINARY_NAME"
