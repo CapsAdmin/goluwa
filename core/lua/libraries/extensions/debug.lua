@@ -36,6 +36,20 @@ do
 	end
 end
 
+function debug.getname(func)
+	local source = debug.getsource(func)
+
+	local name, args = source:match("^(%S+)%s-=%s-function%s-(%b())") 
+	
+	if name then
+		name = name .. args
+	else
+		name = source:match("local%s-function%s-(%S+%b())") or source:match("^%s-function%s-(%S+%b())")
+	end
+
+	return name or "*anonymous*"
+end
+
 function debug.getsource(func)
 	local info = debug.getinfo(func)
 	local src = vfs.Read(e.ROOT_FOLDER .. "/" .. info.source:sub(2))
@@ -81,6 +95,13 @@ function debug.getprettysource(level, append_line, full_folder)
 
 			if pretty_source ~= info.source then
 				pretty_source = pretty_source .. "...(+"..#info.source - #pretty_source.." chars)"
+			end
+
+			if pretty_source == "=[C]" and jit.vmdef then
+				local num = tonumber(tostring(info.func):match("#(%d+)"))
+				if num then
+					pretty_source = jit.vmdef.ffnames[num]
+				end
 			end
 		end
 	end

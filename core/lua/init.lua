@@ -1,6 +1,20 @@
+_G.TEST = (os.getenv("GOLUWA_ARG_LINE") or ""):find("RUN_TEST", nil, true)
+
+if TEST then
+	jit.off(true, true)
+	local call_count = {}
+	debug.sethook(function(event, line) 
+		if event == "call" then
+			local info = debug.getinfo(2, "f")
+			call_count[info.func] = (call_count[info.func] or 0) + 1
+		end
+	end, "c")
+	_G.FUNC_CALLS = call_count
+end
+
 local start_time = os.clock()
 
-if (os.getenv("GOLUWA_ARG_LINE") or ""):find("--verbose", nil, true) then
+if (os.getenv("GOLUWA_ARG_LINE") or ""):find("--verbose", nil, true) or TEST then
 	_G.VERBOSE = true
 end
 
@@ -204,6 +218,10 @@ resource = runfile("lua/libraries/resource.lua") -- used for downloading resourc
 sockets = runfile("lua/libraries/sockets/sockets.lua")
 http = runfile("lua/libraries/http.lua")
 
+if TEST then
+	test = runfile("lua/libraries/test.lua")
+end
+
 local ok, err = pcall(repl.Start)
 if not ok then logn(err) end
 
@@ -274,6 +292,66 @@ vfs.InitAddons(function()
 end)
 
 vfs.FetchBniariesForAddon("core")
+
+if TEST then
+	debug.sethook()
+
+	local list = {}
+	
+	for func, count in pairs(FUNC_CALLS) do
+		table.insert(list, {func = func, count = count})
+	end
+
+	table.sort(list, function(a, b) return a.count > b.count end)
+
+	local max = 30
+	logn("========= TOP "..max.." CALLED FUNCTIONS =========")
+	for i = 1, max do
+		logn(debug.getprettysource(list[i].func, true), " = ", list[i].count)
+	end
+	logn("===========================================")
+
+
+	logn("===============RUNNING TESTS===============")
+	for _, path in ipairs(vfs.GetFilesRecursive("lua/test/")) do
+		test.start(path)
+		runfile(path)
+		test.stop()
+	end
+	logn("===========================================")
+
+	if test.fail then
+		system.ShutDown(1)
+	end
+
+	do
+		local lua_time = os.clock() + 0.5
+		local system_time = system.GetTime() + 0.25
+		local called = false
+
+		event.AddListener("Update", "test", function() 
+			called = true
+
+			if system_time < system.GetTime() then
+				system.ShutDown(0)
+				return e.EVENT_DESTROY
+			end
+
+			if lua_time < os.clock() then
+				logn("system.GetTime() does not work?: ", system.GetTime())
+				system.ShutDown(1)
+				return e.EVENT_DESTROY
+			end
+		end)
+
+		event.Call("Update", system.GetFrameTime())
+
+		if not called then
+			logn("Update function could not be called for some reason")
+			system.ShutDown(1)
+		end
+	end
+end
 
 local last_time = 0
 local i = 0

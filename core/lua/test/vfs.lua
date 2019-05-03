@@ -1,0 +1,5 @@
+test(vfs.Write, "data/test.txt", "foo").expect(3)
+test(R, "data/test.txt").expect(e.USERDATA_FOLDER .. "test.txt")
+test(vfs.Read, "data/test.txt").expect("foo")
+test(vfs.Delete, "data/test.txt").expect(true)
+test(vfs.Read, "data/test.txt").expect_compare(nil, function(arg) return arg:startswith("unable to open file:") end)

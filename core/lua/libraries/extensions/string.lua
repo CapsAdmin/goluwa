@@ -20,6 +20,8 @@ do
 end
 
 function string.indent(str, count)
+	count = count or 1
+
 	local tbl = str:split("\n")
 	for i, line in ipairs(tbl) do
 		tbl[i] = ("\t"):rep(count) .. line
@@ -66,7 +68,6 @@ function string.haswhitespace(str)
 		end
 	end
 end
-
 
 function string.upperchar(self, pos)
 	return self:sub(0, pos-1) .. self:sub(pos, pos):upper() .. self:sub(pos + 1)

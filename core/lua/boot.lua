@@ -600,6 +600,7 @@ if not os.getenv("GOLUWA_SKIP_LIBTLS") then
 end
 
 os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
+local ret, msg, code
 
 if UNIX then
 
@@ -639,13 +640,15 @@ if UNIX then
 			else
 				print("valgrind is not installed")
 			end
-			os.execute("xterm -hold -e " .. gdb)
+			ret, msg, code = os.execute("xterm -hold -e " .. gdb)
 		else
-			os.execute(gdb)
+			ret, msg, code = os.execute(gdb)
 		end
 	else
-		os.exit(os.execute("./" .. BINARY_DIR .. "/"..executable.." " .. initlua))
+		ret, msg, code = os.execute("./" .. BINARY_DIR .. "/"..executable.." " .. initlua)
 	end
 else
-	os.exit(os.execute(winpath(BINARY_DIR .. "\\"..executable..".exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua)))
+	ret, msg, code = os.execute(winpath(BINARY_DIR .. "\\"..executable..".exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua))
 end
+
+os.exit(code)

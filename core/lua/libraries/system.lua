@@ -120,6 +120,7 @@ do
 			logn("shutting down with code ", code)
 		end
 		system.run = code
+		os.exitcode = code
 	end
 
 	local old = os.exit
