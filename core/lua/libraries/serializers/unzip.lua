@@ -61,10 +61,12 @@ do
 
 	local function gen_huffman_table(init)
 		local t = {}
+		local ti = 1
 		for i=1, #init-2, 2 do
 			local firstval, nbits, nextval = init[i], init[i+1], init[i+2]
 			for val = firstval, nextval-1 do
-				table.insert(t, {val = val, nbits = nbits})
+				t[ti] = {val = val, nbits = nbits}
+				ti = ti + 1 
 			end
 		end
 		table.sort(t, sort_huffman)
