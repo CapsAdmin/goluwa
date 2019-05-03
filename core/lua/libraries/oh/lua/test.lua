@@ -2,8 +2,9 @@ local oh = ... or _G.oh
 
 RELOAD = nil
 
-local function transpile(ast)
-    local self = runfile("lua_code_emitter.lua")({preserve_whitespace = true})
+local function transpile(ast, what)
+    what = what or "lua"
+    local self = runfile(what.."_code_emitter.lua")({preserve_whitespace = true})
     local res = self:BuildCode(ast)
     local ok, err = loadstring(res)
     if not ok then
@@ -123,13 +124,13 @@ local function transpile_fail_check(code)
 end
 
 
-local function transpile_ok(code, path)
+local function transpile_ok(code, path, lang)
     local tokens, ast, new_code, lua_err
 
     local ok = xpcall(function()
         tokens = tokenize(code)
         ast = parse(tokens, code)
-        new_code, lua_err = transpile(ast)
+        new_code, lua_err = transpile(ast, lang)
     end, function(err)
         print("===================================")
         print(debug.traceback(err))
@@ -139,6 +140,32 @@ local function transpile_ok(code, path)
 
     if ok then
         --log(new_code, " - OK!\n")
+        return new_code, lua_err
+    end
+end
+
+
+
+local function run_js(code, path)
+    local tokens, ast, new_code, lua_err
+
+    local ok = xpcall(function()
+        tokens = tokenize(code)
+        ast = parse(tokens, code)
+        new_code, lua_err = transpile(ast, "js")
+    end, function(err)
+        print("===================================")
+        print(debug.traceback(err))
+        print(path or code)
+        print("===================================")
+    end)
+
+    if ok then
+
+        vfs.Write("temp/test.js", new_code)
+        print(new_code)
+        repl.OSExecute("node " .. R"temp/test.js")
+
         return new_code, lua_err
     end
 end
@@ -252,6 +279,98 @@ end
 
 
 --utility.StartMonitorCoverage("oh/lua/parser.lua")
+
+
+run_js([[
+local print = console.log
+local pairs = Object.entries
+
+local function main(a,b,c) 
+    print('hello world')
+
+    for i = 1, 10 do
+        print(i)
+    end
+
+    local tbl = {
+        a = 1,
+        b = 2,
+        c = {
+            foo = 1,
+            bar = function() print("!!!") end,
+        }
+    }
+    tbl.foo = 1
+    print(tbl.foo)
+    tbl.c.bar()
+
+    for k,v in pairs(tbl) do
+        print(k,v)
+    end
+
+    local arr = {1,2,3,4, "foo", 1}
+    arr.push(1)
+    print(arr)
+
+    local arr2 = {} // hello 
+    /* afafdawf 
+    
+    */
+    
+    local myvar = 123
+    local foo1 = {}
+    Object.defineProperty(foo1, "test", { 
+        get = function() return myvar end,
+        set = function(v) print(v, "Set"); myvar = v end,
+    })
+    print(foo1.test)
+    foo1.test = 1
+
+    local handler = {
+        get = function(original_self, key, proxy_self)
+            if original_self[key] then
+                return original_self[key]
+            end
+
+            return "key does not exist"
+        end,
+        
+        set = function(original_self, key, value, proxy_self) 
+            original_self[key] = value
+        end,
+        
+        apply = function(original_self, this_arg, arg_list) 
+            print(arg_list)
+        end,
+    }
+
+    local o = function() end
+    o.reason = "no reason"
+    o.code = "a code"
+
+    local p = new Proxy(o, handler)
+
+    print(p.reason)
+    print(p.code)
+    print(p.beer)
+    p(1,2,3)
+
+    p.LOL = true
+
+    if false == 0 and true == true then
+        print("this shouldn't be visible")
+    elseif true == 1 then
+
+    else
+
+    end
+end 
+
+main()
+
+]], nil, "js")
+
+do return end
 
 print("============TEST============")
 
