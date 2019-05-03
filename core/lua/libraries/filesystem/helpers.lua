@@ -37,7 +37,16 @@ do
 	vfs.GetWorkingDirectory = fs.getcd
 
 	if utility.MakePushPopFunction then
-		utility.MakePushPopFunction(vfs, "WorkingDirectory")
+		local old
+		utility.MakePushPopFunction(vfs, "WorkingDirectory", function(path) 
+			old = os.getenv("LD_LIBRARY_PATH")
+			os.setenv("LD_LIBRARY_PATH", (old and old .. ":.") or ".")
+			vfs.SetWorkingDirectory(path) 
+		end, function() 
+			return vfs.GetWorkingDirectory() 
+		end, function()
+			os.setenv(old)
+		end)
 	end
 end
 
