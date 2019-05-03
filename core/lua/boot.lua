@@ -600,6 +600,8 @@ if not os.getenv("GOLUWA_SKIP_LIBTLS") then
 end
 
 os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
+os.setenv("LD_LIBRARY_PATH", ".")
+
 local ret, msg, code
 
 if UNIX then
