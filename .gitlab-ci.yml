@@ -1,9 +1,21 @@
 image: ubuntu:18.04
 
 before_script:
-  - apt-get update -qq && apt-get install -y -qq wget
+  - apt-get update -qq && apt-get install -y -qq wget git
 
 test:
   stage: test
   script:
     - ./goluwa RUN_TEST
+
+build-wiki:
+  stage: build
+  script:
+    - git clone https://gitlab-ci-token:${CI_BUILD_TOKEN}@gitlab.com/CapsAdmin/goluwa.wiki.git
+    - cd goluwa.wiki
+    - echo "test add text" > home.md
+    - git add home.md
+    - git config --global user.email "wikibuilder@gitlab.com"
+    - git config --global user.name "CI"
+    - git commit -m "test update home.md"
+    - git push https://gitlab-ci-token:${GITLAB_API_TOKEN}@gitlab.com/CapsAdmin/goluwa.wiki.git
