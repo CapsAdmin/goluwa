@@ -1,8 +1,8 @@
-local test = {}
+local test = _G.test or {}
 test.fail = false
 
 local failed = false
-local function fail(what, reason)
+function test.fail(what, reason)
     if not failed then
         logn(" - FAIL")
     end
@@ -11,9 +11,9 @@ local function fail(what, reason)
         reason = "\n" .. reason
         reason = string.indent(reason, 1)
     end
+
     logf("%s: %s\n", what, reason)
     failed = true
-    test.fail = true
 end
 
 function test.start(what)
@@ -28,7 +28,7 @@ end
 
 function test.stop()
     if failed then
-        
+
     else
         logn(" - OK")
     end
@@ -37,12 +37,12 @@ end
 function test.test(func, ...)
     local ret = table.pack(pcall(func, ...))
     if not ret[1] then
-        fail(debug.getname(func), ret[2])
+        test.fail(debug.getname(func), ret[2])
         return
     end
 
     ret = table.pack(unpack(ret, 2))
-    
+
     return {
         expect = function(...)
             local exp = table.pack(...)
@@ -54,9 +54,9 @@ function test.test(func, ...)
                     msg = msg .. i .. ": expected " .. tostring(ret[i]) .. " got " .. tostring(exp[i]) .. "\n"
                 end
             end
-            
+
             if msg ~= "" then
-                fail(debug.getname(func), msg)
+                test.fail(debug.getname(func), msg)
             end
         end,
 
@@ -67,7 +67,7 @@ function test.test(func, ...)
 
             for i = 1, exp.n do
                 local b = ret[i] == exp[i]
-                
+
                 if type(exp[i]) == "function" then
                     b = exp[i](ret[i])
                 end
@@ -76,12 +76,38 @@ function test.test(func, ...)
                     msg = msg .. i .. ": expected " .. tostring(ret[i]) .. " got " .. tostring(exp[i]) .. "\n"
                 end
             end
-            
+
             if msg ~= "" then
-                fail(debug.getname(func), msg)
+                test.fail(debug.getname(func), msg)
             end
         end,
     }
+end
+
+do
+    local meta = {}
+    meta.__index = meta
+
+    function meta:fail(what, reason)
+        test.fail(what, reason)
+    end
+
+    function meta:expect(what, a, b)
+        if a ~= b then
+            self:fail(what, "expected " .. a .. " got " .. b)
+        else
+            self.expect_count = self.expect_count - 1
+            print(self.expect_count)
+        end
+
+        if self.expect_count <= 0 then
+            self.fail = function() end
+        end
+    end
+
+    function test.create()
+        return setmetatable({expect_count = 1}, meta)
+    end
 end
 
 setmetatable(test, {

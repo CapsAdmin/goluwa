@@ -3,7 +3,7 @@ _G.TEST = (os.getenv("GOLUWA_ARG_LINE") or ""):find("RUN_TEST", nil, true)
 if TEST then
 	jit.off(true, true)
 	local call_count = {}
-	debug.sethook(function(event, line) 
+	debug.sethook(function(event, line)
 		if event == "call" then
 			local info = debug.getinfo(2, "f")
 			call_count[info.func] = (call_count[info.func] or 0) + 1
@@ -217,10 +217,9 @@ callback = runfile("lua/libraries/callback.lua") -- promise-like library
 resource = runfile("lua/libraries/resource.lua") -- used for downloading resources with resource.Download("http://..."):Then(function(path) end)
 sockets = runfile("lua/libraries/sockets/sockets.lua")
 http = runfile("lua/libraries/http.lua")
+test = runfile("lua/libraries/test.lua")
 
-if TEST then
-	test = runfile("lua/libraries/test.lua")
-else
+if not TEST then
 	local ok, err = pcall(repl.Start)
 	if not ok then logn(err) end
 end
@@ -297,7 +296,7 @@ if TEST then
 	debug.sethook()
 
 	local list = {}
-	
+
 	for func, count in pairs(FUNC_CALLS) do
 		table.insert(list, {func = func, count = count})
 	end
@@ -329,7 +328,7 @@ if TEST then
 		local system_time = system.GetTime() + 0.25
 		local called = false
 
-		event.AddListener("Update", "test", function() 
+		event.AddListener("Update", "test", function()
 			called = true
 
 			if system_time < system.GetTime() then

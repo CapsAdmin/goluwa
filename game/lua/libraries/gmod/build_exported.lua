@@ -1,8 +1,8 @@
-// copy this script to gmod
-// lua_openscript_cl build_exported.lua
-// lua_openscript build_exported.lua
-// copy data/cl_exported.lua to this script's directory
-// copy data/sv_exported.lua to this script's directory
+-- copy this script to gmod
+-- lua_openscript_cl build_exported.lua
+-- lua_openscript build_exported.lua
+-- copy data/cl_exported.lua to this script's directory
+-- copy data/sv_exported.lua to this script's directory
 
 local exported = {}
 exported.functions = {}
@@ -66,7 +66,7 @@ local blacklist = {
 
 -- functions
 for key, val in pairs(_G) do
-	if key == "_G" then continue end
+	if key == "_G" then goto _continue end
 	if isfunction(val) then
 		exported.globals[key] = get_func_type(val)
 	elseif istable(val) and not blacklist[key] then
@@ -84,6 +84,7 @@ for key, val in pairs(_G) do
 			end
 		end
 	end
+	::_continue::
 end
 
 local blacklist = {
