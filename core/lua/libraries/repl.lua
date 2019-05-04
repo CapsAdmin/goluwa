@@ -276,21 +276,11 @@ end
 
 function repl.InputLua(str)
 	local ok, err = pcall(function()
-	local func, err = loadstring(str)
-	if func then
-		local func, res = system.pcall(func)
-		if not func then
-			--res = res:match("^.-:%d+:%s+(.+)")
-
-			set_color("error")
-			logn(res)
-			set_color("letter")
-		end
-	else
 		local tokenizer = oh.lua.Tokenizer(str)
 		local tokens = tokenizer:GetTokens()
 		local parser = oh.lua.Parser()
 		local ast = parser:BuildAST(tokens)
+		local code = oh.lua.ASTToCode(ast)
 
 		local function print_errors(errors, only_first)
 			for _, v in ipairs(errors) do
@@ -305,14 +295,21 @@ function repl.InputLua(str)
 
 		print_errors(tokenizer.errors)
 		print_errors(parser.errors, true)
-		--print(oh.GetErrorsFormatted(parser.errors, str, ""))
 
+		local func = assert(loadstring(str))
 
-		--err = err:match("^.-:%d+:%s+(.+)")
-		--set_color("error")
-		--repl.Write(err .. "\n")
-		--set_color("letter")
-	end
+		if func then
+			local func, res = system.pcall(func)
+			if not func then
+				--res = res:match("^.-:%d+:%s+(.+)")
+
+				set_color("error")
+				logn(res)
+				set_color("letter")
+			end
+		else
+			print(err)
+		end
 	end)
 	if not ok then repl.Write(err .. "\n") end
 end
