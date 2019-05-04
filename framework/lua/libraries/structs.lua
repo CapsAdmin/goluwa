@@ -143,7 +143,7 @@ function structs.Register(META)
 	if META.Constructor then
 		structs[META.ClassName] = function() local self = ctor() self:Constructor() return self end
 	else
-		structs[META.ClassName] = ctor
+		structs[META.ClassName] = function(...) return ctor(...) end
 	end
 
 	_G[META.ClassName] = structs[META.ClassName]
