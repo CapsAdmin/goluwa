@@ -35,7 +35,7 @@ local function read_list(base_url, sounds)
 	table.merge(chatsounds.list, list, true)
 	chatsounds.GenerateAutocomplete()
 
-	llog("loaded sounds from ", base_url)
+	--llog("loaded sounds from ", base_url)
 end
 
 function chatsounds.BuildFromGithub(repo, location)
@@ -44,12 +44,12 @@ function chatsounds.BuildFromGithub(repo, location)
 	local base_url = "https://raw.githubusercontent.com/" .. repo .. "/master/" .. location .. "/"
 
 	resource.Download(base_url .. "list.msgpack", nil, nil, true):Then(function(path)
-		 llog("found list.msgpack for ", location)
+		--llog("found list.msgpack for ", location)
 		local val = vfs.Read(path)
 		read_list(base_url, val)
 	end):Catch(function(reason)
-		 llog(repo, ": unable to find list.msgpack from \"", location, "\"")
-		 llog(repo, ": parsing with github api instead (slow)")
+		llog(repo, ": unable to find list.msgpack from \"", location, "\"")
+		llog(repo, ": parsing with github api instead (slow)")
 
 		local url = "https://api.github.com/repos/" .. repo .. "/git/trees/master?recursive=1"
 
