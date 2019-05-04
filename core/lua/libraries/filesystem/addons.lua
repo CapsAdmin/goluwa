@@ -14,8 +14,11 @@ end)
 
 function vfs.FetchBniariesForAddon(addon, callback)
 	local signature = jit.os:lower() .. "_" .. jit.arch:lower()
-	if callback and vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) then
-		callback()
+	if vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) then
+		if callback then
+			callback()
+		end
+		if CLI then return end
 	end
 	http.Download("https://gitlab.com/api/v4/projects/CapsAdmin%2Fgoluwa-binaries/repository/tree?recursive=1&per_page=99999"):Then(function(content)
 		local base_url = "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/"

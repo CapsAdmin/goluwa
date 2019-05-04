@@ -182,6 +182,7 @@ end
 
 function META:OnRemove()
 	tasks.created[self] = nil
+	tasks.Update()
 end
 
 META:Register()
