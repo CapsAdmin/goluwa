@@ -1,9 +1,9 @@
 local test = _G.test or {}
-test.fail = false
 
-local failed = false
+test.failed = false
+
 function test.fail(what, reason)
-    if not failed then
+    if not test.failed then
         logn(" - FAIL")
     end
 
@@ -13,7 +13,7 @@ function test.fail(what, reason)
     end
 
     logf("%s: %s\n", what, reason)
-    failed = true
+    test.failed = true
 end
 
 function test.start(what)
@@ -23,11 +23,11 @@ function test.start(what)
     end
 
     log("testing ", what)
-    failed = false
+    test.failed = false
 end
 
 function test.stop()
-    if failed then
+    if test.failed then
 
     else
         logn(" - OK")

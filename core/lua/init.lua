@@ -312,14 +312,18 @@ if TEST then
 
 
 	logn("===============RUNNING TESTS===============")
+	local failed = false
 	for _, path in ipairs(vfs.GetFilesRecursive("lua/test/")) do
 		test.start(path)
 		runfile(path)
 		test.stop()
+		if test.failed then
+			failed = true
+		end
 	end
 	logn("===========================================")
 
-	if test.fail then
+	if failed then
 		system.ShutDown(1)
 	end
 
