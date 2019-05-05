@@ -1,3 +1,5 @@
+[![pipeline status](https://gitlab.com/CapsAdmin/goluwa/badges/develop/pipeline.svg)](https://gitlab.com/CapsAdmin/goluwa/commits/develop)
+
 # About
 
 Goluwa is a game engine, framework, a collection of utilities and experiments written in [LuaJIT](http://luajit.org/) leveraging FFI.
