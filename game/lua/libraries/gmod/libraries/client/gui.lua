@@ -417,6 +417,10 @@ do
 		end)
 	end
 
+	function META:GetClassName()
+		return self.ClassName
+	end	
+
 	function META:IsMarkedForDeletion()
 		return self.__obj.marked_for_deletion
 	end

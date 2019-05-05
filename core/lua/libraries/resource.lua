@@ -36,7 +36,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 
 		--llog("checking if ", etag_path_override or from, " has been modified.")
 
-		sockets.Request({
+		return sockets.Request({
 			method = "HEAD",
 			url = from,
 			error_callback = function(reason)
@@ -71,8 +71,6 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 				end
 			end,
 		})
-
-		return
 	end
 
 	local file
@@ -177,7 +175,8 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 	-- this does not work very well if a resource provider is added during download
 
 	for _, provider in ipairs(resource.providers) do
-		download(
+		local client
+		client = download(
 			provider .. path,
 			path,
 			callback,
@@ -191,7 +190,7 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 				for _, other_provider in ipairs(resource.providers) do
 					if provider ~= other_provider then
 						sockets.StopDownload(other_provider .. path)
-						event.Call("DownloadStop", path, nil, "download found in " .. provider)
+						event.Call("DownloadStop", client, path, nil, "download found in " .. provider)
 					end
 				end
 			end,

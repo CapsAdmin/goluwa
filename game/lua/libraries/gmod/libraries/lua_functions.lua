@@ -137,6 +137,16 @@ function gine.env.RunString(code, chunkname, handle_error)
 	local res, err = loadstring(code, "@" .. chunkname)
 
 	if handle_error and not res then ErrorNoHalt(chunkname) end
-debug.trace()
+
 	return res or err
+end
+
+function gine.env.ProtectedCall(...)
+	local ret = table.pack(pcall(...))
+
+	if not ret[1] then
+		gine.env.ErrorNoHalt(ret[2])
+	end
+
+	return unpack(ret)
 end

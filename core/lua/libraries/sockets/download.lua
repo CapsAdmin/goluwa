@@ -188,7 +188,7 @@ function sockets.DownloadToPath(url, path, on_finish, on_error, on_progress, on_
 
     function http:OnReceiveStatus(status, reason)
         if status:startswith("4") then
-            event.Call("DownloadStop", url, nil, "recevied code " .. status)
+            event.Call("DownloadStop", client, url, nil, "recevied code " .. status)
             return false
         else
             event.Call("DownloadCodeReceived", url, tonumber(status))
@@ -196,7 +196,7 @@ function sockets.DownloadToPath(url, path, on_finish, on_error, on_progress, on_
     end
 
     function http:WriteBody(chunk)
-        event.Call("DownloadChunkReceived", url, chunk)
+        event.Call("DownloadChunkReceived", self, url, chunk)
         file:Write(chunk)
         written_size = written_size + #chunk
         on_progress(tonumber(file:GetPosition()), tonumber(total_size), http.friendly_name)
@@ -237,7 +237,7 @@ function sockets.DownloadToPath(url, path, on_finish, on_error, on_progress, on_
 
         on_header(header)
 
-        event.Call("DownloadHeaderReceived", url, header)
+        event.Call("DownloadHeaderReceived", self, url, header)
     end
 
     function http:OnReceiveBody(body)
@@ -247,7 +247,7 @@ function sockets.DownloadToPath(url, path, on_finish, on_error, on_progress, on_
 
         table.removevalue(sockets.active_downloads, lookup)
 
-        event.Call("DownloadStop", url, body)
+        event.Call("DownloadStop", client, url, body)
     end
 
     function http:OnError(reason)
@@ -272,7 +272,6 @@ end
 
 if RELOAD then
     local function download(url, on_finish)
-        event.Call("DownloadStart", url)
         local client
         client = sockets.Download(
             url,
@@ -297,6 +296,7 @@ if RELOAD then
             end
         )
         client.url = url
+        event.Call("DownloadStart", client, url)
     end
 
     download("https://upload.wikimedia.org/wikipedia/commons/c/cc/ESC_large_ISS022_ISS022-E-11387-edit_01.JPG")

@@ -950,7 +950,7 @@ ffi.cdef[[
 	};
 ]]
 
-local sqlite3 = ffi.load("sqlite3.so.0")
+local sqlite3 = jit.os == "Windows" and ffi.load("sqlite3") or ffi.load("sqlite3.so.0")
 local new_db_ptr = ffi.typeof("sqlite3*[1]")
 local new_stmt_ptr = ffi.typeof("sqlite3_stmt*[1]")
 local new_exec_ptr = ffi.typeof("int (*)(void*,int,char**,char**)")

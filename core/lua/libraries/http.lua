@@ -118,6 +118,7 @@ do
         client.OnReceiveBody = function(_, body)
             tbl.callback({
                 body = client.Body,
+                content = client.Body,
                 header = client.Header,
                 code = tonumber(client.Code)
             })

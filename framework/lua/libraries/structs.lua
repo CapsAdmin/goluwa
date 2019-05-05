@@ -16,7 +16,7 @@ end
 structs.IsType = istype
 
 structs.type_lookup = structs.type_lookup or {}
-if kffi then
+if ffi then
 	local tostring = tostring
 	local typeof = ffi.typeof
 
@@ -26,7 +26,7 @@ if kffi then
 else
 	function structs.GetStructMeta(obj)
 		local meta = getmetatable(obj)
-		if meta and meta.ClassName then
+		if meta and hasindex(meta) and meta.ClassName then
 			return structs.type_lookup[meta.ClassName]
 		end
 	end
