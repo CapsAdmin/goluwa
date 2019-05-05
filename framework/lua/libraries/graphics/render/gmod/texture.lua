@@ -102,6 +102,10 @@ function META:SetPath(path, gmod_path)
 			self.Size = Vec2(self.width, self.height)
 
 			self.loading = false
+		end):Catch(function(reason)
+			logf("[%s] unable to find %s: %s\n", self, path, reason)
+			self.Loading = false
+			--self:MakeError(reason)
 		end)
 	end
 end
