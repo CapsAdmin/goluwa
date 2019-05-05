@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local CLIB = ffi.os == "Windows" and assert(ffi.load("libtls-15")) or assert(ffi.load("tls"))
+local CLIB = assert(ffi.load("tls"))
 ffi.cdef([[struct tls {};
 struct tls_config {};
 const char*(tls_peer_ocsp_url)(struct tls*);
