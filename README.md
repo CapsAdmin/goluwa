@@ -1,9 +1,6 @@
-[![pipeline status](https://gitlab.com/CapsAdmin/goluwa/badges/develop/pipeline.svg)](https://gitlab.com/CapsAdmin/goluwa/commits/develop)
-
-# About
+# [Goluwa](https://capsadm.in/goluwa) &middot; [![GitHub license](https://img.shields.io/badge/license-GPL3-blue.svg)](https://gitlab.com/capsadmin/goluwa/blob/master/LICENSE) [![pipeline status](https://gitlab.com/CapsAdmin/goluwa/badges/develop/pipeline.svg)](https://gitlab.com/CapsAdmin/goluwa/commits/develop) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://reactjs.org/docs/how-to-contribute.html#your-first-pull-request)
 
 Goluwa is a game engine, framework, a collection of utilities and experiments written in [LuaJIT](http://luajit.org/) leveraging FFI.
-
 
 ![ScreenShot](https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/extras/screenshots/goluwa.png)
 
