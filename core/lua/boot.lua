@@ -493,7 +493,7 @@ do -- tmux
 		if not has_tmux_session() then
 			os.readexecute("tmux new-session -d -s "..session_id)
 			os.readexecute("tmux send-keys -t "..session_id..' "export GOLUWA_TMUX=1" C-m')
-			os.readexecute("tmux send-keys -t "..session_id..' "./goluwa" C-m')
+			os.readexecute("tmux send-keys -t "..session_id.." 'while true; do ./goluwa; if [ $? -eq 0 ]; then break; fi; done' C-m")
 		end
 
 		os.readexecute("tmux attach-session -t "..session_id)
