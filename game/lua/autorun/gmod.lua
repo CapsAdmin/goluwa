@@ -157,5 +157,15 @@ npm install
 cd ..
 cp -rl outfitter/dist/* addons/merged/
 
+git clone https://github.com/Metastruct/glua_utilities
+cd glua_utilities
+npm install
+cd .. 
+cp -rl glua_utilities/* addons/merged/
+
 	]]))
+
+	vfs.PushWorkingDirectory(e.ROOT_FOLDER .. "metastruct_addons/")
+	repl.OSExecute("bash build.sh")
+	vfs.PopWorkingDirectory()
 end)
