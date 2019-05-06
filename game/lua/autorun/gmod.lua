@@ -150,6 +150,9 @@ cp -rl gm-mediaplayer/* addons/merged/
 git clone https://github.com/Metastruct/translation
 cp -rl translation/* addons/merged/
 
+git clone https://github.com/Python1320/gmod_vstruct
+cp -rl gmod_vstruct/* addons/merged/
+
 git clone https://github.com/Metastruct/outfitter
 cd outfitter
 git checkout dev
