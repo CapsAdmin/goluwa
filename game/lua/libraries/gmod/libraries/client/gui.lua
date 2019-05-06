@@ -61,7 +61,7 @@ do
 	end
 
 	function vgui.CursorVisible()
-		return window.IsCursorVisible()
+		return window.GetCursor() ~= "trapped"
 	end
 end
 

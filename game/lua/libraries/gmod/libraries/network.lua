@@ -53,6 +53,7 @@ do
 	if true then
 	----------------------------------------------------------
 
+--[[
 	function gine.env.util.AddNetworkString(str)
 		return network.AddString(str)
 	end
@@ -64,6 +65,7 @@ do
 	function gine.env.util.NetworkIDToString(id)
 		return network.IDToString(id) or ""
 	end
+]]
 
 	local BUFFER
 
