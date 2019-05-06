@@ -1,9 +1,19 @@
--- emergency garbage collection for 32 bit lua
-if #tostring({}) == 10 then
+local limit = os.getenv("GOLUWA_MEMORY_LIMIT")
+
+if not limit and #tostring({}) == 10 then
+    limit = 900
+end
+
+if limit then
+    local kb_limit = limit * 1024
+    local VERBOSE = VERBOSE
+
     event.Thinker(function()
-        if collectgarbage("count") > 900000 then
+        if collectgarbage("count") > kb_limit then
             collectgarbage()
-            llog("emergency gc!")
+            if VERBOSE then
+                llog("emergency gc!")
+            end
         end
     end, false, 1/10)
-end 
+end
