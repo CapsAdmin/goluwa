@@ -20,7 +20,8 @@ function vfs.FetchBniariesForAddon(addon, callback)
 		end
 		if CLI then return end
 	end
-	http.Download("https://gitlab.com/api/v4/projects/CapsAdmin%2Fgoluwa-binaries/repository/tree?recursive=1&per_page=99999"):Then(function(content)
+
+	local function handle_content(content)
 		local base_url = "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/"
 		local relative_bin_dir = addon .. "/bin/" .. signature .. "/"
 		local bin_dir = e.ROOT_FOLDER .. relative_bin_dir
@@ -77,9 +78,15 @@ function vfs.FetchBniariesForAddon(addon, callback)
 				end)
 			end
 		end
-	end):Catch(function(err)
+	end
+	
+	http.Download("https://gitlab.com/api/v4/projects/CapsAdmin%2Fgoluwa-binaries/repository/tree?recursive=1&per_page=99&page=1"):Then(handle_content):Catch(function(err)
 		llog(err)
 	end)
+
+	http.Download("https://gitlab.com/api/v4/projects/CapsAdmin%2Fgoluwa-binaries/repository/tree?recursive=1&per_page=99&page=2"):Then(handle_content):Catch(function(err)
+		llog(err)
+	end)	
 end
 
 function vfs.MountAddons(dir)
