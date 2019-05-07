@@ -2,15 +2,15 @@ local utility = _G.utility or {}
 
 do
     local done = {}
-    
-    function utility.StartMonitorCoverage(file_path) 
+
+    function utility.StartMonitorCoverage(file_path)
         debug.sethook(function(event, line)
             for i = 2, math.huge do
                 local info = debug.getinfo(i)
-                if not info then 
-                    break 
+                if not info then
+                    break
                 end
-				if info.source:endswith(file_path) then 
+				if info.source:endswith(file_path) then
 					done[info.currentline] = true
                 end
             end
@@ -139,7 +139,7 @@ function utility.GetLikelyLibraryDependencies(path)
 		end
 	end
 
-	if system.OSCommandExists("ldd") then 
+	if system.OSCommandExists("ldd") then
 		local p = io.popen("ldd " .. path)
 		local msg = p:read("*all")
 		print(msg)
@@ -1027,6 +1027,14 @@ do
 end
 
 function utility.SwapEndian(num, size)
+	if size == 4 then
+		return bit.bswap(num)
+	end
+
+	if size == 2 then
+		return bit.rshift(bit.bswap(num), 16)
+	end
+
 	local result = 0
 	for shift = 0, (size * 8) - 8, 8 do
 		result = bit.bor(bit.lshift(result, 8), bit.band(bit.rshift(num, shift), 0xff))
