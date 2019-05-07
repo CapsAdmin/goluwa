@@ -520,6 +520,7 @@ do -- source
 		end
 	end,
 	function(self)
+		self:Stop()
 		for _, v in pairs(self.effects) do
 			if v.slot:IsValid() then
 				v.slot:Remove()
