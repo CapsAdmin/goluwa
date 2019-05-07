@@ -416,7 +416,7 @@ function LOL:OnEvent(data)
 					self.secret_key = data.d.secret_key
 
 					start_voicechat(self)
-					bot:Say(channel_id, "win2000 startup")
+					bot:Say(chatsounds_channel, "win2000 startup")
 				end
 			end
 		end
