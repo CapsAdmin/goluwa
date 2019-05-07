@@ -330,7 +330,7 @@ end
 function LOL:Say(channel, what)
 	self.api.POST("channels/"..channel.."/messages", {
 		body = {
-			content = what,
+			content = what:sub(0, 1999),
 		},
 	}):Then(print)
 end
@@ -370,6 +370,8 @@ function LOL:OnEvent(data)
 				session_id = voice_state.d.session_id,
 				token = voice_server.d.token,
 			})
+
+			local bot = self
 
 			function socket:OnEvent(data)
 				if data.opcode == "Ready" then
@@ -414,6 +416,7 @@ function LOL:OnEvent(data)
 					self.secret_key = data.d.secret_key
 
 					start_voicechat(self)
+					bot:Say(channel_id, "win2000 startup")
 				end
 			end
 		end
@@ -507,12 +510,7 @@ function LOL:OnEvent(data)
 
 			if not ok then
 				logn(err)
-				self.api.POST("channels/"..data.d.channel_id.."/messages", {
-					body = {
-						content = err,
-					},
-					files = files,
-				}):Then(print)
+				self:Say(err)
 			end
 		end
 		--table.print(data)
