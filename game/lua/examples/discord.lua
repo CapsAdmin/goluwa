@@ -510,7 +510,7 @@ function LOL:OnEvent(data)
 
 			if not ok then
 				logn(err)
-				self:Say(err)
+				self:Say(data.d.channel_id, err)
 			end
 		end
 		--table.print(data)
