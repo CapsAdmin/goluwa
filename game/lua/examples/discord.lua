@@ -35,10 +35,21 @@ local function start_voicechat(self)
 	local frame_size = SAMPLE_RATE * FRAME_DURATION / 1000
 	local pcm_len = frame_size * CHANNELS
 	local elapsed = 0
-	local start = system.GetTime()
+	local start = system.GetElapsedTime()
 
 	self.sample = 0
 	self.time = 0
+
+	local header = ffi.new([[
+		struct {
+			uint16_t magic;
+			uint16_t sample;
+			uint32_t time;
+			uint32_t ssrc;
+		}
+	]])
+
+	header.magic = utility.SwapEndian(0x8078, 2)
 
 	local speaking
 
@@ -69,12 +80,14 @@ local function start_voicechat(self)
 			if speaking then
 				self:SendSpeaking({
 					speaking = false,
-					delay = 0,
+					delay = 0.5,
 					ssrc = self.ssrc,
 				})
 				speaking = false
 			end
 		end
+
+		if not speaking then return end
 
 		local data, len = encoder:encode(pcm, pcm_len, pcm_len * 2)
 
@@ -86,13 +99,11 @@ local function start_voicechat(self)
 
 		local s, t = self.sample, self.time
 
-		local buf = utility.CreateBuffer()
-		buf:WriteByte(0x80)
-		buf:WriteByte(0x78)
-		buf:WriteInt16_T(utility.SwapEndian(s, 2))
-		buf:WriteInt32_T(utility.SwapEndian(t, 4))
-		buf:WriteInt32_T(utility.SwapEndian(self.ssrc, 4))
-		local header = buf:GetString()
+		header.sample = utility.SwapEndian(s, 2)
+		header.time = utility.SwapEndian(t, 4)
+		header.ssrc = utility.SwapEndian(self.ssrc, 4)
+
+		local header = ffi.string(header, ffi.sizeof(header))
 
 		s = s + 1
 		t = t + pcm_len
@@ -165,9 +176,6 @@ function META:CreateWebsocket(opcodes, friendly_name)
 
 	for k, v in pairs(opcodes) do
 		socket["Send" .. v] = function(self, data)
-
-			llog(friendly_name .." sending: " .. v)
-			table.print(data)
 
 			self:SendMessage({
 				op = k,
@@ -491,8 +499,6 @@ function LOL:OnEvent(data)
 						self:SendImage(ffi.cast("uint8_t *", image.buffer), image.width, image.height, data.d.channel_id)
 					end
 				end
-
-				print(cmd, rest, "!!")
 
 				if cmd == "ac" and rest then
 					self:Say(data.d.channel_id, table.concat(autocomplete.Query("chatsounds", rest), "\n"))
