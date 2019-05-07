@@ -866,6 +866,7 @@ function chatsounds.Say(str, seed)
 
 	if str == "sh" or (str:find("sh%s") and not str:find("%Ssh")) or (str:find("%ssh") and not str:find("sh%S")) then
 		chatsounds.Panic()
+		audio.Panic()
 	end
 
 	if str:find(";") then
