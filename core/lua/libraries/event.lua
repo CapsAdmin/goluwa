@@ -373,7 +373,7 @@ function event.UpdateTimers(a_, b_, c_, d_, e_)
 						data.realtime = cur + msg
 					end
 				else
-					if data.error_callback(data.id, msg) ~= nil then
+					if data.error_callback(data.id, msg) == nil then
 						table.insert(remove_these, i)
 						--profiler.RemoveSection(data.id)
 					end
@@ -400,7 +400,7 @@ function event.UpdateTimers(a_, b_, c_, d_, e_)
 	end
 end
 
-event.AddListener("Update", "timers", event.UpdateTimers)
+event.AddListener("Update", "timers", event.UpdateTimers, {on_error = system.OnError})
 
 
 return event
