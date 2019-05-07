@@ -8,45 +8,16 @@ local repos = {
 		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
 	},
 	{
-		author = "mike",
-		url = "https://github.com/LuaJIT/LuaJIT",
-		branch = "v2.1",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
-	},
-	{
-		url = "https://github.com/fsfod/LuaJIT",
-		branch = "intrinsicpr",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
-	},
-	{
-		url = "https://github.com/fsfod/LuaJIT",
-		branch = "vectors",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
-	},
-	{
-		url = "https://github.com/fsfod/LuaJIT",
-		branch = "gcarena",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
-	},
-	{
-		url = "https://github.com/corsix/LuaJIT",
-		branch = "newgc",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT", "LUAJIT_ENABLE_GC64"}
-	},
-	{
-		url = "https://github.com/corsix/LuaJIT",
-		branch = "newgc",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
-	},
-	{
-		url = "https://github.com/corsix/LuaJIT",
-		branch = "newgc",
-	},
-	{
-		author = "lukego",
+		author = "luke",
 		url = "https://github.com/raptorjit/raptorjit",
 		branch = "master",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
+		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
+	},
+	{
+		author = "siddhesh",
+		url = "https://github.com/siddhesh/LuaJIT",
+		branch = "v2.1",
+		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
 	},
 }
 
@@ -119,7 +90,7 @@ local function build(info, extra_flags, extra_id)
 end
 
 for _, info in pairs(repos) do
-	build(info)
-	build(info, {"LUAJIT_USE_GDBJIT", "CCDEBUG=-g", "CCOPT=-fomit-frame-pointer"}, "debug")
-	build(info, {"LUAJIT_USE_GDBJIT", "LUA_USE_ASSERT", "CCDEBUG=-g", "CCOPT=-fomit-frame-pointer"}, "debug-assert")
+	build(info, {"CCDEBUG=-g", "LUAJIT_USE_GDBJIT"})
+	build(info, {"LUAJIT_USE_GDBJIT", "CCOPT=-fomit-frame-pointer"}, "debug")
+	build(info, {"LUAJIT_USE_GDBJIT", "LUA_USE_ASSERT", "CCOPT=-fomit-frame-pointer"}, "debug-assert")
 end
