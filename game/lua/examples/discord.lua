@@ -151,7 +151,7 @@ function META:Send(data)
 	self.socket:SendMessage(data)
 end
 
-function META:CreateWebsocket(opcodes, friendly_name)
+function META:CreateWebsocket(opcodes, friendly_name, on_close)
 	local name2opcode = {}
 	local opcode2name = {}
 
@@ -192,7 +192,13 @@ function META:CreateWebsocket(opcodes, friendly_name)
 
 		if data.opcode == "Hello" then
 			self:SendHeartbeat(os.clock())
-			event.Timer(self, (data.d.heartbeat_interval/1000) * 0.75, function()
+			local id = tostring(self)
+			event.Timer(id, (data.d.heartbeat_interval/1000) * 0.75, function()
+				if not self:IsValid() then
+					event.RemoveTimer(id)
+					return
+				end
+
 				self:SendHeartbeat(os.clock())
 			end)
 		end
@@ -212,6 +218,9 @@ function META:CreateWebsocket(opcodes, friendly_name)
 		event.RemoveTimer(self)
 		logf("closing discord socket: %s (%s)\n", reason, code)
 		self:Remove()
+		if on_close then
+			on_close()
+		end
 	end
 
 	function socket:OnEvent(data) end
@@ -235,7 +244,12 @@ function META:Initialize()
 			[9] = "InvalidSession", -- used to notify client they have an invalid session id
 			[10] = "Hello", -- sent immediately after connecting, contains heartbeat and server debug information
 			[11] = "HeartbackACK", -- sent immediately following a client heartbeat that was received
-		}, "base")
+		}, "base", function()
+			event.Delay(1, function()
+				self:Remove()
+				runfile("lua/examples/discord.lua")
+			end)
+		end)
 
 		self.socket = socket
 
@@ -356,7 +370,13 @@ function LOL:OnEvent(data)
 				[8] = "Hello", --	server	the continuous interval in milliseconds after which the client should send a heartbeat
 				[9] = "Resumed", --	server	acknowledge Resume
 				[13] = "ClientDisconnect", --	server	a client has disconnected from the voice channel
-			}, "voice")
+			}, "voice", function()
+				event.Delay(1, function()
+					self:Remove()
+					runfile("lua/examples/discord.lua")
+				end)
+			end)
+
 			self.voice_socket = socket
 
 			local voice_server = self.voice_server
