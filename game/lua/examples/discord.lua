@@ -3,6 +3,17 @@ local channel_id = "568745482407641099"
 local ADMIN_ROLE = "260932947140411412"
 local chatsounds_channel = "570392695248388097"
 
+local function restart()
+	if DISCORD_BOT and DISCORD_BOT:IsValid() then
+		DISCORD_BOT:Remove()
+		DISCORD_BOT = nil
+	end
+
+	event.Delay(1, function()
+		runfile("lua/examples/discord.lua")
+	end)
+end
+
 local function start_voicechat(self)
 	chatsounds.Initialize()
 
@@ -244,12 +255,7 @@ function META:Initialize()
 			[9] = "InvalidSession", -- used to notify client they have an invalid session id
 			[10] = "Hello", -- sent immediately after connecting, contains heartbeat and server debug information
 			[11] = "HeartbackACK", -- sent immediately following a client heartbeat that was received
-		}, "base", function()
-			event.Delay(1, function()
-				self:Remove()
-				runfile("lua/examples/discord.lua")
-			end)
-		end)
+		}, "base", restart)
 
 		self.socket = socket
 
@@ -292,15 +298,15 @@ do return end
 
 META:Register()
 
-if not LOL then
-	--LOL:Remove()
-	LOL = DiscordBot(assert(vfs.Read("temp/discord_bot_token")))
+if not DISCORD_BOT then
+	--DISCORD_BOT:Remove()
+	DISCORD_BOT = DiscordBot(assert(vfs.Read("temp/discord_bot_token")))
 end
 
 local ffi = require("ffi")
 local freeimage = require("freeimage")
 
-function LOL:SendImage(pixels, w,h, channel)
+function DISCORD_BOT:SendImage(pixels, w,h, channel)
 	local image = {
 		buffer = pixels,
 		width = w,
@@ -341,7 +347,7 @@ function LOL:SendImage(pixels, w,h, channel)
 	}):Then(print)
 end
 
-function LOL:Say(channel, what)
+function DISCORD_BOT:Say(channel, what)
 	self.api.POST("channels/"..channel.."/messages", {
 		body = {
 			content = what:sub(0, 1999),
@@ -349,7 +355,7 @@ function LOL:Say(channel, what)
 	}):Then(print)
 end
 
-function LOL:OnEvent(data)
+function DISCORD_BOT:OnEvent(data)
 	if data.t == "VOICE_SERVER_UPDATE" then
 		self.voice_server = data
 	elseif data.t == "VOICE_STATE_UPDATE" then
@@ -370,12 +376,7 @@ function LOL:OnEvent(data)
 				[8] = "Hello", --	server	the continuous interval in milliseconds after which the client should send a heartbeat
 				[9] = "Resumed", --	server	acknowledge Resume
 				[13] = "ClientDisconnect", --	server	a client has disconnected from the voice channel
-			}, "voice", function()
-				event.Delay(1, function()
-					self:Remove()
-					runfile("lua/examples/discord.lua")
-				end)
-			end)
+			}, "voice", restart)
 
 			self.voice_socket = socket
 
@@ -537,4 +538,4 @@ function LOL:OnEvent(data)
 	end
 end
 
---LOL:Query("GET /users/260465579125768192", table.print)
+--DISCORD_BOT:Query("GET /users/260465579125768192", table.print)
