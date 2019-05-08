@@ -154,6 +154,7 @@ do
 	end
 
 	function META:SetTexture(key, val)
+		if key == nil or val == nil then return end -- ?? gmod doesn't error
 		key = key:lower():sub(2)
 		self.__obj:Set(key, val.__obj)
 	end
@@ -167,6 +168,9 @@ do
 
 		return gine.WrapObject(render.GetErrorTexture(), "ITexture")
 	end
+
+	META.SetHDRTexture = META.SetTexture
+	META.GetHDRTexture = META.GetTexture
 
 	function META:SetVector(key, val)
 		key = key:lower():sub(2)

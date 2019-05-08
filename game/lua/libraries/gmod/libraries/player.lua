@@ -57,6 +57,10 @@ do
 		return gine.env.LocalPlayer()
 	end
 
+	function gine.env.GetViewEntity()
+		return gine.env.LocalPlayer()
+	end
+
 	local META = gine.GetMetaTable("Player")
 
 	function META:Crouching()
