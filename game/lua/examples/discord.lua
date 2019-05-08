@@ -3,6 +3,17 @@ local channel_id = "568745482407641099"
 local ADMIN_ROLE = "260932947140411412"
 local chatsounds_channel = "570392695248388097"
 
+local function restart()
+	if DISCORD_BOT and DISCORD_BOT:IsValid() then
+		DISCORD_BOT:Remove()
+		DISCORD_BOT = nil
+	end
+
+	event.Delay(1, function()
+		runfile("lua/examples/discord.lua")
+	end)
+end
+
 local function start_voicechat(self)
 	chatsounds.Initialize()
 
@@ -151,7 +162,7 @@ function META:Send(data)
 	self.socket:SendMessage(data)
 end
 
-function META:CreateWebsocket(opcodes, friendly_name)
+function META:CreateWebsocket(opcodes, friendly_name, on_close)
 	local name2opcode = {}
 	local opcode2name = {}
 
@@ -192,7 +203,13 @@ function META:CreateWebsocket(opcodes, friendly_name)
 
 		if data.opcode == "Hello" then
 			self:SendHeartbeat(os.clock())
-			event.Timer(self, (data.d.heartbeat_interval/1000) * 0.75, function()
+			local id = tostring(self)
+			event.Timer(id, (data.d.heartbeat_interval/1000) * 0.75, function()
+				if not self:IsValid() then
+					event.RemoveTimer(id)
+					return
+				end
+
 				self:SendHeartbeat(os.clock())
 			end)
 		end
@@ -212,6 +229,9 @@ function META:CreateWebsocket(opcodes, friendly_name)
 		event.RemoveTimer(self)
 		logf("closing discord socket: %s (%s)\n", reason, code)
 		self:Remove()
+		if on_close then
+			on_close()
+		end
 	end
 
 	function socket:OnEvent(data) end
@@ -235,7 +255,7 @@ function META:Initialize()
 			[9] = "InvalidSession", -- used to notify client they have an invalid session id
 			[10] = "Hello", -- sent immediately after connecting, contains heartbeat and server debug information
 			[11] = "HeartbackACK", -- sent immediately following a client heartbeat that was received
-		}, "base")
+		}, "base", restart)
 
 		self.socket = socket
 
@@ -278,15 +298,15 @@ do return end
 
 META:Register()
 
-if not LOL then
-	--LOL:Remove()
-	LOL = DiscordBot(assert(vfs.Read("temp/discord_bot_token")))
+if not DISCORD_BOT then
+	--DISCORD_BOT:Remove()
+	DISCORD_BOT = DiscordBot(assert(vfs.Read("temp/discord_bot_token")))
 end
 
 local ffi = require("ffi")
 local freeimage = require("freeimage")
 
-function LOL:SendImage(pixels, w,h, channel)
+function DISCORD_BOT:SendImage(pixels, w,h, channel)
 	local image = {
 		buffer = pixels,
 		width = w,
@@ -327,7 +347,7 @@ function LOL:SendImage(pixels, w,h, channel)
 	}):Then(print)
 end
 
-function LOL:Say(channel, what)
+function DISCORD_BOT:Say(channel, what)
 	self.api.POST("channels/"..channel.."/messages", {
 		body = {
 			content = what:sub(0, 1999),
@@ -335,7 +355,7 @@ function LOL:Say(channel, what)
 	}):Then(print)
 end
 
-function LOL:OnEvent(data)
+function DISCORD_BOT:OnEvent(data)
 	if data.t == "VOICE_SERVER_UPDATE" then
 		self.voice_server = data
 	elseif data.t == "VOICE_STATE_UPDATE" then
@@ -356,7 +376,8 @@ function LOL:OnEvent(data)
 				[8] = "Hello", --	server	the continuous interval in milliseconds after which the client should send a heartbeat
 				[9] = "Resumed", --	server	acknowledge Resume
 				[13] = "ClientDisconnect", --	server	a client has disconnected from the voice channel
-			}, "voice")
+			}, "voice", restart)
+
 			self.voice_socket = socket
 
 			local voice_server = self.voice_server
@@ -517,4 +538,4 @@ function LOL:OnEvent(data)
 	end
 end
 
---LOL:Query("GET /users/260465579125768192", table.print)
+--DISCORD_BOT:Query("GET /users/260465579125768192", table.print)
