@@ -114,13 +114,16 @@ function META:ParseURI(uri)
 
     if path:startswith("//") then
         path = path:sub(3)
-
         host, rest = path:match("^(.-)/(.*)$")
-        path = rest:gsub("[^%w%-_%.%!%~%*%'%(%)]", function(c)
-            if not legal_uri_characters[c] then
-                return string.format("%%%02X", c:byte(1,1))
-            end
-        end)
+        if rest then
+            path = rest:gsub("[^%w%-_%.%!%~%*%'%(%)]", function(c)
+                if not legal_uri_characters[c] then
+                    return string.format("%%%02X", c:byte(1,1))
+                end
+            end)
+        else
+            host = path
+        end
 
         if host:find("@", 1, true) then
             local temp = host:split("@")
