@@ -193,8 +193,16 @@ commands.Add("setup_metastruct_addons", function()
 
 	for _, repo in ipairs(repos) do
 		local name = repo.url:match(".+/(.-)%.git")
-		os.execute("git clone " .. repo.url .. " --depth 1 " .. name)
-		vfs.PushWorkingDirectory(name)
+
+		if vfs.IsDirectory(dir .. "/" .. name) then
+			vfs.PushWorkingDirectory(dir .. "/" .. name)
+			os.execute("git reset --hard && git clean -fxd && git pull")
+			vfs.PopWorkingDirectory()
+		else
+			os.execute("git clone " .. repo.url .. " --depth 1 " .. name)
+		end
+
+		vfs.PushWorkingDirectory(dir .. "/" .. name)
 
 		if repo.branch then
 			os.execute("git checkout " .. repo.branch)
@@ -204,12 +212,18 @@ commands.Add("setup_metastruct_addons", function()
 			os.execute("git submodule init && git submodule update")
 		end
 
-		local location = repo.location or "*"
-		os.execute("cp -rl "..location.." ../addons/merged/")
-
 		if repo.npm then
 			os.execute("npm install")
 		end
+
+		local location = repo.location or "*"
+
+		if repo.npm then
+			location = "dist/*"
+		end
+
+		os.execute("cp -rl "..location.." ../addons/merged/")
+
 		vfs.PopWorkingDirectory()
 	end
 
