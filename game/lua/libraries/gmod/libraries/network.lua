@@ -84,7 +84,7 @@ do
 	end
 
 	function gine.env.net.Start(name, unreliable)
-		local id = network.StringToID(name)
+		local id = gine.env.util.NetworkStringToID(name)--network.StringToID(name)
 
 		BUFFER = packet.CreateBuffer()
 

@@ -108,8 +108,8 @@ do
 	function META:Write(content) return self.__obj:Write(content) end
 
 	function META:Close() return self.__obj:Close() end
-	function META:Tell() return self.__obj:GetPosition() end
-	function META:Size() return self.__obj:GetSize() end
+	function META:Tell() return tonumber(self.__obj:GetPosition()) end
+	function META:Size() return tonumber(self.__obj:GetSize()) end
 	function META:Skip(pos) return self.__obj:SetPosition(pos) end
 	function META:Seek(pos) return self.__obj:SetPosition(pos) end
 	function META:Flush() self.__obj:Flush() end

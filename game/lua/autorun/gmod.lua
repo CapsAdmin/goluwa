@@ -125,50 +125,93 @@ commands.Add("setup_metastruct_addons", function()
 		assert(vfs.CreateDirectory("os:" .. e.ROOT_FOLDER .. "metastruct_addons"))
 	end
 
-	assert(vfs.Write(e.ROOT_FOLDER .. "metastruct_addons/build.sh", [[
-#!/bin/sh
+	local repos = {
+		{url = "https://github.com/EgrOnWire/ACF.git"},
+		{url = "git@github.com:CFC-Servers/fin2.git"},
+		{url = "git@github.com:danielga/xcomms.git"},
+		{url = "git@github.com:Metastruct/glua_utilities.git", npm = true},
+		{url = "git@github.com:Metastruct/outfitter.git", branch = "dev"},
+		{url = "git@github.com:Metastruct/RxLua.git"},
+		{url = "git@github.com:Metastruct/Sit-Anywhere.git"},
+		{url = "git@github.com:Metastruct/translation.git"},
+		{url = "git@github.com:Metastruct/weapon_physcannon2.git"},
+		{url = "git@github.com:Metastruct/wire.git"},
+		{url = "git@gitlab.com:metastruct/aowl.git"},
+		{url = "git@gitlab.com:metastruct/fast_addons.git"},
+		{url = "git@gitlab.com:metastruct/metastruct.git"},
+		{url = "git@gitlab.com:metastruct/MetaWorks-metastruct.git"},
+		{url = "git@gitlab.com:metastruct/modules.git"},
+		{url = "git@gitlab.com:metastruct/qbox.git"},
+		{url = "git@gitlab.com:metastruct/srvaddons.git", location = "*/*"},
+		{url = "git@gitlab.threekelv.in:metastruct-security/msascripts.git"},
+		{url = "git@gitlab.threekelv.in:metastruct-security/msasurfacenet.git"},
+		{url = "git@gitlab.threekelv.in:metastruct-security/msavehicles.git"},
+		{url = "git@gitlab.threekelv.in:PotcFdk/MetaWorks.git"},
+		{url = "https://github.com/CapsAdmin/customisable_thirdperson.git"},
+		{url = "https://github.com/CapsAdmin/pac3.git"},
+		{url = "https://github.com/danielga/halloween.git"},
+		{url = "https://github.com/danielga/luachip.git"},
+		{url = "https://github.com/Earu/Hoverbike.git"},
+		{url = "https://github.com/edunad/sprayurl.git"},
+		{url = "https://github.com/Falcqn/makespherical.git"},
+		{url = "https://github.com/Metastruct/advduplicator.git"},
+		{url = "https://github.com/Metastruct/copas.git"},
+		{url = "https://github.com/Metastruct/enum_loader.git"},
+		{url = "https://github.com/Metastruct/eventsystem.git"},
+		{url = "https://github.com/Metastruct/fishingmod.git"},
+		{url = "https://github.com/Metastruct/gcompute.git"},
+		{url = "https://github.com/Metastruct/gm-mediaplayer.git"},
+		{url = "https://github.com/Metastruct/gmod-csweapons.git"},
+		{url = "https://github.com/Metastruct/improved-stacker.git"},
+		{url = "https://github.com/Metastruct/luadev.git"},
+		{url = "https://github.com/Metastruct/mgn.git"},
+		{url = "https://github.com/Metastruct/moonscript.git"},
+		{url = "https://github.com/Metastruct/NeedMoreLegs.git"},
+		{url = "https://github.com/Metastruct/playablepiano.git"},
+		{url = "https://github.com/Metastruct/simfphys_armed.git"},
+		{url = "https://github.com/Metastruct/simfphys_base.git"},
+		{url = "https://github.com/notcake/gcodec.git"},
+		{url = "https://github.com/notcake/glib.git"},
+		{url = "https://github.com/notcake/gooey.git"},
+		{url = "https://github.com/notcake/gvote.git"},
+		{url = "https://github.com/notcake/quicktool.git"},
+		{url = "https://github.com/notcake/vfs.git"},
+		{url = "https://github.com/PotcFdk/AntEater.git"},
+		{url = "https://github.com/PotcFdk/PlyLab.git"},
+		{url = "https://github.com/Python1320/gmod_vstruct.git", submodule = true},
+		{url = "https://github.com/thegrb93/StarfallEx.git"},
+		{url = "https://github.com/wiox/gmod-keypad.git"},
+		{url = "https://github.com/wiremod/advdupe2.git"},
+	}
 
-#remove linked folder
-rm -f addons/
-mkdir -p addons/merged
+	local dir = e.ROOT_FOLDER .. "metastruct_addons"
 
-git clone git@gitlab.com:metastruct/srvaddons.git __srvaddons
-cp -rl __srvaddons/*/* addons/merged/
+	vfs.PushWorkingDirectory(dir)
 
-git clone git@gitlab.com:metastruct/metastruct.git __metastruct
-cp -rl __metastruct/Metastruct2/* addons/merged/
+	os.execute("rm -f addons/")
+	os.execute("mkdir -p addons/merged")
 
-git clone git@gitlab.threekelv.in:PotcFdk/MetaWorks.git
-cp -rl MetaWorks/* addons/merged/
+	for _, repo in ipairs(repos) do
+		local name = repo.url:match(".+/(.-)%.git")
+		os.execute("git clone " .. repo.url .. " --depth 1 " .. name)
+		vfs.PushWorkingDirectory(name)
 
-git clone https://github.com/Metastruct/luadev
-cp -rl luadev/* addons/merged/
+		if repo.branch then
+			os.execute("git checkout " .. repo.branch)
+		end
 
-git clone https://github.com/Metastruct/gm-mediaplayer
-cp -rl gm-mediaplayer/* addons/merged/
+		if repo.submodule then
+			os.execute("git submodule init && git submodule update")
+		end
 
-git clone https://github.com/Metastruct/translation
-cp -rl translation/* addons/merged/
+		local location = repo.location or "*"
+		os.execute("cp -rl "..location.." ../addons/merged/")
 
-git clone https://github.com/Python1320/gmod_vstruct
-cp -rl gmod_vstruct/* addons/merged/
+		if repo.npm then
+			os.execute("npm install")
+		end
+		vfs.PopWorkingDirectory()
+	end
 
-git clone https://github.com/Metastruct/outfitter
-cd outfitter
-git checkout dev
-npm install
-cd ..
-cp -rl outfitter/dist/* addons/merged/
-
-git clone https://github.com/Metastruct/glua_utilities
-cd glua_utilities
-npm install
-cd .. 
-cp -rl glua_utilities/* addons/merged/
-
-	]]))
-
-	vfs.PushWorkingDirectory(e.ROOT_FOLDER .. "metastruct_addons/")
-	repl.OSExecute("bash build.sh")
 	vfs.PopWorkingDirectory()
 end)

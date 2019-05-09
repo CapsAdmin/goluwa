@@ -1,5 +1,5 @@
 function gine.env.system.SteamTime()
-	return os.clock()
+	return os.time()
 end
 
 function gine.env.system.AppTime()

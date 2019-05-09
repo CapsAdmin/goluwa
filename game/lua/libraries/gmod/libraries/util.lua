@@ -20,7 +20,9 @@ function util.RelativePathToFull(path)
 end
 
 function util.JSONToTable(str)
-	return serializer.Decode("json", str)
+	local ok, res = pcall(serializer.Decode, "json", str)
+	if ok then return res end
+	wlog(res)
 end
 
 function util.TableToJSON(tbl)
@@ -33,6 +35,10 @@ end
 
 function util.IsValidModel(path)
 	return vfs.IsFile(path)
+end
+
+function util.IsValidRagdoll(ent)
+	return false
 end
 
 function util.PointContents()

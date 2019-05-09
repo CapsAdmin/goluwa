@@ -1,5 +1,4 @@
 -- Following Websocket RFC: http://tools.ietf.org/html/rfc6455
-local bit = require'websocket.bit'
 local band = bit.band
 local bxor = bit.bxor
 local bor = bit.bor
