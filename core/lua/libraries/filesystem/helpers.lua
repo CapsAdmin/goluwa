@@ -263,9 +263,9 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 				local base = e.USERDATA_FOLDER
 
 				if dir == "cache" then
-					base = e.STORAGE_FOLDER .. "data/cache/"
+					base = e.STORAGE_FOLDER .. "cache/"
 				elseif dir == "shared" then
-					base = e.STORAGE_FOLDER .. "data/shared/"
+					base = e.STORAGE_FOLDER .. "shared/"
 				end
 
 				local dir = ""
