@@ -322,16 +322,15 @@ end
 
 terminal.event_buffer = {}
 
-function terminal.ReadEvent()
+function terminal.ReadEvents()
     local str = terminal.Read()
 
     if str then
         process_input(str)
 	end
 
-    if terminal.event_buffer[1] then
-        return unpack(table.remove(terminal.event_buffer))
-    end
+    
+    return terminal.event_buffer
 end
 
 return terminal

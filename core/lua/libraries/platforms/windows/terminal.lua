@@ -506,80 +506,87 @@ end
 
 terminal.event_buffer = {}
 
-function terminal.ReadEvent()
+function terminal.ReadEvents()
 	local events, count = read()
 	if events then
 		for i = 1, count do
 			local evt = events[i - 1]
 			--[[
 				print("==========================================================")
-				print("bKeyDown: ", evt.Event.KeyEvent.bKeyDown)
-				print("wRepeatCount: ", evt.Event.KeyEvent.wRepeatCount)
-				print("wVirtualKeyCode: ", evt.Event.KeyEvent.wVirtualKeyCode)
-				print("wVirtualScanCode: ", evt.Event.KeyEvent.wVirtualScanCode)
-				print("uChar UnicodeChar: ", evt.Event.KeyEvent.uChar.UnicodeChar)
-				print("uChar AsciiChar: ", evt.Event.KeyEvent.uChar.AsciiChar)
-				print("dwControlKeyState: ", evt.Event.KeyEvent.dwControlKeyState)
+				print(i, "bKeyDown: ", evt.Event.KeyEvent.bKeyDown)
+				print(i, "wRepeatCount: ", evt.Event.KeyEvent.wRepeatCount)
+				print(i, "wVirtualKeyCode: ", evt.Event.KeyEvent.wVirtualKeyCode)
+				print(i, "wVirtualScanCode: ", evt.Event.KeyEvent.wVirtualScanCode)
+				print(i, "uChar UnicodeChar: ", evt.Event.KeyEvent.uChar.UnicodeChar)
+				print(i, "uChar AsciiChar: ", evt.Event.KeyEvent.uChar.AsciiChar)
+				print(i, "dwControlKeyState: ", evt.Event.KeyEvent.dwControlKeyState)
+				print(i, "char: ", utf8.char(evt.Event.KeyEvent.uChar.UnicodeChar))
+				print(i, "mod: ", utility.FlagsToTable(evt.Event.KeyEvent.dwControlKeyState, modifiers))
+
 				print("==========================================================")
 			--]]
 
-			if evt.Event.KeyEvent.bKeyDown == 1 then
-				local str = utf8.char(evt.Event.KeyEvent.uChar.UnicodeChar)
-				local key = evt.Event.KeyEvent.wVirtualKeyCode
-				local mod = utility.FlagsToTable(evt.Event.KeyEvent.dwControlKeyState, modifiers)
+			if evt.EventType == 1 then
 
-				--print(evt.Event.KeyEvent.uChar.UnicodeChar)
-				--for k,v in pairs(keys) do if v == key then print(k) end end
-				--table.print(mod)
-				
-				local CTRL = mod.LEFT_CTRL_PRESSED or mod.RIGHT_CTRL_PRESSED
-				local SHIFT = mod.SHIFT_PRESSED or mod.SHIFT_PRESSED
-				
-				if mod.SHIFT_PRESSED and mod.LEFT_ALT_PRESSED and evt.Event.KeyEvent.uChar.UnicodeChar == 68 then
-					CTRL = true
-					SHIFT = false
-					key = keys.VK_DELETE
+
+				if evt.Event.KeyEvent.bKeyDown == 1 then
+					local str = utf8.char(evt.Event.KeyEvent.uChar.UnicodeChar)
+					local key = evt.Event.KeyEvent.wVirtualKeyCode
+					local mod = utility.FlagsToTable(evt.Event.KeyEvent.dwControlKeyState, modifiers)
+
+					--print(evt.Event.KeyEvent.uChar.UnicodeChar)
+					--for k,v in pairs(keys) do if v == key then print(k) end end
+					--table.print(mod)
 					
-					mod.SHIFT_PRESSED = nil
-					mod.LEFT_ALT_PRESSED = nil
-				end
+					local CTRL = mod.LEFT_CTRL_PRESSED or mod.RIGHT_CTRL_PRESSED
+					local SHIFT = mod.SHIFT_PRESSED or mod.SHIFT_PRESSED
+					
+					if mod.SHIFT_PRESSED and mod.LEFT_ALT_PRESSED and evt.Event.KeyEvent.uChar.UnicodeChar == 68 then
+						CTRL = true
+						SHIFT = false
+						key = keys.VK_DELETE
+						
+						mod.SHIFT_PRESSED = nil
+						mod.LEFT_ALT_PRESSED = nil
+					end
 
-				if SHIFT and evt.Event.KeyEvent.uChar.UnicodeChar ~= 0 then
-					table.insert(terminal.event_buffer, {"string", str})
-				else
-					if str == "\3" then
-						table.insert(terminal.event_buffer, {"ctrl_c"})
-					elseif CTRL then
-						if key == keys.VK_RIGHT then
-							table.insert(terminal.event_buffer, {"ctrl_right"})
-						elseif key == keys.VK_LEFT  then
-							table.insert(terminal.event_buffer, {"ctrl_left"})
-						elseif key == keys.VK_BACK or evt.Event.KeyEvent.uChar.UnicodeChar == 23 then
-							table.insert(terminal.event_buffer, {"ctrl_backspace"})
-						elseif key == keys.VK_DELETE or evt.Event.KeyEvent.uChar.UnicodeChar == 68 then
-							table.insert(terminal.event_buffer, {"ctrl_delete"})
-						end
+					if SHIFT and evt.Event.KeyEvent.uChar.UnicodeChar ~= 0 then
+						table.insert(terminal.event_buffer, {"string", str})
 					else
-						if key == keys.VK_RETURN then
-							table.insert(terminal.event_buffer, {"enter"})
-						elseif key == keys.VK_DELETE then
-							table.insert(terminal.event_buffer, {"delete"})
-						elseif key == keys.VK_LEFT then
-							table.insert(terminal.event_buffer, {"left"})
-						elseif key == keys.VK_RIGHT then
-							table.insert(terminal.event_buffer, {"right"})
-						elseif key == keys.VK_UP then
-							table.insert(terminal.event_buffer, {"up"})
-						elseif key == keys.VK_DOWN then
-							table.insert(terminal.event_buffer, {"down"})
-						elseif key == keys.VK_HOME then
-							table.insert(terminal.event_buffer, {"home"})
-						elseif key == keys.VK_END then
-							table.insert(terminal.event_buffer, {"end"})
-						elseif key == keys.VK_BACK then
-							table.insert(terminal.event_buffer, {"backspace"})
-						elseif evt.Event.KeyEvent.uChar.UnicodeChar > 31 then
-							table.insert(terminal.event_buffer, {"string", str})
+						if str == "\3" then
+							table.insert(terminal.event_buffer, {"ctrl_c"})
+						elseif CTRL then
+							if key == keys.VK_RIGHT then
+								table.insert(terminal.event_buffer, {"ctrl_right"})
+							elseif key == keys.VK_LEFT  then
+								table.insert(terminal.event_buffer, {"ctrl_left"})
+							elseif key == keys.VK_BACK or evt.Event.KeyEvent.uChar.UnicodeChar == 23 then
+								table.insert(terminal.event_buffer, {"ctrl_backspace"})
+							elseif key == keys.VK_DELETE or evt.Event.KeyEvent.uChar.UnicodeChar == 68 then
+								table.insert(terminal.event_buffer, {"ctrl_delete"})
+							end
+						else
+							if key == keys.VK_RETURN then
+								table.insert(terminal.event_buffer, {"enter"})
+							elseif key == keys.VK_DELETE then
+								table.insert(terminal.event_buffer, {"delete"})
+							elseif key == keys.VK_LEFT then
+								table.insert(terminal.event_buffer, {"left"})
+							elseif key == keys.VK_RIGHT then
+								table.insert(terminal.event_buffer, {"right"})
+							elseif key == keys.VK_UP then
+								table.insert(terminal.event_buffer, {"up"})
+							elseif key == keys.VK_DOWN then
+								table.insert(terminal.event_buffer, {"down"})
+							elseif key == keys.VK_HOME then
+								table.insert(terminal.event_buffer, {"home"})
+							elseif key == keys.VK_END then
+								table.insert(terminal.event_buffer, {"end"})
+							elseif key == keys.VK_BACK then
+								table.insert(terminal.event_buffer, {"backspace"})
+							elseif evt.Event.KeyEvent.uChar.UnicodeChar > 31 then
+								table.insert(terminal.event_buffer, {"string", str})
+							end
 						end
 					end
 				end
@@ -587,9 +594,7 @@ function terminal.ReadEvent()
 		end
 	end
 
-	if terminal.event_buffer[1] then
-		return unpack(table.remove(terminal.event_buffer))
-	end
+	return terminal.event_buffer
 end
 
 return terminal

@@ -512,9 +512,10 @@ function repl.Update()
 	if not repl.started then error("repl not initialized") end
 	--if math.random() > 0.99 then print(os.clock()) end
 
-	local what, arg = terminal.ReadEvent()
+	local events = terminal.ReadEvents()
 
-	if what then
+	while events[1] do
+		local what, arg = unpack(table.remove(events, 1))			
 		if what == "string" and arg:endswith("__ENTERHACK__") then
 			repl.CharInput(arg:sub(0, -#"__ENTERHACK__" - 1))
 			repl.KeyPressed("enter")
