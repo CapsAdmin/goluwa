@@ -24,7 +24,7 @@ commands.Add("setup_pac3server_addons", function()
 	local gmod_addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
 
 	if not vfs.IsDirectory(gmod_addons) then
-		require("fs").createdir(gmod_addons)
+		require("fs").create_directory(gmod_addons)
 	end
 
 	for _, url in ipairs(addons) do
@@ -121,9 +121,7 @@ if gmod_path then
 end
 
 commands.Add("setup_metastruct_addons", function()
-	if not vfs.IsDirectory("os:" .. e.ROOT_FOLDER .. "metastruct_addons") then
-		assert(vfs.CreateDirectory("os:" .. e.ROOT_FOLDER .. "metastruct_addons"))
-	end
+	fs.create_directory(e.ROOT_FOLDER .. "metastruct_addons")
 
 	local repos = {
 		{url = "https://github.com/EgrOnWire/ACF.git"},
@@ -186,23 +184,23 @@ commands.Add("setup_metastruct_addons", function()
 
 	local dir = e.ROOT_FOLDER .. "metastruct_addons"
 
-	vfs.PushWorkingDirectory(dir)
-
-	os.execute("rm -f addons/")
-	os.execute("mkdir -p addons/merged")
-
+	fs.PushWorkingDirectory(dir)
+	fs.RemoveRecursively("addons")
+	fs.CreateDirectory("addons/merged", true)
+	fs.PopWorkingDirectory()
+	do return end
 	for _, repo in ipairs(repos) do
 		local name = repo.url:match(".+/(.-)%.git")
 
 		if vfs.IsDirectory(dir .. "/" .. name) then
-			vfs.PushWorkingDirectory(dir .. "/" .. name)
+			fs.PushWorkingDirectory(dir .. "/" .. name)
 			os.execute("git reset --hard && git clean -fxd && git pull")
-			vfs.PopWorkingDirectory()
+			fs.PopWorkingDirectory()
 		else
 			os.execute("git clone " .. repo.url .. " --depth 1 " .. name)
 		end
 
-		vfs.PushWorkingDirectory(dir .. "/" .. name)
+		fs.PushWorkingDirectory(dir .. "/" .. name)
 
 		if repo.branch then
 			os.execute("git checkout " .. repo.branch)
@@ -224,8 +222,8 @@ commands.Add("setup_metastruct_addons", function()
 
 		os.execute("cp -rl "..location.." ../addons/merged/")
 
-		vfs.PopWorkingDirectory()
+		fs.PopWorkingDirectory()
 	end
 
-	vfs.PopWorkingDirectory()
+	fs.PopWorkingDirectory()
 end)

@@ -42,7 +42,7 @@ function gcc(data)
         table.insert(cmds, gcc .. " -c -o " .. output_path .. " " .. path)
     end
 
-    vfs.PushWorkingDirectory(R(data.directory))
+    fs.PushWorkingDirectory(R(data.directory))
         for _, cmd in ipairs(cmds) do
             if not os.execute(cmd) then
                 break
@@ -50,7 +50,7 @@ function gcc(data)
         end
 
         os.execute("gcc " .. table.concat(output_files, " ") .. " -O -shared -fpic -o " .. data.output_library)
-    vfs.PopWorkingDirectory()
+    fs.PopWorkingDirectory()
 
     local path = data.directory .. "/" .. data.output_library
 

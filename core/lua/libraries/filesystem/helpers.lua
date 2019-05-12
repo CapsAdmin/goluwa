@@ -29,18 +29,6 @@ end
 
 local fs = require("fs")
 
-vfs.OSCreateDirectory = fs.createdir
-vfs.OSGetAttributes = fs.getattributes
-
-do
-	vfs.SetWorkingDirectory = fs.setcd
-	vfs.GetWorkingDirectory = fs.getcd
-
-	if utility.MakePushPopFunction then
-		utility.MakePushPopFunction(vfs, "WorkingDirectory")
-	end
-end
-
 function vfs.Delete(path, ...)
 	local abs_path = vfs.GetAbsolutePath(path, ...)
 
@@ -433,7 +421,7 @@ function vfs.WatchLuaFiles2(b)
 			if profiler.IsBusy() then return end -- I already know this is slow so it's just in the way
 
 			for i, data in ipairs(paths) do
-				local info = fs.getattributes(data.path)
+				local info = fs.get_attributes(data.path)
 
 				if info then
 					if not data.last_modified then

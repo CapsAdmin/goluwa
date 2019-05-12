@@ -98,7 +98,7 @@ end
 
 local data = ffi.new("goluwa_find_data[1]")
 
-function fs.find(dir)
+function fs.get_files(dir)
 	if dir:sub(-1) ~= "/" then
 		dir = dir .. "/"
 	end
@@ -128,13 +128,13 @@ function fs.find(dir)
 	return out
 end
 
-function fs.getcd()
+function fs.get_current_directory()
 	local buffer = ffi.new("char[260]")
 	local length = ffi.C.GetCurrentDirectoryA(260, buffer)
 	return ffi.string(buffer, length):gsub("\\", "/")
 end
 
-function fs.setcd(path)
+function fs.set_current_directory(path)
 	if ffi.C.SetCurrentDirectoryA(path) then
 		return true
 	end
@@ -142,7 +142,7 @@ function fs.setcd(path)
 	return nil, error_string()
 end
 
-function fs.createdir(path)
+function fs.create_directory(path)
 	if ffi.C.CreateDirectoryA(path, nil) then
 		return true
 	end
@@ -180,12 +180,12 @@ local function flags_to_table(bits)
 end
 
 local time_type = ffi.typeof("uint64_t *")
-local POSIX_TIME = function(ptr) 
+local POSIX_TIME = function(ptr)
 	return tonumber(ffi.cast(time_type, ptr)[0] / 10000000 - 11644473600)
 end
 
 
-function fs.getattributes(path)
+function fs.get_attributes(path)
 	local info = ffi.new("goluwa_file_attributes[1]")
 	if ffi.C.GetFileAttributesExA(path, 0, info) then
 		local info = {
@@ -232,7 +232,7 @@ do
 
 		function self:Remove()
 		end
-		
+
 		return self
 	end
 end

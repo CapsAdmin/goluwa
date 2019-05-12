@@ -3,19 +3,19 @@ local ffibuild = _G.ffibuild or {}
 local function msys2(cmd, msys2_install)
 	msys2_install = msys2_install or "C:/msys64/"
 
-	local cd = vfs.GetWorkingDirectory()
+	local cd = fs.GetWorkingDirectory()
 	cd = cd:gsub("^(.):", function(drive)
 		return "/" .. drive:lower()
 	end)
 
-	vfs.PushWorkingDirectory(msys2_install)
+	fs.PushWorkingDirectory(msys2_install)
 		local ok, transformed_cmd = pcall(function()
 			local f = io.open("msys2_shell.cmd", "r")
 			if not f then error("could not find msys2") end
 			f:close()
 			return "usr\\bin\\bash.exe -l -c \"".."cd "..cd ..";"..cmd.."\""
 		end)
-	vfs.PopWorkingDirectory()
+	fs.PopWorkingDirectory()
 
 	if not ok then
 		error(err)
@@ -73,26 +73,26 @@ if WINDOWS then
 		end
 
 		if os_execute then
-			vfs.PushWorkingDirectory(cd)
+			fs.PushWorkingDirectory(cd)
 			os.setenv("MSYSTEM", "MINGW64")
 			local ok, err = os.execute(transformed_cmd)
-			vfs.PopWorkingDirectory()
+			fs.PopWorkingDirectory()
 			if repl.started then repl.Start() end
 			return ok, err
 		end
 
-		vfs.PushWorkingDirectory(cd)
+		fs.PushWorkingDirectory(cd)
 		local f = io.popen(transformed_cmd)
 		if not f then
 			if repl.started then repl.Start() end
-			vfs.PopWorkingDirectory()
+			fs.PopWorkingDirectory()
 			return f, err
 		end
 
 		local str = f:read("*all")
 		if repl.started then repl.Start() end
 
-		vfs.PopWorkingDirectory()
+		fs.PopWorkingDirectory()
 
 		return str
 	end
@@ -190,7 +190,7 @@ function ffibuild.NixBuild(data)
 	end
 
 	-- the output directory
-	local output_dir = vfs.GetWorkingDirectory()
+	local output_dir = fs.GetWorkingDirectory()
 
 	-- temporary filenames
 	local tmp_main = output_dir .. "/temp.c"
@@ -275,14 +275,14 @@ end
 function ffibuild.ProcessSourceFileGCC(c_source, flags, dir)
 	flags = flags or ""
 
-	vfs.PushWorkingDirectory(dir)
+	fs.PushWorkingDirectory(dir)
 	local temp_name = "ffibuild_gcc_process_temp.c"
 	local temp_file = assert(io.open(temp_name, "w"))
 	temp_file:write(c_source)
 	temp_file:close()
 
 	local header = assert(ffibuild.UnixExecute("gcc -xc -E -P " .. flags .. " " .. temp_name))
-	vfs.PopWorkingDirectory()
+	fs.PopWorkingDirectory()
 	os.remove(temp_name)
 
 	return header
@@ -1941,20 +1941,20 @@ do -- lua helper functions
 		ffibuild.SourceControlClone(info.url, dir)
 
 		if info.patches then
-			vfs.PushWorkingDirectory(dir)
+			fs.PushWorkingDirectory(dir)
 				for _, patch in ipairs(info.patches) do
 					io.open("temp.patch", "wb"):write(patch)
 					os.execute("git apply --ignore-space-change --ignore-whitespace temp.patch")
 					os.remove("temp.patch")
 				end
-			vfs.PopWorkingDirectory()
+			fs.PopWorkingDirectory()
 		end
 
 		if not vfs.IsFile(dir .. "ran_build") or info.force_build then
 			logn("running build command")
-			vfs.PushWorkingDirectory(dir)
+			fs.PushWorkingDirectory(dir)
 			ffibuild.UnixExecute(info.cmd, true)
-			vfs.PopWorkingDirectory()
+			fs.PopWorkingDirectory()
 		end
 
 		for _, path in ipairs(ffibuild.GetSharedLibrariesInDirectory(dir)) do
@@ -2006,9 +2006,9 @@ do -- lua helper functions
 			if info.build_lua then
 				::again::
 
-				vfs.PushWorkingDirectory(dir)
+				fs.PushWorkingDirectory(dir)
 				local lua = info.build_lua(header, meta_data)
-				vfs.PopWorkingDirectory()
+				fs.PopWorkingDirectory()
 
 				local name = info.lua_name or ffibuild.GetBuildName()
 
@@ -2040,7 +2040,7 @@ do -- lua helper functions
 	end
 
 	function ffibuild.GetBuildName()
-		return ffibuild.lib_name or vfs.GetWorkingDirectory():match(".+/(.+)")
+		return ffibuild.lib_name or fs.GetWorkingDirectory():match(".+/(.+)")
 	end
 
 	do

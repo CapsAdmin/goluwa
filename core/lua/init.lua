@@ -156,12 +156,14 @@ do
 
 	package.loaded.fs = fs
 
-	fs.createdir(e.STORAGE_FOLDER)
-	fs.createdir(e.STORAGE_FOLDER .. "/userdata/")
-	fs.createdir(e.USERDATA_FOLDER)
-	fs.createdir(e.CACHE_FOLDER)
-	fs.createdir(e.SHARED_FOLDER)
-	fs.createdir(e.TEMP_FOLDER)
+	fs.create_directory(e.STORAGE_FOLDER)
+	fs.create_directory(e.STORAGE_FOLDER .. "/userdata/")
+	fs.create_directory(e.USERDATA_FOLDER)
+	fs.create_directory(e.CACHE_FOLDER)
+	fs.create_directory(e.SHARED_FOLDER)
+	fs.create_directory(e.TEMP_FOLDER)
+
+	_G.fs = fs
 end
 
 -- standard library extensions
@@ -174,6 +176,9 @@ runfile("lua/libraries/extensions/ffi.lua")
 runfile("lua/libraries/extensions/math.lua")
 
 utility = runfile("lua/libraries/utility.lua")
+
+runfile("lua/libraries/extensions/fs.lua")
+
 prototype = runfile("lua/libraries/prototype/prototype.lua")
 vfs = runfile("lua/libraries/filesystem/vfs.lua")
 

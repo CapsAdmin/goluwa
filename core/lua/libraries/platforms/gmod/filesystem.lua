@@ -23,8 +23,8 @@ function fs.uncache(path)
 	fs.get_attributes_cache[path] = nil
 end
 
-function fs.find(path)
-	dprint("fs.find: ", path)
+function fs.get_files(path)
+	dprint("fs.get_files: ", path)
 
 	if path:startswith("/") then
 		path = path:sub(2)
@@ -32,7 +32,7 @@ function fs.find(path)
 
 	local original_path = path
 
-	dprint("fs.find: is " .. path .. " cached?")
+	dprint("fs.get_files: is " .. path .. " cached?")
 
 	if fs.find_cache[path] then
 		dprint("yes!")
@@ -52,50 +52,47 @@ function fs.find(path)
 		where = "DATA"
 	end
 
-	local out
-
-	dprint("fs.find: file.Find("..path..", "..where..")")
+	dprint("fs.get_files: file.Find("..path..", "..where..")")
 
 	local files, dirs = file_Find(path, where)
 
 	dprint(files, dirs)
 
-	if files then
-
-		if where == "DATA" then
-			for i, name in ipairs(files) do
-				local new_name, count = name:gsub("%^", "%.")
-
-				if count > 0 then
-					files[i] = new_name:sub(0, -5)
-				end
-			end
-		end
-
-		table.add(files, dirs)
-
-		out = files
-
-		dprint("found " .. #out .. " files and folders")
+	if not files then
+		return nil, "No such file or directory"
 	end
 
-	fs.find_cache[original_path] = out
-	dprint("fs.find: caching results for dir " .. path)
+	if where == "DATA" then
+		for i, name in ipairs(files) do
+			local new_name, count = name:gsub("%^", "%.")
 
-	return out or {}
+			if count > 0 then
+				files[i] = new_name:sub(0, -5)
+			end
+		end
+	end
+
+	table.add(files, dirs)
+
+	dprint("found " .. #files .. " files and folders")
+
+	fs.find_cache[original_path] = files
+	dprint("fs.get_files: caching results for dir " .. path)
+
+	return files
 end
 
-function fs.getcd()
-	dprint("fs.getcd")
+function fs.get_current_directory()
+	dprint("fs.get_current_directory")
 	return ""
 end
 
-function fs.setcd(path)
-	dprint("fs.setcd: ", path)
+function fs.set_current_directory(path)
+	dprint("fs.set_current_directory: ", path)
 end
 
-function fs.createdir(path)
-	dprint("fs.createdir: ", path)
+function fs.create_directory(path)
+	dprint("fs.create_directory: ", path)
 
 	fs.uncache(path)
 
@@ -110,8 +107,8 @@ function fs.createdir(path)
 	return nil, "file.IsDir returns false"
 end
 
-function fs.getattributes(path)
-	dprint("fs.getattributes: ", path)
+function fs.get_attributes(path)
+	dprint("fs.get_attributes: ", path)
 
 	local cache_key = path
 	if cache_key:sub(-1) == "/" then cache_key = cache_key:sub(0, -2) end

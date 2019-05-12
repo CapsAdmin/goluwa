@@ -20,29 +20,29 @@ function CONTEXT:CreateFolder(path_info, force)
 
 		local path = path_info.full_path
 		--if path:endswith("/") then path = path:sub(0, -2) end
-		local ok, err = fs.createdir(path)
+		local ok, err = fs.create_directory(path)
 		vfs.ClearCallCache()
-		return ok, err
+		return ok or false, err
 	end
 	return false, "directory does not start from goluwa"
 end
 
 function CONTEXT:GetFiles(path_info)
-	if not self:IsFolder(path_info) then
-		return false, "not a directory"
+	local files, err = fs.get_files(path_info.full_path)
+	if not files then
+		return false, err
 	end
-
-	return fs.find(path_info.full_path)
+	return files
 end
 
 function CONTEXT:IsFile(path_info)
-	local info = fs.getattributes(path_info.full_path)
+	local info = fs.get_attributes(path_info.full_path)
 	return info and info.type ~= "directory"
 end
 
 function CONTEXT:IsFolder(path_info)
 	if path_info.full_path:endswith("/") then
-		local info = fs.getattributes(path_info.full_path:sub(0, -2))
+		local info = fs.get_attributes(path_info.full_path:sub(0, -2))
 		return info and info.type == "directory"
 	end
 end
@@ -80,7 +80,7 @@ if fs.open and ffi then
 			return false, "unable to open file: " .. ffi.strerror()
 		end
 
-		self.attributes = fs.getattributes(path_info.full_path)
+		self.attributes = fs.get_attributes(path_info.full_path)
 	end
 
 	function CONTEXT:WriteBytes(str)
@@ -182,7 +182,7 @@ else
 			return false, "unable to open file: " .. err
 		end
 
-		self.attributes = fs.getattributes(path_info.full_path)
+		self.attributes = fs.get_attributes(path_info.full_path)
 	end
 
 	function CONTEXT:WriteBytes(str)

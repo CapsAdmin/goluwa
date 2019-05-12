@@ -27,7 +27,7 @@ do
 			vfs.files_ran = {}
 			for _, path in ipairs(vfs.files_ran_) do
 				local full_path = vfs.GetAbsolutePath(path, false) or path
-				vfs.files_ran[full_path] = vfs.OSGetAttributes(full_path)
+				vfs.files_ran[full_path] = fs.GetAttributes(full_path)
 			end
 		end
 
@@ -258,7 +258,7 @@ do -- runfile
 			dir = path:match("(.+/)(.+)")
 
 			if not full_path:startswith(e.ROOT_FOLDER) then
-				vfs.PushWorkingDirectory(dir)
+				fs.PushWorkingDirectory(dir)
 			end
 
 			vfs.PushToFileRunStack(dir)
@@ -293,7 +293,7 @@ do -- runfile
 			vfs.PopFromFileRunStack()
 
 			if not full_path:startswith(e.ROOT_FOLDER) then
-				vfs.PopWorkingDirectory(dir)
+				fs.PopWorkingDirectory(dir)
 			end
 
 			return select(2, unpack(res))
@@ -324,9 +324,9 @@ function vfs.Require(name, ...)
 	local error_directories = {}
 	for _, dir in ipairs(vfs.module_directories) do
 		for _, data in ipairs(vfs.TranslatePath(dir, true)) do
-			vfs.PushWorkingDirectory(data.path_info.full_path)
+			fs.PushWorkingDirectory(data.path_info.full_path)
 			local ret = {pcall(_OLD_G.require, name, ...)}
-			vfs.PopWorkingDirectory()
+			fs.PopWorkingDirectory()
 
 			if ret[1] then
 				return unpack(ret, 2)
@@ -346,11 +346,11 @@ function vfs.Require(name, ...)
 		local dir = R(vfs.GetFolderFromPath(last))
 		if dir then
 
-			vfs.PushWorkingDirectory(dir)
+			fs.PushWorkingDirectory(dir)
 
 			local ret = {pcall(_OLD_G.require, name, ...)}
 
-			vfs.PopWorkingDirectory()
+			fs.PopWorkingDirectory()
 
 			if ret[1] then
 				return unpack(ret, 2)
@@ -437,11 +437,11 @@ if ffi then
 		serializer.StoreInFile("luadata", "shared/library_crashes.lua", full_path, true)
 		local ok, clib = pcall(_OLD_G.ffi.load, full_path)
 		serializer.StoreInFile("luadata", "shared/library_crashes.lua", full_path, nil)
-		
+
 		if ok then
 			return handle_windows_symbols(path, clib)
 		end
-		
+
 		return nil, clib .. "\n" .. utility.GetLikelyLibraryDependenciesFormatted(full_path)
 	end
 
@@ -449,11 +449,11 @@ if ffi then
 	function vfs.FFILoadLibrary(path, ...)
 		local errors = {}
 
-		if vfs and vfs and vfs.PushWorkingDirectory then
+		if vfs and vfs and fs.PushWorkingDirectory then
 			local files = vfs.GetFiles({
-					path = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/", 
-					filter = path, 
-					filter_plain = true, 
+					path = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/",
+					filter = path,
+					filter_plain = true,
 					full_path = true
 			})
 			for _, full_path in ipairs(files) do
@@ -461,11 +461,11 @@ if ffi then
 					logn("ffi.load: refusing to load ", full_path, " as it crashed last time")
 					break
 				end
-				
+
 				do
-					vfs.PushWorkingDirectory(full_path:match("(.+/)"))
+					fs.PushWorkingDirectory(full_path:match("(.+/)"))
 					local clib, err = load(path, full_path)
-					vfs.PopWorkingDirectory()
+					fs.PopWorkingDirectory()
 					if clib then
 						return clib
 					end
@@ -487,7 +487,7 @@ if ffi then
 		if ok then
 			return handle_windows_symbols(path, clib)
 		end
-		
+
 		table.insert(errors, clib)
 
 		return nil, table.concat(errors, "\n")

@@ -3,6 +3,7 @@ local fs = _G.fs or {}
 local ffi = require("ffi")
 
 ffi.cdef([[
+	char *strerror(int);
 	void *fopen(const char *filename, const char *mode);
 	size_t fread(void *ptr, size_t size, size_t nmemb, void *stream);
 	size_t fwrite(const void *ptr, size_t size, size_t nmemb, void *stream);
@@ -11,8 +12,11 @@ ffi.cdef([[
 	int fclose(void *fp);
 	int feof(void *stream);
 	char *getcwd(char *buf, size_t size);
-	int chdir (const char *filename);
-	int mkdir (const char *filename, uint32_t mode);
+	int chdir(const char *filename);
+	int mkdir(const char *filename, uint32_t mode);
+	int rmdir(const char *filename);
+	int fileno(void *stream);
+	int remove(const char *pathname);
 
 	typedef struct DIR DIR;
 	DIR *opendir(const char *name);
@@ -38,6 +42,12 @@ ffi.cdef([[
 	static const uint32_t IN_MODIFY = 0x00000002;
 ]])
 
+local function last_error(num)
+	num = num or ffi.errno()
+	local err = ffi.string(ffi.C.strerror(num))
+	return err == "" and tostring(num) or err
+end
+
 fs.open = ffi.C.fopen
 fs.read = ffi.C.fread
 fs.write = ffi.C.fwrite
@@ -50,6 +60,7 @@ fs.eof = ffi.C.feof
 if jit.os == "OSX" then
 	ffi.cdef([[
 		int stat64(const char *path, void *buf);
+		int lstat64(const char *path, void *buf);
 		typedef size_t time_t;
 		struct dirent {
 			uint64_t d_ino;
@@ -74,51 +85,10 @@ else
 	]])
 end
 
-function fs.find(name)
-	local out = {}
-
-	local ptr = ffi.C.opendir(name)
-
-	if ptr == nil then
-		return out
-	end
-
-	local i = 1
-	while true do
-		local dir_info = ffi.C.readdir(ptr)
-
-		if dir_info == nil then break end
-
-		local name = ffi.string(dir_info.d_name)
-
-		if name ~= "." and name ~= ".." then
-			out[i] = name
-			i = i + 1
-		end
-	end
-
-	ffi.C.closedir(ptr)
-
-	return out
-end
-
-function fs.getcd()
-	local temp = ffi.new("char[1024]")
-	return ffi.string(ffi.C.getcwd(temp, ffi.sizeof(temp)))
-end
-
-function fs.setcd(path)
-	return ffi.C.chdir(path)
-end
-
-function fs.createdir(path)
-	return ffi.C.mkdir(path, 448) -- 0700
-end
-
-local stat
+local stat_struct
 
 if jit.os == "OSX" then
-	stat = ffi.typeof([[
+	stat_struct = ffi.typeof([[
 		struct {
 			uint32_t st_dev;
 			uint16_t st_mode;
@@ -147,7 +117,7 @@ if jit.os == "OSX" then
 	]])
 else
 	if jit.arch == "x64" then
-		stat = ffi.typeof([[
+		stat_struct = ffi.typeof([[
 			struct {
 				uint64_t st_dev;
 				uint64_t st_ino;
@@ -170,7 +140,7 @@ else
 			}
 		]])
 	else
-		stat = ffi.typeof([[
+		stat_struct = ffi.typeof([[
 			struct {
 				uint64_t st_dev;
 				uint8_t  __pad0[4];
@@ -196,30 +166,24 @@ else
 	end
 end
 
-local statbox = ffi.typeof("$[1]", stat)
+local statbox = ffi.typeof("$[1]", stat_struct)
+local stat_func
+local stat_func_link
 local DIRECTORY = 0x4000
 
 if jit.os == "OSX" then
-	stat = function(path, buff) return ffi.C.stat64(path, buff) end
+	stat_func = ffi.C.stat64
+	stat_func_link = ffi.C.lstat64
 else
-	local enum = jit.arch == "x64" and 4 or 195
-	stat = function(path, buff) return ffi.C.syscall(enum, path, buff) end
-end
+	local arch = jit.arch
 
-function fs.getattributes(path)
-	local buff = statbox()
-	local ret = stat(path, buff)
-
-	if ret == 0 then
-		return {
-			last_accessed = tonumber(buff[0].st_atime),
-			last_changed = tonumber(buff[0].st_ctime),
-			last_modified = tonumber(buff[0].st_mtime),
-			type = bit.band(buff[0].st_mode, DIRECTORY) ~= 0 and "directory" or "file",
-			size = tonumber(buff[0].st_size),
-		}
+	stat_func = function(path, buff)
+		return ffi.C.syscall(arch == "x64" and 4 or 195, path, buff)
 	end
-	return false
+
+	stat_func_link = function(path, buff)
+		return ffi.C.syscall(arch == "x64" and 6 or 196, path, buff)
+	end
 end
 
 ffi.cdef([[
@@ -229,7 +193,7 @@ ffi.cdef([[
 
 function fs.setcustomattribute(path, data)
 	if ffi.C.setxattr(path, "goluwa_attributes", data, #data, 0x2) ~= 0 then
-		return nil, system.LastOSError()
+		return nil, last_error()
 	end
 	return true
 end
@@ -237,7 +201,7 @@ end
 function fs.getcustomattribute(path)
 	local size = ffi.C.getxattr(path, "goluwa_attributes", nil, 0)
 	if size == -1 then
-		return nil, system.LastOSError()
+		return nil, last_error()
 	end
 
 	local buffer = ffi.string("char[?]", size)
@@ -306,6 +270,195 @@ if jit.os ~= "OSX" then
 		end
 
 		return self
+	end
+end
+
+do
+	do
+		local function is_dots(ptr)
+			if ptr[0] == string.byte(".") then
+				if ptr[1] == 0 or (ptr[1] == string.byte(".") and ptr[2] == 0) then
+					return true
+				end
+			end
+
+			return false
+		end
+
+		local ffi_string = ffi.string
+		local opendir = ffi.C.opendir
+		local readdir = ffi.C.readdir
+		local closedir = ffi.C.closedir
+
+		function fs.get_files(path)
+			local out = {}
+
+			local ptr = opendir(path or "")
+
+			if ptr == nil then
+				return nil, last_error()
+			end
+
+			local i = 1
+			while true do
+				local dir_info = readdir(ptr)
+
+				if dir_info == nil then break end
+
+				if not is_dots(dir_info.d_name) then
+					out[i] = ffi_string(dir_info.d_name)
+					i = i + 1
+				end
+			end
+
+			closedir(ptr)
+
+			return out
+		end
+
+		local function walk(path, tbl, errors)
+			local ptr = opendir(path or "")
+
+			if ptr == nil then
+				table.insert(errors, {path = path, error = last_error()})
+				return
+			end
+
+			tbl[tbl[0]] = path
+			tbl[0] = tbl[0] + 1
+
+			while true do
+				local dir_info = readdir(ptr)
+
+				if dir_info == nil then break end
+
+				if not is_dots(dir_info.d_name) then
+					local name = path .. ffi_string(dir_info.d_name)
+
+					if dir_info.d_type == 4 then
+						walk(name .. "/", tbl, errors)
+					else
+						tbl[tbl[0]] = name
+						tbl[0] = tbl[0] + 1
+					end
+				end
+			end
+
+			closedir(ptr)
+
+			return tbl
+		end
+
+		function fs.get_files_recursive(path)
+			if not path:sub(-1) ~= "/" then
+				path = path .. "/"
+			end
+
+			local out = {}
+			local errors = {}
+			out[0] = 1
+			if not walk(path, out, errors) then
+				return nil, errors[1].error
+			end
+			out[0] = nil
+			return out, errors[1] and errors or nil
+		end
+	end
+
+	ffi.cdef("ssize_t sendfile(int out_fd, int in_fd, long int *offset, size_t count);")
+
+	function fs.get_attributes(path, link)
+		local buff = statbox()
+
+		local ret = link and stat_func_link(path, buff) or stat_func(path, buff)
+
+		if ret == 0 then
+			return {
+				last_accessed = tonumber(buff[0].st_atime),
+				last_changed = tonumber(buff[0].st_ctime),
+				last_modified = tonumber(buff[0].st_mtime),
+				type = bit.band(buff[0].st_mode, DIRECTORY) ~= 0 and "directory" or "file",
+				size = tonumber(buff[0].st_size),
+				mode = buff[0].st_mode,
+				links = buff[0].st_nlink
+			}
+		end
+
+		return nil, last_error()
+	end
+
+	function fs.copy(from, to)
+		local from_file = fs.open(from, "rb")
+		if from_file == nil then
+			return nil, "error opening " .. from .. ": " .. last_error()
+		end
+
+		local to_file = fs.open(to, "w")
+		if to_file == nil then
+			return nil, "error opening " .. to .. ": " .. last_error()
+		end
+
+		local pos = fs.tell(from_file)
+		fs.seek(from_file, 0, 2)
+		local size = fs.tell(from_file)
+		fs.seek(from_file, pos, 0)
+
+		repeat
+			local size_written = ffi.C.sendfile(ffi.C.fileno(to_file), ffi.C.fileno(from_file), nil, size)
+			if size_written == -1 then
+				return nil, last_error()
+			end
+			size = size - size_written
+		until size <= 0
+
+		return true
+	end
+
+	ffi.cdef([[
+        int link(const char *from, const char *to);
+        int symlink(const char *from, const char *to);
+	]])
+
+	function fs.link(from, to, symbolic)
+		if symbolic then
+			if ffi.C.symlink(from, to) ~= 0 then
+				return nil, last_error()
+			end
+		else
+			if ffi.C.link(from, to) ~= 0 then
+				return nil, last_error()
+			end
+		end
+
+		return true
+	end
+
+	function fs.create_directory(path)
+		if ffi.C.mkdir(path, 448) ~= 0 then
+			return nil, last_error()
+		end
+
+		return true
+	end
+
+	function fs.remove(path)
+		if ffi.C.remove(path) ~= 0 then
+			return nil, last_error()
+		end
+		return true
+	end
+
+	function fs.set_current_directory(path)
+		if ffi.C.chdir(path) ~= 0 then
+			return nil, last_error()
+		end
+
+		return true
+	end
+
+	function fs.get_current_directory()
+		local temp = ffi.new("char[1024]")
+		return ffi.string(ffi.C.getcwd(temp, ffi.sizeof(temp)))
 	end
 end
 

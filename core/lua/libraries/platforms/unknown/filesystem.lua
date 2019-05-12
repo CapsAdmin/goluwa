@@ -1,24 +1,24 @@
 local fs = _G.fs or {}
 
-function fs.find(name)
+function fs.get_files(name)
 	local out = {}
 
 	return out
 end
 
-function fs.getcd()
+function fs.get_current_directory()
 	return "."
 end
 
-function fs.setcd(path)
+function fs.set_current_directory(path)
 
 end
 
-function fs.createdir(path)
+function fs.create_directory(path)
 
 end
 
-function fs.getattributes(path)
+function fs.get_attributes(path)
 	return false
 end
 
