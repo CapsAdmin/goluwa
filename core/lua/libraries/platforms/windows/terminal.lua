@@ -299,6 +299,10 @@ function terminal.ForegroundColor(r,g,b)
 	terminal.Write("\27[38;2;" .. r .. ";" .. g .. ";" .. b .. "m")
 end
 
+function terminal.ForegroundColorFast(r,g,b)
+    terminal.Write(string.format("\27[38;2;%i;%i;%im",r,g,b))
+end
+
 function terminal.BackgroundColor(r,g,b)
 	r = math.floor(r * 255)
 	g = math.floor(g * 255)
@@ -537,15 +541,15 @@ function terminal.ReadEvents()
 					--print(evt.Event.KeyEvent.uChar.UnicodeChar)
 					--for k,v in pairs(keys) do if v == key then print(k) end end
 					--table.print(mod)
-					
+
 					local CTRL = mod.LEFT_CTRL_PRESSED or mod.RIGHT_CTRL_PRESSED
 					local SHIFT = mod.SHIFT_PRESSED or mod.SHIFT_PRESSED
-					
+
 					if mod.SHIFT_PRESSED and mod.LEFT_ALT_PRESSED and evt.Event.KeyEvent.uChar.UnicodeChar == 68 then
 						CTRL = true
 						SHIFT = false
 						key = keys.VK_DELETE
-						
+
 						mod.SHIFT_PRESSED = nil
 						mod.LEFT_ALT_PRESSED = nil
 					end
