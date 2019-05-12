@@ -10,11 +10,6 @@ language = runfile("lua/libraries/language.lua") _G.L = language.LanguageString 
 runfile("lua/libraries/prototype/ecs_entity.lua")
 runfile("lua/libraries/prototype/base_ecs_component.lua")
 
-_G.P = profiler.ToggleTimer
-_G.I = profiler.ToggleInstrumental
-_G.S = profiler.ToggleStatistical
-_G.LOOM = profiler.ToggleLoom
-
 steam = runfile("lua/libraries/steam/steam.lua") -- utilities for dealing with steam, the source engine and steamworks
 
 if NETWORK then

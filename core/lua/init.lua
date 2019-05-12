@@ -210,6 +210,12 @@ system = runfile("lua/libraries/system.lua") -- os and luajit related functions 
 event = runfile("lua/libraries/event.lua") -- event handler
 utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 profiler = runfile("lua/libraries/profiler.lua")
+
+_G.P = profiler.ToggleTimer
+_G.I = profiler.ToggleInstrumental
+_G.S = profiler.ToggleStatistical
+_G.LOOM = profiler.ToggleLoom
+
 oh = runfile("lua/libraries/oh/oh.lua") -- lua tokenizer, parser and emitter
 repl = runfile("lua/libraries/repl.lua")
 ffibuild = runfile("lua/libraries/ffibuild.lua") -- used to build binaries
