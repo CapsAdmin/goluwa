@@ -10,7 +10,7 @@ local table_concat = table.concat
 local UTF8_ACCEPT = 0
 local UTF8_REJECT = 12
 
-local utf8d = ffi.new("const uint8_t[364]", {
+local utf8d = {
 	-- The first part of the table maps bytes to character classes that
 	-- to reduce the size of the transition table and create bitmasks.
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -29,20 +29,19 @@ local utf8d = ffi.new("const uint8_t[364]", {
 	12,12,12,12,12,12,12,24,12,12,12,12, 12,24,12,12,12,12,12,12,12,24,12,12,
 	12,12,12,12,12,12,12,36,12,36,12,12, 12,36,12,12,12,12,12,36,12,36,12,12,
 	12,36,12,12,12,12,12,12,12,12,12,12,
-})
+}
 
 local function totable(str)
 	local state = UTF8_ACCEPT
-	local codepoint = 0;
-	local offset = 0;
-	local ptr = ffi.cast("uint8_t *", str)
+	local codepoint = 0
+	local offset = 0
 
 	local out = {}
 	local out_i = 1
 
-	for i = 0, #str - 1 do
-		local byte = ptr[i]
-		local ctype = utf8d[byte]
+	for i = 1, #str do
+		local byte = str:byte(i)
+		local ctype = utf8d[byte + 1]
 
 		if state ~= UTF8_ACCEPT then
 			codepoint = bor(band(byte, 0x3f), lshift(codepoint, 6))
@@ -50,33 +49,32 @@ local function totable(str)
 			codepoint = band(rshift(0xff, ctype), byte)
 		end
 
-		state = utf8d[256 + state + ctype]
+		state = utf8d[256 + state + ctype + 1]
 
 		if state == UTF8_ACCEPT then
 			if codepoint > 0xffff then
-				codepoint = lshift(((0xD7C0 + rshift(codepoint, 10)) - 0xD7C0), 10) +
-				(0xDC00 + band(codepoint, 0x3ff)) - 0xDC00
+				codepoint = lshift(((0xD7C0 + rshift(codepoint, 10)) - 0xD7C0), 10) + (0xDC00 + band(codepoint, 0x3ff)) - 0xDC00
 			end
 
 			if codepoint <= 127 then
 				out[out_i] = string_char(codepoint)
 			elseif codepoint < 2048 then
 				out[out_i] = string_char(
-					192 + math_floor(codepoint / 64),
-					128 + (codepoint % 64)
+					192 + codepoint / 64,
+					128 + band(codepoint, 63)
 				)
 			elseif codepoint < 65536 then
 				out[out_i] = string_char(
-					224 + math_floor(codepoint / 4096),
-					128 + (math_floor(codepoint / 64) % 64),
-					128 + (codepoint % 64)
+					224 + codepoint / 4096,
+					128 + band(codepoint / 64, 63),
+					128 + band(codepoint, 63)
 				)
 			elseif codepoint < 2097152 then
 				out[out_i] = string_char(
-					240 + math_floor(codepoint / 262144),
-					128 + (math_floor(codepoint / 4096) % 64),
-					128 + (math_floor(codepoint / 64) % 64),
-					128 + (codepoint % 64)
+					240 + codepoint / 262144,
+					128 + band(codepoint / 4096, 63),
+					128 + band(codepoint / 64, 63),
+					128 + band(codepoint, 63)
 				)
 			else
 				out[out_i] = ""
@@ -91,7 +89,7 @@ end
 local config = {}
 
 -- This is needed for UTF8. Assume everything is a letter if it's not any of the other types.
-config.FallbackCharacterType = "letter" 
+config.FallbackCharacterType = "letter"
 
 function config.OnInitialize(tk, str, on_error)
 	tk.code = totable(str)

@@ -59,7 +59,8 @@ do
             type = type,
             start = start == 1 and 0 or start,
             stop = stop,
-            value = self:GetCharsRange(start, stop),
+            tk = self,
+            get_value = self.get_value,
         }
 
         self.whitespace_buffer_i = self.whitespace_buffer_i + 1
@@ -103,7 +104,8 @@ do
                 start = start,
                 stop = stop,
                 whitespace = whitespace,
-                value = self:GetCharsRange(start, stop)
+                tk = self,
+                get_value = self.get_value,
             }
 
             if type == "end_of_file" then break end
@@ -114,11 +116,17 @@ do
         return tokens
     end
 
+    local function get_value(token)
+        return token.tk:GetCharsRange(token.start, token.stop)
+    end
+
     function TOKENIZER:ResetState()
         self.code_length = self:GetLength()
         self.whitespace_buffer = {}
         self.whitespace_buffer_i = 1
         self.i = 1
+
+        self.get_value = get_value
     end
 end
 

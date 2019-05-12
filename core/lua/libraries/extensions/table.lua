@@ -1,3 +1,61 @@
+
+do -- negative pairs
+	local v
+	local function iter(a, i)
+		i = i - 1
+		v = a[i]
+		if v then
+			return i, v
+		end
+	end
+
+	function table.npairs(a)
+		return iter, a, #a + 1
+	end
+end
+
+function table.rpairs(tbl)
+	local sorted = {}
+
+	for key, val in pairs(tbl) do
+		table.insert(sorted, {key = key, val = val, rand = math.random()})
+	end
+
+	table.sort(sorted, function(a,b) return a.rand > b.rand end)
+
+	local i = 0
+
+	return function()
+		i = i + 1
+		if sorted[i] then
+			return sorted[i].key, sorted[i].val--, sorted[i].rand
+		end
+	end
+end
+
+function table.spairs(tbl, desc)
+	local sorted = {}
+
+	for key, val in pairs(tbl) do
+		table.insert(sorted, {key = key, val = val})
+	end
+
+	if desc then
+		table.sort(sorted, function(a,b) return a.key > b.key end)
+	else
+		table.sort(sorted, function(a,b) return a.key < b.key end)
+	end
+
+	local i = 0
+
+	return function()
+		i = i + 1
+		if sorted[i] then
+			return sorted[i].key, sorted[i].val--, sorted[i].rand
+		end
+	end
+end
+
 table.new = table.new or desire("table.new") or function() return {} end
 table.clear = table.clear or desire("table.clear") or function(t) for k in pairs(t) do t[k] = nil end end
 

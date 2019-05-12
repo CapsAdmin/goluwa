@@ -300,7 +300,7 @@ do
 			resize_field(data, "source")
 			resize_field(data, "name")
 
-			for _, info in npairs(data) do
+			for _, info in table.npairs(data) do
 				logf("  %s   %s  (%s)\n", info.source, info.name, info.arg_line)
 			end
 
@@ -334,7 +334,7 @@ do
 			resize_field(data, "key")
 			resize_field(data, "value")
 
-			for _, info in npairs(data) do
+			for _, info in table.npairs(data) do
 				logf("  %s   %s\n", info.key, info.value)
 			end
 			logn("}")

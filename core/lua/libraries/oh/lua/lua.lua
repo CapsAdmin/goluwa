@@ -6,14 +6,13 @@ lua.syntax = oh.SetupSyntax(runfile("syntax.lua", oh))
 do
 	local Tokenizer = runfile("tokenizer.lua", lua, oh)
 
+	local function on_error(self, msg, start, stop)
+		table.insert(self.errors, {msg = msg, start = start, stop = stop})
+	end
+
 	function lua.Tokenizer(code)
-		local errors = {}
-
-		local self = Tokenizer(code, function(_, msg, start, stop)
-			table.insert(errors, {msg = msg, start = start, stop = stop})
-		end)
-
-		self.errors = errors
+		local self = Tokenizer(code)
+		self.errors = {}
 
 		self:ResetState()
 
@@ -22,16 +21,14 @@ do
 end
 
 do
+	local function on_error(self, msg, start, stop)
+		table.insert(self.errors, {msg = msg, start = start, stop = stop})
+	end
 	local Parser = runfile("parser.lua", lua, oh)
 
 	function lua.Parser(tokens)
-		local errors = {}
-
-		local self = Parser(function(_, msg, start, stop)
-			table.insert(errors, {msg = msg, start = start, stop = stop})
-		end)
-
-		self.errors = errors
+		local self = Parser()
+		self.errors = {}
 
 		if tokens then
 			return self:BuildAST(tokens)

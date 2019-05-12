@@ -578,7 +578,7 @@ do -- commands
 
 	commands.Add("help|usage=string|nil", function(cmd)
 		if not cmd then
-			for k,v in spairs(commands.GetCommands()) do
+			for k,v in table.spairs(commands.GetCommands()) do
 				logn(assert(commands.GetHelpText(k)))
 			end
 		else
