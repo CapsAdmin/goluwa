@@ -4,15 +4,24 @@ test(table.hasvalue, files, "core").expect_compare(function(a, b) return type(a)
 test(table.hasvalue, files, "goluwa").expect_compare(function(a, b) return type(a) == "number" end)
 
 do
-    local res = fs.get_files_recursively("framework")
+    local res = fs.get_files_recursive("framework")
     if #res < 50 then
         test.fail("fs.GetFilesRecursively('framework')", "expected more than 50 results, got " .. #res)
     end
 end
 
-fs.create_directory("TEST")
-fs.create_directory("TEST/TEST")
-fs.link("goluwa.cmd", "TEST/TEST/foo")
-fs.remove("TEST/TEST/foo")
-fs.remove("TEST/TEST")
-fs.remove("TEST")
+test(fs.create_directory, "TEST").expect(true)
+test(fs.create_directory, "TEST/TEST").expect(true)
+local f = io.open("foo", "w")
+f:write("hello world")
+f:close()
+test(fs.link, "foo", "TEST/TEST/foo").expect(true)
+test(fs.set_current_directory, "TEST/TEST").expect(true)
+    local f = io.open("foo", "r")
+    test(function() return f:read("*all") end).expect("hello world")
+    f:close()
+test(fs.set_current_directory, "../../").expect(true)
+test(fs.get_attributes, "TEST/TEST/foo").expect_compare(function(a) return type(a) == "table" end)
+test(fs.RemoveRecursively, "TEST").expect(true)
+test(fs.get_attributes, "TEST/TEST/foo").expect_compare(nil, function(a) return type(a) == "string" end)
+

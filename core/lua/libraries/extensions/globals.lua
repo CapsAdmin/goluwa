@@ -171,7 +171,7 @@ do -- logging
 	local count = 0
 	local last_count_length = 0
 
-	require("fs").createdir(base_log_dir)
+	fs.create_directory(base_log_dir)
 
 	local suppress_print = false
 

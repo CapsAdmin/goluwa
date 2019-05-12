@@ -441,8 +441,15 @@ do
 		return true
 	end
 
-	function fs.remove(path)
+	function fs.remove_file(path)
 		if ffi.C.remove(path) ~= 0 then
+			return nil, last_error()
+		end
+		return true
+	end
+
+	function fs.remove_directory(path)
+		if ffi.C.rmdir(path) ~= 0 then
 			return nil, last_error()
 		end
 		return true
