@@ -14,6 +14,15 @@ do -- negative pairs
 	end
 end
 
+function table.map(tbl, cb)
+	
+	for i,v in ipairs(tbl) do
+		tbl[i] = cb(v)
+	end
+
+	return tbl
+end	
+
 function table.rpairs(tbl)
 	local sorted = {}
 
