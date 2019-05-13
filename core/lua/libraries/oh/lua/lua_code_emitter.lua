@@ -80,7 +80,7 @@ end
 
 
 function META:LSX(node)
-	self:Emit("LSX(")
+	self:Emit(" LSX(")
 
 	self:Emit("'")self:EmitToken(node.class)self:Emit("'")
 	self:Emit(",")
@@ -90,6 +90,7 @@ function META:LSX(node)
 		for i, prop in ipairs(node.props) do
 			self:EmitToken(prop.key)
 			self:EmitToken(prop.tokens["="])
+
 			if prop.expression then
 				self:Expression(prop.expression)
 			else
@@ -104,23 +105,24 @@ function META:LSX(node)
 	else
 		self:Emit("nil")
 	end
-	self:Emit(",")
 
-	self:Emit("[[")
-	for _, child in ipairs(node.values) do
-		self:EmitToken(child)
-	end
-	self:Emit("]]")
-	
 	if node.children[1] then
-		self:Emit("{")
 		self:Emit(",")
+		self:Emit("{")
 
+		local max = #node.children
 		for i, child in ipairs(node.children) do
-			self:LSX(child)
-			if i ~= #node.children then
-				self:Emit(",")
+			if child.tokens then
+				self:Expression(child)
+			else
+				self:Emit("[[")
+				self:EmitToken(child)
+				if i == max then
+					self:EmitToken(node.tokens["stop<"], "") -- emit the whitespce from <
+				end
+				self:Emit("]]")
 			end
+			self:Emit(",")
 		end
 		self:Emit("}")
 	end

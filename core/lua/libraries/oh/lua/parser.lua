@@ -262,8 +262,8 @@ end
 
 function META:LSX()
 	local node = self:Node("lsx")
-	node.tokens["start<"] = self:ReadToken()
-	node.class = self:ReadToken()
+	node.tokens["start<"] = self:ReadExpectValue("<")
+	node.class = self:ReadExpectType("letter")
 
 	if self:IsType("letter") then
 		node.props = {}
@@ -275,7 +275,9 @@ function META:LSX()
 				prop.value = self:ReadToken()
 			else
 				prop.tokens["{"] = self:ReadExpectValue("{")
-				prop.expression = self:Expression()
+				if not self:IsValue("}") then
+					prop.expression = self:Expression()
+				end
 				prop.tokens["}"] = self:ReadExpectValue("}")
 			end
 			table.insert(node.props, prop)
@@ -288,8 +290,7 @@ function META:LSX()
 		return node
 	else
 		node.tokens["start>"] = self:ReadExpectValue(">")
-	
-		node.values = {}
+
 		node.children = {}
 		for i = 1, self:GetLength() do
 			if self:IsValue("<") and self:GetTokenOffset(1).value == "/" and self:GetTokenOffset(2).value == node.class.value then
@@ -297,11 +298,15 @@ function META:LSX()
 			elseif self:IsValue("<") and self:GetTokenOffset(1).value ~= "/" then
 				table.insert(node.children, self:LSX())
 			elseif self:IsValue("{") then
-				table.insert(node.values, self:Block())
+				self:ReadToken()
+				if not self:IsValue("}") then
+					table.insert(node.children, self:Expression())
+				end
+				self:ReadExpectValue("}")
 			elseif self:IsValue(">") then
 				break
 			else
-				table.insert(node.values, self:ReadToken())
+				table.insert(node.children, self:ReadToken())
 			end
 		end
 		node.tokens["stop<"] = self:ReadToken()

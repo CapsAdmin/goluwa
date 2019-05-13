@@ -1,76 +1,76 @@
-local SEARCH = "http://api.github.com/search/repositories"
+--oh!
 
-local function CSS(tbl)
-    return {
-        type = "css",
-        values = tbl,
-    }
-end
+local function LSX(class, props, children)
+    do
+        local s = "<" .. class
+        if props then
+            s = s .. " "
+            for k,v in pairs(props) do
+                s = s .. k .. "='" .. tostring(v) .. "'"
+            end
+        end
+        s = s .. ">"
 
-local function Result(result) 
-    return {
-        [[
-            <div style=]], CSS{
-                padding = "10px",
-                margin = "10px",
-                background = 'white',
-                ["box-shadow"] = '0 1px 5px rgba(0,0,0,0.5)'
-            }, [[>
-                <div>
-                    <a href=]], result.html_url, [[ target="_blank">
-                        ]], result.full_name, [[
-                    </a>
-                    🌟<strong>]],result.stargazers_count,[[</strong>
-                </div>
-                <p>]],result.description,[[</p>
-            </div>
-        ]]
-    }
-end
-
-local META = {}
-
-function META:OnMount()
-    resource.Download(SEARCH .. "?q=preact"):Then(function(results)
-        self.results = vfs.Read(results).items or {}
-        
-        local function render(tbl, flat)
-            for i,v in ipairs(tbl) do
+        if children then
+            for _, v in ipairs(children) do
                 if type(v) == "table" then
-                    if v.type and v.type == "css" then
-                        local css = {}
-
-                        for k,v in pairs(v.values) do
-                            table.insert(css, k .. ":" .. tostring(v) .. ";")
-                        end
-
-                        v = '"'..table.concat(css)..'"'
-                    else
-                        v = render(v, flat)
+                    print(v)
+                    for _, v in ipairs(v) do
+                        s = s .. tostring(v)
                     end
                 else
-                    v = tostring(v)
+                    s = s .. tostring(v)
                 end
-                table.insert(flat, v)
             end
         end
 
-        local flat = {}
-        render(self:Render(), flat)
-        vfs.Write("WO.html", table.concat(flat))
-        print(R"WO.html")
-    end)
+        s = s .. "</" .. class .. ">"
+
+        return s
+    end
+
+    return {
+        class = class,
+        props = props,
+        children = children,
+    }
 end
 
-function META:Render()
-    return {[[
+local function CSS(tbl)
+    local s = ""
+    for k,v in pairs(tbl) do
+        s = s .. k .. ":" .. tostring(v) .. ";"
+    end
+    return s
+end
+
+local function Result(result)
+    return <div style={CSS{
+        padding = "10px",
+        margin = "10px",
+        background = 'white',
+        ["box-shadow"] = '0 1px 5px rgba(0,0,0,0.5)'
+    }}>
         <div>
-            <h1 style="text-align:center;">Example</h1>
-            <div class="list">
-                ]], table.map(self.results, function(result) return Result(result) end) ,[[
-            </div>
+            <a href={result.html_url} target="_blank">
+                {result.full_name}
+            </a>
+            🌟<strong>{result.stargazers_count}</strong>
         </div>
-    ]]}
+        <p>{result.description}</p>
+    </div>
 end
 
-META:OnMount()
+resource.Download("http://api.github.com/search/repositories?q=preact"):Then(function(results)
+    local results = vfs.Read(results).items or {}
+
+    local html = <div>
+        <h1 style="text-align:center;">Example</h1>
+        <div class="list">
+            {table.map(results, function(result) return Result(result) end)}
+        </div>
+    </div>
+
+    vfs.Write("index.html", html)
+    print(R"index.html")
+end)
