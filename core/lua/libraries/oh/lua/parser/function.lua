@@ -6,6 +6,38 @@ function META:IsFunctionStatement()
         (self:IsValue("local") and self:GetTokenOffset(1).value == "function")
 end
 
+local function read_short_call_body(self, node)
+
+    local implicit_return = true
+
+    if self:IsValue("(") then
+        node.tokens["func("] = self:ReadToken("(")
+    else
+        implicit_return = true
+    end
+
+    node.arguments = self:IdentifierList()
+
+    if self:IsValue(")") then
+        node.tokens["func)"] = self:ReadToken(")")
+    end
+
+    if implicit_return then
+        --[[
+
+        node.block = {type = "block", statements = {ret}}
+        node.no_end = true
+        ]]
+        node.block = self:Block({["end"] = true, [")"] = true}, true)
+        node.no_end = true
+    else
+        node.block = self:Block({["end"] = true})
+        node.tokens["end"] = self:ReadToken("end")
+    end
+
+    return node
+end
+
 local function read_call_body(self, node)
     local start = self:GetToken()
 
@@ -36,9 +68,20 @@ function META:ReadFunctionStatement()
     return read_call_body(self, node)
 end
 
-function META:AnonymousFunction()
-    local node = self:Node("function")
-    node.tokens["function"] = self:ReadExpectValue("function")
+function META:IsAnonymousFunction()
+    return
+        self:IsValue("function") or self:IsValue("fn")
+end
 
-    return read_call_body(self, node)
+function META:AnonymousFunction()
+    if self:IsValue("fn") then
+        local node = self:Node("function")
+        node.tokens["function"] = self:ReadExpectValue("fn")
+        return read_short_call_body(self, node)
+    else
+        local node = self:Node("function")
+        node.tokens["function"] = self:ReadExpectValue("function")
+
+        return read_call_body(self, node)
+    end
 end

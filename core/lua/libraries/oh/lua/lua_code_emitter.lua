@@ -141,14 +141,53 @@ function META:Function(v)
 		self:EmitToken(v.tokens["local"])
 	end
 
-	self:EmitToken(v.tokens["function"])
+	self:EmitToken(v.tokens["function"], "function")
 	self:Whitespace(" ")
 
 	if v.value then
 		self:Expression(v.value)
 	end
 
-	self:EmitToken(v.tokens["func("])self:ExpressionList(v.arguments)self:EmitToken(v.tokens["func)"])
+	self:EmitToken(v.tokens["func("], "(")
+	do
+		local tbl = v.arguments
+		for i = 1, #tbl do
+			if tbl[i].destructor then
+				self:Emit("__DSTR" .. i)
+			else
+				self:Expression(tbl[i])
+			end
+			if i ~= #tbl then
+				self:EmitToken(tbl[i].tokens[","])
+				self:Whitespace(" ")
+			end
+		end
+		self:EmitToken(v.tokens["func)"], ")")
+		for i = 1, #tbl do
+			if tbl[i].destructor then
+				self:Emit("local ")
+				for i2,v in ipairs(tbl[i].destructor) do
+					self:Expression(v)
+					if i2 ~= #tbl[i].destructor then
+						self:Emit(",")
+
+					end
+				end
+				self:Emit("=")
+				for i2,v in ipairs(tbl[i].destructor) do
+					self:Emit("__DSTR" .. i)
+					self:Emit(".")
+					self:Expression(v)
+					if i2 ~= #tbl[i].destructor then
+						self:Emit(",")
+					else
+						self:Emit(";")
+						self:Emit("__DSTR" .. i .. "=nil;")
+					end
+				end
+			end
+		end
+	end
 
 	if v.return_types then
 		for i,args in ipairs(v.return_types) do
@@ -164,7 +203,12 @@ function META:Function(v)
 		self:Whitespace("\t+")
 			self:Block(v.block)
 		self:Whitespace("\t-")
-	self:Whitespace("\t")self:EmitToken(v.tokens["end"])
+	self:Whitespace("\t")
+	if v.no_end then
+		self:Emit(" end")
+	else
+		self:EmitToken(v.tokens["end"])
+	end
 end
 
 function META:Table(v)
@@ -295,7 +339,13 @@ function META:Block(block)
 		elseif data.type == "break" then
 			self:Whitespace("\t")self:EmitToken(data.tokens["break"])
 		elseif data.type == "return" then
-			self:Whitespace("\t")self:Whitespace("?")self:EmitToken(data.tokens["return"])
+			self:Whitespace("\t")
+			self:Whitespace("?")
+			if data.implicit then
+				self:Emit(" return ")
+			else
+				self:EmitToken(data.tokens["return"])
+			end
 
 			if data.expressions then
 				self:ExpressionList(data.expressions)

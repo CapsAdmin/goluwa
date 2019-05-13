@@ -53,7 +53,7 @@ function META:GetPrevCharType()
 end
 
 function META:EmitToken(v, translate)
-	if v.whitespace then
+	if v and v.whitespace then
 		for _, data in ipairs(v.whitespace) do
 			if data.type ~= "space" or self.config.preserve_whitespace then
 				self:Emit(data.value)

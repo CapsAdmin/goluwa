@@ -13,17 +13,26 @@ local META = oh.BaseParser
 
 runfile("parser/*", META)
 
-function META:Block(stop)
+function META:Block(stop, implicit_return)
 	local node = self:Node("block")
 	node.statements = {}
 
 	for _ = 1, self:GetLength() do
 		if not self:GetToken() or stop and stop[self:GetToken().value] then
+
+			if implicit_return then
+				local last = node.statements[#node.statements]
+				if last and last.type == "expression" then
+					local ret = self:Node("return")
+					ret.implicit = true
+					table_insert(node.statements, #node.statements, ret)
+				end
+			end
+
 			break
 		end
 
-		local statement = self:Statement(node)
-
+		local statement = self:Statement(node, implicit_return)
 
 		if statement then
 			if statement.type == "continue" then
@@ -33,6 +42,7 @@ function META:Block(stop)
 					self.loop_stack[#self.loop_stack].has_continue = true
 				end
 			end
+
 			table_insert(node.statements, statement)
 		end
 	end
@@ -40,7 +50,7 @@ function META:Block(stop)
 	return node
 end
 
-function META:Statement(block)
+function META:Statement(block, implicit_return)
 
 	do
 		if self:IsValue("return") then
@@ -104,6 +114,11 @@ function META:Statement(block)
 		elseif expr.suffixes and expr.suffixes[#expr.suffixes].type == "call" then
 			node = self:Node("expression")
 			node.value = expr
+		elseif implicit_return then
+			local node = self:Node("return")
+			node.implicit = true
+			node.expressions = self:ExpressionList()
+			return node
 		else
 			self:Error("unexpected " .. start_token.type, start_token)
 		end
@@ -153,7 +168,7 @@ function META:Expression(priority, stop_on_call)
 		val.tokens["right)"] = val.tokens["right)"] or {}
 		table_insert(val.tokens["right)"], self:ReadExpectValue(")"))
 
-	elseif token.value == "function" then
+	elseif self:IsAnonymousFunction() then
 		val = self:AnonymousFunction()
 	elseif lua.syntax.IsValue(token) or (token.type == "letter" and not lua.syntax.IsKeyword(token)) then
 		val = self:Node("value")

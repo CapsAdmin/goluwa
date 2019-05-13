@@ -44,7 +44,7 @@ local function CSS(tbl)
     return s
 end
 
-local function Result(result)
+local function Result({html_url, stargazers_count, description, full_name})
     return <div style={CSS{
         padding = "10px",
         margin = "10px",
@@ -52,12 +52,12 @@ local function Result(result)
         ["box-shadow"] = '0 1px 5px rgba(0,0,0,0.5)'
     }}>
         <div>
-            <a href={result.html_url} target="_blank">
-                {result.full_name}
+            <a href={html_url} target="_blank">
+                {full_name}
             </a>
-            🌟<strong>{result.stargazers_count}</strong>
+            🌟<strong>{stargazers_count}</strong>
         </div>
-        <p>{result.description}</p>
+        <p>{description}</p>
     </div>
 end
 
@@ -67,7 +67,7 @@ resource.Download("http://api.github.com/search/repositories?q=preact"):Then(fun
     local html = <div>
         <h1 style="text-align:center;">Example</h1>
         <div class="list">
-            {table.map(results, function(result) return Result(result) end)}
+            {table.map(results, fn v Result(v))}
         </div>
     </div>
 

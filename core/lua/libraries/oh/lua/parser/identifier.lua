@@ -36,7 +36,14 @@ end
 
 function META:ReadIdentifier()
 	local node = self:Node("value")
-	node.value = self:ReadExpectType("letter")
+
+	if self:IsValue("{") then
+		node.tokens["{"] = self:ReadExpectValue("{")
+		node.destructor = self:IdentifierList()
+		node.tokens["}"] = self:ReadExpectValue("}")
+	else
+		node.value = self:ReadExpectType("letter")
+	end
 
 	if self:IsValue(":") then
 		node.tokens[":"] = self:ReadToken(":")
@@ -50,7 +57,7 @@ function META:IdentifierList(out)
 	out = out or {}
 
 	for _ = 1, self:GetLength() do
-		if not self:IsType("letter") and not self:IsValue("...") and not self:IsValue(":") then
+		if not self:IsType("letter") and not self:IsValue("...") and not self:IsValue(":") and not self:IsValue("{") then
 			break
 		end
 
