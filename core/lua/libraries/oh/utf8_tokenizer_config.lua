@@ -18,6 +18,7 @@ end
 local table_concat = table.concat
 function config.GetCharsRange(tk, start, stop)
 	local length = stop-start
+
 	if not tk.tbl_cache[length] then
 		tk.tbl_cache[length] = {}
 	end
@@ -25,7 +26,7 @@ function config.GetCharsRange(tk, start, stop)
 
 	local str_i = 1
 	for i = start, stop do
-		str[str_i] = tk.code[i]
+		str[str_i] = tk.code[i] or ""
 		str_i = str_i + 1
 	end
 	return table_concat(str)
