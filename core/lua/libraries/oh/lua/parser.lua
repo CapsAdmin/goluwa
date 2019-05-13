@@ -161,6 +161,8 @@ function META:Expression(priority, stop_on_call)
 
 	elseif token.value == "{" then
 		val = self:Table()
+	elseif token.value == "<" then
+		val = self:LSX()
 	end
 
 	if self:IsValue("as") and val then
@@ -256,6 +258,58 @@ function META:Expression(priority, stop_on_call)
 	end
 
 	return val
+end
+
+function META:LSX()
+	local node = self:Node("lsx")
+	node.tokens["start<"] = self:ReadToken()
+	node.class = self:ReadToken()
+
+	if self:IsType("letter") then
+		node.props = {}
+		while self:IsType("letter") do
+			local prop = self:Node("prop")
+			prop.key = self:ReadToken()
+			prop.tokens["="] = self:ReadExpectValue("=")
+			if self:IsType("string") or self:IsType("number") then
+				prop.value = self:ReadToken()
+			else
+				prop.tokens["{"] = self:ReadExpectValue("{")
+				prop.expression = self:Expression()
+				prop.tokens["}"] = self:ReadExpectValue("}")
+			end
+			table.insert(node.props, prop)
+		end
+	end
+
+	if self:IsValue("/") then
+		node.tokens["/"] = self:ReadExpectValue("/")
+		node.tokens["start>"] = self:ReadExpectValue(">")
+		return node
+	else
+		node.tokens["start>"] = self:ReadExpectValue(">")
+	
+		node.values = {}
+		node.children = {}
+		for i = 1, self:GetLength() do
+			if self:IsValue("<") and self:GetTokenOffset(1).value == "/" and self:GetTokenOffset(2).value == node.class.value then
+				break
+			elseif self:IsValue("<") and self:GetTokenOffset(1).value ~= "/" then
+				table.insert(node.children, self:LSX())
+			elseif self:IsValue("{") then
+				table.insert(node.values, self:Block())
+			elseif self:IsValue(">") then
+				break
+			else
+				table.insert(node.values, self:ReadToken())
+			end
+		end
+		node.tokens["stop<"] = self:ReadToken()
+		node.tokens["/"] = self:ReadExpectValue("/")
+		node.tokens["identifier"] = self:ReadExpectValue(node.class.value)
+		node.tokens["stop>"] = self:ReadToken()
+	end
+	return node
 end
 
 function META:ExpressionList()

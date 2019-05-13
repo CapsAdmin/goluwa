@@ -279,6 +279,10 @@ end
 
 print("============TEST============")
 
+transpile_ok("print(<lol> </lol>)")
+transpile_ok("print(<lol><a></a></lol>)")
+transpile_ok("print(<lol lol=1></lol>)")
+
 --transpile_check("a=(foo.bar)")
 --transpile_check("a=(foo.bar)()")
 transpile_ok"@T:FOOBARRRR=true"if FOOBARRRR == true then else error("compile test failed") end FOOBARRRR=nil

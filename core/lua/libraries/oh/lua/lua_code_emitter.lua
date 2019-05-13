@@ -40,6 +40,8 @@ function META:Expression(v)
 			--print(v)
 			--self:Emit("--[[a]]")
 		end
+	elseif v.type == "lsx" then
+		self:LSX(v)
 	else
 		error("unhandled token type " .. v.type)
 	end
@@ -74,6 +76,56 @@ function META:Expression(v)
 			end
 		end
 	end
+end
+
+
+function META:LSX(node)
+	self:Emit("LSX(")
+
+	self:Emit("'")self:EmitToken(node.class)self:Emit("'")
+	self:Emit(",")
+
+	if node.props then
+		self:Emit("{")
+		for i, prop in ipairs(node.props) do
+			self:EmitToken(prop.key)
+			self:EmitToken(prop.tokens["="])
+			if prop.expression then
+				self:Expression(prop.expression)
+			else
+				self:EmitToken(prop.value)
+			end
+
+			if i ~= #node.props then
+				self:Emit(",")
+			end
+		end
+		self:Emit("}")
+	else
+		self:Emit("nil")
+	end
+	self:Emit(",")
+
+	self:Emit("[[")
+	for _, child in ipairs(node.values) do
+		self:EmitToken(child)
+	end
+	self:Emit("]]")
+	
+	if node.children[1] then
+		self:Emit("{")
+		self:Emit(",")
+
+		for i, child in ipairs(node.children) do
+			self:LSX(child)
+			if i ~= #node.children then
+				self:Emit(",")
+			end
+		end
+		self:Emit("}")
+	end
+
+	self:Emit(")")
 end
 
 function META:Operator(v)
@@ -351,6 +403,13 @@ function META:ExpressionList(tbl)
 			self:Whitespace(" ")
 		end
 	end
+end
+
+if RELOAD then
+	RELOAD = nil
+	runfile("lua/libraries/oh/oh.lua")
+	runfile("lua/libraries/oh/lua/test.lua")
+	return
 end
 
 return function(config)
