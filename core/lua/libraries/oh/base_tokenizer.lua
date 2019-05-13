@@ -54,14 +54,24 @@ do
         end
     end
 
+    local TOKEN = {}
+    function TOKEN:__index(key)
+        if key == "value" then
+            return self.tk:GetCharsRange(self.start, self.stop)
+        end
+    end
+
+    function TOKENIZER:NewToken(tbl)
+        tbl.tk = self
+        return setmetatable(tbl, TOKEN)
+    end
+
     function TOKENIZER:BufferWhitespace(type, start, stop)
-        self.whitespace_buffer[self.whitespace_buffer_i] = {
+        self.whitespace_buffer[self.whitespace_buffer_i] = self:NewToken({
             type = type,
             start = start == 1 and 0 or start,
             stop = stop,
-            tk = self,
-            get_value = self.get_value,
-        }
+        })
 
         self.whitespace_buffer_i = self.whitespace_buffer_i + 1
     end
@@ -99,14 +109,12 @@ do
         for _ = self.i, self.code_length do
             local type, start, stop, whitespace = self:ReadToken()
 
-            tokens[tokens_i] = {
+            tokens[tokens_i] = self:NewToken({
                 type = type,
                 start = start,
                 stop = stop,
-                whitespace = whitespace,
-                tk = self,
-                get_value = self.get_value,
-            }
+                whitespace = whitespace
+            })
 
             if type == "end_of_file" then break end
 

@@ -66,14 +66,14 @@ local function totable(str)
 			elseif codepoint < 65536 then
 				out[out_i] = string_char(
 					224 + codepoint / 4096,
-					128 + band(codepoint / 64, 63),
+					128 + band(math_floor(codepoint / 64), 63),
 					128 + band(codepoint, 63)
 				)
 			elseif codepoint < 2097152 then
 				out[out_i] = string_char(
 					240 + codepoint / 262144,
-					128 + band(codepoint / 4096, 63),
-					128 + band(codepoint / 64, 63),
+					128 + band(math_floor(codepoint / 4096), 63),
+					128 + band(math_floor(codepoint / 64), 63),
 					128 + band(codepoint, 63)
 				)
 			else

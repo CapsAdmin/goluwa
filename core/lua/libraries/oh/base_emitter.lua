@@ -56,19 +56,19 @@ function META:EmitToken(v, translate)
 	if v.whitespace then
 		for _, data in ipairs(v.whitespace) do
 			if data.type ~= "space" or self.config.preserve_whitespace then
-				self:Emit(data:get_value())
+				self:Emit(data.value)
 			end
 		end
 	end
 
 	if translate then
 		if type(translate) == "table" then
-			self:Emit(translate[v:get_value()] or v:get_value())
+			self:Emit(translate[v.value] or v.value)
 		elseif translate ~= "" then
 			self:Emit(translate)
 		end
 	else
-		self:Emit(v:get_value())
+		self:Emit(v.value)
 
 		if self.FORCE_INTEGER then
 			if v.type == "number" then
