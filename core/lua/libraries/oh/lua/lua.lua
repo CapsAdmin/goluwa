@@ -44,17 +44,18 @@ do
 
 	function lua.ASTToCode(ast, config)
 		config = config or {}
-
+ 
 		if config.preserve_whitespace == nil then
 			config.preserve_whitespace = true
 		end
 
 		local self = LuaEmitter(config)
+
 		return self:BuildCode(ast)
 	end
 end
 
-do
+if false then
 	local JSEmitter = runfile("js_code_emitter.lua", lua, oh)
 
 	function lua.ASTToJSCode(ast, config)
@@ -69,7 +70,7 @@ do
 	end
 end
 
-function lua.CodeToAST(code, name, start, stop)
+function lua.CodeToAST(code, name)
 	name = name or "unknown"
 
 	local tokenizer = lua.Tokenizer(code)
@@ -115,5 +116,14 @@ if RELOAD then
 		oh.lua = lua
 	end
 end
+
+event.AddListener("PreLoadString", "oh", function(code, full_path) 
+	if code:find("--".."oh!", nil, true) then
+		local ast, err = lua.CodeToAST(code, full_path)
+		if not ast then return nil, err end
+		local code, err = lua.ASTToCode(ast)
+		return code, err
+	end
+end)
 
 return lua
