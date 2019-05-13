@@ -171,13 +171,17 @@ do
 
         return function(...)
             if key == "resolve" then
-                return self:Resolve(...)
+                local ok, err = self:Resolve(...)
+                if ok == false and err then
+                    self.is_resolved = false
+                    self:Reject(err)
+                end
             elseif key == "reject" then
                 return self:Reject(...)
             elseif self.funcs[key] then
                 for _, cb in ipairs(self.funcs[key]) do
-                    local ok, err = system.pcall(cb, ...)
-                    if not ok then
+                    local ok, ret, err = system.pcall(cb, ...)
+                    if not ok or ret == false and err then
                         return self:Reject(err)
                     end
                 end
