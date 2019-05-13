@@ -53,15 +53,6 @@ if pcall(require, "jit.opt") then
 
 --loadfile("core/lua/modules/bytecode_cache.lua")()
 
-local PROFILE_STARTUP = false
-
-if PROFILE_STARTUP then
-	local old = io.stdout
-	io.stdout = {write = function(_, ...) io.write(...) end}
-	require("jit.p").start("rplfvi1")
-	io.stdout = old
-end
-
 -- put all c functions in a table so we can override them if needed
 -- without doing the local oldfunc = print thing over and over again
 
@@ -320,7 +311,6 @@ if TEST then
 		logn(debug.getprettysource(list[i].func, true), " = ", list[i].count)
 	end
 	logn("===========================================")
-
 
 	logn("===============RUNNING TESTS===============")
 	local failed = false

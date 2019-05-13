@@ -137,8 +137,10 @@ local function flags_to_table(bits)
 end
 
 local time_type = ffi.typeof("uint64_t *")
+local ffi_cast = ffi.cast
+local tonumber = tonumber
 local POSIX_TIME = function(ptr)
-	return tonumber(ffi.cast(time_type, ptr)[0] / 10000000 - 11644473600)
+	return tonumber(ffi_cast(time_type, ptr)[0] / 10000000 - 11644473600)
 end
 
 function fs.get_attributes(path)
@@ -149,23 +151,40 @@ function fs.get_attributes(path)
 	end
 
 	return {
-			raw_info = info[0],
-			creation_time = POSIX_TIME(info[0].ftCreationTime),
-			last_accessed = POSIX_TIME(info[0].ftLastAccessTime),
-			last_modified = POSIX_TIME(info[0].ftLastWriteTime),
-			last_changed = -1, -- last permission changes
-			size = info[0].nFileSizeLow,
-			type = bit.band(
-				info[0].dwFileAttributes, flags.directory
-			) == flags.directory and "directory" or "file",
-		}
+		raw_info = info[0],
+		creation_time = POSIX_TIME(info[0].ftCreationTime),
+		last_accessed = POSIX_TIME(info[0].ftLastAccessTime),
+		last_modified = POSIX_TIME(info[0].ftLastWriteTime),
+		last_changed = -1, -- last permission changes
+		size = info[0].nFileSizeLow,
+		type = bit.band(
+			info[0].dwFileAttributes, flags.directory
+		) == flags.directory and "directory" or "file",
+	}
+end
+
+do
+	local info = ffi.new("goluwa_file_attributes[1]")
+
+	function fs.get_type(path)
+		if ffi.C.GetFileAttributesExA(path, 0, info) == 0 then
+			return nil
+		end
+		return 
+			bit.band(info[0].dwFileAttributes, flags.directory) == 
+			flags.directory and "directory" or "file"
+	end
 end
 
 do
 	do
+		local dot = string.byte(".")
 		local function is_dots(ptr)
-			if ptr[0] == string.byte(".") then
-				if ptr[1] == 0 or (ptr[1] == string.byte(".") and ptr[2] == 0) then
+			if ptr[0] == dot then
+				if ptr[1] == dot and ptr[2] == 0 then
+					return true
+				end
+				if ptr[1] == 0 then
 					return true
 				end
 			end

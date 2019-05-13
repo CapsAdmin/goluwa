@@ -275,9 +275,13 @@ end
 
 do
 	do
+		local dot = string.byte(".")
 		local function is_dots(ptr)
-			if ptr[0] == string.byte(".") then
-				if ptr[1] == 0 or (ptr[1] == string.byte(".") and ptr[2] == 0) then
+			if ptr[0] == dot then
+				if ptr[1] == dot and ptr[2] == 0 then
+					return true
+				end
+				if ptr[1] == 0 then
 					return true
 				end
 			end
@@ -385,6 +389,18 @@ do
 		end
 
 		return nil, last_error()
+	end
+
+	do
+		local buff = statbox()
+
+		function fs.get_type(path)
+			if stat_func(path, buff) == 0 then
+				return bit.band(buff[0].st_mode, DIRECTORY) ~= 0 and "directory" or "file"
+			end
+
+			return nil
+		end
 	end
 
 	function fs.copy(from, to)

@@ -36,14 +36,12 @@ function CONTEXT:GetFiles(path_info)
 end
 
 function CONTEXT:IsFile(path_info)
-	local info = fs.get_attributes(path_info.full_path)
-	return info and info.type ~= "directory"
+	return fs.get_type(path_info.full_path) == "file"
 end
 
 function CONTEXT:IsFolder(path_info)
 	if path_info.full_path:endswith("/") then
-		local info = fs.get_attributes(path_info.full_path:sub(0, -2))
-		return info and info.type == "directory"
+		return fs.get_type(path_info.full_path:sub(0, -2)) == "directory"
 	end
 end
 

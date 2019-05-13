@@ -22,6 +22,7 @@ test(fs.set_current_directory, "TEST/TEST").expect(true)
     f:close()
 test(fs.set_current_directory, "../../").expect(true)
 test(fs.get_attributes, "TEST/TEST/foo").expect_compare(function(a) return type(a) == "table" end)
+test(fs.get_type, "TEST/TEST/foo").expect("file")
 test(fs.RemoveRecursively, "TEST").expect(true)
 test(fs.get_attributes, "TEST/TEST/foo").expect_compare(nil, function(a) return type(a) == "string" end)
 
