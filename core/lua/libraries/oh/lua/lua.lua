@@ -27,7 +27,7 @@ do
 	local Parser = runfile("parser.lua", lua, oh)
 
 	function lua.Parser(tokens)
-		local self = Parser()
+		local self = Parser(on_error)
 		self.errors = {}
 
 		if tokens then
@@ -44,7 +44,7 @@ do
 
 	function lua.ASTToCode(ast, config)
 		config = config or {}
- 
+
 		if config.preserve_whitespace == nil then
 			config.preserve_whitespace = true
 		end
@@ -117,7 +117,7 @@ if RELOAD then
 	end
 end
 
-event.AddListener("PreLoadString", "oh", function(code, full_path) 
+event.AddListener("PreLoadString", "oh", function(code, full_path)
 	if code:find("--".."oh!", nil, true) then
 		local ast, err = lua.CodeToAST(code, full_path)
 		if not ast then return nil, err end

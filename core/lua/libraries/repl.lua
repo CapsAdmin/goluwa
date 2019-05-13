@@ -283,8 +283,7 @@ function repl.InputLua(str)
 				set_color("error")
 				repl.Write((" "):rep(v.start + 1) .. ("^"):rep(v.stop - v.start + 1))
 				set_color("letter")
-				repl.StyledWrite(" " ..  v.msg)
-				repl.Write("\n")
+				repl.StyledWrite(" " ..  v.msg .. "\n")
 				if only_first then break end
 			end
 		end
@@ -292,7 +291,7 @@ function repl.InputLua(str)
 		print_errors(tokenizer.errors)
 		print_errors(parser.errors, true)
 
-		local func = assert(loadstring(code))
+		local func, err = loadstring(code)
 
 		if func then
 			local func, res = system.pcall(func)
@@ -303,8 +302,16 @@ function repl.InputLua(str)
 				logn(res)
 				set_color("letter")
 			end
-		else
+		end
+
+		if #tokenizer.errors == 0 and #parser.errors == 0 then
 			print(err)
+
+			local func, err = loadstring(str)
+
+			if not func then
+				print(err)
+			end
 		end
 	end)
 	if not ok then repl.Write(err .. "\n") end
@@ -343,6 +350,7 @@ function repl.KeyPressed(key)
 				repl.InputLua(str)
 			end
 		end
+
 		local x,y = repl.GetTailPosition()
 		repl.Flush()
 		repl.SetCaretPosition(x,y)
