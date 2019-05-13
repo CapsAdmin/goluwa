@@ -292,7 +292,7 @@ function repl.InputLua(str)
 		print_errors(tokenizer.errors)
 		print_errors(parser.errors, true)
 
-		local func = assert(loadstring(str))
+		local func = assert(loadstring(code))
 
 		if func then
 			local func, res = system.pcall(func)
