@@ -180,9 +180,22 @@ local function add_helper(name, func, mode, cb)
 		if file then
 			local args = {...}
 
-			if event then
-				local ret = {event.Call("VFSPre" .. name, path, ...)}
-				if ret[1] ~= nil then
+
+			do
+				local ret
+
+				if serializer then
+					if name == "Write" then
+						local ext = vfs.GetExtensionFromPath(path)
+						if serializer.GetLibrary(ext) then
+							ret = {serializer.Encode(ext, data)}
+						end
+					end
+				end
+				if not ret and event then
+					ret = {event.Call("VFSPre" .. name, path, ...)}
+				end
+				if ret and ret[1] ~= nil then
 					for i,v in ipairs(args) do
 						if ret[i] ~= nil then
 							args[i] = ret[i]
@@ -191,19 +204,30 @@ local function add_helper(name, func, mode, cb)
 				end
 			end
 
+
 			local res, err = file[func](file, unpack(args))
 
 			file:Close()
 
-			if res and event then
-				local res, err = event.Call("VFSPost" .. name, path, res)
-				if res ~= nil or err then
-					if CLI then
-						debug.trace()
-						error(err, 2)
-					end
+			if res then
+				if event then
+					local res, err = event.Call("VFSPost" .. name, path, res)
+					if res ~= nil or err then
+						if CLI then
+							debug.trace()
+							error(err, 2)
+						end
 
-					return res, err
+						return res, err
+					end
+				end
+				if serializer then
+					if name == "Read" then
+						local ext = vfs.GetExtensionFromPath(path)
+						if serializer.GetLibrary(ext) then
+							return serializer.Decode(ext, res)
+						end
+					end
 				end
 			end
 
@@ -405,9 +429,14 @@ function vfs.WatchLuaFiles2(b)
 	end
 
 	local paths = {}
-	for i, path in ipairs(vfs.GetFilesRecursive("lua/", {"lua"})) do
-		if not path:endswith("core/lua/boot.lua") then
-			table.insert(paths, {path = R(path)})
+
+	for _, dir in ipairs({"core", "framework", "engine", "game"}) do
+		for _, path in ipairs(fs.get_files_recursive(dir)) do
+			if path:endswith(".lua") then
+				if not path:endswith("core/lua/boot.lua") then
+					table.insert(paths, {path = e.ROOT_FOLDER .. path})
+				end
+			end
 		end
 	end
 
