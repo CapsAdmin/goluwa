@@ -53,7 +53,14 @@ local function loadfile(path, chunkname)
 
 		res = "local SCRIPT_PATH=[["..full_path.."]];" .. res
 
-		if event then res = event.Call("PreLoadString", res, full_path) or res end
+		if event then 
+			local newcode, err = event.Call("PreLoadString", res, full_path)  
+			if newcode == nil and type(err) == "string" then
+				return newcode, err
+			elseif type(newcode) == "string" then
+				res = newcode
+			end
+		end
 
 		-- prepend "@" in front of the path so it will be treated as a lua file and not a string by lua internally
 		-- for nicer error messages and debug
