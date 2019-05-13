@@ -271,12 +271,14 @@ local function find_next_word(buffer, x, dir)
 end
 
 function repl.InputLua(str)
-	local ok, err = pcall(function()
+	local ok, err = xpcall(function()
 		local tokenizer = oh.lua.Tokenizer(str)
 		local tokens = tokenizer:GetTokens()
 		local parser = oh.lua.Parser()
 		local ast = parser:BuildAST(tokens)
 		local code = oh.lua.ASTToCode(ast)
+
+		repl.Echo(code)
 
 		local function print_errors(errors, only_first)
 			for _, v in ipairs(errors) do
@@ -302,19 +304,33 @@ function repl.InputLua(str)
 				logn(res)
 				set_color("letter")
 			end
+		elseif #tokenizer.errors == 0 and #parser.errors == 0 then
+			set_color("letter")
+			repl.Write("transpiled output loadstring error: ")
+			set_color("error")
+			repl.Write(err:match("%]:%d+: (.+)"))
+			repl.Write("\n")
 		end
-
-		if #tokenizer.errors == 0 and #parser.errors == 0 then
-			print(err)
-
-			local func, err = loadstring(str)
-
-			if not func then
-				print(err)
-			end
-		end
+	end, function(error)
+		repl.Echo(str)
+		set_color("error")
+		repl.Write(error)
+		repl.Write("\n")
+		print(debug.traceback())
 	end)
-	if not ok then repl.Write(err .. "\n") end
+end
+
+function repl.Echo(str)
+	local x, y = repl.GetCaretPosition()
+	local w, h = terminal.GetSize()
+
+	repl.WriteStringToScreen(0, y, (" "):rep(utf8.length(str)))
+	repl.SetCaretPositionReal(0,y)
+	repl.StyledWrite("> " .. str, true)
+	repl.Flush()
+	repl.WriteNow("\n")
+	repl.SetCaretPosition(0,y+1)
+	repl.Flush()
 end
 
 function repl.KeyPressed(key)
@@ -328,23 +344,21 @@ function repl.KeyPressed(key)
 		repl.buffer = ""
 
 	--	repl.WriteStringToScreen(0, y, (" "):rep(w))
-		repl.WriteStringToScreen(0, y, (" "):rep(utf8.length(str)))
-		repl.SetCaretPositionReal(0,y)
-		repl.StyledWrite("> " .. str, true)
-		repl.Flush()
-		repl.WriteNow("\n")
-		repl.SetCaretPosition(0,y+1)
-		repl.Flush()
+
 
 		if str == "detach" and os.getenv("GOLUWA_TMUX") then
+			repl.Echo(str)
 			_OLD_G.os.execute("tmux detach")
 		elseif str == "clear" then
+			repl.Echo(str)
 			repl.ClearScreen()
 			repl.SetCaretPosition(0,0)
 		elseif str:startswith("exit") then
+			repl.Echo(str)
 			system.ShutDown(tonumber(str:match("exit (%d+)")) or 0)
 		elseif str ~= "" then
 			if commands and commands.RunString then
+				repl.Echo(str)
 				commands.RunString(str)
 			else
 				repl.InputLua(str)
