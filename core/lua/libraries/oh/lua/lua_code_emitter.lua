@@ -34,11 +34,15 @@ function META:Expression(v)
 	elseif v.type == "unary" then
 		self:Unary(v)
 	elseif v.type == "value" then
-		self:EmitToken(v.value)
-
-		if v.data_type then
-			--print(v)
-			--self:Emit("--[[a]]")
+		if v.annotation then
+			self:Emit("math.suffixes(")
+			self:EmitToken(v.value)
+			self:Emit(",'")
+			self:EmitToken(v.annotation)
+			self:Emit("'")
+			self:Emit(")")
+		else
+			self:EmitToken(v.value)
 		end
 	elseif v.type == "lsx" then
 		self:LSX(v)

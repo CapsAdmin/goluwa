@@ -178,6 +178,10 @@ function META:Expression(priority, stop_on_call)
 
 	elseif self:IsAnonymousFunction() then
 		val = self:AnonymousFunction()
+	elseif token.type == "number" and self:GetTokenOffset(1).type == "letter" then
+		val = self:Node("value")
+		val.value = self:ReadToken()
+		val.annotation = self:ReadToken()
 	elseif lua.syntax.IsValue(token) or (token.type == "letter" and not lua.syntax.IsKeyword(token)) then
 		val = self:Node("value")
 		val.value = self:ReadToken()
