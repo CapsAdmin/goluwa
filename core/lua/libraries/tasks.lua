@@ -32,12 +32,16 @@ META:IsSet("Running", false)
 
 META.wait = 0
 
-function META:Start(now)
+function META:__call(...)
+	return self:Start(true, ...)
+end
+
+function META:Start(now, ...)
 
 	self.progress = {}
 
 	if not tasks.IsEnabled() then
-		local ok, err = pcall(self.OnStart, self)
+		local ok, err = pcall(self.OnStart, self, ...)
 		if not ok then
 			if self.OnError then
 				self:OnError(err)

@@ -206,6 +206,8 @@ system = runfile("lua/libraries/system.lua") -- os and luajit related functions 
 event = runfile("lua/libraries/event.lua") -- event handler
 utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 profiler = runfile("lua/libraries/profiler.lua")
+tasks = runfile("!lua/libraries/tasks.lua") -- high level coroutine library
+threads = runfile("!lua/libraries/threads.lua")
 
 _G.P = profiler.ToggleTimer
 _G.I = profiler.ToggleInstrumental

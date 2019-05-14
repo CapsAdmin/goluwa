@@ -38,6 +38,13 @@ function math.suffixes(num, suffix)
     return tostring(num) .. suffix
 end
 
+local function async(func)
+    tasks.enabled = true
+    local t = tasks.CreateTask()
+    t.OnStart = function(_, ...) return func(...) end
+    return t
+end
+
 ---- ^ above is more like runtime
 
 local function CSS(tbl)
@@ -48,7 +55,7 @@ local function CSS(tbl)
     return s
 end
 
-local Result = do({html_url, stargazers_count, description, full_name})
+local function Result({html_url, stargazers_count, description, full_name})
     return <div style={CSS{
         padding = 10px,
         margin = 10px,
@@ -65,7 +72,9 @@ local Result = do({html_url, stargazers_count, description, full_name})
     </div>
 end
 
-resource.Download("http://api.github.com/search/repositories?q=preact"):Then(do(results)
+local async function run()
+    local results = resource.Download("http://api.github.com/search/repositories?q=preact")
+    print(results)
     local results = vfs.Read(results).items or {}
 
     local html = <div>
@@ -77,4 +86,6 @@ resource.Download("http://api.github.com/search/repositories?q=preact"):Then(do(
 
     vfs.Write("index.html", html)
     print(R"index.html")
-end)
+end
+
+run("?!?!   ")

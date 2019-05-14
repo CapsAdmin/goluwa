@@ -213,6 +213,10 @@ function META:Function(v)
 	else
 		self:EmitToken(v.tokens["end"])
 	end
+
+	if v.async then
+		self:Emit(";") self:Expression(v.value) self:Emit("=")self:Emit("async(") self:Expression(v.value) self:Emit(")")
+	end
 end
 
 function META:Table(v)

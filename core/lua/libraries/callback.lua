@@ -139,7 +139,7 @@ do
     function meta:Get()
         local res
         local err
-        self:Then(function(...) 
+        self:Then(function(...)
             res = {...}
         end)
 
@@ -249,6 +249,10 @@ function callback.WrapKeyedTask(create_callback, max, queue_callback, start_on_c
             end
         end
 
+        if tasks.GetActiveTask() then
+            return callbacks[key]:Get()
+        end
+
         return callbacks[key]
     end
 
@@ -279,7 +283,7 @@ if RELOAD then
         event.Delay(delay, function() resolve("result!") end)
     end)
 
-    await(function() 
+    await(function()
         print(1)
         local res = Delay(1):Get()
         print(2, res)
