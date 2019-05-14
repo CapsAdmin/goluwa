@@ -178,7 +178,7 @@ function META:Expression(priority, stop_on_call)
 
 	elseif self:IsAnonymousFunction() then
 		val = self:AnonymousFunction()
-	elseif token.type == "number" and self:GetTokenOffset(1).type == "letter" then
+	elseif token.type == "number" and self:GetTokenOffset(1).type == "letter" and self:GetTokenOffset(1).start == token.stop+1 then
 		val = self:Node("value")
 		val.value = self:ReadToken()
 		val.annotation = self:ReadToken()
