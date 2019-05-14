@@ -392,8 +392,13 @@ function META:Block(block)
 			self:Whitespace("\t") if data.is_local then self:EmitToken(data.tokens["local"])self:Whitespace(" ") end
 
 			for i,v in ipairs(data.lvalues) do
-				if data.is_local then
-					self:EmitToken(v.value)
+				if data.is_local or data.destructor then
+					if v.destructor then
+						self:EmitToken(v.tokens["{"], "")
+						self:ExpressionList(v.destructor)
+					else
+						self:EmitToken(v.value)
+					end
 				else
 					self:Expression(v)
 				end
@@ -412,10 +417,40 @@ function META:Block(block)
 				self:Whitespace(" ")self:EmitToken(data.tokens["="])self:Whitespace(" ")
 
 				for i,v in ipairs(data.rvalues) do
-					self:Expression(v)
+					if data.lvalues[i] and data.lvalues[i].destructor then
+						for i2,v2 in ipairs(data.lvalues[i].destructor) do
+							self:Emit("(")
+							self:Expression(v)
+							self:Emit(").")
+							self:EmitToken(v2.value)
+							if i2 ~= #data.lvalues[i].destructor then
+								self:Emit(",")
+							end
+						end
+					else
+						self:Expression(v)
+					end
 
 					if data.rvalues[2] and i ~= #data.rvalues then
 						self:EmitToken(v.tokens[","])self:Whitespace(" ")
+					end
+				end
+
+				for i,v in ipairs(data.rvalues) do
+					if data.lvalues[i] and data.lvalues[i].destructor then
+						for i2,v2 in ipairs(data.lvalues[i].destructor) do
+							if v2.default then
+								self:Emit(" ")
+								self:EmitToken(v2.value)
+								self:Emit("=")
+								self:EmitToken(v2.value)
+								self:Emit("~=nil and ")
+								self:EmitToken(v2.value)
+								self:Emit(" or ")
+								self:Expression(v2.default)
+								self:Emit(";")
+							end
+						end
 					end
 				end
 			end

@@ -93,6 +93,14 @@ function META:Statement(block, implicit_return)
 		return self:ReadWhileStatement()
 	elseif self:IsForStatement() then
 		return self:ReadForStatement()
+	elseif self:IsValue("{") then
+		local node = self:Node("assignment")
+		node.destructor = true
+
+		node.lvalues = self:IdentifierList()
+		node.tokens["="] = self:ReadExpectValue("=")
+		node.rvalues = self:ExpressionList()
+		return node
 	elseif (self:IsType("letter") or self:IsValue("(")) and not lua.syntax.IsKeyword(self:GetToken()) then
 		local node
 		local start_token = self:GetToken()

@@ -39,7 +39,7 @@ function META:ReadIdentifier()
 
 	if self:IsValue("{") then
 		node.tokens["{"] = self:ReadExpectValue("{")
-		node.destructor = self:IdentifierList()
+		node.destructor = self:IdentifierList(nil, true)
 		node.tokens["}"] = self:ReadExpectValue("}")
 	else
 		node.value = self:ReadExpectType("letter")
@@ -53,7 +53,7 @@ function META:ReadIdentifier()
 	return node
 end
 
-function META:IdentifierList(out)
+function META:IdentifierList(out, destructor)
 	out = out or {}
 
 	for _ = 1, self:GetLength() do
@@ -72,6 +72,12 @@ function META:IdentifierList(out)
 			end
 		else
 			node = self:ReadIdentifier()
+		end
+
+
+		if destructor and self:IsValue("=") then
+			self:ReadToken()
+			node.default = self:Expression()
 		end
 
 		table.insert(out, node)
