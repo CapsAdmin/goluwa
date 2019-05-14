@@ -1,5 +1,3 @@
---oh!
-
 local function LSX(class, props, children)
     do
         local s = "<" .. class
@@ -36,6 +34,12 @@ local function LSX(class, props, children)
     }
 end
 
+function math.suffixes(num, suffix)
+    return tostring(num) .. suffix
+end
+
+---- ^ above is more like runtime
+
 local function CSS(tbl)
     local s = ""
     for k,v in pairs(tbl) do
@@ -44,12 +48,12 @@ local function CSS(tbl)
     return s
 end
 
-local function Result({html_url, stargazers_count, description, full_name})
+local Result = do({html_url, stargazers_count, description, full_name})
     return <div style={CSS{
-        padding = "10px",
-        margin = "10px",
+        padding = 10px,
+        margin = 10px,
         background = 'white',
-        ["box-shadow"] = '0 1px 5px rgba(0,0,0,0.5)'
+        ["box-shadow"] = "0 1px 5px rgba(0,0,0,0.5)"
     }}>
         <div>
             <a href={html_url} target="_blank">
@@ -61,13 +65,13 @@ local function Result({html_url, stargazers_count, description, full_name})
     </div>
 end
 
-resource.Download("http://api.github.com/search/repositories?q=preact"):Then(function(results)
+resource.Download("http://api.github.com/search/repositories?q=preact"):Then(do(results)
     local results = vfs.Read(results).items or {}
 
     local html = <div>
         <h1 style="text-align:center;">Example</h1>
         <div class="list">
-            {table.map(results, fn v Result(v))}
+            {table.map(results, do v Result(v))}
         </div>
     </div>
 

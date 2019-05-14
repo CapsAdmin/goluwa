@@ -432,7 +432,7 @@ function vfs.WatchLuaFiles2(b)
 
 	for _, dir in ipairs({"core", "framework", "engine", "game"}) do
 		for _, path in ipairs(fs.get_files_recursive(dir)) do
-			if path:endswith(".lua") then
+			if path:endswith(".lua") or path:endswith(".oh") then
 				if not path:endswith("core/lua/boot.lua") then
 					table.insert(paths, {path = e.ROOT_FOLDER .. path})
 				end

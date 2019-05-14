@@ -118,11 +118,10 @@ if RELOAD then
 end
 
 event.AddListener("PreLoadString", "oh", function(code, full_path)
-	if code:find("--".."oh!", nil, true) then
+	if full_path:endswith(".oh") then
 		local ast, err = lua.CodeToAST(code, full_path)
 		if not ast then return nil, err end
 		local code, err = lua.ASTToCode(ast)
-		print(code)
 		return code, err
 	end
 end)
