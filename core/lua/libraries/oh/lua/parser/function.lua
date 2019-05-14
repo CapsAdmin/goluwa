@@ -8,7 +8,7 @@ end
 
 local function read_short_call_body(self, node)
 
-    local implicit_return = true
+    local implicit_return = false
 
     if self:IsValue("(") then
         node.tokens["func("] = self:ReadToken("(")
@@ -70,13 +70,13 @@ end
 
 function META:IsAnonymousFunction()
     return
-        self:IsValue("function") or self:IsValue("fn")
+        self:IsValue("function") or self:IsValue("do")
 end
 
 function META:AnonymousFunction()
-    if self:IsValue("fn") then
+    if self:IsValue("do") then
         local node = self:Node("function")
-        node.tokens["function"] = self:ReadExpectValue("fn")
+        node.tokens["function"] = self:ReadExpectValue("do")
         return read_short_call_body(self, node)
     else
         local node = self:Node("function")
