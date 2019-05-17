@@ -28,7 +28,7 @@ function fs.Remove(path)
     if path:endswith("/") then
         return fs.remove_directory(path)
     end
-    
+
     return fs.remove_file(path)
 end
 
@@ -39,6 +39,26 @@ function fs.RemoveRecursively(path)
 		table.sort(files, function(a, b) return #a > #b end)
         for _, path in ipairs(files) do
             local ok, err = fs.Remove(path)
+            if not ok then
+                table.insert(errors, err)
+            end
+        end
+        if errors[1] then
+            return nil, table.concat(errors, "\n")
+        end
+        return true
+    end
+
+    return files, err
+end
+
+function fs.CopyRecursively(path, to)
+	local files, err = fs.get_files_recursive(path)
+    if files then
+        local errors = {}
+		table.sort(files, function(a, b) return #a > #b end)
+        for _, path in ipairs(files) do
+            local ok, err = fs.copy(path, to)
             if not ok then
                 table.insert(errors, err)
             end
