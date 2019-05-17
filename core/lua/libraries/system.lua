@@ -370,4 +370,28 @@ do
 	end
 end
 
+function system.GetCLICommand(cmd)
+	if not system.OSCommandExists(cmd) then
+		error("unable to find command " .. cmd)
+	end
+	return setmetatable({}, {__index = function(_, key)
+		return function(...)
+			local str = cmd " " .. key
+
+			if ... then
+				str = str .. " " .. table.concat(...)
+			end
+
+			local f = io.popen(str)
+			local res = f:read("*all")
+
+			if not f:close() then
+				return nil, res
+			end
+
+			return res
+		end
+	end})
+end
+
 return system
