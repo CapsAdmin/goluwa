@@ -12,10 +12,7 @@ function fs.CreateDirectory(path, force)
         local current_path = ""
         for _, chunk in ipairs(path:split("/")) do
             current_path = current_path .. chunk .. "/"
-            local ok, err = fs.create_directory(current_path)
-            if not ok then
-                return ok, err
-            end
+            fs.create_directory(current_path)
         end
 
         return true
@@ -70,6 +67,26 @@ function fs.CopyRecursively(path, to)
     end
 
     return files, err
+end
+
+function fs.GetFilesRecursive(path, blacklist)
+    local cb
+
+    if type(blacklist) == "string" then
+        blacklist = {blacklist}
+    end
+
+    if type(blacklist) == "table" then
+        cb = function(path)
+            for _, v in ipairs(blacklist) do
+                if path:endswith(v) then
+                    return false
+                end
+            end
+        end
+    end
+
+    return fs.get_files_recursive(path, cb)
 end
 
 do
@@ -129,4 +146,29 @@ do
 
         return normalized
     end
+end
+
+function fs.Write(path, content)
+    local f, err = io.open(path, "wb")
+    if not f then return err end
+    f:write(content)
+    return f:close()
+end
+
+function fs.Read(path)
+    local f, err = io.open(path, "rb")
+    if not f then return err end
+    local content = f:read("*all")
+    f:close()
+    return content
+end
+
+fs.Copy = fs.copy
+
+function fs.Link(from, to)
+    if fs.get_type(from) == "directory" then
+        return fs.link(from, to, true)
+    end
+
+    return fs.link(from, to, false)
 end
