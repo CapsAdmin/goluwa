@@ -320,7 +320,7 @@ do
 			return out
 		end
 
-		local function walk(path, tbl, errors)
+		local function walk(path, tbl, errors, can_traverse)
 			local ptr = opendir(path or "")
 
 			if ptr == nil then
@@ -340,7 +340,10 @@ do
 					local name = path .. ffi_string(dir_info.d_name)
 
 					if dir_info.d_type == 4 then
-						walk(name .. "/", tbl, errors)
+						local name = name .. "/"
+						if not can_traverse or can_traverse(name) ~= false then
+							walk(name, tbl, errors, can_traverse)
+						end
 					else
 						tbl[tbl[0]] = name
 						tbl[0] = tbl[0] + 1
@@ -353,7 +356,7 @@ do
 			return tbl
 		end
 
-		function fs.get_files_recursive(path)
+		function fs.get_files_recursive(path, can_traverse)
 			if not path:sub(-1) ~= "/" then
 				path = path .. "/"
 			end
@@ -361,7 +364,7 @@ do
 			local out = {}
 			local errors = {}
 			out[0] = 1
-			if not walk(path, out, errors) then
+			if not walk(path, out, errors, can_traverse) then
 				return nil, errors[1].error
 			end
 			out[0] = nil
