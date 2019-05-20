@@ -8,7 +8,7 @@ runfile("websocket_client.lua", sockets)
 runfile("http11.lua", sockets)
 runfile("download.lua", sockets)
 
-sockets.active = {}
+sockets.active = table.weak()
 
 function sockets.Update()
     for _, socket in ipairs(sockets.active) do

@@ -15,13 +15,13 @@ do -- negative pairs
 end
 
 function table.map(tbl, cb)
-	
+
 	for i,v in ipairs(tbl) do
 		tbl[i] = cb(v)
 	end
 
 	return tbl
-end	
+end
 
 function table.rpairs(tbl)
 	local sorted = {}
@@ -482,5 +482,5 @@ function table.weak(k, v)
 		mode = "kv"
 	end
 
-	return setmetatable({__mode  = mode})
+	return setmetatable({}, {__mode  = mode})
 end
