@@ -6,14 +6,13 @@ lua.syntax = oh.SetupSyntax(runfile("syntax.lua", oh))
 do
 	local Tokenizer = runfile("tokenizer.lua", lua, oh)
 
+	local function on_error(self, msg, start, stop)
+		table.insert(self.errors, {msg = msg, start = start, stop = stop})
+	end
+
 	function lua.Tokenizer(code)
-		local errors = {}
-
-		local self = Tokenizer(code, function(_, msg, start, stop)
-			table.insert(errors, {msg = msg, start = start, stop = stop})
-		end)
-
-		self.errors = errors
+		local self = Tokenizer(code)
+		self.errors = {}
 
 		self:ResetState()
 
@@ -22,16 +21,14 @@ do
 end
 
 do
+	local function on_error(self, msg, start, stop)
+		table.insert(self.errors, {msg = msg, start = start, stop = stop})
+	end
 	local Parser = runfile("parser.lua", lua, oh)
 
 	function lua.Parser(tokens)
-		local errors = {}
-
-		local self = Parser(function(_, msg, start, stop)
-			table.insert(errors, {msg = msg, start = start, stop = stop})
-		end)
-
-		self.errors = errors
+		local self = Parser(on_error)
+		self.errors = {}
 
 		if tokens then
 			return self:BuildAST(tokens)
@@ -53,11 +50,12 @@ do
 		end
 
 		local self = LuaEmitter(config)
+
 		return self:BuildCode(ast)
 	end
 end
 
-do
+if false then
 	local JSEmitter = runfile("js_code_emitter.lua", lua, oh)
 
 	function lua.ASTToJSCode(ast, config)
@@ -72,7 +70,7 @@ do
 	end
 end
 
-function lua.CodeToAST(code, name, start, stop)
+function lua.CodeToAST(code, name)
 	name = name or "unknown"
 
 	local tokenizer = lua.Tokenizer(code)
@@ -118,5 +116,14 @@ if RELOAD then
 		oh.lua = lua
 	end
 end
+
+event.AddListener("PreLoadString", "oh", function(code, full_path)
+	if full_path:endswith(".oh") then
+		local ast, err = lua.CodeToAST(code, full_path)
+		if not ast then return nil, err end
+		local code, err = lua.ASTToCode(ast)
+		return code, err
+	end
+end)
 
 return lua

@@ -27,8 +27,10 @@ end
 
 
 function META:Emit(str)
-	if type(str) == "table" then table.print(str) end
-	assert(type(str) == "string")
+	if type(str) ~= "string" then
+		table.print(str)
+		print(debug.traceback())
+	end
 	self.out[self.i] = str or ""
 	self.i = self.i + 1
 end
@@ -51,7 +53,7 @@ function META:GetPrevCharType()
 end
 
 function META:EmitToken(v, translate)
-	if v.whitespace then
+	if v and v.whitespace then
 		for _, data in ipairs(v.whitespace) do
 			if data.type ~= "space" or self.config.preserve_whitespace then
 				self:Emit(data.value)

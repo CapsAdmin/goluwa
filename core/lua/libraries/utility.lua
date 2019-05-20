@@ -119,7 +119,7 @@ function utility.GetLikelyLibraryDependencies(path)
 		if found[1] then
 			for _, full_path in ipairs(found) do
 				-- look first in the vfs' bin directories
-				vfs.PushWorkingDirectory(full_path:match("(.+/)"))
+				fs.PushWorkingDirectory(full_path:match("(.+/)"))
 					local ok, err, what = package.loadlib(info.name, "")
 					if what == "open" then
 						info.status = "MISSING"
@@ -127,7 +127,7 @@ function utility.GetLikelyLibraryDependencies(path)
 						info.status = "FOUND"
 						break
 					end
-				vfs.PopWorkingDirectory()
+				fs.PopWorkingDirectory()
 			end
 		else
 			local ok, err, what = package.loadlib(info.name, "")

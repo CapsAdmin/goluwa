@@ -277,105 +277,14 @@ if false then
 
 end
 
-
---utility.StartMonitorCoverage("oh/lua/parser.lua")
-
-
-run_js([[
-local print = console.log
-local pairs = Object.entries
-
-local function main(a,b,c) 
-    print('hello world')
-
-    for i = 1, 10 do
-        print(i)
-    end
-
-    local tbl = {
-        a = 1,
-        b = 2,
-        c = {
-            foo = 1,
-            bar = function() print("!!!") end,
-        }
-    }
-    tbl.foo = 1
-    print(tbl.foo)
-    tbl.c.bar()
-
-    for k,v in pairs(tbl) do
-        print(k,v)
-    end
-
-    local arr = {1,2,3,4, "foo", 1}
-    arr.push(1)
-    print(arr)
-
-    local arr2 = {} // hello 
-    /* afafdawf 
-    
-    */
-    
-    local myvar = 123
-    local foo1 = {}
-    Object.defineProperty(foo1, "test", { 
-        get = function() return myvar end,
-        set = function(v) print(v, "Set"); myvar = v end,
-    })
-    print(foo1.test)
-    foo1.test = 1
-
-    local handler = {
-        get = function(original_self, key, proxy_self)
-            if original_self[key] then
-                return original_self[key]
-            end
-
-            return "key does not exist"
-        end,
-        
-        set = function(original_self, key, value, proxy_self) 
-            original_self[key] = value
-        end,
-        
-        apply = function(original_self, this_arg, arg_list) 
-            print(arg_list)
-        end,
-    }
-
-    local o = function() end
-    o.reason = "no reason"
-    o.code = "a code"
-
-    local p = new Proxy(o, handler)
-
-    print(p.reason)
-    print(p.code)
-    print(p.beer)
-    p(1,2,3)
-
-    p.LOL = true
-
-    if false == 0 and true == true then
-        print("this shouldn't be visible")
-    elseif true == 1 then
-
-    else
-
-    end
-end 
-
-main()
-
-]], nil, "js")
-
-do return end
-
 print("============TEST============")
 
-transpile_check("a=(foo.bar)")
-transpile_check("a=(foo.bar)()")
+transpile_ok("print(<lol> </lol>)")
+transpile_ok("print(<lol><a></a></lol>)")
+transpile_ok("print(<lol lol=1></lol>)")
+
+--transpile_check("a=(foo.bar)")
+--transpile_check("a=(foo.bar)()")
 transpile_ok"@T:FOOBARRRR=true"if FOOBARRRR == true then else error("compile test failed") end FOOBARRRR=nil
 transpile_ok"@P:FOOBARRRR=true"if FOOBARRRR == true then else error("compile test failed") end FOOBARRRR=nil
 transpile_ok"@E:FOOBARRRR=true"if FOOBARRRR == true then else error("compile test failed") end FOOBARRRR=nil
@@ -452,10 +361,10 @@ transpile_check("tbl = {a = foo:asdf(), bar:LOL()}")
 transpile_check("foo = 1 // bar")
 transpile_check("foo = 1 /* bar */")
 transpile_check("foo = 1 /* bar */")
-transpile_check("if (player:IsValid()) then end")
-transpile_check("if ( IsValid( tr.Entity ) ) then end")
-transpile_check("local foo = (1+(2+(foo:bar())))")
-transpile_check("RunConsoleCommand ('hostname', (table.Random (hostname)))")
+--transpile_check("if (player:IsValid()) then end")
+--transpile_check("if ( IsValid( tr.Entity ) ) then end")
+--transpile_check("local foo = (1+(2+(foo:bar())))")
+--transpile_check("RunConsoleCommand ('hostname', (table.Random (hostname)))")
 assert(tokenize([[0xfFFF]])[1].value == "0xfFFF")
 check_tokens_separated_by_space([[while true do end]])
 check_tokens_separated_by_space([[if a == b and b + 4 and true or ( true and function ( ) end ) then :: foo :: end]])

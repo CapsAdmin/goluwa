@@ -13,17 +13,26 @@ local META = oh.BaseParser
 
 runfile("parser/*", META)
 
-function META:Block(stop)
+function META:Block(stop, implicit_return)
 	local node = self:Node("block")
 	node.statements = {}
 
 	for _ = 1, self:GetLength() do
 		if not self:GetToken() or stop and stop[self:GetToken().value] then
+
+			if implicit_return then
+				local last = node.statements[#node.statements]
+				if last and last.type == "expression" then
+					local ret = self:Node("return")
+					ret.implicit = true
+					table_insert(node.statements, #node.statements, ret)
+				end
+			end
+
 			break
 		end
 
-		local statement = self:Statement(node)
-
+		local statement = self:Statement(node, implicit_return)
 
 		if statement then
 			if statement.type == "continue" then
@@ -33,6 +42,7 @@ function META:Block(stop)
 					self.loop_stack[#self.loop_stack].has_continue = true
 				end
 			end
+
 			table_insert(node.statements, statement)
 		end
 	end
@@ -40,7 +50,7 @@ function META:Block(stop)
 	return node
 end
 
-function META:Statement(block)
+function META:Statement(block, implicit_return)
 
 	do
 		if self:IsValue("return") then
@@ -83,6 +93,14 @@ function META:Statement(block)
 		return self:ReadWhileStatement()
 	elseif self:IsForStatement() then
 		return self:ReadForStatement()
+	elseif self:IsValue("{") then
+		local node = self:Node("assignment")
+		node.destructor = true
+
+		node.lvalues = self:IdentifierList()
+		node.tokens["="] = self:ReadExpectValue("=")
+		node.rvalues = self:ExpressionList()
+		return node
 	elseif (self:IsType("letter") or self:IsValue("(")) and not lua.syntax.IsKeyword(self:GetToken()) then
 		local node
 		local start_token = self:GetToken()
@@ -104,6 +122,11 @@ function META:Statement(block)
 		elseif expr.suffixes and expr.suffixes[#expr.suffixes].type == "call" then
 			node = self:Node("expression")
 			node.value = expr
+		elseif implicit_return then
+			local node = self:Node("return")
+			node.implicit = true
+			node.expressions = self:ExpressionList()
+			return node
 		else
 			self:Error("unexpected " .. start_token.type, start_token)
 		end
@@ -153,14 +176,20 @@ function META:Expression(priority, stop_on_call)
 		val.tokens["right)"] = val.tokens["right)"] or {}
 		table_insert(val.tokens["right)"], self:ReadExpectValue(")"))
 
-	elseif token.value == "function" then
+	elseif self:IsAnonymousFunction() then
 		val = self:AnonymousFunction()
+	elseif token.type == "number" and self:GetTokenOffset(1).type == "letter" and self:GetTokenOffset(1).start == token.stop+1 then
+		val = self:Node("value")
+		val.value = self:ReadToken()
+		val.annotation = self:ReadToken()
 	elseif lua.syntax.IsValue(token) or (token.type == "letter" and not lua.syntax.IsKeyword(token)) then
 		val = self:Node("value")
 		val.value = self:ReadToken()
 
 	elseif token.value == "{" then
 		val = self:Table()
+	elseif token.value == "<" then
+		val = self:LSX()
 	end
 
 	if self:IsValue("as") and val then
@@ -256,6 +285,63 @@ function META:Expression(priority, stop_on_call)
 	end
 
 	return val
+end
+
+function META:LSX()
+	local node = self:Node("lsx")
+	node.tokens["start<"] = self:ReadExpectValue("<")
+	node.class = self:ReadExpectType("letter")
+
+	if self:IsType("letter") then
+		node.props = {}
+		while self:IsType("letter") do
+			local prop = self:Node("prop")
+			prop.key = self:ReadToken()
+			prop.tokens["="] = self:ReadExpectValue("=")
+			if self:IsType("string") or self:IsType("number") then
+				prop.value = self:ReadToken()
+			else
+				prop.tokens["{"] = self:ReadExpectValue("{")
+				if not self:IsValue("}") then
+					prop.expression = self:Expression()
+				end
+				prop.tokens["}"] = self:ReadExpectValue("}")
+			end
+			table.insert(node.props, prop)
+		end
+	end
+
+	if self:IsValue("/") then
+		node.tokens["/"] = self:ReadExpectValue("/")
+		node.tokens["start>"] = self:ReadExpectValue(">")
+		return node
+	else
+		node.tokens["start>"] = self:ReadExpectValue(">")
+
+		node.children = {}
+		for i = 1, self:GetLength() do
+			if self:IsValue("<") and self:GetTokenOffset(1).value == "/" and self:GetTokenOffset(2).value == node.class.value then
+				break
+			elseif self:IsValue("<") and self:GetTokenOffset(1).value ~= "/" then
+				table.insert(node.children, self:LSX())
+			elseif self:IsValue("{") then
+				self:ReadToken()
+				if not self:IsValue("}") then
+					table.insert(node.children, self:Expression())
+				end
+				self:ReadExpectValue("}")
+			elseif self:IsValue(">") then
+				break
+			else
+				table.insert(node.children, self:ReadToken())
+			end
+		end
+		node.tokens["stop<"] = self:ReadToken()
+		node.tokens["/"] = self:ReadExpectValue("/")
+		node.tokens["identifier"] = self:ReadExpectValue(node.class.value)
+		node.tokens["stop>"] = self:ReadToken()
+	end
+	return node
 end
 
 function META:ExpressionList()

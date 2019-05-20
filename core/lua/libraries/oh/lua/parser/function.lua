@@ -3,7 +3,41 @@ local META = ...
 function META:IsFunctionStatement()
     return
         self:IsValue("function") or
-        (self:IsValue("local") and self:GetTokenOffset(1).value == "function")
+        (self:IsValue("local") and self:GetTokenOffset(1).value == "function") or
+        (self:IsValue("async") and self:GetTokenOffset(1).value == "function") or
+        (self:IsValue("local") and self:GetTokenOffset(1).value == "async" and self:GetTokenOffset(2).value == "function")
+end
+
+local function read_short_call_body(self, node)
+
+    local implicit_return = false
+
+    if self:IsValue("(") then
+        node.tokens["func("] = self:ReadToken("(")
+    else
+        implicit_return = true
+    end
+
+    node.arguments = self:IdentifierList()
+
+    if self:IsValue(")") then
+        node.tokens["func)"] = self:ReadToken(")")
+    end
+
+    if implicit_return then
+        --[[
+
+        node.block = {type = "block", statements = {ret}}
+        node.no_end = true
+        ]]
+        node.block = self:Block({["end"] = true, [")"] = true}, true)
+        node.no_end = true
+    else
+        node.block = self:Block({["end"] = true})
+        node.tokens["end"] = self:ReadToken("end")
+    end
+
+    return node
 end
 
 local function read_call_body(self, node)
@@ -23,12 +57,22 @@ function META:ReadFunctionStatement()
 
     if self:IsValue("local") then
         node.tokens["local"] = self:ReadToken("local")
+
+        if self:IsValue("async") then
+            node.tokens["async"] = self:ReadToken()
+            node.async = true
+        end
+
 		node.tokens["function"] = self:ReadExpectValue("function")
 
 		node.value = self:Node("value")
 		node.value.value = self:ReadExpectType("letter")
 		node.is_local = true
     else
+        if self:IsValue("async") then
+            node.tokens["async"] = self:ReadToken()
+            node.async = true
+        end
         node.tokens["function"] = self:ReadExpectValue("function")
         node.value = self:Expression(0, true)
     end
@@ -36,9 +80,20 @@ function META:ReadFunctionStatement()
     return read_call_body(self, node)
 end
 
-function META:AnonymousFunction()
-    local node = self:Node("function")
-    node.tokens["function"] = self:ReadExpectValue("function")
+function META:IsAnonymousFunction()
+    return
+        self:IsValue("function") or self:IsValue("do") or self:IsValue("async")
+end
 
-    return read_call_body(self, node)
+function META:AnonymousFunction()
+    if self:IsValue("do") then
+        local node = self:Node("function")
+        node.tokens["function"] = self:ReadExpectValue("do")
+        return read_short_call_body(self, node)
+    else
+        local node = self:Node("function")
+        node.tokens["function"] = self:ReadExpectValue("function")
+
+        return read_call_body(self, node)
+    end
 end

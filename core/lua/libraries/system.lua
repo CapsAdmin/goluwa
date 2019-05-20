@@ -300,7 +300,7 @@ do
 			resize_field(data, "source")
 			resize_field(data, "name")
 
-			for _, info in npairs(data) do
+			for _, info in table.npairs(data) do
 				logf("  %s   %s  (%s)\n", info.source, info.name, info.arg_line)
 			end
 
@@ -334,7 +334,7 @@ do
 			resize_field(data, "key")
 			resize_field(data, "value")
 
-			for _, info in npairs(data) do
+			for _, info in table.npairs(data) do
 				logf("  %s   %s\n", info.key, info.value)
 			end
 			logn("}")
@@ -368,6 +368,30 @@ do
 	function system.pcall(func, ...)
 		return xpcall(func, system.OnError, ...)
 	end
+end
+
+function system.GetCLICommand(cmd)
+	if not system.OSCommandExists(cmd) then
+		error("unable to find command " .. cmd)
+	end
+	return setmetatable({}, {__index = function(_, key)
+		return function(...)
+			local str = cmd " " .. key
+
+			if ... then
+				str = str .. " " .. table.concat(...)
+			end
+
+			local f = io.popen(str)
+			local res = f:read("*all")
+
+			if not f:close() then
+				return nil, res
+			end
+
+			return res
+		end
+	end})
 end
 
 return system

@@ -1,4 +1,63 @@
 do
+	local pretty_prints = {}
+
+	pretty_prints.table = function(t)
+		local str = tostring(t)
+
+		str = str .. " [" .. table.count(t) .. " subtables]"
+
+		-- guessing the location of a library
+		local sources = {}
+		for _, v in pairs(t) do
+			if type(v) == "function" then
+				local src = debug.getinfo(v).source
+				sources[src] = (sources[src] or 0) + 1
+			end
+		end
+
+		local tmp = {}
+		for k, v in pairs(sources) do
+			table.insert(tmp, {k = k, v = v})
+		end
+
+		table.sort(tmp, function(a,b) return a.v > b.v end)
+		if #tmp > 0 then
+			str = str .. "[" .. tmp[1].k:gsub("!/%.%./", "") .. "]"
+		end
+
+
+		return str
+	end
+
+	pretty_prints["function"] = function(self)
+		if debug.getprettysource then
+			return ("function[%p][%s](%s)"):format(self, debug.getprettysource(self, true), table.concat(debug.getparams(self), ", "))
+		end
+		return tostring(self)
+	end
+
+	function tostringx(val)
+		local t = type(val)
+
+		if pretty_prints[t] then
+			return pretty_prints[t](val)
+		end
+
+		return tostring(val)
+	end
+end
+
+function tostring_args(...)
+	local copy = table.pack(...)
+
+	for i = 1, copy.n do
+		copy[i] = tostringx(copy[i])
+	end
+
+	return copy
+end
+
+do
 	local rawset = rawset
 	local rawget = rawget
 	local getmetatable = getmetatable
@@ -60,71 +119,23 @@ do
 	end
 end
 do -- logging
-	local pretty_prints = {}
-
-	pretty_prints.table = function(t)
-		local str = tostring(t) or "nil"
-
-		str = str .. " [" .. table.count(t) .. " subtables]"
-
-		-- guessing the location of a library
-		local sources = {}
-
-		for _, v in pairs(t) do
-			if type(v) == "function" then
-				local src = debug.getinfo(v).source
-				sources[src] = (sources[src] or 0) + 1
-			end
-		end
-
-		local tmp = {}
-
-		for k, v in pairs(sources) do
-			table.insert(tmp, {k = k, v = v})
-		end
-
-		table.sort(tmp, function(a,b) return a.v > b.v end)
-
-		if #tmp > 0 then
-			str = str .. "[" .. tmp[1].k:gsub("!/%.%./", "") .. "]"
-		end
-
-		return str
-	end
-
-	local function tostringx(val)
-		local t = (typex or type)(val)
-
-		return pretty_prints[t] and pretty_prints[t](val) or tostring(val)
-	end
-
-	local function tostring_args(...)
-		local copy = {}
-
-		for i = 1, select("#", ...) do
-			table.insert(copy, tostringx(select(i, ...)))
-		end
-
-		return copy
-	end
+	local tostringx = _G.tostringx
+	local tostring_args = _G.tostring_args
+	local table_concat = table.concat
+	local select = select
 
 	local function formatx(str, ...)
-		local copy = {}
-		local i = 1
+		local args = table.pack(...)
 
-		for arg in str:gmatch("%%(.)") do
-			arg = arg:lower()
-
-			if arg == "s" then
-				table.insert(copy, tostringx(select(i, ...)))
-			else
-				table.insert(copy, (select(i, ...)))
+		for i, chunk in ipairs(str:split("%")) do
+			if i > 1 then
+				if chunk:startswith("s") then
+					args[i] = tostringx(args[i])
+				end
 			end
-
-			i = i + 1
 		end
 
-		return string.format(str, unpack(copy))
+		return str:format(unpack(args))
 	end
 
 	local base_log_dir = e.USERDATA_FOLDER .. "logs/"
@@ -143,6 +154,7 @@ do -- logging
 
 		if not log_files[name] then
 			local file = assert(io.open(getlogpath(name), "w"))
+			file:setvbuf("no")
 
 			log_files[name] = file
 		end
@@ -156,12 +168,10 @@ do -- logging
 		return log_files[name]
 	end
 
-	local last_line
 	local count = 0
 	local last_count_length = 0
 
-	require("fs").createdir(base_log_dir)
-
+	fs.create_directory(base_log_dir)
 
 	local suppress_print = false
 
@@ -182,71 +192,40 @@ do -- logging
 		return true
 	end
 
-	local silence
-
-	local function raw_log(args, sep, append)
-		if silence then return end
-		local line = type(args) == "string" and args or table.concat(args, sep)
-
-		if append then
-			line = line .. append
+	local function raw_log(str)
+		if not log_file then
+			setlogfile()
 		end
 
-		if vfs then
-			if not log_file then
-				setlogfile()
-			end
-
-			if line == last_line then
-				if count > 0 then
-					local count_str = ("[%i x] "):format(count)
-					log_file:seek("cur", -#line-1-last_count_length)
-					log_file:write(count_str, line)
-					last_count_length = #count_str
-				end
-				count = count + 1
-			else
-				log_file:write(line)
-				count = 0
-				last_count_length = 0
-			end
-
-			log_file:flush()
-
-			last_line = line
-		end
+		log_file:write(str)
 
 		if log_files.console == log_file then
 			if repl and repl.started and repl.StyledWrite then
-				repl.StyledWrite(line)
+				repl.StyledWrite(str)
 			else
-				io.write(line)
+				io.write(str)
 				io.flush()
 			end
 		end
 	end
 
-	function silence_log(b)
-		silence = b
-	end
-
 	function log(...)
-		raw_log(tostring_args(...), "")
+		raw_log(table_concat(tostring_args(...)))
 		return ...
 	end
 
 	function logn(...)
-		raw_log(tostring_args(...), "", "\n")
+		raw_log(table_concat(tostring_args(...)) .. "\n")
 		return ...
 	end
 
 	function print(...)
-		raw_log(tostring_args(...), ",\t", "\n")
+		raw_log(table_concat(tostring_args(...), ",\t") .. "\n")
 		return ...
 	end
 
 	function logf(str, ...)
-		raw_log(formatx(str, ...), "")
+		raw_log(formatx(str, ...))
 		return ...
 	end
 
@@ -459,57 +438,6 @@ function istype(var, t)
 	return typex(var) == t
 end
 
-local pretty_prints = {}
-
-pretty_prints.table = function(t)
-	local str = tostring(t)
-
-	str = str .. " [" .. table.count(t) .. " subtables]"
-
-	-- guessing the location of a library
-	local sources = {}
-	for _, v in pairs(t) do
-		if type(v) == "function" then
-			local src = debug.getinfo(v).source
-			sources[src] = (sources[src] or 0) + 1
-		end
-	end
-
-	local tmp = {}
-	for k, v in pairs(sources) do
-		table.insert(tmp, {k = k, v = v})
-	end
-
-	table.sort(tmp, function(a,b) return a.v > b.v end)
-	if #tmp > 0 then
-		str = str .. "[" .. tmp[1].k:gsub("!/%.%./", "") .. "]"
-	end
-
-
-	return str
-end
-
-pretty_prints["function"] = function(self)
-	return ("function[%p][%s](%s)"):format(self, debug.getprettysource(self, true), table.concat(debug.getparams(self), ", "))
-end
-
-function tostringx(val)
-	local t = type(val)
-
-	if t == "table" and getmetatable(val) then return tostring(val) end
-
-	return pretty_prints[t] and pretty_prints[t](val) or tostring(val)
-end
-
-function tostring_args(...)
-	local copy = {}
-
-	for i = 1, select("#", ...) do
-		table.insert(copy, tostringx(select(i, ...)))
-	end
-
-	return copy
-end
 
 function istype(var, ...)
 	for _, str in pairs({...}) do
@@ -521,59 +449,6 @@ function istype(var, ...)
 	return false
 end
 
-do -- negative pairs
-	local v
-	local function iter(a, i)
-		i = i - 1
-		v = a[i]
-		if v then
-			return i, v
-		end
-	end
+if RELOAD then
 
-	function npairs(a)
-		return iter, a, #a + 1
-	end
-end
-
-function rpairs(tbl)
-	local sorted = {}
-
-	for key, val in pairs(tbl) do
-		table.insert(sorted, {key = key, val = val, rand = math.random()})
-	end
-
-	table.sort(sorted, function(a,b) return a.rand > b.rand end)
-
-	local i = 0
-
-	return function()
-		i = i + 1
-		if sorted[i] then
-			return sorted[i].key, sorted[i].val--, sorted[i].rand
-		end
-	end
-end
-
-function spairs(tbl, desc)
-	local sorted = {}
-
-	for key, val in pairs(tbl) do
-		table.insert(sorted, {key = key, val = val})
-	end
-
-	if desc then
-		table.sort(sorted, function(a,b) return a.key > b.key end)
-	else
-		table.sort(sorted, function(a,b) return a.key < b.key end)
-	end
-
-	local i = 0
-
-	return function()
-		i = i + 1
-		if sorted[i] then
-			return sorted[i].key, sorted[i].val--, sorted[i].rand
-		end
-	end
 end

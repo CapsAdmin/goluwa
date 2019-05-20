@@ -419,7 +419,7 @@ do
 
 	function META:GetClassName()
 		return self.ClassName
-	end	
+	end
 
 	function META:IsMarkedForDeletion()
 		return self.__obj.marked_for_deletion
@@ -1038,7 +1038,7 @@ do
 		if self.__obj.vgui_type == "textentry" then
 			self.__obj:SetMultiline(b)
 		elseif self.__obj.vgui_type == "richtext" then
-			self.__obj.text:SetMultiline(b)
+			self.__obj.text:SetTextWrap(b)
 		end
 	end
 
@@ -1046,7 +1046,7 @@ do
 		if self.__obj.vgui_type == "textentry" then
 			return self.__obj:GetMultiline()
 		elseif self.__obj.vgui_type == "richtext" then
-			return self.__obj.text:GetMultiline()
+			return self.__obj.text:GetTextWrap()
 		end
 	end
 

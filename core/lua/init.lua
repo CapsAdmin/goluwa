@@ -53,15 +53,6 @@ if pcall(require, "jit.opt") then
 
 --loadfile("core/lua/modules/bytecode_cache.lua")()
 
-local PROFILE_STARTUP = false
-
-if PROFILE_STARTUP then
-	local old = io.stdout
-	io.stdout = {write = function(_, ...) io.write(...) end}
-	require("jit.p").start("rplfvi1")
-	io.stdout = old
-end
-
 -- put all c functions in a table so we can override them if needed
 -- without doing the local oldfunc = print thing over and over again
 
@@ -156,12 +147,14 @@ do
 
 	package.loaded.fs = fs
 
-	fs.createdir(e.STORAGE_FOLDER)
-	fs.createdir(e.STORAGE_FOLDER .. "/userdata/")
-	fs.createdir(e.USERDATA_FOLDER)
-	fs.createdir(e.CACHE_FOLDER)
-	fs.createdir(e.SHARED_FOLDER)
-	fs.createdir(e.TEMP_FOLDER)
+	fs.create_directory(e.STORAGE_FOLDER)
+	fs.create_directory(e.STORAGE_FOLDER .. "/userdata/")
+	fs.create_directory(e.USERDATA_FOLDER)
+	fs.create_directory(e.CACHE_FOLDER)
+	fs.create_directory(e.SHARED_FOLDER)
+	fs.create_directory(e.TEMP_FOLDER)
+
+	_G.fs = fs
 end
 
 -- standard library extensions
@@ -174,6 +167,9 @@ runfile("lua/libraries/extensions/ffi.lua")
 runfile("lua/libraries/extensions/math.lua")
 
 utility = runfile("lua/libraries/utility.lua")
+
+runfile("lua/libraries/extensions/fs.lua")
+
 prototype = runfile("lua/libraries/prototype/prototype.lua")
 vfs = runfile("lua/libraries/filesystem/vfs.lua")
 
@@ -210,6 +206,14 @@ system = runfile("lua/libraries/system.lua") -- os and luajit related functions 
 event = runfile("lua/libraries/event.lua") -- event handler
 utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 profiler = runfile("lua/libraries/profiler.lua")
+tasks = runfile("!lua/libraries/tasks.lua") -- high level coroutine library
+threads = runfile("!lua/libraries/threads.lua")
+
+_G.P = profiler.ToggleTimer
+_G.I = profiler.ToggleInstrumental
+_G.S = profiler.ToggleStatistical
+_G.LOOM = profiler.ToggleLoom
+
 oh = runfile("lua/libraries/oh/oh.lua") -- lua tokenizer, parser and emitter
 repl = runfile("lua/libraries/repl.lua")
 ffibuild = runfile("lua/libraries/ffibuild.lua") -- used to build binaries
@@ -309,7 +313,6 @@ if TEST then
 		logn(debug.getprettysource(list[i].func, true), " = ", list[i].count)
 	end
 	logn("===========================================")
-
 
 	logn("===============RUNNING TESTS===============")
 	local failed = false

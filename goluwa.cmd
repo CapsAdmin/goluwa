@@ -125,7 +125,7 @@ SetLocal
 		echo stream.SaveToFile^("!forward_slash_path!", 2^) >> !tmp_name!
 		echo stream.Close^(^) >> !tmp_name!
 		echo } catch^(err^) { >> !tmp_name!
-		echo 	WScript.Echo^("jscript error: "+err.message^) >> !tmp_name!
+		echo 	WScript.Echo^("jscript error: "+err.description^) >> !tmp_name!
 		echo 	WScript.Quit^(1^) >> !tmp_name!
 		echo } >> !tmp_name!
 

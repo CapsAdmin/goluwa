@@ -82,22 +82,20 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 			local ok, err = vfs.Rename(full_path, full_path:gsub(".+/(.+).temp", "%1"))
 
 			if not ok then
-				on_fail(llog("unable to rename %q: %s", full_path, err))
-				return
+				return false, ("unable to rename %q: %s\n"):format(full_path, err)
 			end
 
 			local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to)
 
-			if full_path then
-				callback(full_path, true)
-
-				--llog("finished donwnloading ", from)
-			else
-				on_fail(llog("open error: %q not found!", "data/downloads/" .. to))
+			if not full_path then
+				return false, ("open error: %q not found!\n"):format("data/downloads/" .. to)
 			end
-		else
-			on_fail(llog("open error: %q not found!", "data/downloads/" .. e.DOWNLOAD_FOLDER .. to .. ".temp"))
+			
+			--llog("finished donwnloading ", from)
+			callback(full_path, true)
+			return
 		end
+		return false, ("open error: %q not found!\n"):format("data/downloads/" .. e.DOWNLOAD_FOLDER .. to .. ".temp")
 	end):Catch(function(...)
 		on_fail(...)
 	end):Subscribe("chunks", function(chunk)
@@ -128,8 +126,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 		local ok, err = vfs.CreateDirectoriesFromPath("os:" .. e.DOWNLOAD_FOLDER .. to)
 
 		if not ok then
-			on_fail(llog("unable to create directories %q download error: %s", "os:" .. e.DOWNLOAD_FOLDER .. to, err))
-			return false
+			return false, llog("unable to create directories %q download error: %s", "os:" .. e.DOWNLOAD_FOLDER .. to, err)
 		end
 
 		if resource.debug then
@@ -140,8 +137,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 		file = file_
 
 		if not file then
-			on_fail(llog("unable to open file for writing %q: %s", "os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp", err))
-			return false
+			return false, ("unable to open file for writing %q: %s\n"):format("os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp", err)
 		end
 
 		local etag = header.etag or header["last-modified"]

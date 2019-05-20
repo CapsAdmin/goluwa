@@ -166,11 +166,12 @@ do
 
         local post_data
 
-
-        if data.headers and table.lowercasedlookup(data.headers, "content-type") and table.lowercasedlookup(data.headers, "content-type"):startswith("application/json") then
-            post_data = serializer.Encode("json", data.body)
-        else
-            post_data = data.body
+        if data then
+            if data.headers and table.lowercasedlookup(data.headers, "content-type") and table.lowercasedlookup(data.headers, "content-type"):startswith("application/json") then
+                post_data = serializer.Encode("json", data.body)
+            else
+                post_data = data.body
+            end
         end
 
         local socket
@@ -187,7 +188,7 @@ do
                 end
             end,
             code_callback = function(code, status)
-                if not tostring(code):startswith("2") then
+                if not tostring(code):startswith("2") and not tostring(code):startswith("3") then
                     socket:Remove()
                     reject(status .. "(" .. code .. ") url:" .. url)
                     return false
@@ -200,8 +201,8 @@ do
                 reject(err)
             end,
             post_data = post_data,
-            header = data.headers,
-            files = data.files,
+            header = data and data.headers,
+            files = data and data.files,
         }, true)
 
         self.on_stop = function()

@@ -34,12 +34,18 @@ function META:Expression(v)
 	elseif v.type == "unary" then
 		self:Unary(v)
 	elseif v.type == "value" then
-		self:EmitToken(v.value)
-
-		if v.data_type then
-			--print(v)
-			--self:Emit("--[[a]]")
+		if v.annotation then
+			self:Emit("math.suffixes(")
+			self:EmitToken(v.value)
+			self:Emit(",'")
+			self:EmitToken(v.annotation)
+			self:Emit("'")
+			self:Emit(")")
+		else
+			self:EmitToken(v.value)
 		end
+	elseif v.type == "lsx" then
+		self:LSX(v)
 	else
 		error("unhandled token type " .. v.type)
 	end
@@ -76,6 +82,58 @@ function META:Expression(v)
 	end
 end
 
+
+function META:LSX(node)
+	self:Emit(" LSX(")
+
+	self:Emit("'")self:EmitToken(node.class)self:Emit("'")
+	self:Emit(",")
+
+	if node.props then
+		self:Emit("{")
+		for i, prop in ipairs(node.props) do
+			self:EmitToken(prop.key)
+			self:EmitToken(prop.tokens["="])
+
+			if prop.expression then
+				self:Expression(prop.expression)
+			else
+				self:EmitToken(prop.value)
+			end
+
+			if i ~= #node.props then
+				self:Emit(",")
+			end
+		end
+		self:Emit("}")
+	else
+		self:Emit("nil")
+	end
+
+	if node.children[1] then
+		self:Emit(",")
+		self:Emit("{")
+
+		local max = #node.children
+		for i, child in ipairs(node.children) do
+			if child.tokens then
+				self:Expression(child)
+			else
+				self:Emit("[[")
+				self:EmitToken(child)
+				if i == max then
+					self:EmitToken(node.tokens["stop<"], "") -- emit the whitespce from <
+				end
+				self:Emit("]]")
+			end
+			self:Emit(",")
+		end
+		self:Emit("}")
+	end
+
+	self:Emit(")")
+end
+
 function META:Operator(v)
 	self:EmitToken(v.tokens.operator)
 end
@@ -87,14 +145,53 @@ function META:Function(v)
 		self:EmitToken(v.tokens["local"])
 	end
 
-	self:EmitToken(v.tokens["function"])
+	self:EmitToken(v.tokens["function"], "function")
 	self:Whitespace(" ")
 
 	if v.value then
 		self:Expression(v.value)
 	end
 
-	self:EmitToken(v.tokens["func("])self:ExpressionList(v.arguments)self:EmitToken(v.tokens["func)"])
+	self:EmitToken(v.tokens["func("], "(")
+	do
+		local tbl = v.arguments
+		for i = 1, #tbl do
+			if tbl[i].destructor then
+				self:Emit("__DSTR" .. i)
+			else
+				self:Expression(tbl[i])
+			end
+			if i ~= #tbl then
+				self:EmitToken(tbl[i].tokens[","])
+				self:Whitespace(" ")
+			end
+		end
+		self:EmitToken(v.tokens["func)"], ")")
+		for i = 1, #tbl do
+			if tbl[i].destructor then
+				self:Emit("local ")
+				for i2,v in ipairs(tbl[i].destructor) do
+					self:Expression(v)
+					if i2 ~= #tbl[i].destructor then
+						self:Emit(",")
+
+					end
+				end
+				self:Emit("=")
+				for i2,v in ipairs(tbl[i].destructor) do
+					self:Emit("__DSTR" .. i)
+					self:Emit(".")
+					self:Expression(v)
+					if i2 ~= #tbl[i].destructor then
+						self:Emit(",")
+					else
+						self:Emit(";")
+						self:Emit("__DSTR" .. i .. "=nil;")
+					end
+				end
+			end
+		end
+	end
 
 	if v.return_types then
 		for i,args in ipairs(v.return_types) do
@@ -110,7 +207,16 @@ function META:Function(v)
 		self:Whitespace("\t+")
 			self:Block(v.block)
 		self:Whitespace("\t-")
-	self:Whitespace("\t")self:EmitToken(v.tokens["end"])
+	self:Whitespace("\t")
+	if v.no_end then
+		self:Emit(" end")
+	else
+		self:EmitToken(v.tokens["end"])
+	end
+
+	if v.async then
+		self:Emit(";") self:Expression(v.value) self:Emit("=")self:Emit("async(") self:Expression(v.value) self:Emit(")")
+	end
 end
 
 function META:Table(v)
@@ -241,7 +347,13 @@ function META:Block(block)
 		elseif data.type == "break" then
 			self:Whitespace("\t")self:EmitToken(data.tokens["break"])
 		elseif data.type == "return" then
-			self:Whitespace("\t")self:Whitespace("?")self:EmitToken(data.tokens["return"])
+			self:Whitespace("\t")
+			self:Whitespace("?")
+			if data.implicit then
+				self:Emit(" return ")
+			else
+				self:EmitToken(data.tokens["return"])
+			end
 
 			if data.expressions then
 				self:ExpressionList(data.expressions)
@@ -288,8 +400,13 @@ function META:Block(block)
 			self:Whitespace("\t") if data.is_local then self:EmitToken(data.tokens["local"])self:Whitespace(" ") end
 
 			for i,v in ipairs(data.lvalues) do
-				if data.is_local then
-					self:EmitToken(v.value)
+				if data.is_local or data.destructor then
+					if v.destructor then
+						self:EmitToken(v.tokens["{"], "")
+						self:ExpressionList(v.destructor)
+					else
+						self:EmitToken(v.value)
+					end
 				else
 					self:Expression(v)
 				end
@@ -308,10 +425,40 @@ function META:Block(block)
 				self:Whitespace(" ")self:EmitToken(data.tokens["="])self:Whitespace(" ")
 
 				for i,v in ipairs(data.rvalues) do
-					self:Expression(v)
+					if data.lvalues[i] and data.lvalues[i].destructor then
+						for i2,v2 in ipairs(data.lvalues[i].destructor) do
+							self:Emit("(")
+							self:Expression(v)
+							self:Emit(").")
+							self:EmitToken(v2.value)
+							if i2 ~= #data.lvalues[i].destructor then
+								self:Emit(",")
+							end
+						end
+					else
+						self:Expression(v)
+					end
 
 					if data.rvalues[2] and i ~= #data.rvalues then
 						self:EmitToken(v.tokens[","])self:Whitespace(" ")
+					end
+				end
+
+				for i,v in ipairs(data.rvalues) do
+					if data.lvalues[i] and data.lvalues[i].destructor then
+						for i2,v2 in ipairs(data.lvalues[i].destructor) do
+							if v2.default then
+								self:Emit(" ")
+								self:EmitToken(v2.value)
+								self:Emit("=")
+								self:EmitToken(v2.value)
+								self:Emit("~=nil and ")
+								self:EmitToken(v2.value)
+								self:Emit(" or ")
+								self:Expression(v2.default)
+								self:Emit(";")
+							end
+						end
 					end
 				end
 			end
@@ -351,6 +498,13 @@ function META:ExpressionList(tbl)
 			self:Whitespace(" ")
 		end
 	end
+end
+
+if RELOAD then
+	RELOAD = nil
+	runfile("lua/libraries/oh/oh.lua")
+	runfile("lua/libraries/oh/lua/test.lua")
+	return
 end
 
 return function(config)

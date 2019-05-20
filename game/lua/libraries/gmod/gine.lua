@@ -198,7 +198,7 @@ function gine.Initialize(gamemode, skip_addons)
 	end)
 
 	if not gine.init then
-		steam.MountSourceGame("gmod")
+		steam.MountSourceGame("gmod", skip_addons)
 
 		pvars.Setup("sv_allowcslua", 1)
 

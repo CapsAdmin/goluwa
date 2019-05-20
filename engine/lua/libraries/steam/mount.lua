@@ -316,7 +316,7 @@ do
 		return false
 	end
 
-	function steam.MountSourceGame(var)
+	function steam.MountSourceGame(var, skip_addons)
 		local game_info, err = steam.FindSourceGame(var)
 		if not game_info then return nil, err end
 
@@ -331,9 +331,11 @@ do
 			if path:endswith("*") then
 				for _, path in ipairs(vfs.Find(path:sub(0, -2), true)) do
 					if vfs.IsDirectory(path) then
-						if game_info.game == "Garry's Mod" and not pvars.Get("gine_local_addons_only") then
+						if game_info.game == "Garry's Mod" and not pvars.Get("gine_local_addons_only") and not skip_addons then
 							llog("mounting %s", path)
 							vfs.Mount(path, nil, game_info)
+						else
+							--llog("NOT mounting %s", path)
 						end
 					end
 				end

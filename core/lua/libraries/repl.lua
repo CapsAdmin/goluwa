@@ -135,9 +135,9 @@ do
 	end
 
 	function repl.GetTailPosition()
-		local str = table.concat(buf)
-		local y = str:count("\n") + repl.caret_y
-		local x = (str:match(".+\n(.*)") or ""):ulen()
+		local tbl = table.concat(buf):split("\n")
+		local y = #tbl + repl.caret_y - 1
+		local x = tbl[#tbl]:ulen()
 
 		return x, y
 	end
@@ -184,18 +184,19 @@ do
 		r = tonumber("0x" .. r)
 		g = tonumber("0x" .. g)
 		b = tonumber("0x" .. b)
-		colors[key] = {r/255,g/255,b/255}
+		colors[key] = {r,g,b}
 	end
 	local last_color
 	set_color = function(what)
+		if not colors[what] then
+			what = "letter"
+		end
+
 		if what ~= last_color then
-			if colors[what] then
-				terminal.ForegroundColor(unpack(colors[what]))
-				last_color = what
-			else
-				terminal.ForegroundColor(unpack(colors.letter))
-				last_color = "letter"
-			end
+			local c = colors[what]
+
+			terminal.ForegroundColorFast(c[1], c[2], c[3])
+			last_color = what
 		end
 	end
 
@@ -207,14 +208,13 @@ do
 		repl.no_color = b
 	end
 
+	local table_concatrange = table.concatrange
+	local oh = oh
+
 	function repl.StyledWrite(str, dont_move)
-		local x,y, w,h
+		local x, y
 		if not dont_move then
 			x,y = repl.GetCaretPosition()
-			-- clear the input line and reset the caret position
-			repl.WriteStringToScreen(0, y, (" "):rep(repl.buffer:ulen()))
-			repl.SetCaretPositionReal(0,y)
-			--repl.Write("\27[M")
 		end
 
 		if repl.no_color then
@@ -224,24 +224,23 @@ do
 
 			local tokenizer = oh.lua.Tokenizer(str)
 
-			local ustr = string.utf8totable(str)
-
 			while true do
 				local type, start, stop, whitespace = tokenizer:ReadToken()
 
-				for _, v in ipairs(whitespace) do
+				for i = 1, #whitespace do
+					local v = whitespace[i]
 					if v.type == "line_comment" or v.type == "multiline_comment" then
 						set_color("comment")
 					end
 
-					repl.Write(table.concatrange(ustr, v.start, v.stop))
+					repl.Write(table_concatrange(tokenizer.code, v.start, v.stop))
 				end
 
-				local chunk = table.concatrange(ustr, start, stop)
+				local chunk = table_concatrange(tokenizer.code, start, stop)
 
 				if type == "letter" and oh.lua.syntax.Keywords[chunk] or oh.lua.syntax.KeywordValues[chunk] then
-						set_color("keyword")
-					else
+					set_color("keyword")
+				else
 					set_color(type)
 				end
 
@@ -250,14 +249,11 @@ do
 				if type == "end_of_file" then break end
 			end
 
-			set_color("letter")
+			--set_color("letter")
 		end
 
 		if not dont_move then
-			local tx, ty = repl.GetTailPosition()
-			repl.SetCaretPosition(x,ty)
-			--repl.SetCaretPositionReal(tx,ty)
-		--	repl.StyledWrite(repl.buffer, true)
+			repl.move_caret_to_tail = x
 		end
 	end
 end
@@ -275,20 +271,21 @@ local function find_next_word(buffer, x, dir)
 end
 
 function repl.InputLua(str)
-	local ok, err = pcall(function()
+	local ok, err = xpcall(function()
 		local tokenizer = oh.lua.Tokenizer(str)
 		local tokens = tokenizer:GetTokens()
 		local parser = oh.lua.Parser()
 		local ast = parser:BuildAST(tokens)
 		local code = oh.lua.ASTToCode(ast)
 
+		repl.Echo(code)
+
 		local function print_errors(errors, only_first)
 			for _, v in ipairs(errors) do
 				set_color("error")
 				repl.Write((" "):rep(v.start + 1) .. ("^"):rep(v.stop - v.start + 1))
 				set_color("letter")
-				repl.StyledWrite(" " ..  v.msg)
-				repl.Write("\n")
+				repl.StyledWrite(" " ..  v.msg .. "\n")
 				if only_first then break end
 			end
 		end
@@ -296,7 +293,7 @@ function repl.InputLua(str)
 		print_errors(tokenizer.errors)
 		print_errors(parser.errors, true)
 
-		local func = assert(loadstring(str))
+		local func, err = loadstring(code)
 
 		if func then
 			local func, res = system.pcall(func)
@@ -307,11 +304,33 @@ function repl.InputLua(str)
 				logn(res)
 				set_color("letter")
 			end
-		else
-			print(err)
+		elseif #tokenizer.errors == 0 and #parser.errors == 0 then
+			set_color("letter")
+			repl.Write("transpiled output loadstring error: ")
+			set_color("error")
+			repl.Write(err:match("%]:%d+: (.+)"))
+			repl.Write("\n")
 		end
+	end, function(error)
+		repl.Echo(str)
+		set_color("error")
+		repl.Write(error)
+		repl.Write("\n")
+		print(debug.traceback())
 	end)
-	if not ok then repl.Write(err .. "\n") end
+end
+
+function repl.Echo(str)
+	local x, y = repl.GetCaretPosition()
+	local w, h = terminal.GetSize()
+
+	repl.WriteStringToScreen(0, y, (" "):rep(utf8.length(str)))
+	repl.SetCaretPositionReal(0,y)
+	repl.StyledWrite("> " .. str, true)
+	repl.Flush()
+	repl.WriteNow("\n")
+	repl.SetCaretPosition(0,y+1)
+	repl.Flush()
 end
 
 function repl.KeyPressed(key)
@@ -325,28 +344,27 @@ function repl.KeyPressed(key)
 		repl.buffer = ""
 
 	--	repl.WriteStringToScreen(0, y, (" "):rep(w))
-		repl.WriteStringToScreen(0, y, (" "):rep(utf8.length(str)))
-		repl.SetCaretPositionReal(0,y)
-		repl.StyledWrite("> " .. str, true)
-		repl.Flush()
-		repl.WriteNow("\n")
-		repl.SetCaretPosition(0,y+1)
-		repl.Flush()
+
 
 		if str == "detach" and os.getenv("GOLUWA_TMUX") then
+			repl.Echo(str)
 			_OLD_G.os.execute("tmux detach")
 		elseif str == "clear" then
+			repl.Echo(str)
 			repl.ClearScreen()
 			repl.SetCaretPosition(0,0)
 		elseif str:startswith("exit") then
+			repl.Echo(str)
 			system.ShutDown(tonumber(str:match("exit (%d+)")) or 0)
 		elseif str ~= "" then
 			if commands and commands.RunString then
+				repl.Echo(str)
 				commands.RunString(str)
 			else
 				repl.InputLua(str)
 			end
 		end
+
 		local x,y = repl.GetTailPosition()
 		repl.Flush()
 		repl.SetCaretPosition(x,y)
@@ -512,9 +530,16 @@ function repl.Update()
 	if not repl.started then error("repl not initialized") end
 	--if math.random() > 0.99 then print(os.clock()) end
 
-	local what, arg = terminal.ReadEvent()
+	if repl.move_caret_to_tail then
+		local tx, ty = repl.GetTailPosition()
+		repl.SetCaretPosition(repl.move_caret_to_tail,ty)
+		repl.move_caret_to_tail = nil
+	end
 
-	if what then
+	local events = terminal.ReadEvents()
+
+	while events[1] do
+		local what, arg = unpack(table.remove(events, 1))
 		if what == "string" and arg:endswith("__ENTERHACK__") then
 			repl.CharInput(arg:sub(0, -#"__ENTERHACK__" - 1))
 			repl.KeyPressed("enter")

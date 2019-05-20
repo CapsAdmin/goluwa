@@ -29,18 +29,6 @@ end
 
 local fs = require("fs")
 
-vfs.OSCreateDirectory = fs.createdir
-vfs.OSGetAttributes = fs.getattributes
-
-do
-	vfs.SetWorkingDirectory = fs.setcd
-	vfs.GetWorkingDirectory = fs.getcd
-
-	if utility.MakePushPopFunction then
-		utility.MakePushPopFunction(vfs, "WorkingDirectory")
-	end
-end
-
 function vfs.Delete(path, ...)
 	local abs_path = vfs.GetAbsolutePath(path, ...)
 
@@ -192,9 +180,22 @@ local function add_helper(name, func, mode, cb)
 		if file then
 			local args = {...}
 
-			if event then
-				local ret = {event.Call("VFSPre" .. name, path, ...)}
-				if ret[1] ~= nil then
+
+			do
+				local ret
+
+				if serializer then
+					if name == "Write" then
+						local ext = vfs.GetExtensionFromPath(path)
+						if serializer.GetLibrary(ext) then
+							ret = {serializer.Encode(ext, data)}
+						end
+					end
+				end
+				if not ret and event then
+					ret = {event.Call("VFSPre" .. name, path, ...)}
+				end
+				if ret and ret[1] ~= nil then
 					for i,v in ipairs(args) do
 						if ret[i] ~= nil then
 							args[i] = ret[i]
@@ -203,19 +204,30 @@ local function add_helper(name, func, mode, cb)
 				end
 			end
 
+
 			local res, err = file[func](file, unpack(args))
 
 			file:Close()
 
-			if res and event then
-				local res, err = event.Call("VFSPost" .. name, path, res)
-				if res ~= nil or err then
-					if CLI then
-						debug.trace()
-						error(err, 2)
-					end
+			if res then
+				if event then
+					local res, err = event.Call("VFSPost" .. name, path, res)
+					if res ~= nil or err then
+						if CLI then
+							debug.trace()
+							error(err, 2)
+						end
 
-					return res, err
+						return res, err
+					end
+				end
+				if serializer then
+					if name == "Read" then
+						local ext = vfs.GetExtensionFromPath(path)
+						if serializer.GetLibrary(ext) then
+							return serializer.Decode(ext, res)
+						end
+					end
 				end
 			end
 
@@ -263,9 +275,9 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 				local base = e.USERDATA_FOLDER
 
 				if dir == "cache" then
-					base = e.STORAGE_FOLDER .. "data/cache/"
+					base = e.STORAGE_FOLDER .. "cache/"
 				elseif dir == "shared" then
-					base = e.STORAGE_FOLDER .. "data/shared/"
+					base = e.STORAGE_FOLDER .. "shared/"
 				end
 
 				local dir = ""
@@ -417,9 +429,14 @@ function vfs.WatchLuaFiles2(b)
 	end
 
 	local paths = {}
-	for i, path in ipairs(vfs.GetFilesRecursive("lua/", {"lua"})) do
-		if not path:endswith("core/lua/boot.lua") then
-			table.insert(paths, {path = R(path)})
+
+	for _, dir in ipairs({"core", "framework", "engine", "game"}) do
+		for _, path in ipairs(fs.get_files_recursive(dir)) do
+			if path:endswith(".lua") or path:endswith(".oh") then
+				if not path:endswith("core/lua/boot.lua") then
+					table.insert(paths, {path = e.ROOT_FOLDER .. path})
+				end
+			end
 		end
 	end
 
@@ -433,7 +450,7 @@ function vfs.WatchLuaFiles2(b)
 			if profiler.IsBusy() then return end -- I already know this is slow so it's just in the way
 
 			for i, data in ipairs(paths) do
-				local info = fs.getattributes(data.path)
+				local info = fs.get_attributes(data.path)
 
 				if info then
 					if not data.last_modified then

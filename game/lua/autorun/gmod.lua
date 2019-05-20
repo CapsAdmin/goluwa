@@ -1,3 +1,5 @@
+local git = system.GetCLICommand("git")
+
 local addons = {
 	"https://github.com/PAC3-Server/notagain",
 	--"https://github.com/PAC3-Server/gm-http-discordrelay",
@@ -6,32 +8,24 @@ local addons = {
 	"https://github.com/PAC3-Server/garrysmod",
 }
 
-local gmod_path = steam.GetGamePath("GarrysMod")
-
 commands.Add("setup_pac3server_addons", function()
+	local gmod_path = steam.GetGamePath("GarrysMod")
 	assert(steam.GetGamePath("GarrysMod"), "could not find gmod install")
-	assert(system.OSCommandExists("git", "readlink", "ln"), "windows?")
 
-	if not vfs.IsDirectory(e.ROOT_FOLDER .. "pac3_server/addons") then
-		vfs.CreateDirectory(e.ROOT_FOLDER .. "pac3_server")
-		vfs.CreateDirectory(e.ROOT_FOLDER .. "pac3_server/addons/")
-	end
+	fs.CreateDirectory("pac3_server/addons/", true)
+	fs.Write("pac3_server/addon.json", "this is just to prevent goluwa from loading the addon")
 
-	vfs.Write(e.ROOT_FOLDER .. "pac3_server/addon.json", "this is just to prevent goluwa from loading the addon")
-
-	local goluwa_addons = e.ROOT_FOLDER .. "pac3_server/addons/"
+	local goluwa_addons = "pac3_server/addons/"
 
 	local gmod_addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
 
-	if not vfs.IsDirectory(gmod_addons) then
-		require("fs").createdir(gmod_addons)
-	end
+	fs.CreateDirectory(gmod_addons, true)
 
 	for _, url in ipairs(addons) do
 		local name = url:match(".+/(.+)"):lower()
 
-		if not vfs.IsDirectory(goluwa_addons .. name) then
-			os.execute("git clone " .. url .. " " .. goluwa_addons .. name)
+		if fs.get_type(goluwa_addons .. name) ~= "directory" then
+			git.clone(url, goluwa_addons .. name)
 		end
 
 		if LINUX then
@@ -48,11 +42,10 @@ commands.Add("setup_gmod_bridge", function()
 	assert(gmod_path)
 
 	local gmod_dir = gmod_path .. "garrysmod/"
+	fs.RemoveRecursively(gmod_dir .. "backgrounds/")
+	fs.CreateDirectory(gmod_dir .. "addons/goluwa_bridge/lua/autorun/", true)
 
-	os.execute("rm -rf " .. gmod_dir .. "backgrounds/")
-
-	os.execute("mkdir -p " .. gmod_dir .. "addons/goluwa_bridge/lua/autorun/")
-	vfs.Write("os:" .. gmod_dir .. "addons/goluwa_bridge/lua/autorun/goluwa_bridge.lua", [[
+	fs.Write(gmod_dir .. "addons/goluwa_bridge/lua/autorun/goluwa_bridge.lua", [[
 file.Delete("goluwa_bridge.txt")
 local next_run = 0
 local last_time = 0
@@ -120,13 +113,9 @@ if gmod_path then
 	end)
 end
 
-commands.Add("setup_metastruct_addons", function()
-	if not vfs.IsDirectory("os:" .. e.ROOT_FOLDER .. "metastruct_addons") then
-		assert(vfs.CreateDirectory("os:" .. e.ROOT_FOLDER .. "metastruct_addons"))
-	end
 
 	local repos = {
-		{url = "https://github.com/EgrOnWire/ACF.git"},
+	{url = "git@github.com:EgrOnWire/ACF.git"},
 		{url = "git@github.com:CFC-Servers/fin2.git"},
 		{url = "git@github.com:danielga/xcomms.git"},
 		{url = "git@github.com:Metastruct/glua_utilities.git", npm = true},
@@ -147,71 +136,90 @@ commands.Add("setup_metastruct_addons", function()
 		{url = "git@gitlab.threekelv.in:metastruct-security/msasurfacenet.git"},
 		{url = "git@gitlab.threekelv.in:metastruct-security/msavehicles.git"},
 		{url = "git@gitlab.threekelv.in:PotcFdk/MetaWorks.git"},
-		{url = "https://github.com/CapsAdmin/customisable_thirdperson.git"},
-		{url = "https://github.com/CapsAdmin/pac3.git"},
-		{url = "https://github.com/danielga/halloween.git"},
-		{url = "https://github.com/danielga/luachip.git"},
-		{url = "https://github.com/Earu/Hoverbike.git"},
-		{url = "https://github.com/edunad/sprayurl.git"},
-		{url = "https://github.com/Falcqn/makespherical.git"},
-		{url = "https://github.com/Metastruct/advduplicator.git"},
-		{url = "https://github.com/Metastruct/copas.git"},
-		{url = "https://github.com/Metastruct/enum_loader.git"},
-		{url = "https://github.com/Metastruct/eventsystem.git"},
-		{url = "https://github.com/Metastruct/fishingmod.git"},
-		{url = "https://github.com/Metastruct/gcompute.git"},
-		{url = "https://github.com/Metastruct/gm-mediaplayer.git"},
-		{url = "https://github.com/Metastruct/gmod-csweapons.git"},
-		{url = "https://github.com/Metastruct/improved-stacker.git"},
-		{url = "https://github.com/Metastruct/luadev.git"},
-		{url = "https://github.com/Metastruct/mgn.git"},
-		{url = "https://github.com/Metastruct/moonscript.git"},
-		{url = "https://github.com/Metastruct/NeedMoreLegs.git"},
-		{url = "https://github.com/Metastruct/playablepiano.git"},
-		{url = "https://github.com/Metastruct/simfphys_armed.git"},
-		{url = "https://github.com/Metastruct/simfphys_base.git"},
-		{url = "https://github.com/notcake/gcodec.git"},
-		{url = "https://github.com/notcake/glib.git"},
-		{url = "https://github.com/notcake/gooey.git"},
-		{url = "https://github.com/notcake/gvote.git"},
-		{url = "https://github.com/notcake/quicktool.git"},
-		{url = "https://github.com/notcake/vfs.git"},
-		{url = "https://github.com/PotcFdk/AntEater.git"},
-		{url = "https://github.com/PotcFdk/PlyLab.git"},
-		{url = "https://github.com/Python1320/gmod_vstruct.git", submodule = true},
-		{url = "https://github.com/thegrb93/StarfallEx.git"},
-		{url = "https://github.com/wiox/gmod-keypad.git"},
-		{url = "https://github.com/wiremod/advdupe2.git"},
+	{url = "git@github.com:CapsAdmin/customisable_thirdperson.git"},
+	{url = "git@github.com:CapsAdmin/pac3.git"},
+	{url = "git@github.com:danielga/halloween.git"},
+	{url = "git@github.com:danielga/luachip.git"},
+	{url = "git@github.com:Earu/Hoverbike.git"},
+	{url = "git@github.com:edunad/sprayurl.git"},
+	{url = "git@github.com:Falcqn/makespherical.git"},
+	{url = "git@github.com:Metastruct/advduplicator.git"},
+	{url = "git@github.com:Metastruct/copas.git"},
+	{url = "git@github.com:Metastruct/enum_loader.git"},
+	{url = "git@github.com:Metastruct/eventsystem.git"},
+	{url = "git@github.com:Metastruct/fishingmod.git"},
+	{url = "git@github.com:Metastruct/gcompute.git"},
+	{url = "git@github.com:Metastruct/gm-mediaplayer.git"},
+	{url = "git@github.com:Metastruct/gmod-csweapons.git"},
+	{url = "git@github.com:Metastruct/improved-stacker.git"},
+	{url = "git@github.com:Metastruct/luadev.git"},
+	{url = "git@github.com:Metastruct/mgn.git"},
+	{url = "git@github.com:Metastruct/moonscript.git"},
+	{url = "git@github.com:Metastruct/NeedMoreLegs.git"},
+	{url = "git@github.com:Metastruct/playablepiano.git"},
+	{url = "git@github.com:Metastruct/simfphys_armed.git"},
+	{url = "git@github.com:Metastruct/simfphys_base.git"},
+	{url = "git@github.com:notcake/gcodec.git"},
+	{url = "git@github.com:notcake/glib.git"},
+	{url = "git@github.com:notcake/gooey.git"},
+	{url = "git@github.com:notcake/gvote.git"},
+	{url = "git@github.com:notcake/quicktool.git"},
+	{url = "git@github.com:notcake/vfs.git"},
+	{url = "git@github.com:PotcFdk/AntEater.git"},
+	{url = "git@github.com:PotcFdk/PlyLab.git"},
+	{url = "git@github.com:Python1320/gmod_vstruct.git", submodule = true},
+	{url = "git@github.com:thegrb93/StarfallEx.git"},
+	{url = "git@github.com:wiox/gmod-keypad.git"},
+	{url = "git@github.com:wiremod/advdupe2.git"},
 	}
 
-	local dir = e.ROOT_FOLDER .. "metastruct_addons"
+commands.Add("setup_metastruct_addons", function()
+	local npm = system.GetCLICommand("npm")
 
-	vfs.PushWorkingDirectory(dir)
+	fs.CreateDirectory("metastruct_addons")
 
-	os.execute("rm -f addons/")
-	os.execute("mkdir -p addons/merged")
+	fs.PushWorkingDirectory("metastruct_addons")
+	fs.RemoveRecursively("addons")
+	fs.CreateDirectory("addons/merged", true)
 
 	for _, repo in ipairs(repos) do
 		local name = repo.url:match(".+/(.-)%.git")
-		os.execute("git clone " .. repo.url .. " --depth 1 " .. name)
-		vfs.PushWorkingDirectory(name)
 
+			if fs.get_type(name) ~= "directory" then
+				fs.PushWorkingDirectory(name)
+					git.reset("--hard")
+					git.clean("-fxd")
+					git.pull()
+			fs.PopWorkingDirectory()
+		else
+				git.clone(repo.url, "--depth 1", name)
+		end
+
+			fs.PushWorkingDirectory(name)
 		if repo.branch then
-			os.execute("git checkout " .. repo.branch)
+					git.checkout(repo.branch)
 		end
 
 		if repo.submodule then
-			os.execute("git submodule init && git submodule update")
+					git.submodule("init")
+					git.submodule("update")
+		end
+
+		if repo.npm then
+					npm.install()
 		end
 
 		local location = repo.location or "*"
-		os.execute("cp -rl "..location.." ../addons/merged/")
 
 		if repo.npm then
-			os.execute("npm install")
+			location = "dist/*"
 		end
-		vfs.PopWorkingDirectory()
-	end
 
-	vfs.PopWorkingDirectory()
+				for _, path in ipairs(fs.get_files_recursive(location)) do
+					fs.CreateDirectory(path:match("(.+)/"), true)
+					fs.link(path, "../addons/merged/")
+				end
+		fs.PopWorkingDirectory()
+	end
+	fs.PopWorkingDirectory()
 end)
