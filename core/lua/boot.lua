@@ -602,6 +602,101 @@ end
 os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
 os.setenv("LD_LIBRARY_PATH", ".")
 
+if pcall(require, "ffi") then
+	local ffi = require("ffi")
+	local lua = require("core/bin/shared/luajit")
+
+	local signals = {
+		SIGHUP = 1,
+		SIGINT = 2,
+		SIGQUIT = 3,
+		SIGILL = 4,
+		SIGTRAP = 5,
+		SIGABRT = 6,
+		SIGBUS = 7,
+		SIGFPE = 8,
+		SIGKILL = 9,
+		SIGUSR1 = 10,
+		SIGSEGV = 11,
+		SIGUSR2 = 12,
+		SIGPIPE = 13,
+		SIGALRM = 14,
+		SIGTERM = 15,
+		SIGSTKFLT = 16,
+		SIGCHLD = 17,
+		SIGCONT = 18,
+		SIGSTOP = 19,
+		SIGTSTP = 20,
+		SIGTTIN = 21,
+		SIGTTOU = 22,
+		SIGURG = 23,
+		SIGXCPU = 24,
+		SIGXFSZ = 25,
+		SIGVTALRM = 26,
+		SIGPROF = 27,
+		SIGWINCH = 28,
+		SIGIO = 29,
+		SIGPWR = 30,
+		SIGSYS = 31,
+	}
+
+	ffi.cdef([[
+		typedef void (*sighandler_t)(int32_t);
+		sighandler_t signal(int32_t signum, sighandler_t handler);
+		uint32_t getpid();
+		int backtrace (void **buffer, int size);
+		char ** backtrace_symbols(void *const *buffer, int size);
+		int kill(uint32_t pid, int sig);
+	]])
+
+	local LUA_GLOBALSINDEX = -10002;
+	local state = lua.L.newstate()
+
+
+	for _, what in ipairs({"SIGSEGV"}) do
+		local enum = signals[what]
+		ffi.C.signal(enum, function(int)
+			io.write("received signal ", what, "\n")
+			if what == "SIGSEGV" then
+				io.write("lua ")
+				lua.L.traceback(state, state, nil, 0)
+				local len = ffi.new("uint64_t[1]")
+				local ptr = lua.tolstring(state, -1, len)
+				io.write(ffi.string(ptr, len[0]))
+
+				io.write("\n\n")
+				io.write("C stack traceback:\n")
+
+				local max = 64
+				local array = ffi.new("void *[?]", max)
+				local size = ffi.C.backtrace(array, max)
+				local strings = ffi.C.backtrace_symbols(array, size)
+				for i = 0, size - 1 do
+					io.write("\t", ffi.string(strings[i]), "\n")
+				end
+				ffi.C.signal(int, nil)
+				ffi.C.kill(ffi.C.getpid(), int)
+			end
+		end)
+	end
+
+	lua.L.openlibs(state)
+
+	local function check_error(ok)
+		if ok ~= 0 then
+			error(initlua .. " errored: \n" .. ffi.string(lua.tolstring(state, -1, nil)))
+			lua.close(state)
+		end
+	end
+
+	check_error(lua.L.loadfile(state, initlua))
+	check_error(lua.pcall(state, 0, 0, 0))
+
+	os.exit(0)
+
+	return
+end
+
 local ret, msg, code
 
 if UNIX then
