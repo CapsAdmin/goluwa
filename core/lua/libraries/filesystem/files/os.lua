@@ -151,6 +151,7 @@ if fs.open and ffi then
 		if self.file ~= nil then
 			fs.close(self.file)
 			self.file = nil
+			prototype.MakeNULL(self)
 		end
 	end
 
