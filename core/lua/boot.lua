@@ -645,7 +645,7 @@ if pcall(require, "ffi") then
 		sighandler_t signal(int32_t signum, sighandler_t handler);
 		uint32_t getpid();
 		int backtrace (void **buffer, int size);
-		char ** backtrace_symbols(void *const *buffer, int size);
+		char ** backtrace_symbols_fd(void *const *buffer, int size, int fd);
 		int kill(uint32_t pid, int sig);
 	]])
 
@@ -658,22 +658,21 @@ if pcall(require, "ffi") then
 		ffi.C.signal(enum, function(int)
 			io.write("received signal ", what, "\n")
 			if what == "SIGSEGV" then
-				io.write("lua ")
-				lua.L.traceback(state, state, nil, 0)
-				local len = ffi.new("uint64_t[1]")
-				local ptr = lua.tolstring(state, -1, len)
-				io.write(ffi.string(ptr, len[0]))
-
-				io.write("\n\n")
 				io.write("C stack traceback:\n")
 
 				local max = 64
 				local array = ffi.new("void *[?]", max)
 				local size = ffi.C.backtrace(array, max)
-				local strings = ffi.C.backtrace_symbols(array, size)
-				for i = 0, size - 1 do
-					io.write("\t", ffi.string(strings[i]), "\n")
-				end
+				ffi.C.backtrace_symbols_fd(array, size, 0)
+
+				io.write()
+
+				io.write("\n\n attempting lua traceback:")
+				lua.L.traceback(state, state, nil, 0)
+				local len = ffi.new("uint64_t[1]")
+				local ptr = lua.tolstring(state, -1, len)
+				io.write(ffi.string(ptr, len[0]))
+
 				ffi.C.signal(int, nil)
 				ffi.C.kill(ffi.C.getpid(), int)
 			end
