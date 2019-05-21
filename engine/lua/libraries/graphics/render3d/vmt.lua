@@ -3,7 +3,7 @@ local META = ... or prototype.GetRegistered("material", "model")
 local function unpack_numbers(str)
 	str = str:gsub("%s+", " ")
 	local t = str:split(" ")
-	for k,v in ipairs(t) do t[k] = tonumber(v) end
+	for k,v in ipairs(t) do t[k] = tonumber(v) or 0 end
 	return unpack(t)
 end
 
@@ -26,6 +26,9 @@ local property_translate = {
 	selfillum = {"SelfIllumination", function(num) return num ~= 0 end},
 	selfillumtint = {"IlluminationColor", function(v)
 		if type(v) == "string" then
+			if v:startswith("[") then
+				v = v:sub(2, -2)
+			end
 			local r,g,b = unpack_numbers(v)
 			return Color(r,g,b,1)
 		elseif typex(v) == "vec3" then
