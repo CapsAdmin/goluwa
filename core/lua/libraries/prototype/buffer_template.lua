@@ -120,6 +120,52 @@ do -- basic data types
 			end
 		end
 
+		do -- Luajit uses NAN tagging, make sure we have the canonical NAN
+			local bit_band = bit.band
+			local bit_bor = bit.bor
+			local split_int32_p = ffi.typeof ( "struct { int32_t " .. ( ffi.abi("le") and "lo, hi" or "hi, lo" ) .. "; } *" )
+			local int32_ctype = ffi.typeof ( "int32_t*" )
+
+			do
+				local function double_isnan(buff)
+					local q = ffi_cast(split_int32_p , buff)
+					return
+					bit_band(q.hi , 0x7FF00000) == 0x7FF00000 and
+					bit_bor(q.lo, bit_band(q.hi, 0xFFFFF)) ~= 0
+				end
+
+				local double_ctype = ffi.typeof("double *")
+				function META:ReadDouble()
+					local src = self:ReadBytes(8)
+
+					if double_isnan(src) then
+						return 0/0
+					end
+
+					return ffi_cast(double_ctype, src)[0]
+				end
+			end
+			do
+				local function float_isnan(buff)
+					local as_int = ffi_cast(int32_ctype, buff)[0]
+					return
+						bit_band(as_int, 0x7F800000) == 0x7F800000 and
+						bit_band(as_int, 0x7FFFFF) ~= 0
+				end
+
+				local float_ctype = ffi.typeof("float *")
+				function META:ReadFloat()
+					local src = self:ReadBytes(4)
+
+					if float_isnan ( src ) then
+						return 0/0
+					end
+
+					return ffi_cast(float_ctype, src)[0]
+				end
+			end
+		end
+
 
 		do -- taken from lua sources https://github.com/lua/lua/blob/master/lstrlib.c
 			local NB = 8
