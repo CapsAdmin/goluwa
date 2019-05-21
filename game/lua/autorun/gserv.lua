@@ -278,6 +278,7 @@ function gserv.Setup(id)
 		if not vfs.IsDirectory(srcds_dir .. dir) then
 			os.execute("cp -a " .. gserv.GetInstalledGames()[4020] .. "/. " .. srcds_dir .. dir)
 			serializer.StoreInFile("luadata", data_dir .. "games.lua", id, srcds_dir .. dir)
+			gserv.installed_games = serializer.ReadFile("luadata", data_dir .. "games.lua")
 		end
 
 		gserv.SetupLua(id)
@@ -352,6 +353,7 @@ function gserv.InstallGame(name, dir, callback, username)
 		llog("installing ", name, " (", appid, ")", " to ", srcds_dir .. dir_name)
 
 		serializer.StoreInFile("luadata", data_dir .. "games.lua", appid, srcds_dir .. dir_name)
+		gserv.installed_games = serializer.ReadFile("luadata", data_dir .. "games.lua")
 		repl.OSExecute(srcds_dir .. "steamcmd.sh +login " .. username .. " +force_install_dir \"" .. srcds_dir .. dir_name .. "\" +app_update " .. appid .. " validate +quit")
 
 		llog("done")
@@ -364,7 +366,7 @@ function gserv.GetInstallDir(id)
 end
 
 function gserv.GetInstalledGames()
-	return serializer.ReadFile("luadata", data_dir .. "games.lua") or {}
+	return gserv.installed_games
 end
 
 function gserv.BuildMountConfig(id)
@@ -726,12 +728,16 @@ do
 			end
 		end)
 
-		local last_time
-		event.AddListener("Update", "gserv_message_" .. underscore(id), function()
-			if vfs.GetLastModified(get_gmod_dir(id) .. "data/gserv_data_gmod2gserv.txt") ~= last_time then
-				gserv.ReadData(id)
-			end
-		end)
+		do
+			local last_time
+			event.AddListener("Update", "gserv_message_" .. underscore(id), function()
+				local time = vfs.GetLastModified(get_gmod_dir(id) .. "data/gserv_data_gmod2gserv.txt")
+				if time ~= last_time then
+					gserv.ReadData(id)
+					last_time = time
+				end
+			end)
+		end
 
 		if gserv.configs[id].webhook_port then
 			sockets.StartWebhookServer(gserv.configs[id].webhook_port, os.getenv(gserv.configs[id].webhook_secret), function(...) event.Call("GservWebhook", id, ...) end)
@@ -935,6 +941,8 @@ for _, path in ipairs(vfs.Find(data_dir .. "configs/", true)) do
 end
 
 if not CLI then
+	gserv.installed_games = gserv.installed_games or serializer.ReadFile("luadata", data_dir .. "games.lua") or {}
+
 	for _, path in ipairs(vfs.Find(data_dir, true)) do
 		if path:endswith("_server_state") then
 			local data = serializer.ReadFile("luadata", path)
