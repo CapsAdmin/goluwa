@@ -12,6 +12,11 @@ set BASE_BINARY_URL=https://gitlab.com/CapsAdmin/goluwa-binaries-!OS!_!ARCH!/raw
 set BASE_SCRIPT_URL=https://gitlab.com/CapsAdmin/goluwa/raw/master/
 set SCRIPT_PATH=core/lua/boot.lua
 
+if exist "core\bin\!OS!_!ARCH!" (
+	set STORAGE_PATH=core
+	set BINARY_DIR=!STORAGE_PATH!\bin\!OS!_!ARCH!
+)
+
 IF %0 == "%~0" set RAN_FROM_FILEBROWSER=1
 
 if defined VSCODE_CWD (

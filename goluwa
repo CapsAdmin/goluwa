@@ -11,6 +11,11 @@ BASE_SCRIPT_URL="https://gitlab.com/CapsAdmin/goluwa/raw/master/"
 SCRIPT_DIR="core/lua"
 SCRIPT_PATH="$SCRIPT_DIR/boot.lua"
 
+if [ -f "core/bin/${OS}_${ARCH}" ]; then
+	STORAGE_PATH="core"
+	BINARY_DIR="$STORAGE_PATH/bin/${OS}_${ARCH}"
+fi
+
 ZERO_ARG="$0"
 
 if [ "$OS" = osx ] && [[ $ZERO_ARG =~ /Users/* ]]; then
