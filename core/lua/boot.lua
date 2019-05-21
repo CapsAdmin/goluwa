@@ -460,7 +460,7 @@ do
 	end
 end
 
-local STORAGE_PATH = os.getenv("GOLUWA_STORAGE_PATH")
+local STORAGE_PATH = "storage"
 local ARG_LINE = os.getenv("GOLUWA_ARG_LINE") or ""
 local SCRIPT_PATH = os.getenv("GOLUWA_SCRIPT_PATH")
 local RAN_FROM_FILEBROWSER = os.getenv("GOLUWA_RAN_FROM_FILEBROWSER")

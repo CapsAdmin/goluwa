@@ -5,17 +5,11 @@ SetLocal EnableDelayedExpansion
 set OS=windows
 set APP_NAME=appexample
 set ARG_LINE=%*
-set STORAGE_PATH=storage
-set BINARY_DIR=!STORAGE_PATH!\bin\!OS!_!ARCH!
+set BINARY_DIR=core\bin\!OS!_!ARCH!
 set BINARY_NAME=luajit.exe
 set BASE_BINARY_URL=https://gitlab.com/CapsAdmin/goluwa-binaries-!OS!_!ARCH!/raw/master/
 set BASE_SCRIPT_URL=https://gitlab.com/CapsAdmin/goluwa/raw/master/
 set SCRIPT_PATH=core/lua/boot.lua
-
-if exist "core\bin\!OS!_!ARCH!" (
-	set STORAGE_PATH=core
-	set BINARY_DIR=!STORAGE_PATH!\bin\!OS!_!ARCH!
-)
 
 IF %0 == "%~0" set RAN_FROM_FILEBROWSER=1
 
@@ -50,7 +44,6 @@ SetLocal
         call:DownloadFile "!BASE_SCRIPT_URL!!SCRIPT_PATH!" "!SCRIPT_PATH!"
     )
 
-	set GOLUWA_STORAGE_PATH=!STORAGE_PATH!
 	set "GOLUWA_ARG_LINE=!ARG_LINE!"
 	set GOLUWA_SCRIPT_PATH=!SCRIPT_PATH!
 	set GOLUWA_RAN_FROM_FILEBROWSER=!RAN_FROM_FILEBROWSER!
