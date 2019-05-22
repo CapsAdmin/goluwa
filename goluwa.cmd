@@ -7,7 +7,7 @@ set APP_NAME=appexample
 set ARG_LINE=%*
 set BINARY_DIR=core\bin\!OS!_!ARCH!
 set BINARY_NAME=luajit.exe
-set BASE_BINARY_URL=https://gitlab.com/CapsAdmin/goluwa-binaries-!OS!_!ARCH!/raw/master/
+set BASE_BINARY_URL=https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/!OS!_!ARCH!/!BINARY_NAME!
 set BASE_SCRIPT_URL=https://gitlab.com/CapsAdmin/goluwa/raw/master/
 set SCRIPT_PATH=core/lua/boot.lua
 
