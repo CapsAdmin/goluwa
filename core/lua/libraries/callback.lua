@@ -44,9 +44,12 @@ do
         end
 
         for _, cb in ipairs(self.funcs.resolved) do
-            local ok, err = system.pcall(cb, ...)
+            local ok, err, err2 = system.pcall(cb, ...)
             if not ok then
                 return self:Reject(err)
+            end
+            if ok and err == false and type(err2) == "string" then
+                return self:Reject(err2)
             end
         end
 
