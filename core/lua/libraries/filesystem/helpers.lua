@@ -61,6 +61,8 @@ function vfs.Rename(path, name, ...)
 
 		local ok, err = os.rename(abs_path, dst)
 
+		vfs.ClearCallCache()
+
 		if not ok then
 			if CLI then
 				error(err, 2)
