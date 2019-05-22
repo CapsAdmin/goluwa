@@ -49,9 +49,9 @@ function vfs.FetchBniariesForAddon(addon, callback)
 					if modified or not vfs.IsFile(to) then
 						local ok = vfs.CopyFileFileOnBoot(file_path, to)
 						if ok == "deferred" then
-							llog("%q will be replaced after restart", to:sub(#e.ROOT_FOLDER+1), " ", done, " downloads left")
+							llog("%q will be replaced after restart. (%i downloads left)", to:sub(#e.ROOT_FOLDER+1), done)
 						else
-							llog("%q was added", to:sub(#e.ROOT_FOLDER+1), " ", done, " downloads left")
+							llog("%q was added (%i downloads left)", to:sub(#e.ROOT_FOLDER+1), done)
 						end
 					end
 
