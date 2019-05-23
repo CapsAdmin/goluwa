@@ -157,7 +157,7 @@ function CONTEXT:TranslateArchivePath(file_info)
 	return file_info.archive_path
 end
 
-local cache = table.weak()
+local cache = {}
 
 function CONTEXT:Open(path_info, mode, ...)
 	if self:GetMode() == "read" then

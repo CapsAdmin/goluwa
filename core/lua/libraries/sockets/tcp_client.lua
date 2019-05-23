@@ -39,7 +39,7 @@ do
     function META:SetupTLS()
         if self.tls_setup then return end
 
-        if not tls.config then
+        if not tls or not tls.config then
             if not tls then
                 return self:Error("unable to find libtls")
             end

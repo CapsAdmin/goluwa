@@ -406,7 +406,7 @@ function META:OnReceiveChunk(chunk)
 
             self.Stage = "body"
 
-            if self:OnReceiveHeader(self.Header) == false then
+            if self:OnReceiveHeader(self.Header, self.RawHeader) == false then
                 return
             end
 

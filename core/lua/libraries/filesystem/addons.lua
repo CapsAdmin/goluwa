@@ -13,6 +13,8 @@ local whitelist
 end)
 
 function vfs.FetchBniariesForAddon(addon, callback)
+	llog("downloading binaries for %s", addon)
+
 	local signature = jit.os:lower() .. "_" .. jit.arch:lower()
 	if vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) then
 		if callback then
@@ -21,22 +23,10 @@ function vfs.FetchBniariesForAddon(addon, callback)
 		if CLI then return end
 	end
 
-	local function handle_content(content)
-		local base_url = "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/"
+	local function handle_content(found)
 		local relative_bin_dir = addon .. "/bin/" .. signature .. "/"
 		local bin_dir = e.ROOT_FOLDER .. relative_bin_dir
 		vfs.CreateDirectoriesFromPath("os:"..bin_dir)
-
-		local found = {}
-
-		for path in content:gmatch("\"path\":\"(.-)\"") do
-			local ext = vfs.GetExtensionFromPath(path)
-			if (ext ~= "" or vfs.GetFileNameFromPath(path):startswith("luajit")) and path:find(signature, nil, true) then
-				if path:startswith(addon) then
-					table.insert(found, {url = base_url .. path, path = path})
-				end
-			end
-		end
 
 		local done = #found
 
@@ -59,9 +49,9 @@ function vfs.FetchBniariesForAddon(addon, callback)
 					if modified or not vfs.IsFile(to) then
 						local ok = vfs.CopyFileFileOnBoot(file_path, to)
 						if ok == "deferred" then
-							llog("%q will be replaced after restart", to:sub(#e.ROOT_FOLDER+1), " ", done, " downloads left")
+							llog("%q will be replaced after restart. (%i downloads left)", to:sub(#e.ROOT_FOLDER+1), done)
 						else
-							llog("%q was added", to:sub(#e.ROOT_FOLDER+1), " ", done, " downloads left")
+							llog("%q was added (%i downloads left)", to:sub(#e.ROOT_FOLDER+1), done)
 						end
 					end
 
@@ -80,13 +70,42 @@ function vfs.FetchBniariesForAddon(addon, callback)
 		end
 	end
 	
-	http.Download("https://gitlab.com/api/v4/projects/CapsAdmin%2Fgoluwa-binaries/repository/tree?recursive=1&per_page=99&page=1"):Then(handle_content):Catch(function(err)
+	local found = {}
+	local page = "1"
+	local base_url = "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/"
+
+	local function paged_request()
+		local url = "https://gitlab.com/api/v4/projects/CapsAdmin%2Fgoluwa-binaries/repository/tree?recursive=1&per_page=200&page=" .. page
+	
+		llog("current page %s", page)
+
+		http.Download(url)
+		:Subscribe("header", function(header) 
+			
+			if header["x-next-page"] and header["x-next-page"] ~= "" then
+				llog("next page %s",  header["x-next-page"])
+				page = header["x-next-page"]
+				paged_request()
+			else
+				handle_content(found)
+			end
+		end)
+		:Then(function(content) 
+			for path in content:gmatch("\"path\":\"(.-)\"") do
+				local ext = vfs.GetExtensionFromPath(path)
+				if (ext ~= "" or vfs.GetFileNameFromPath(path):startswith("luajit")) and path:find(signature, nil, true) then
+					if path:startswith(addon) then
+						table.insert(found, {url = base_url .. path, path = path})
+					end
+				end
+			end
+		end)
+		:Catch(function(err)
 		llog(err)
 	end)
+	end
 
-	http.Download("https://gitlab.com/api/v4/projects/CapsAdmin%2Fgoluwa-binaries/repository/tree?recursive=1&per_page=99&page=2"):Then(handle_content):Catch(function(err)
-		llog(err)
-	end)	
+	paged_request()
 end
 
 function vfs.MountAddons(dir)

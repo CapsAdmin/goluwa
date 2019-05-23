@@ -41,7 +41,7 @@ function META:Start(now, ...)
 	self.progress = {}
 
 	if not tasks.IsEnabled() then
-		local ok, err = pcall(self.OnStart, self, ...)
+		local ok, err = system.pcall(self.OnStart, self, ...)
 		if not ok then
 			if self.OnError then
 				self:OnError(err)
@@ -50,7 +50,7 @@ function META:Start(now, ...)
 			end
 		end
 
-		local ok, err = pcall(self.OnFinish, self)
+		local ok, err = system.pcall(self.OnFinish, self)
 		if not ok then
 			if self.OnError then
 				self:OnError(err)

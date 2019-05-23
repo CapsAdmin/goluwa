@@ -3,8 +3,7 @@ case $(uname -m) in x86_64) ARCH=x64;; i[36]86) ARCH=x86;; arm*) ARCH=arm;; esac
 case $(uname) in Darwin) OS=osx;; *) OS=linux;; esac
 APP_NAME="appexample"
 ARG_LINE="$*"
-STORAGE_PATH="storage"
-BINARY_DIR="$STORAGE_PATH/bin/${OS}_${ARCH}"
+BINARY_DIR="core/bin/${OS}_${ARCH}"
 BINARY_NAME="luajit"
 URL="https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/${OS}_${ARCH}/$BINARY_NAME"
 BASE_SCRIPT_URL="https://gitlab.com/CapsAdmin/goluwa/raw/master/"
@@ -35,7 +34,6 @@ Main() {
         DownloadFile "$BASE_SCRIPT_URL$SCRIPT_PATH" "$SCRIPT_PATH"
 	fi
 
-	export "GOLUWA_STORAGE_PATH=$STORAGE_PATH"
 	export "GOLUWA_ARG_LINE=$ARG_LINE"
 	export "GOLUWA_SCRIPT_PATH=$SCRIPT_PATH"
 	export "GOLUWA_RAN_FROM_FILEBROWSER=$RAN_FROM_FILEBROWSER"
