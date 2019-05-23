@@ -434,6 +434,7 @@ end
 local STORAGE_PATH = "storage"
 local ARG_LINE = os.getenv("GOLUWA_ARG_LINE") or ""
 local SCRIPT_PATH = os.getenv("GOLUWA_SCRIPT_PATH")
+local BRANCH = os.getenv("GOLUWA_BRANCH")
 local RAN_FROM_FILEBROWSER = os.getenv("GOLUWA_RAN_FROM_FILEBROWSER")
 local BINARY_DIR = "core/bin/" .. OS .. "_" .. ARCH .. "/"
 
@@ -513,7 +514,7 @@ if ARG_LINE == "update" or not os.isfile("core/lua/init.lua") then
 			end
 		end
 
-		get_github_project("CapsAdmin/goluwa", "", "gitlab", false, "develop")
+		get_github_project("CapsAdmin/goluwa", "", "gitlab", false, BRANCH)
 
 		if not os.isfile("core/lua/init.lua") then
 			io.write("still missing core/lua/init.lua\n")

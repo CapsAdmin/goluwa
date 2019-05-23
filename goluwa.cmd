@@ -9,10 +9,11 @@ if "%~1" == "_DL" (
 (set | find "ProgramFiles(x86)" > NUL) && (echo "!ProgramFiles(x86)!" | find "x86") > NUL && set ARCH=x64|| set ARCH=x86
 set OS=windows
 set ARG_LINE=%*
+set BRANCH=develop
 set BINARY_DIR=core\bin\!OS!_!ARCH!
 set BINARY_NAME=luajit.exe
 set BASE_BINARY_URL=https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/!OS!_!ARCH!/
-set BASE_SCRIPT_URL=https://gitlab.com/CapsAdmin/goluwa/raw/develop/
+set BASE_SCRIPT_URL=https://gitlab.com/CapsAdmin/goluwa/raw/!BRANCH!/
 set HTTP_TUNNEL=http://80.203.97.200:4123/
 set SCRIPT_PATH=core/lua/boot.lua
 
@@ -53,6 +54,7 @@ SetLocal
 	set GOLUWA_SCRIPT_PATH=!SCRIPT_PATH!
 	set GOLUWA_RAN_FROM_FILEBROWSER=!RAN_FROM_FILEBROWSER!
 	set GOLUWA_BINARY_DIR=!BINARY_DIR!
+	set GOLUWA_BRANCH=!BRANCH!
 
 	set "cmd_line=!BINARY_DIR!\!BINARY_NAME! !SCRIPT_PATH!"
 
