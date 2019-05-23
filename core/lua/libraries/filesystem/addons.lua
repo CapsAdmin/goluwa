@@ -69,19 +69,17 @@ function vfs.FetchBniariesForAddon(addon, callback)
 			end
 		end
 	end
-	
+
 	local found = {}
 	local page = "1"
 	local base_url = "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/"
 
 	local function paged_request()
 		local url = "https://gitlab.com/api/v4/projects/CapsAdmin%2Fgoluwa-binaries/repository/tree?recursive=1&per_page=200&page=" .. page
-	
-		llog("current page %s", page)
 
 		http.Download(url)
-		:Subscribe("header", function(header) 
-			
+		:Subscribe("header", function(header)
+
 			if header["x-next-page"] and header["x-next-page"] ~= "" then
 				llog("next page %s",  header["x-next-page"])
 				page = header["x-next-page"]
@@ -90,7 +88,7 @@ function vfs.FetchBniariesForAddon(addon, callback)
 				handle_content(found)
 			end
 		end)
-		:Then(function(content) 
+		:Then(function(content)
 			for path in content:gmatch("\"path\":\"(.-)\"") do
 				local ext = vfs.GetExtensionFromPath(path)
 				if (ext ~= "" or vfs.GetFileNameFromPath(path):startswith("luajit")) and path:find(signature, nil, true) then
