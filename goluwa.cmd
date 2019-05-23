@@ -1,6 +1,11 @@
 @echo off
 SetLocal EnableDelayedExpansion
 
+if "%~1" == "_DL" (
+	call:DownloadFile "%~2" "%~3"
+	goto:eof
+)
+
 (set | find "ProgramFiles(x86)" > NUL) && (echo "!ProgramFiles(x86)!" | find "x86") > NUL && set ARCH=x64|| set ARCH=x86
 set OS=windows
 set APP_NAME=appexample

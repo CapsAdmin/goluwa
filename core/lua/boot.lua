@@ -28,20 +28,13 @@ do
 	end
 
 	if WINDOWS then
-		function powershell(str, no_return)
-			os.setenv("pstemp", str)
-			local ps = "powershell -nologo -noprofile -noninteractive -command Invoke-Expression $Env:pstemp"
-
-			if no_return then
-				os.execute(ps)
-				return
-			end
-
-			local p = io.popen(ps)
-			local out = p:read("*all")
-			p:close()
-
-			return out
+		function jscript(str)
+			local tmp_name = os.getenv("TEMP") .. "\\lua_one_click_jscript_download.js"
+			local f = assert(io.open(tmp_name, "wb"))
+			f:write(str)
+			f:close()
+			os.execute("cscript /Nologo /E:JScript " .. tmp_name)
+			os.remove(tmp_name)
 		end
 	end
 
@@ -85,9 +78,11 @@ do
 		if UNIX then
 			os.execute("rm -rf \"" .. path .. "\"")
 		else
-			powershell("Remove-Item -Recurse -Force \"" .. path .. "\"")
+			path = path:gsub("/", "\\")
+			os.execute("rmdir /Q /S \"" .. path.."\"")
 		end
 	end
+
 
 	function os.copyfiles(a, b)
 		a = absolute_path(a)
@@ -176,18 +171,13 @@ do
 		end
 	else
 		ffi.cdef([[
-			int _putenv_s(const char *var_name, const char *new_value);
-			int _putenv(const char *var_name);
+			int SetEnvironmentVariableA(const char *key, const char *val);
 		]])
 
 		function os.setenv(key, val)
-			if not val then
-				ffi.C._putenv(key)
-			else
-				ffi.C._putenv_s(key, val)
+			ffi.C.SetEnvironmentVariableA(key, val or nil)
 			end
 		end
-	end
 
 	function os.appendenv(key, val)
 		os.setenv(key, (os.getenv(key) or "") .. val)
@@ -283,16 +273,7 @@ do
 		to = absolute_path(to)
 
 		if WINDOWS then
-			powershell([[
-				[Net.ServicePointManager]::Expect100Continue = {$true}
-
-				[System.Net.ServicePointManager]::SecurityProtocol =
-					[System.Net.SecurityProtocolType]::Tls11 -bor
-					[System.Net.SecurityProtocolType]::Tls12 -bor
-					[System.Net.SecurityProtocolType]::Tls13;
-
-				(New-Object System.Net.WebClient).DownloadFile(']] .. url .. [[', ']] .. winpath(to) .. [[')
-			]], true)
+			os.execute("goluwa.cmd _DL \"" .. url .. "\" \"" .. to .. "\"")
 			return os.isfile(to)
 		else
 			if os.iscmd("wget") then
@@ -361,25 +342,14 @@ do
 		if UNIX then
 			os.readexecute('tar -xvzf ' .. from .. ' -C "' .. extract_dir .. '"')
 		else
-			powershell([[
-				$file = "]]..from:gsub("/", "\\")..[["
-				$location = "]]..extract_dir:gsub("/", "\\")..[["
+			jscript([[
+				var file = "]]..from:gsub("/", "\\\\")..[["
+				var location = "]]..extract_dir:gsub("/", "\\\\")..[["
 
-				$shell = New-Object -Com Shell.Application
+				var shell = new ActiveXObject("Shell.Application")
 
-				$zip = $shell.NameSpace("$file")
-
-				if (!$zip) {
-					Write-Error "could open zip archive $file!"
-				}
-				else
-				{
-					foreach($item in $zip.items()) {
-						Write-Host "extracting $($item.Name) -> $location"
-						$shell.Namespace("$location").CopyHere($item, 0x14)
-					}
-				}
-			]], true)
+				shell.NameSpace(location).CopyHere(shell.NameSpace(file).Items())
+			]])
 		end
 
 		if move_out then
