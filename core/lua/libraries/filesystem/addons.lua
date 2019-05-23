@@ -81,11 +81,14 @@ function vfs.FetchBniariesForAddon(addon, callback)
 		:Subscribe("header", function(header)
 
 			if header["x-next-page"] and header["x-next-page"] ~= "" then
-				llog("next page %s",  header["x-next-page"])
 				page = header["x-next-page"]
 				paged_request()
 			else
-				handle_content(found)
+				if #found == 0 then
+					llog("no binaries found for %s", addon)
+				else
+					handle_content(found)
+				end
 			end
 		end)
 		:Then(function(content)
