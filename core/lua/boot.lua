@@ -385,7 +385,8 @@ do
 		return true -- TODO
 	end
 
-	function get_github_project(name, to, domain, delete)
+	function get_github_project(name, to, domain, delete, branch)
+		branch = branch or "master"
         domain = domain or "github"
 		if os.iscmd("git") then
 			if os.isdir(to) and os.isdir(to .. "/.git") then
@@ -411,9 +412,9 @@ do
 		else
 			local url
 			if domain == "gitlab" then
-				url = "https://"..domain..".com/"..name.."/repository/master/archive" .. ARCHIVE_EXT
+				url = "https://"..domain..".com/"..name.."/repository/"..branch.."/archive" .. ARCHIVE_EXT
 			else
-				url = "https://"..domain..".com/"..name.."/archive/master" .. ARCHIVE_EXT
+				url = "https://"..domain..".com/"..name.."/archive/" .. branch .. ARCHIVE_EXT
 			end
 
 			io.write("downloading ", url, " -> ", os.getcd(), "/temp", ARCHIVE_EXT, "\n")
@@ -437,15 +438,6 @@ local RAN_FROM_FILEBROWSER = os.getenv("GOLUWA_RAN_FROM_FILEBROWSER")
 local BINARY_DIR = "core/bin/" .. OS .. "_" .. ARCH .. "/"
 
 local lua_exec = UNIX and "luajit" or "luajit.exe"
-
-if not os.isfile(BINARY_DIR .. lua_exec) then
-	os.makedir(BINARY_DIR)
-	os.copyfiles(STORAGE_PATH .. "/bin/" .. OS .. "_" .. ARCH .. "/", BINARY_DIR)
-
-	if UNIX then
-		os.execute("chmod +x " .. BINARY_DIR .. lua_exec)
-	end
-end
 
 local instructions_path = "storage/shared/copy_binaries_instructions"
 if os.isfile(instructions_path) then
@@ -521,7 +513,7 @@ if ARG_LINE == "update" or not os.isfile("core/lua/init.lua") then
 			end
 		end
 
-		get_github_project("CapsAdmin/goluwa", "", "gitlab")
+		get_github_project("CapsAdmin/goluwa", "", "gitlab", false, "develop")
 
 		if not os.isfile("core/lua/init.lua") then
 			io.write("still missing core/lua/init.lua\n")
