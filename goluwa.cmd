@@ -39,7 +39,6 @@ SetLocal
 
 	if not exist "!BINARY_DIR!\lua_downloaded_and_validated" (
 		call:DownloadFile "!BASE_BINARY_URL!lua51.dll" "!BINARY_DIR!\lua51.dll"
-		call:DownloadFile "!BASE_BINARY_URL!vcruntime140.dll" "!BINARY_DIR!\vcruntime140.dll"
 	)
 
 	if not exist "!BINARY_DIR!\!BINARY_NAME!" (
