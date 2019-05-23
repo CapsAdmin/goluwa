@@ -8,7 +8,6 @@ if "%~1" == "_DL" (
 
 (set | find "ProgramFiles(x86)" > NUL) && (echo "!ProgramFiles(x86)!" | find "x86") > NUL && set ARCH=x64|| set ARCH=x86
 set OS=windows
-set APP_NAME=appexample
 set ARG_LINE=%*
 set BINARY_DIR=core\bin\!OS!_!ARCH!
 set BINARY_NAME=luajit.exe
