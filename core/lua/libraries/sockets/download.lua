@@ -107,13 +107,13 @@ function sockets.Download(url, on_finish, on_error, on_chunks, on_header, on_cod
         return table.concat(buffer)
     end
 
-    function http:OnReceiveHeader(header)
+    function http:OnReceiveHeader(header, raw)
         http.friendly_name = find_best_name(self)
 
         total_size = header["content-length"] or total_size
 
         if on_header then
-            on_header(header)
+            on_header(header, raw)
         end
     end
 
