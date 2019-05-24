@@ -14,6 +14,10 @@ do
 	ARCHIVE_EXT = WINDOWS and ".zip" or ".tar.gz"
 	SHARED_LIBRARY_EXT = UNIX and ".so" or ".dll"
 
+	if OSX then
+		SHARED_LIBRARY_EXT = ".dylib"
+	end
+
 	local ffi = require("ffi")
 
 	function absolute_path(path)
@@ -274,14 +278,11 @@ do
 
 		if WINDOWS then
 			os.execute("goluwa.cmd _DL \"" .. url .. "\" \"" .. to .. "\"")
-			return os.isfile(to)
 		else
-			if os.iscmd("wget") then
-				return os.readexecute("wget -O \""..to.."\" \""..url.."\" && printf $?") == "0"
-			elseif os.iscmd("curl") then
-				return os.readexecute("curl -L --url \""..url.."\" --output \""..to.."\" && printf $?") == "0"
-			end
+			os.execute("./goluwa _DL \"" .. url .. "\" \"" .. to .. "\"")
 		end
+
+		return os.isfile(to)
 	end
 
 	if UNIX then
