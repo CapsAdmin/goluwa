@@ -1,6 +1,7 @@
 local start_time = os.clock()
-
 local session_id = os.getenv("GOLUWA_TMUX_SESSION_ID") or "goluwa"
+
+local ffi = require("ffi")
 
 do
 	_G[jit.os:upper()] = true
@@ -17,8 +18,6 @@ do
 	if OSX then
 		SHARED_LIBRARY_EXT = ".dylib"
 	end
-
-	local ffi = require("ffi")
 
 	function absolute_path(path)
 		if not path:find(os.getcd(), 1, true) then
@@ -49,17 +48,6 @@ do
 		return str
 	end
 
-	function os.checkexecute(cmd)
-		local code
-		if UNIX then
-			code = os.readexecute(cmd .. " && printf %s $?")
-		else
-			code = os.readexecute(cmd .. " & echo %errorlevel%")
-		end
-
-		return code:sub(#code ) == "0"
-	end
-
 	do
 		local cache = {}
 
@@ -82,8 +70,7 @@ do
 		if UNIX then
 			os.execute("rm -rf \"" .. path .. "\"")
 		else
-			path = path:gsub("/", "\\")
-			os.execute("rmdir /Q /S \"" .. path.."\"")
+			os.execute("rmdir /Q /S \"" .. winpath(path) .."\"")
 		end
 	end
 
@@ -180,16 +167,9 @@ do
 
 		function os.setenv(key, val)
 			ffi.C.SetEnvironmentVariableA(key, val or nil)
-			end
 		end
-
-	function os.appendenv(key, val)
-		os.setenv(key, (os.getenv(key) or "") .. val)
 	end
 
-	function os.prependenv(key, val)
-		os.setenv(key, val .. (os.getenv(key) or ""))
-	end
 
 	if UNIX then
 		function os.pathtype(path)
@@ -221,25 +201,7 @@ do
 			bool GetFileAttributesExA(const char*, int, goluwa_file_attributes*);
 		]])
 
-		local flags = {
-			archive = 0x20, -- A file or directory that is an archive file or directory. Applications typically use this attribute to mark files for backup or removal .
-			compressed = 0x800, -- A file or directory that is compressed. For a file, all of the data in the file is compressed. For a directory, compression is the default for newly created files and subdirectories.
-			device = 0x40, -- This value is reserved for system use.
-			directory = 0x10, -- The handle that identifies a directory.
-			encrypted = 0x4000, -- A file or directory that is encrypted. For a file, all data streams in the file are encrypted. For a directory, encryption is the default for newly created files and subdirectories.
-			hidden = 0x2, -- The file or directory is hidden. It is not included in an ordinary directory listing.
-			integrity_stream = 0x8000, -- The directory or user data stream is configured with integrity (only supported on ReFS volumes). It is not included in an ordinary directory listing. The integrity setting persists with the file if it's renamed. If a file is copied the destination file will have integrity set if either the source file or destination directory have integrity set.
-			normal = 0x80, -- A file that does not have other attributes set. This attribute is valid only when used alone.
-			not_content_indexed = 0x2000, -- The file or directory is not to be indexed by the content indexing service.
-			no_scrub_data = 0x20000, -- The user data stream not to be read by the background data integrity scanner (AKA scrubber). When set on a directory it only provides inheritance. This flag is only supported on Storage Spaces and ReFS volumes. It is not included in an ordinary directory listing.
-			offline = 0x1000, -- The data of a file is not available immediately. This attribute indicates that the file data is physically moved to offline storage. This attribute is used by Remote Storage, which is the hierarchical storage management software. Applications should not arbitrarily change this attribute.
-			readonly = 0x1, -- A file that is read-only. Applications can read the file, but cannot write to it or delete it. This attribute is not honored on directories. For more information, see You cannot view or change the Read-only or the System attributes of folders in Windows Server 2003, in Windows XP, in Windows Vista or in Windows 7.
-			reparse_point = 0x400, -- A file or directory that has an associated reparse point, or a file that is a symbolic link.
-			sparse_file = 0x200, -- A file that is a sparse file.
-			system = 0x4, -- A file or directory that the operating system uses a part of, or uses exclusively.
-			temporary = 0x100, -- A file that is being used for temporary storage. File systems avoid writing data back to mass storage if sufficient cache memory is available, because typically, an application deletes a temporary file after the handle is closed. In that scenario, the system can entirely avoid writing the data. Otherwise, the data is written after the handle is closed.
-			virtual = 0x10000, -- This value is reserved for system use.
-		}
+		local directory_flag = 0x10
 
 		function os.pathtype(path)
 			path = absolute_path(path)
@@ -247,7 +209,7 @@ do
 			local info = ffi.new("goluwa_file_attributes[1]")
 
 			if ffi.C.GetFileAttributesExA(winpath(path), 0, info) then
-				if bit.band(info[0].dwFileAttributes, flags.directory) == flags.directory then
+				if bit.band(info[0].dwFileAttributes, directory_flag) == directory_flag then
 					return "directory"
 				end
 
@@ -316,12 +278,6 @@ do
 		return str
 	end
 
-	function io.writefile(path, str)
-		local f = assert(io.open(path, "wb"))
-		f:write(str)
-		f:close()
-	end
-
 	function has_tmux_session()
 		if os.iscmd("tmux") then
 			return os.readexecute("tmux has-session -t "..session_id.." 2> /dev/null; printf $?") == "0"
@@ -386,9 +342,8 @@ do
 		return true -- TODO
 	end
 
-	function get_github_project(name, to, domain, delete, branch)
+	function extract_git_project(domain, location, branch, to)
 		branch = branch or "master"
-        domain = domain or "github"
 		if os.iscmd("git") then
 			if os.isdir(to) and os.isdir(to .. "/.git") then
 				os.readexecute("git -C "..absolute_path(to).." pull")
@@ -402,7 +357,7 @@ do
 				extract_dir = absolute_path(extract_dir)
 				to = absolute_path(to)
 
-				local ok, err = os.execute("git clone https://"..domain..".com/"..name..".git \""..extract_dir.."\" --depth 1")
+				local ok, err = os.execute("git clone https://"..domain..".com/"..location..".git \""..extract_dir.."\" --depth 1")
 
 				os.copyfiles(extract_dir, to)
 				os.removedir(extract_dir)
@@ -413,15 +368,15 @@ do
 		else
 			local url
 			if domain == "gitlab" then
-				url = "https://"..domain..".com/"..name.."/repository/"..branch.."/archive" .. ARCHIVE_EXT
+				url = "https://"..domain..".com/"..location.."/repository/"..branch.."/archive" .. ARCHIVE_EXT
 			else
-				url = "https://"..domain..".com/"..name.."/archive/" .. branch .. ARCHIVE_EXT
+				url = "https://"..domain..".com/"..location.."/archive/" .. branch .. ARCHIVE_EXT
 			end
 
-			io.write("downloading ", url, " -> ", os.getcd(), "/temp", ARCHIVE_EXT, "\n")
+			io.write("downloading ", url, " -> ", "temp", ARCHIVE_EXT, "\n")
 
 			if os.download(url, "temp" .. ARCHIVE_EXT) then
-				io.write("extracting ", os.getcd(), "/temp", ARCHIVE_EXT, " -> ", os.getcd(), "/", to, "\n")
+				io.write("extracting ", "temp", ARCHIVE_EXT, " -> ", to, "\n")
 				local ok = os.extract("temp" .. ARCHIVE_EXT, to, "*/")
 
 				os.remove(absolute_path("temp" .. ARCHIVE_EXT))
@@ -515,7 +470,7 @@ if ARG_LINE == "update" or not os.isfile("core/lua/init.lua") then
 			end
 		end
 
-		get_github_project("CapsAdmin/goluwa", "", "gitlab", false, BRANCH)
+		extract_git_project("gitlab", "CapsAdmin/goluwa", BRANCH, "")
 
 		if not os.isfile("core/lua/init.lua") then
 			io.write("still missing core/lua/init.lua\n")
@@ -525,7 +480,7 @@ if ARG_LINE == "update" or not os.isfile("core/lua/init.lua") then
 end
 
 if ARG_LINE == "update" then
-	os.exit(1)
+	os.exit(0)
 end
 
 local initlua = "core/lua/init.lua"
@@ -570,149 +525,61 @@ end
 os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
 os.setenv("LD_LIBRARY_PATH", ".")
 
-if pcall(require, "ffi") then
-	local ffi = require("ffi")
-	local lua = require("core/bin/shared/luajit")
+local lua = require("core/bin/shared/luajit")
 
-	local signals = {
-		SIGHUP = 1,
-		SIGINT = 2,
-		SIGQUIT = 3,
-		SIGILL = 4,
-		SIGTRAP = 5,
-		SIGABRT = 6,
-		SIGBUS = 7,
-		SIGFPE = 8,
-		SIGKILL = 9,
-		SIGUSR1 = 10,
-		SIGSEGV = 11,
-		SIGUSR2 = 12,
-		SIGPIPE = 13,
-		SIGALRM = 14,
-		SIGTERM = 15,
-		SIGSTKFLT = 16,
-		SIGCHLD = 17,
-		SIGCONT = 18,
-		SIGSTOP = 19,
-		SIGTSTP = 20,
-		SIGTTIN = 21,
-		SIGTTOU = 22,
-		SIGURG = 23,
-		SIGXCPU = 24,
-		SIGXFSZ = 25,
-		SIGVTALRM = 26,
-		SIGPROF = 27,
-		SIGWINCH = 28,
-		SIGIO = 29,
-		SIGPWR = 30,
-		SIGSYS = 31,
-	}
+local signals = {
+	SIGSEGV = 11,
+}
 
-	ffi.cdef([[
-		typedef void (*sighandler_t)(int32_t);
-		sighandler_t signal(int32_t signum, sighandler_t handler);
-		uint32_t getpid();
-		int backtrace (void **buffer, int size);
-		char ** backtrace_symbols_fd(void *const *buffer, int size, int fd);
-		int kill(uint32_t pid, int sig);
-	]])
+ffi.cdef([[
+	typedef void (*sighandler_t)(int32_t);
+	sighandler_t signal(int32_t signum, sighandler_t handler);
+	uint32_t getpid();
+	int backtrace (void **buffer, int size);
+	char ** backtrace_symbols_fd(void *const *buffer, int size, int fd);
+	int kill(uint32_t pid, int sig);
+]])
 
-	local LUA_GLOBALSINDEX = -10002;
-	local state = lua.L.newstate()
+local LUA_GLOBALSINDEX = -10002;
+local state = lua.L.newstate()
 
 
-	for _, what in ipairs({"SIGSEGV"}) do
-		local enum = signals[what]
-		ffi.C.signal(enum, function(int)
-			io.write("received signal ", what, "\n")
-			if what == "SIGSEGV" then
-				io.write("C stack traceback:\n")
+for _, what in ipairs({"SIGSEGV"}) do
+	local enum = signals[what]
+	ffi.C.signal(enum, function(int)
+		io.write("received signal ", what, "\n")
+		if what == "SIGSEGV" then
+			io.write("C stack traceback:\n")
 
-				local max = 64
-				local array = ffi.new("void *[?]", max)
-				local size = ffi.C.backtrace(array, max)
-				ffi.C.backtrace_symbols_fd(array, size, 0)
+			local max = 64
+			local array = ffi.new("void *[?]", max)
+			local size = ffi.C.backtrace(array, max)
+			ffi.C.backtrace_symbols_fd(array, size, 0)
 
-				io.write()
+			io.write()
 
-				io.write("\n\n attempting lua traceback:")
-				lua.L.traceback(state, state, nil, 0)
-				local len = ffi.new("uint64_t[1]")
-				local ptr = lua.tolstring(state, -1, len)
-				io.write(ffi.string(ptr, len[0]))
+			io.write("\n\n attempting lua traceback:")
+			lua.L.traceback(state, state, nil, 0)
+			local len = ffi.new("uint64_t[1]")
+			local ptr = lua.tolstring(state, -1, len)
+			io.write(ffi.string(ptr, len[0]))
 
-				ffi.C.signal(int, nil)
-				ffi.C.kill(ffi.C.getpid(), int)
-			end
-		end)
-	end
-
-	lua.L.openlibs(state)
-
-	local function check_error(ok)
-		if ok ~= 0 then
-			error(initlua .. " errored: \n" .. ffi.string(lua.tolstring(state, -1, nil)))
-			lua.close(state)
+			ffi.C.signal(int, nil)
+			ffi.C.kill(ffi.C.getpid(), int)
 		end
-	end
-
-	check_error(lua.L.loadfile(state, initlua))
-	check_error(lua.pcall(state, 0, 0, 0))
-
-	os.exit(0)
-
-	return
+	end)
 end
 
-local ret, msg, code
+lua.L.openlibs(state)
 
-if UNIX then
-
-	if ARG_LINE:find("gdb") then
-		assert(os.iscmd("gdb"), "gdb is not installed")
-		assert(os.iscmd("git"), "git is not installed")
-
-		local utils = os.readexecute("pwd -P"):sub(0,-2) .. "/storage/temp/openresty-gdb-utils"
-
-		if not os.isdir(utils) then
-			os.execute("git clone https://github.com/openresty/openresty-gdb-utils.git " .. utils .. " --depth 1;")
-		end
-
-		local gdb = "gdb "
-		gdb = gdb .. "--ex 'py import sys' "
-		gdb = gdb .. "--ex 'py sys.path.append(\""..utils.."\")' "
-		gdb = gdb .. "--ex 'source openresty-gdb-utils/luajit21.py' "
-		gdb = gdb .. "--ex 'set non-stop off' "
-		gdb = gdb .. "--ex 'target remote | vgdb' "
-		gdb = gdb .. "--ex 'monitor leak_check' "
-		gdb = gdb .. "--ex 'run' --args " .. BINARY_DIR .. "/"..executable .. " " .. initlua
-
-		local valgrind = "valgrind "
-		valgrind = valgrind .. "--vgdb=yes "
-		valgrind = valgrind .. "--vgdb-error=1 "
-		valgrind = valgrind .. "--tool=memcheck "
-		valgrind = valgrind .. "--leak-check=full "
-		valgrind = valgrind .. "--leak-resolution=high "
-		valgrind = valgrind .. "--show-reachable=yes "
-		valgrind = valgrind .. "--read-var-info=yes "
-		valgrind = valgrind .. "--suppressions=./"..BINARY_DIR.."/lj.supp "
-		valgrind = valgrind .. "./" .. BINARY_DIR .. "/"..executable .. " " .. initlua
-
-		if os.getenv("DISPLAY") then
-			if os.iscmd("valgrind") then
-			--	os.execute("xterm -hold -e " .. valgrind .. " &")
-			else
-				print("valgrind is not installed")
-			end
-			ret, msg, code = os.execute("xterm -hold -e " .. gdb)
-		else
-			ret, msg, code = os.execute(gdb)
-		end
-	else
-		ret, msg, code = os.execute("./" .. BINARY_DIR .. "/"..executable.." " .. initlua)
+local function check_error(ok)
+	if ok ~= 0 then
+		error(initlua .. " errored: \n" .. ffi.string(lua.tolstring(state, -1, nil)))
+		lua.close(state)
 	end
-else
-	ret, msg, code = os.execute(winpath(BINARY_DIR .. "\\"..executable..".exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua))
 end
 
-os.exit(code)
+check_error(lua.L.loadfile(state, initlua))
+check_error(lua.pcall(state, 0, 0, 0))
+
+os.exit(0)
