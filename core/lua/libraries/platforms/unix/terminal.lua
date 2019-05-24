@@ -108,7 +108,7 @@ function terminal.Initialize()
 
     local attr = ffi.new("struct termios[1]")
     if ffi.C.tcgetattr(stdin, attr) ~= 0 then error(ffi.strerror(), 2) end
-	attr[0].c_lflag = bit.band(attr[0].c_lflag, bit.bnot(bit.bor(flags.ICANON, flags.ECHO, flags.ISIG, flags.ECHOE, flags.ECHOCTL, flags.ECHOKE, flags.ECHOK)))
+	attr[0].c_lflag = bit.band(tonumber(attr[0].c_lflag), bit.bnot(bit.bor(flags.ICANON, flags.ECHO, flags.ISIG, flags.ECHOE, flags.ECHOCTL, flags.ECHOKE, flags.ECHOK)))
     attr[0].c_cc[VMIN] = 0
     attr[0].c_cc[VTIME] = 0
     if ffi.C.tcsetattr(stdin, TCSANOW, attr) ~= 0 then error(ffi.strerror(), 2) end
