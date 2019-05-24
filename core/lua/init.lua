@@ -241,13 +241,14 @@ if jit then
 	runfile("lua/libraries/extensions/jit.lua")
 end
 
-if VERBOSE then
-	logn("[runfile] ", os.clock() - start_time," seconds spent in core/lua/init.lua")
-end
-
 e.BOOT_TIME = tonumber(os.getenv("GOLUWA_BOOT_TIME")) or -1
 e.INIT_TIME = os.clock() - start_time
 e.BOOTIME = os.clock()
+
+if VERBOSE then
+	logn("[runfile] ", e.BOOT_TIME, " seconds spent in core/lua/boot.lua")
+	logn("[runfile] ", os.clock() - start_time," seconds spent in core/lua/init.lua")
+end
 
 if os.getenv("GOLUWA_ARG_LINE") == "build" then
 	runfile("lua/ffibuild/libressl.lua")
