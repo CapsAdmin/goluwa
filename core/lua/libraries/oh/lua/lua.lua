@@ -122,6 +122,9 @@ event.AddListener("PreLoadString", "oh", function(code, full_path)
 		local ast, err = lua.CodeToAST(code, full_path)
 		if not ast then return nil, err end
 		local code, err = lua.ASTToCode(ast)
+		if not loadstring(code) then
+			print(code)
+		end
 		return code, err
 	end
 end)
