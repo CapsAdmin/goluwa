@@ -552,7 +552,6 @@ if not os.getenv("GOLUWA_SKIP_LIBTLS") then
 		"libtls",
 		"libcrypto",
 		"libssl",
-		"libtls",
 	}
 
 	for _, name in ipairs(files) do
@@ -560,6 +559,11 @@ if not os.getenv("GOLUWA_SKIP_LIBTLS") then
 		if not os.isfile(BINARY_DIR .. name) then
 			os.download(base_url .. name, BINARY_DIR .. name)
 		end
+	end
+
+	local cert_pem = STORAGE_PATH .. "/shared/cert.pem"
+	if not os.isfile(cert_pem) then
+		os.download("https://raw.githubusercontent.com/libressl-portable/openbsd/master/src/lib/libcrypto/cert.pem", cert_pem)
 	end
 end
 
