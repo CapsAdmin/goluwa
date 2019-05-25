@@ -518,6 +518,7 @@ if not os.getenv("GOLUWA_SKIP_LIBTLS") then
 
 	local cert_pem = STORAGE_PATH .. "/shared/cert.pem"
 	if not os.isfile(cert_pem) then
+		os.makedir(STORAGE_PATH .. "/shared/")
 		os.download("https://raw.githubusercontent.com/libressl-portable/openbsd/master/src/lib/libcrypto/cert.pem", cert_pem)
 	end
 end
