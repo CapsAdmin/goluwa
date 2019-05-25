@@ -23,7 +23,3 @@ do
         test:expect("data received from client", str, server_msg)
     end
 end
-
-event.Delay(0.5, function()
-    test:fail("receive within 0.5 seconds", "timeout")
-end)
