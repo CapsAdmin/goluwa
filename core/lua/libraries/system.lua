@@ -96,6 +96,7 @@ do -- console title
 					end
 				end
 			else
+				local title = title or ""
 				str = title
 				if str ~= last_title then
 					system.SetConsoleTitleRaw(title)
