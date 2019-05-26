@@ -1,10 +1,10 @@
-local files = fs.get_files(".")
+local files = assert(fs.get_files("."))
 
 test(table.hasvalue, files, "core").expect_compare(function(a, b) return type(a) == "number" end)
 test(table.hasvalue, files, "goluwa").expect_compare(function(a, b) return type(a) == "number" end)
 
 do
-    local res = fs.get_files_recursive("framework")
+    local res = assert(fs.get_files_recursive("framework"))
     if #res < 50 then
         test.fail("fs.GetFilesRecursively('framework')", "expected more than 50 results, got " .. #res)
     end
