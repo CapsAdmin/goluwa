@@ -42,7 +42,7 @@ do
 	end
 
 	function os.readexecute(cmd)
-		local p = io.popen(cmd)
+		local p = assert(io.popen(cmd))
 		str = p:read("*all")
 		p:close()
 		return str
