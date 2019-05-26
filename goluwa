@@ -134,7 +134,7 @@ Alert() {
 	fi
 }
 
-if [ "$1" == "_DL" ]; then 
+if [ "$1" = "_DL" ]; then
 	DownloadFile "$2" "$3"
 	exit
 fi
