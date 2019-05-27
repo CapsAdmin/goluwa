@@ -42,7 +42,7 @@ do
 	end
 
 	function os.readexecute(cmd)
-		local p = io.popen(cmd)
+		local p = assert(io.popen(cmd))
 		str = p:read("*all")
 		p:close()
 		return str
@@ -518,12 +518,12 @@ if not os.getenv("GOLUWA_SKIP_LIBTLS") then
 
 	local cert_pem = STORAGE_PATH .. "/shared/cert.pem"
 	if not os.isfile(cert_pem) then
+		os.makedir(STORAGE_PATH .. "/shared/")
 		os.download("https://raw.githubusercontent.com/libressl-portable/openbsd/master/src/lib/libcrypto/cert.pem", cert_pem)
 	end
 end
 
 os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
-os.setenv("LD_LIBRARY_PATH", ".")
 
 local lua = require("core/bin/shared/luajit")
 

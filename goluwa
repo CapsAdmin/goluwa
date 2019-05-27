@@ -39,6 +39,8 @@ Main() {
 	export "GOLUWA_BINARY_DIR=$BINARY_DIR"
 	export "GOLUWA_BRANCH=$BRANCH"
 
+	export "LD_LIBRARY_PATH=."
+
 	if [  -n "$TMUX_PANE" ]; then
 		clear
 	fi
@@ -134,7 +136,7 @@ Alert() {
 	fi
 }
 
-if [ "$1" == "_DL" ]; then 
+if [ "$1" = "_DL" ]; then
 	DownloadFile "$2" "$3"
 	exit
 fi
