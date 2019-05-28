@@ -973,7 +973,7 @@ function utility.SafeRemove(obj, gc)
 	end
 end
 
-utility.remakes = table.weak()
+utility.remakes = {}
 
 function utility.RemoveOldObject(obj, id)
 

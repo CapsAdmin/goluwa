@@ -210,6 +210,30 @@ local function default_header(header, key, val)
     end
 end
 
+function META:Respond(tbl)
+    local header = tbl.header or {}
+    local code = tbl.code
+    local body = tbl.body
+
+    local str = "HTTP/1.1 " .. code .. "\r\n"
+
+    if body then
+        default_header(header, "Content-Length", #body)
+    end
+
+    for k, v in pairs(header) do
+        str = str .. k .. ": " .. v .. "\r\n"
+    end
+
+    str = str .. "\r\n"
+
+    if body then
+        str = str .. body
+    end
+
+    self:Send(str)
+end
+
 function META:Request(method, url, header, body)
     header = header or {}
 
@@ -284,7 +308,7 @@ function META:DecodeChunkedBody(body)
         local size = tonumber(body:sub(pos, size_stop), 16)
 
         pos = size_stop + 2
-
+print(body)
         temp[i] = body:sub(pos, pos + size - 1)
 
         pos = pos + size
