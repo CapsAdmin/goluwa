@@ -102,40 +102,153 @@ do
 	end
 end
 
--- Lua 5.1+ base64 v3.0 (c) 2009 by Alex Kloss <alexthkloss@web.de>
--- licensed under the terms of the LGPL2
+do
+	-- Lua 5.1+ base64 v3.0 (c) 2009 by Alex Kloss <alexthkloss@web.de>
+	-- licensed under the terms of the LGPL2
 
--- character table string
-local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+	-- character table string
+	local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
--- encoding
-function crypto.Base64Encode(data)
-	return ((data:gsub('.', function(x)
-		local r,b='',x:byte()
-		for i=8,1,-1 do r=r..(b%2^i-b%2^(i-1)>0 and '1' or '0') end
-		return r;
-	end)..'0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
-		if (#x < 6) then return '' end
-		local c=0
-		for i=1,6 do c=c+(x:sub(i,i)=='1' and 2^(6-i) or 0) end
-		return b:sub(c+1,c+1)
-	end)..({ '', '==', '=' })[#data%3+1])
+	-- encoding
+	function crypto.Base64Encode(data)
+		return ((data:gsub('.', function(x)
+			local r,b='',x:byte()
+			for i=8,1,-1 do r=r..(b%2^i-b%2^(i-1)>0 and '1' or '0') end
+			return r;
+		end)..'0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+			if (#x < 6) then return '' end
+			local c=0
+			for i=1,6 do c=c+(x:sub(i,i)=='1' and 2^(6-i) or 0) end
+			return b:sub(c+1,c+1)
+		end)..({ '', '==', '=' })[#data%3+1])
+	end
+
+	-- decoding
+	function crypto.Base64Decode(data)
+		data = string.gsub(data, '[^'..b..'=]', '')
+		return (data:gsub('.', function(x)
+			if (x == '=') then return '' end
+			local r,f='',(b:find(x)-1)
+			for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end
+			return r;
+		end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
+			if (#x ~= 8) then return '' end
+			local c=0
+			for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end
+			return string.char(c)
+		end))
+	end
 end
 
--- decoding
-function crypto.Base64Decode(data)
-	data = string.gsub(data, '[^'..b..'=]', '')
-	return (data:gsub('.', function(x)
-		if (x == '=') then return '' end
-		local r,f='',(b:find(x)-1)
-		for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end
-		return r;
-	end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
-		if (#x ~= 8) then return '' end
-		local c=0
-		for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end
-		return string.char(c)
-	end))
-end
+do
 
+	local read_n_bytes = function(str, pos, n)
+		pos = pos or 1
+		return pos+n, string.byte(str, pos, pos + n - 1)
+	end
+
+	local write_int32 = function(v)
+		return string.char(
+		bit.band(bit.rshift(v, 24), 0xFF),
+		bit.band(bit.rshift(v, 16), 0xFF),
+		bit.band(bit.rshift(v,  8), 0xFF),
+		bit.band(v, 0xFF)
+		)
+	end
+
+	local read_int32 = function(str, pos)
+		local new_pos,a,b,c,d = read_n_bytes(str, pos, 4)
+		return new_pos, bit.lshift(a, 24) + bit.lshift(b, 16) + bit.lshift(c, 8 ) + d
+	end
+	
+	function crypto.SHA1(msg)
+		local h0 = 0x67452301
+		local h1 = 0xEFCDAB89
+		local h2 = 0x98BADCFE
+		local h3 = 0x10325476
+		local h4 = 0xC3D2E1F0
+	
+		local bits = #msg * 8
+		-- append b10000000
+		msg = msg..string.char(0x80)
+	
+		-- 64 bit length will be appended
+		local bytes = #msg + 8
+	
+		-- 512 bit append stuff
+		local fill_bytes = 64 - (bytes % 64)
+		if fill_bytes ~= 64 then
+		msg = msg..string.rep(string.char(0),fill_bytes)
+		end
+	
+		-- append 64 big endian length
+		local high = math.floor(bits/2^32)
+		local low = bits - high*2^32
+		msg = msg..write_int32(high)..write_int32(low)
+	
+		assert(#msg % 64 == 0,#msg % 64)
+	
+		for j=1,#msg,64 do
+		local chunk = msg:sub(j,j+63)
+		assert(#chunk==64,#chunk)
+		local words = {}
+		local next = 1
+		local word
+		repeat
+			next,word = read_int32(chunk, next)
+			table.insert(words, word)
+		until next > 64
+		assert(#words==16)
+		for i=17,80 do
+			words[i] = bit.bxor(words[i-3],words[i-8],words[i-14],words[i-16])
+			words[i] = bit.rol(words[i],1)
+		end
+		local a = h0
+		local b = h1
+		local c = h2
+		local d = h3
+		local e = h4
+	
+		for i=1,80 do
+			local k,f
+			if i > 0 and i < 21 then
+				f = bit.bor(bit.band(b,c),bit.band(bit.bnot(b),d))
+				k = 0x5A827999
+			elseif i > 20 and i < 41 then
+				f = bit.bxor(b,c,d)
+				k = 0x6ED9EBA1
+			elseif i > 40 and i < 61 then
+				f = bit.bor(bit.band(b,c),bit.band(b,d),bit.band(c,d))
+				k = 0x8F1BBCDC
+			elseif i > 60 and i < 81 then
+				f = bit.bxor(b,c,d)
+				k = 0xCA62C1D6
+			end
+	
+			local temp = bit.rol(a,5) + f + e + k + words[i]
+			e = d
+			d = c
+			c = bit.rol(b,30)
+			b = a
+			a = temp
+		end
+	
+		h0 = h0 + a
+		h1 = h1 + b
+		h2 = h2 + c
+		h3 = h3 + d
+		h4 = h4 + e
+	
+		end
+	
+		-- necessary on sizeof(int) == 32 machines
+		h0 = bit.band(h0,0xffffffff)
+		h1 = bit.band(h1,0xffffffff)
+		h2 = bit.band(h2,0xffffffff)
+		h3 = bit.band(h3,0xffffffff)
+		h4 = bit.band(h4,0xffffffff)
+	
+		return write_int32(h0)..write_int32(h1)..write_int32(h2)..write_int32(h3)..write_int32(h4)
+	end
+end
 return crypto
