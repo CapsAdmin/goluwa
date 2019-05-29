@@ -82,22 +82,26 @@ do
 		local str = table.concat(buf)
 		table.clear(buf)
 
+		repl.SetCaretPositionReal(0, repl.caret_y)
+		repl.WriteNow((" "):rep(repl.buffer:ulen()+1))
+		repl.SetCaretPositionReal(0, repl.caret_y-1)
 		repl.WriteNow(str)
+
 		repl.SetCaretPositionReal(repl.caret_x, repl.caret_y)
 
 		if repl.buffer ~= "" then
 			repl.Write("\27[s\27[" .. repl.caret_y .. ";0f")
 			do
 				local buf = repl.buffer .. " "
-				--repl.WriteStringToScreen(0, repl.caret_y, (" "):rep(buf:ulen() + 1))
+				--repl.WriteStringToScreen(0, repl.caret_y, (" "):rep(100))
 
-				repl.StyledWrite(buf:usub(0, repl.caret_x-1), true)
+				repl.StyledWrite(buf:usub(0, repl.caret_x-1), true, true)
 				terminal.BackgroundColor(0.5, 0.5, 0.5)
 				--repl.Write("\27[47m")
-				repl.StyledWrite(buf:usub(repl.caret_x, repl.caret_x), true)
+				repl.StyledWrite(buf:usub(repl.caret_x, repl.caret_x), true, true)
 				--repl.SetBackgroundColor(0,0,0)
 				repl.Write("\27[0m")
-				repl.StyledWrite(buf:usub(repl.caret_x+1), true)
+				repl.StyledWrite(buf:usub(repl.caret_x+1), true, true)
 				repl.Write("\27[u")
 			end
 

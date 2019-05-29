@@ -178,20 +178,21 @@ function sockets.DownloadToPath(url, path, on_finish, on_error, on_progress, on_
     end
 
     local http = sockets.HTTPClient()
+    http.url = url
 
-    local lookup = {url = url, client = client}
+    local lookup = {url = url, client = http}
     table.insert(sockets.active_downloads, lookup)
 
-    event.Call("DownloadStart", url)
+    event.Call("DownloadStart", http, url)
 
     http:Request("GET", url, header)
 
     function http:OnReceiveStatus(status, reason)
         if status:startswith("4") then
-            event.Call("DownloadStop", client, url, nil, "recevied code " .. status)
+            event.Call("DownloadStop", self, url, nil, "recevied code " .. status)
             return false
         else
-            event.Call("DownloadCodeReceived", url, tonumber(status))
+            event.Call("DownloadCodeReceived", self, url, tonumber(status))
         end
     end
 
@@ -247,7 +248,7 @@ function sockets.DownloadToPath(url, path, on_finish, on_error, on_progress, on_
 
         table.removevalue(sockets.active_downloads, lookup)
 
-        event.Call("DownloadStop", client, url, body)
+        event.Call("DownloadStop", self, url, body)
     end
 
     function http:OnError(reason)

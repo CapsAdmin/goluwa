@@ -8,12 +8,13 @@ if "%~1" == "_DL" (
 
 (set | find "ProgramFiles(x86)" > NUL) && (echo "!ProgramFiles(x86)!" | find "x86") > NUL && set ARCH=x64|| set ARCH=x86
 set OS=windows
-set APP_NAME=appexample
 set ARG_LINE=%*
+set BRANCH=develop
 set BINARY_DIR=core\bin\!OS!_!ARCH!
 set BINARY_NAME=luajit.exe
-set BASE_BINARY_URL=https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/!OS!_!ARCH!/!BINARY_NAME!
-set BASE_SCRIPT_URL=https://gitlab.com/CapsAdmin/goluwa/raw/master/
+set BASE_BINARY_URL=https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/!OS!_!ARCH!/
+set BASE_SCRIPT_URL=https://gitlab.com/CapsAdmin/goluwa/raw/!BRANCH!/
+set HTTP_TUNNEL=http://80.203.97.200:4123/
 set SCRIPT_PATH=core/lua/boot.lua
 
 IF %0 == "%~0" set RAN_FROM_FILEBROWSER=1
@@ -38,7 +39,6 @@ SetLocal
 
 	if not exist "!BINARY_DIR!\lua_downloaded_and_validated" (
 		call:DownloadFile "!BASE_BINARY_URL!lua51.dll" "!BINARY_DIR!\lua51.dll"
-		call:DownloadFile "!BASE_BINARY_URL!vcruntime140.dll" "!BINARY_DIR!\vcruntime140.dll"
 	)
 
 	if not exist "!BINARY_DIR!\!BINARY_NAME!" (
@@ -53,6 +53,7 @@ SetLocal
 	set GOLUWA_SCRIPT_PATH=!SCRIPT_PATH!
 	set GOLUWA_RAN_FROM_FILEBROWSER=!RAN_FROM_FILEBROWSER!
 	set GOLUWA_BINARY_DIR=!BINARY_DIR!
+	set GOLUWA_BRANCH=!BRANCH!
 
 	set "cmd_line=!BINARY_DIR!\!BINARY_NAME! !SCRIPT_PATH!"
 
@@ -91,7 +92,7 @@ SetLocal
 			pause
 
 			EndLocal
-			goto Start
+			goto:eof
 		)
 
 		echo. 2>!directory!\lua_downloaded_and_validated
@@ -123,7 +124,7 @@ SetLocal
 
 			echo try { >> !tmp_name!
 			echo var req = new ActiveXObject^("Microsoft.XMLHTTP"^) >> !tmp_name!
-			echo req.Open^("GET","!url!",false^) >> !tmp_name!
+			echo req.Open^("GET","!HTTP_TUNNEL!!url!",false^) >> !tmp_name!
 			echo req.Send^(^) >> !tmp_name!
 
 			echo var stream = new ActiveXObject^("ADODB.Stream"^) >> !tmp_name!

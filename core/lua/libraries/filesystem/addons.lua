@@ -13,17 +13,26 @@ local whitelist
 end)
 
 function vfs.FetchBniariesForAddon(addon, callback)
-	llog("downloading binaries for %s", addon)
-
 	local signature = jit.os:lower() .. "_" .. jit.arch:lower()
-	if vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) then
+	local signature_path = "shared/binaries_downloaded_" .. addon ..  "_" .. signature
+
+	if vfs.IsFile(signature_path) then
 		if callback then
 			callback()
 		end
 		if CLI then return end
+		if VERBOSE then
+			llog("fetching binary updates for %s", addon)
+		end
+	else
+		llog("fetching binaries for %s", addon)
 	end
 
 	local function handle_content(found)
+		if VERBOSE then
+			llog("found %s binaries for %s", #found, addon)
+		end
+
 		local relative_bin_dir = addon .. "/bin/" .. signature .. "/"
 		local bin_dir = e.ROOT_FOLDER .. relative_bin_dir
 		vfs.CreateDirectoriesFromPath("os:"..bin_dir)
@@ -32,14 +41,17 @@ function vfs.FetchBniariesForAddon(addon, callback)
 
 		for i, v in ipairs(found) do
 			local to = bin_dir .. v.path:sub(#relative_bin_dir + 1)
-			if not vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) and vfs.IsFile(to) then
+			if not vfs.IsFile(signature_path) and vfs.IsFile(to) then
 				llog("%q already exists before a fetch was ran, skipping", to:sub(#e.ROOT_FOLDER+1))
 				done = done - 1
 
 				if done == 0 then
-					if callback and not vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) then
-						vfs.Write("shared/framework_binaries_downloaded_" .. signature, "")
-						callback()
+					if not vfs.IsFile(signature_path) then
+						vfs.Write(signature_path, "")
+						llog("finished downloading binaries for %s", addon)
+						if callback then
+							callback()
+						end
 					end
 				end
 			else
@@ -56,11 +68,18 @@ function vfs.FetchBniariesForAddon(addon, callback)
 					end
 
 					done = done - 1
-
+					
 					if done == 0 then
-						if callback and not vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) then
-							vfs.Write("shared/framework_binaries_downloaded_" .. signature, "")
-							callback()
+						if not vfs.IsFile(signature_path) then
+							vfs.Write(signature_path, "")
+							llog("finished downloading binaries for %s", addon)
+							if callback then
+								callback()
+							end
+						else
+							if VERBOSE then
+								llog("everything is up to date for %s", addon)
+							end
 						end
 					end
 				end):Catch(function(err)
@@ -69,28 +88,29 @@ function vfs.FetchBniariesForAddon(addon, callback)
 			end
 		end
 	end
-	
+
 	local found = {}
 	local page = "1"
 	local base_url = "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/"
 
 	local function paged_request()
 		local url = "https://gitlab.com/api/v4/projects/CapsAdmin%2Fgoluwa-binaries/repository/tree?recursive=1&per_page=200&page=" .. page
-	
-		llog("current page %s", page)
 
 		http.Download(url)
-		:Subscribe("header", function(header) 
-			
+		:Subscribe("header", function(header)
+
 			if header["x-next-page"] and header["x-next-page"] ~= "" then
-				llog("next page %s",  header["x-next-page"])
 				page = header["x-next-page"]
 				paged_request()
 			else
-				handle_content(found)
+				if #found == 0 then
+					llog("no binaries found for %s", addon)
+				else
+					handle_content(found)
+				end
 			end
 		end)
-		:Then(function(content) 
+		:Then(function(content)
 			for path in content:gmatch("\"path\":\"(.-)\"") do
 				local ext = vfs.GetExtensionFromPath(path)
 				if (ext ~= "" or vfs.GetFileNameFromPath(path):startswith("luajit")) and path:find(signature, nil, true) then

@@ -133,7 +133,7 @@ do
 
     if ffi.os == "Windows" then
         ffi.cdef[[
-            typedef uint64_t SOCKET;
+            typedef size_t SOCKET;
 
             struct addrinfo {
                 int ai_flags;

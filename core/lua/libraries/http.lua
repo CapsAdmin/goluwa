@@ -4,6 +4,7 @@ do
     local start = callback.WrapKeyedTask(function(self, url)
         local socket = sockets.Download(url, self.callbacks.resolve, self.callbacks.reject, self.callbacks.chunks, self.callbacks.header)
         self.on_stop = function() if socket:IsValid() then socket:Remove() end end
+        self.socket = socket
     end, 20, function(what, cb, key, queue)
         if what == "push" then
             llog("queueing %s (too many active downloads %s)", key, #queue)
@@ -40,14 +41,14 @@ do
             end):Catch(function(reason)
                 fail(url, reason or "no reason")
             end):Subscribe("header", function(header)
-                if header["content-length"] and header["content-length"] > 0 then
-                    for _, cb in ipairs(cbs) do
-                        if cb ~= cbs[i] then
-                            cb:Stop()
-                        end
+                if not header["content-length"] or header["content-length"] == 0 then
+                    return false, "download length is 0"
+                end
+
+                for _, cb in ipairs(cbs) do
+                    if cb ~= cbs[i] then
+                        cb:Stop()
                     end
-                else
-                    fail(url, "download length is 0")
                 end
             end)
         end
