@@ -1,6 +1,6 @@
 local sockets = ... or _G.sockets
 
-local META = prototype.CreateTemplate("socket", "http/1.1")
+local META = prototype.CreateTemplate("socket", "http11_client")
 
 META.Base = "tcp_client"
 META.Stage = "none"
@@ -526,7 +526,7 @@ function sockets.HTTPClient(socket)
 end
 
 function sockets.ConnectedTCP2HTTP(obj)
-    setmetatable(obj, prototype.GetRegistered("socket", "http/1.1"))
+    setmetatable(obj, prototype.GetRegistered("socket", "http11_client"))
     obj:OnConnect()
     obj.connected = true
     obj.connecting = false

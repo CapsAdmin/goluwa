@@ -251,7 +251,7 @@ local function default_header(header, key, val)
 end
 
 do
-    local META = prototype.CreateTemplate("socket2", "http/1.1")
+    local META = prototype.CreateTemplate("socket2", "http11_client")
 
     META.Base = "tcp"
     META.Stage = "none"
