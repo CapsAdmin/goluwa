@@ -1,62 +1,43 @@
+local http_port = 1235
+local ws_port = 9998
+
+local ws_server = utility.RemoveOldObject(sockets.TCPServer(), "ws_server")
+local http_server = utility.RemoveOldObject(sockets.TCPServer(), "http_server")
+
 do
-    local tools = require'websocket.tools'
     local frame = require'websocket.frame'
-    local handshake = require'websocket.handshake'
 
-    local sha1 = require'websocket.tools'.sha1
-    local base64 = require'websocket.tools'.base64
-    local tinsert = table.insert
+    local function header_to_table(header)
+        local tbl = {}
 
+        if not header then return tbl end
 
-local function header_to_table(header)
-    local tbl = {}
+        for _, line in ipairs(header:split("\n")) do
+            local key, value = line:match("(.+):%s+(.+)\r")
 
-    if not header then return tbl end
-
-    for _, line in ipairs(header:split("\n")) do
-        local key, value = line:match("(.+):%s+(.+)\r")
-
-        if key and value then
-            tbl[key:lower()] = tonumber(value) or value
+            if key and value then
+                tbl[key:lower()] = tonumber(value) or value
+            end
         end
+
+        return tbl
     end
 
-    return tbl
-end
+    ws_server:Host("*", ws_port)
 
-
-    local guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-
-    local sec_websocket_accept = function(sec_websocket_key)
-      local a = sec_websocket_key..guid
-      local sha1 = sha1(a)
-      assert((#sha1 % 2) == 0)
-      return base64.encode(sha1)
-    end
-
-    local server = utility.RemoveOldObject(sockets.TCPServer())
-
-    server:Host("*", 9998)
-
-    function server:OnClientConnected(client)
-        local in_header = true
-
+    function ws_server:OnClientConnected(client)
         print("WEBSOCKET: ", client)
         sockets.ConnectedTCP2HTTP(client)
+--        client.socket:set_option("keepalive", true)
+        self.client = client
 
         function client:OnReceiveHeader(headers)
-            local prot = nil
-
-            if headers["sec-websocket-protocol"] then
-                print(headers["sec-websocket-protocol"], "!!!")
-            end
-print(headers["connection"])
             self:Respond({
                 code = "101 Switching Protocols",
                 header = {
                     ["Upgrade"] = "websocket",
                     ["Connection"] = headers["connection"],
-                    ["Sec-WebSocket-Accept"] = sec_websocket_accept(headers['sec-websocket-key']),
+                    ["Sec-WebSocket-Accept"] = crypto.Base64Encode(crypto.SHA1(headers['sec-websocket-key'] .. "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")),
                 }
             })
 
@@ -73,7 +54,7 @@ print(headers["connection"])
 
                 repeat
                     local decoded, fin, opcode, rest = frame.decode(encoded)
-print(opcode)
+
                     if decoded then
                         if not first_opcode then
                             first_opcode = opcode
@@ -94,7 +75,6 @@ print(opcode)
                             else
                                 frames = {}
                                 self:OnReceive(message, opcode)
-                                print("?!?!??!")
                             end
                         end
                     elseif #encoded > 0 then
@@ -103,77 +83,58 @@ print(opcode)
                 until not decoded
             end
         end
+        
+        
 
         function client:OnReceive(body, opcode)
             print(body, "BODY", opcode)
-            self:Send(frame.encode("WHAT!!!", frame.TEXT))
+            --event.AddListener("Update", "", function()
+                self:Send(frame.encode(body, frame.TEXT))
+            --end)
         end
     end
 end
 
+do
+    http_server:Host("*", http_port)
 
-local server = utility.RemoveOldObject(sockets.TCPServer())
+    function http_server:OnClientConnected(client)
+        sockets.ConnectedTCP2HTTP(client)
 
-server:Host("*", 1235)
+        function client:OnReceiveHeader(header)
+            self:Respond({
+                code = "200 OK",
+                body = [[<!DOCTYPE HTML>
+                    <html>
+                        <meta charset="utf-8"/>
+                        <script type = "text/javascript">
+                            let ws = new WebSocket("ws://localhost:9998");
 
-function server:OnClientConnected(client)
-    sockets.ConnectedTCP2HTTP(client)
-
-    function client:OnReceiveHeader(header)
-        self:Respond({
-            code = "200 OK",
-            body = [[
-                <!DOCTYPE HTML>
-
-                <html>
-                   <head>
-                      <script type = "text/javascript">
-                         function WebSocketTest() {
-
-                            if ("WebSocket" in window) {
-                               // Let us open a web socket
-                               var ws = window.ws_ref || new WebSocket("ws://localhost:9998/echo");
-
-                               ws.onopen = function() {
-                                  ws.send("Message to send");
-                               };
-
-                               ws.onmessage = function (evt) {
-                                  var received_msg = evt.data;
-                                  alert("Message is received...");
-                               };
-
-                               ws.onerror = function(event) {
-                                console.error("WebSocket error observed:", event);
-                            };
-
-                               ws.onclose = function(reason) {
-                                console.log("closed         ", reason)
-                               };
-
-                               window.ws_ref =ws
-                            } else {
-
-                               // The browser doesn't support WebSocket
-                               alert("WebSocket NOT supported by your Browser!");
+                            function listen(obj, what) {
+                                let old = obj[what]
+                                console.log(old, "!!")
+                                obj[what] = function(...args) {
+                                    if (old) {
+                                        old.apply(this, ...args)
+                                    }
+                                    console.log.apply(this, [what, ": ", ...args])
+                                }
                             }
-                         }
-                      </script>
 
-                   </head>
+                            ws.onopen = function() {
+                                ws.send("hello")
+                            }
 
-                   <body>
-                      <div id = "sse">
-                         <a href = "javascript:WebSocketTest()">Run WebSocket</a>
-                      </div>
+                            listen(ws, "onopen")
+                            listen(ws, "onmessage")
+                            listen(ws, "onerror")
+                            listen(ws, "onclose")
 
-                   </body>
-                </html>
-            ]],
-        })
-    end
-
-    function client:OnReceiveBody(body)
-        print(body, "!!")
+                            window.ws_ref =ws
+                        </script>
+                    </html>
+                ]],
+            })
+        end
     end
 end
