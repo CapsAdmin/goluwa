@@ -9,8 +9,6 @@ function META:OnClientConnected(client)
 
     table.insert(self.Clients, client)
 
-    print(client)
-
     client.OnReceiveHeader = function(client, header)
         self:OnReceiveHeader(client, header)
     end
@@ -19,15 +17,13 @@ function META:OnClientConnected(client)
         self:OnReceiveBody(client, body)
     end
 
-    client.OnRemove = function(client, reason)
-       -- print("REMOVE ", client, reason)
-       -- debug.trace()
+    client:CallOnRemove(function(client, reason)
         table.removevalue(self.Clients, client)
-    end
+    end)
 end
 
 function META:OnReceiveHeader(client, header)
-    print(client, header)
+    --print(client, header)
 
     client:Respond("200 OK", nil, [[
         <!DOCTYPE HTML>
@@ -41,7 +37,7 @@ function META:OnReceiveHeader(client, header)
 end
 
 function META:OnReceiveBody(client, body)
-    print(client, body)
+   -- print(client, body)
 end
 
 META:Register()

@@ -18,7 +18,7 @@ end
 
 function META:Initialize(socket)
     self:SocketRestart(socket)
-    table.insert(sockets.active, self)
+    sockets.pool:insert(self)
 end
 
 function META:SocketRestart(socket)
@@ -27,7 +27,7 @@ function META:SocketRestart(socket)
 end
 
 function META:OnRemove()
-    table.removevalue(sockets.active, self)
+    sockets.pool:remove(self)
     self.socket:close()
 end
 

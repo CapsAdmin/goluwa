@@ -55,7 +55,7 @@ event.AddListener("Initialize", function()
 
 	if CLI then
 		event.AddListener("Update", "cli", function()
-			if not tasks.IsBusy() and not sockets.active[1] then
+			if not tasks.IsBusy() and not sockets.pool.list[1] then
 				system.ShutDown()
 			end
 		end)
