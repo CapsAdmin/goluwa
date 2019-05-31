@@ -47,7 +47,7 @@ do
             self.tls_setup = true
 
             tls.init()
-            
+
             local config = tls.config_new()
             local err = tls.config_set_ca_file(config, e.ROOT_FOLDER .. "storage/shared/cert.pem")
             if err ~= 0 then
@@ -212,7 +212,7 @@ function META:Update()
     elseif self.connected then
 
         if self.buffered_send then
-            while true do
+            for _ = 1, #self.buffered_send * 4 do
                 local data = self.buffered_send[1]
 
                 if not data then break end
@@ -247,7 +247,7 @@ function META:Error(message, ...)
     return false
 end
 
-function META:OnError(str, tr) logn(tr) llog(str) self:Remove() end
+function META:OnError(str, tr) logn(tr) llog(str) self:Remove(str) end
 function META:OnReceiveChunk(str) end
 function META:OnClose() self:Close() end
 function META:OnConnect() end
