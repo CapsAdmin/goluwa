@@ -53,11 +53,17 @@ function META:Update()
     if not self.hosting then return end
 
     local client, err = self.socket:accept()
+    if not client and err == "Too many open files" then
+        llog("cannot accept more clients: %s", err)
+        return
+    end
 
     if client then
         local client = sockets.TCPClient(client)
         client.connected = true
         self:OnClientConnected(client)
+    elseif err and err ~= "timeout" then
+        self:Error(err)
     end
 end
 
@@ -66,7 +72,7 @@ function META:Error(message, ...)
     return false
 end
 
-function META:OnError(str) self:Remove() end
+function META:OnError(str, tr) logn(tr) llog(str) self:Remove() end
 function META:OnReceiveChunk(str) end
 function META:OnClose() self:Close() end
 function META:OnConnect() end
