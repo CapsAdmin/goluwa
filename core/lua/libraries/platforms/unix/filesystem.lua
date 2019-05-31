@@ -3,6 +3,7 @@ local fs = _G.fs or {}
 local ffi = require("ffi")
 
 ffi.cdef([[
+	typedef unsigned long ssize_t;
 	char *strerror(int);
 	void *fopen(const char *filename, const char *mode);
 	size_t fread(void *ptr, size_t size, size_t nmemb, void *stream);

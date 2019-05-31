@@ -544,5 +544,6 @@ end
 runfile("lua/libraries/prototype/get_is_set.lua", prototype)
 runfile("lua/libraries/prototype/base_object.lua", prototype)
 runfile("lua/libraries/prototype/null.lua", prototype)
+runfile("lua/libraries/prototype/pool.lua", prototype)
 
 return prototype

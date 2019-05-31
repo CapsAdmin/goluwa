@@ -287,9 +287,67 @@ function META:Expression(priority, stop_on_call)
 	return val
 end
 
+function META:LSX2()
+	local node = self:Node("lsx2")
+	node.class = self:ReadExpectType("letter")
+	node.props = {}
+
+	if self:IsValue("letter") then
+		for i = 1, self:GetLength() do
+			if self:IsValue("{") then break end
+
+			if self:IsType("letter") then
+				if self:GetTokenOffset(1).value == "=" then
+					local prop = self:Node("prop")
+					prop.key = self:ReadIdentifier()
+					prop.tokens["="] = self:ReadExpectValue("=")
+					prop.expression = self:Expression()
+					table.insert(node.props, prop)
+				end
+			end
+		end
+	end
+
+	self:ReadExpectValue("{")
+
+	node.children = {}
+
+	for i = 1, self:GetLength() do
+		if self:IsValue("}") then break end
+
+		if self:IsType("letter") then
+			if self:GetTokenOffset(1).value == "=" then
+				local prop = self:Node("prop")
+				prop.key = self:ReadIdentifier()
+				prop.tokens["="] = self:ReadExpectValue("=")
+				prop.expression = self:Expression()
+				table.insert(node.props, prop)
+			elseif self:GetTokenOffset(1).value == "{" then
+				table.insert(node.children, self:LSX2())
+			else
+				table.insert(node.children, self:Expression())
+			end
+		else
+			table.insert(node.children, self:Expression())
+		end
+	end
+
+	self:ReadExpectValue("}")
+
+	return node
+end
+
 function META:LSX()
+	if self:GetTokenOffset(1).value == "!" then
+		self:Advance(2)
+		local node = self:LSX2()
+		self:ReadExpectValue(">")
+		return node
+	end
+
 	local node = self:Node("lsx")
 	node.tokens["start<"] = self:ReadExpectValue("<")
+
 	node.class = self:ReadExpectType("letter")
 
 	if self:IsType("letter") then
@@ -298,7 +356,8 @@ function META:LSX()
 			local prop = self:Node("prop")
 			prop.key = self:ReadToken()
 			prop.tokens["="] = self:ReadExpectValue("=")
-			if self:IsType("string") or self:IsType("number") then
+			
+			if lua.syntax.IsValue(self:GetToken()) then
 				prop.value = self:ReadToken()
 			else
 				prop.tokens["{"] = self:ReadExpectValue("{")
@@ -307,6 +366,7 @@ function META:LSX()
 				end
 				prop.tokens["}"] = self:ReadExpectValue("}")
 			end
+
 			table.insert(node.props, prop)
 		end
 	end

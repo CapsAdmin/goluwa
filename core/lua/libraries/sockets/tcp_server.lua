@@ -16,9 +16,9 @@ function META:__tostring2()
     return "[" .. tostring(self.socket) .. "]"
 end
 
-function META:Initialize()
-    self:SocketRestart()
-    table.insert(sockets.active, self)
+function META:Initialize(socket)
+    self:SocketRestart(socket)
+    sockets.pool:insert(self)
 end
 
 function META:SocketRestart()
@@ -32,7 +32,7 @@ function META:SocketRestart()
 end
 
 function META:OnRemove()
-    table.removevalue(sockets.active, self)
+    sockets.pool:remove(self)
     self:assert(self.socket:close())
 end
 
@@ -52,12 +52,24 @@ end
 function META:Update()
     if not self.hosting then return end
 
-    local client, err = self.socket:accept()
+    for i = 1, 512 do
+        local client, err = self.socket:accept()
 
-    if client then
-        local client = sockets.TCPClient(client)
-        client.connected = true
-        self:OnClientConnected(client)
+        if not client and err == "Too many open files" then
+            llog("cannot accept more clients: %s", err)
+            return
+        end
+
+        if client then
+            local client = sockets.TCPClient(client)
+            client.connected = true
+            self:OnClientConnected(client)
+        else
+            if err and err ~= "timeout" then
+                self:Error(err)
+            end
+            break
+        end
     end
 end
 
@@ -66,7 +78,7 @@ function META:Error(message, ...)
     return false
 end
 
-function META:OnError(str) self:Remove() end
+function META:OnError(str, tr) logn(tr) llog(str) self:Remove() end
 function META:OnReceiveChunk(str) end
 function META:OnClose() self:Close() end
 function META:OnConnect() end

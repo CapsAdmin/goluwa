@@ -1,6 +1,6 @@
 local sockets = ... or _G.sockets
 
-local META = prototype.CreateTemplate("socket", "http/1.1")
+local META = prototype.CreateTemplate("socket", "http11_client")
 
 META.Base = "tcp_client"
 META.Stage = "none"
@@ -190,24 +190,34 @@ function META:EncodeURI(tbl)
     return uri
 end
 
-if RELOAD then
-    local url = "https://Aladdin:OpenSesame@www.example.com/index.php"
-    local tbl = META:ParseURI(url)
-    tbl.query = {
-        test = "1",
-        awdawd = "aa",
-    }
-    local encoded = META:EncodeURI(tbl)
-    print(encoded, url == encoded)
-    return
-end
-
 local function default_header(header, key, val)
     if header[key] == nil then
         header[key] = val
     elseif header[key] == false then
         header[key] = nil
     end
+end
+
+function META:Respond(code, header, body)
+    header = header or {}
+
+    local str = "HTTP/1.1 " .. code .. "\r\n"
+
+    if body then
+        default_header(header, "Content-Length", #body)
+    end
+
+    for k, v in pairs(header) do
+        str = str .. k .. ": " .. v .. "\r\n"
+    end
+
+    str = str .. "\r\n"
+
+    if body then
+        str = str .. body
+    end
+
+    self:Send(str)
 end
 
 function META:Request(method, url, header, body)
@@ -283,6 +293,10 @@ function META:DecodeChunkedBody(body)
         local size_stop, chunk_start = body:find("\r\n", pos, true)
         local size = tonumber(body:sub(pos, size_stop), 16)
 
+        if not size then
+            return self:Error("chunk #" .. i .. " has no size? " .. body:sub(pos, size_stop))
+        end
+
         pos = size_stop + 2
 
         temp[i] = body:sub(pos, pos + size - 1)
@@ -300,9 +314,6 @@ function META:DecodeChunkedBody(body)
 
     return table.concat(temp)
 end
-
--- POST /webhook HTTP/1.1
--- HTTP/1.1 200 OK
 
 function META:OnReceiveChunk(chunk)
     if self.Stage == "header" then
@@ -502,7 +513,7 @@ function sockets.HTTPClient(socket)
 end
 
 function sockets.ConnectedTCP2HTTP(obj)
-    setmetatable(obj, prototype.GetRegistered("socket", "http/1.1"))
+    setmetatable(obj, prototype.GetRegistered("socket", "http11_client"))
     obj:OnConnect()
     obj.connected = true
     obj.connecting = false

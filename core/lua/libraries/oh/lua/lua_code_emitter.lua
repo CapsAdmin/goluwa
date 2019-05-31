@@ -46,6 +46,8 @@ function META:Expression(v)
 		end
 	elseif v.type == "lsx" then
 		self:LSX(v)
+	elseif v.type == "lsx2" then
+		self:LSX2(v)
 	else
 		error("unhandled token type " .. v.type)
 	end
@@ -82,6 +84,36 @@ function META:Expression(v)
 	end
 end
 
+
+function META:LSX2(node)
+	self:Emit(" LSX(")
+
+	self:Emit("'")self:Emit(node.class.value)self:Emit("'")
+	self:Emit(",")
+
+	self:Emit("{")
+	for i, prop in ipairs(node.props) do
+		self:Expression(prop.key)
+		self:EmitToken(prop.tokens["="])
+		self:Expression(prop.expression)
+		if i ~= #node.props then
+			self:Emit(",")
+		end
+	end
+	self:Emit("}")
+
+	self:Emit(",")
+
+	self:Emit("{")
+	local max = #node.children
+	for i, child in ipairs(node.children) do
+		self:Expression(child)
+		self:Emit(",")
+	end
+	self:Emit("}")
+
+	self:Emit(")")
+end
 
 function META:LSX(node)
 	self:Emit(" LSX(")

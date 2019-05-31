@@ -28,7 +28,6 @@ if pcall(require, "jit.opt") then
 		"maxirconst=500", -- 500: maximum number of IR constants of a trace
 		"maxside=100", -- 100: maximum number of side traces of a root trace
 		"maxsnap=800", -- 500: maximum number of snapshots for a trace
-		"minstitch=0", -- 0: minimum number of IR ins for a stitched trace.
 		"hotloop=56", -- 56: number of iterations to detect a hot loop or hot call
 		"hotexit=10", -- 10: number of taken exits to start a side trace
 		"tryside=4", -- 4: number of attempts to compile a side trace
@@ -49,7 +48,10 @@ if pcall(require, "jit.opt") then
 		"+sink", -- Allocation/Store Sinking
 		"+fuse" -- Fusion of operands into instructions
 	)
+	if jit.version_num >= 20100 then
+		jit.opt.start("minstitch=0") -- 0: minimum number of IR ins for a stitched trace.
 	end
+end
 
 --loadfile("core/lua/modules/bytecode_cache.lua")()
 

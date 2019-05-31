@@ -45,8 +45,6 @@ local function async(func)
     return t
 end
 
----- ^ above is more like runtime
-
 local function CSS(tbl)
     local s = ""
     for k,v in pairs(tbl) do
@@ -54,6 +52,8 @@ local function CSS(tbl)
     end
     return s
 end
+
+---- ^ above should maybe be moved to a runtime
 
 local function Result({html_url, stargazers_count, description, full_name})
     return <div style={CSS{
@@ -66,26 +66,23 @@ local function Result({html_url, stargazers_count, description, full_name})
             <a href={html_url} target="_blank">
                 {full_name}
             </a>
-            🌟<strong>{stargazers_count}</strong>
+            🌟
+            <strong>{stargazers_count}</strong>
         </div>
         <p>{description}</p>
     </div>
 end
 
 local async function run()
-    local results = resource.Download("http://api.github.com/search/repositories?q=preact")
-    print(results)
-    local results = vfs.Read(results).items or {}
+    local path = resource.Download("http://api.github.com/search/repositories?q=preact")
+    local items = vfs.Read(path).items
 
     local html = <div>
         <h1 style="text-align:center;">Example</h1>
         <div class="list">
-            {table.map(results, do v Result(v))}
+            { table.map(results, do v Result(v)) }
         </div>
     </div>
 
     vfs.Write("index.html", html)
-    print(R"index.html")
 end
-
-run("?!?!   ")

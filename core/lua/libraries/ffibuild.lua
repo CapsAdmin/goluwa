@@ -1953,8 +1953,19 @@ do -- lua helper functions
 		if not vfs.IsFile(dir .. "ran_build") or info.force_build then
 			logn("running build command")
 			fs.PushWorkingDirectory(dir)
-			ffibuild.UnixExecute(info.cmd, true)
+			local ok, what, code = ffibuild.UnixExecute(info.cmd, true)
+
+			if not ok then
+				if info.clean then
+					ffibuild.UnixExecute(info.clean, true)
+				end
+			end
 			fs.PopWorkingDirectory()
+
+			if not ok then
+				llog("build failed, exited with code %s", code)
+				return
+			end
 		end
 
 		for _, path in ipairs(ffibuild.GetSharedLibrariesInDirectory(dir)) do
