@@ -6,15 +6,22 @@ end
 
 function PROXY_SERVER:OnClientConnected(client)
     function client:OnReceiveChunk(str)
-        print(client, str)
         local url = str:match("GET %/(%S+) HTTP/1%.")
-        print("url:", url)
+        local ip, port = client.socket:get_name()
+
+        if url ~= "favicon.ico" then
+            llog("%s:%s wants to request %s", ip, port, url)
+        end
+
         if not url or not url:startswith("https://gitlab.com/CapsAdmin/") then
             client:Remove()
             return
         end
-        sockets.Download(url, function(body) client:Send(body) end, nil, nil, function(_, raw)
-            client:Send(raw)
-        end)
+
+        local http = sockets.HTTPClient()
+        http:Request("GET", url)
+        function http:OnReceiveChunk(chunk)
+            client:Send(chunk)
+        end
     end
 end
