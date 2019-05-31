@@ -83,8 +83,8 @@ do
                 until not decoded
             end
         end
-        
-        
+
+
 
         function client:OnReceive(body, opcode)
             print(body, "BODY", opcode)

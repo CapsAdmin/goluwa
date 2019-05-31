@@ -190,18 +190,6 @@ function META:EncodeURI(tbl)
     return uri
 end
 
-if RELOAD then
-    local url = "https://Aladdin:OpenSesame@www.example.com/index.php"
-    local tbl = META:ParseURI(url)
-    tbl.query = {
-        test = "1",
-        awdawd = "aa",
-    }
-    local encoded = META:EncodeURI(tbl)
-    print(encoded, url == encoded)
-    return
-end
-
 local function default_header(header, key, val)
     if header[key] == nil then
         header[key] = val
@@ -210,10 +198,8 @@ local function default_header(header, key, val)
     end
 end
 
-function META:Respond(tbl)
-    local header = tbl.header or {}
-    local code = tbl.code
-    local body = tbl.body
+function META:Respond(code, header, body)
+    header = header or {}
 
     local str = "HTTP/1.1 " .. code .. "\r\n"
 
@@ -307,8 +293,12 @@ function META:DecodeChunkedBody(body)
         local size_stop, chunk_start = body:find("\r\n", pos, true)
         local size = tonumber(body:sub(pos, size_stop), 16)
 
+        if not size then
+            return self:Error("chunk #" .. i .. " has no size? " .. body:sub(pos, size_stop))
+        end
+
         pos = size_stop + 2
-print(body)
+
         temp[i] = body:sub(pos, pos + size - 1)
 
         pos = pos + size
@@ -324,9 +314,6 @@ print(body)
 
     return table.concat(temp)
 end
-
--- POST /webhook HTTP/1.1
--- HTTP/1.1 200 OK
 
 function META:OnReceiveChunk(chunk)
     if self.Stage == "header" then

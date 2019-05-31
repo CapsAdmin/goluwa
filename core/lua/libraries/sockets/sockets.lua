@@ -8,11 +8,13 @@ runfile("websocket_client.lua", sockets)
 runfile("http11_client.lua", sockets)
 runfile("download.lua", sockets)
 
-sockets.active = table.weak()
+sockets.active = {}
 
 function sockets.Update()
     for _, socket in ipairs(sockets.active) do
-        socket:Update()
+        if socket.Update then
+            socket:Update()
+        end
     end
 end
 
