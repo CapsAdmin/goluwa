@@ -5,6 +5,10 @@ local META = prototype.CreateTemplate("socket", "http11_server")
 META.Base = "tcp_server"
 
 function META:OnClientConnected(client)
+    if self:OnClientConnected(client) == false then
+        return false
+    end
+
     sockets.ConnectedTCP2HTTP(client)
 
     table.insert(self.Clients, client)
@@ -22,23 +26,9 @@ function META:OnClientConnected(client)
     end)
 end
 
-function META:OnReceiveHeader(client, header)
-    --print(client, header)
-
-    client:Respond("200 OK", nil, [[
-        <!DOCTYPE HTML>
-        <html>
-            <meta charset="utf-8"/>
-            <body>
-                #]]..#self.Clients..[[ connections
-            </body>
-        </html>
-    ]])
-end
-
-function META:OnReceiveBody(client, body)
-   -- print(client, body)
-end
+function META:OnReceiveHeader(client, header) end
+function META:OnReceiveBody(client, body) end
+function META:OnClientConnected() end
 
 META:Register()
 
@@ -52,7 +42,19 @@ end
 
 if RELOAD then
     local server = utility.RemoveOldObject(sockets.HTTPServer(), "http_server")
-    server:Host("*", 1234)
+    print(server:Host("*", 1234))
+
+    function server:OnReceiveHeader(client, header)
+        client:Respond("200 OK", nil, [[
+            <!DOCTYPE HTML>
+            <html>
+                <meta charset="utf-8"/>
+                <body>
+                    #]]..#self.Clients..[[ connections
+                </body>
+            </html>
+        ]])
+    end
     THESERVER = server
 end
 

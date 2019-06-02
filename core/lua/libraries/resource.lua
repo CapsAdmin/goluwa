@@ -90,7 +90,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 			if not full_path then
 				return false, ("open error: %q not found!\n"):format("data/downloads/" .. to)
 			end
-			
+
 			--llog("finished donwnloading ", from)
 			callback(full_path, true)
 			return

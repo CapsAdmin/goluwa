@@ -36,16 +36,16 @@ function sockets.StartWebhookServer(port, secret, callback)
 
 		function client:OnReceiveBody()
 			if secret then
-				if not verify_signature(self.Header["x-hub-signature"], self.Body) then
+				if not verify_signature(self.http.header["x-hub-signature"], self.http.body) then
 					logn("webhook client ", client, " removed because signature does not match: ", data.header["x-hub-signature"])
 					client:Remove()
 					return
 				end
 			end
 
-			local content = self.Body
+			local content = self.http.body
 
-			if self.Header["content-type"]:find("form-urlencoded", nil, true) then
+			if self.http.header["content-type"]:find("form-urlencoded", nil, true) then
 				content = content:match("^payload=(.+)")
 				content = content:gsub("%%(..)", function(hex)
 					return string.char(tonumber("0x"..hex))

@@ -23,18 +23,18 @@ local function decode_data_uri(uri)
     return
 end
 
-local function find_best_name(http)
+local function find_best_name(client)
     local contestants = {}
 
-    if http.Header["content-disposition"] then
-        local file_name = http.Header["content-disposition"]:match("filename=(%b\"\")")
+    if client.http.header["content-disposition"] then
+        local file_name = client.http.header["content-disposition"]:match("filename=(%b\"\")")
         if file_name then
             file_name = file_name:sub(2, -2)
             table.insert(contestants, {score = math.huge, name = file_name})
         end
     end
 
-    for _, url in ipairs(http.LocationHistory) do
+    for _, url in ipairs(client:GetRedirectHistory()) do
         local score = 0
         local name = vfs.GetFileNameFromPath(url):gsub("%%(%x%x)", function(hex)
             return string.char(tonumber(hex, 16))
@@ -55,9 +55,9 @@ local function find_best_name(http)
 
     local name = contestants[1].name
 
-    if http.Header["content-type"] and #vfs.GetExtensionFromPath(name) == 0 then
-        local mime = http.Header["content-type"]:match("^(.-);") or http.Header["content-type"]
-        name = name .. "." .. http.MimeToExtension[mime] or "dat"
+    if client.http.header["content-type"] and #vfs.GetExtensionFromPath(name) == 0 then
+        local mime = client.http.header["content-type"]:match("^(.-);") or client.http.header["content-type"]
+        name = name .. "." .. sockets.MimeToExtension[mime] or "dat"
 
     end
 
@@ -72,16 +72,16 @@ end
 sockets.active_downloads = sockets.active_downloads or {}
 
 function sockets.Download(url, on_finish, on_error, on_chunks, on_header, on_code)
-    local http = sockets.HTTPClient()
+    local client = sockets.HTTPClient()
 
-    local lookup = {url = url, client = http}
+    local lookup = {url = url, client = client}
     table.insert(sockets.active_downloads, lookup)
 
     local buffer = {}
     local written_size = 0
     local total_size = math.huge
 
-    function http:OnReceiveStatus(status, reason)
+    function client:OnReceiveStatus(status, reason)
         if status:startswith("4") then
             self:Error(reason)
             return false
@@ -90,25 +90,25 @@ function sockets.Download(url, on_finish, on_error, on_chunks, on_header, on_cod
         end
     end
 
-    function http:WriteBody(chunk)
+    function client:WriteBody(chunk)
         table.insert(buffer, chunk)
         written_size = written_size + #chunk
 
         if on_chunks then
-            on_chunks(chunk, written_size, total_size, http.friendly_name)
+            on_chunks(chunk, written_size, total_size, client.friendly_name)
         end
     end
 
-    function http:GetWrittenBodySize()
+    function client:GetWrittenBodySize()
         return written_size
     end
 
-    function http:GetWrittenBodyString()
+    function client:GetWrittenBodyString()
         return table.concat(buffer)
     end
 
-    function http:OnReceiveHeader(header, raw)
-        http.friendly_name = find_best_name(self)
+    function client:OnReceiveHeader(header, raw)
+        client.friendly_name = find_best_name(self)
 
         total_size = header["content-length"] or total_size
 
@@ -117,12 +117,12 @@ function sockets.Download(url, on_finish, on_error, on_chunks, on_header, on_cod
         end
     end
 
-    function http:OnReceiveBody(body)
+    function client:OnReceiveBody(body)
         on_finish(body)
         table.removevalue(sockets.active_downloads, lookup)
     end
 
-    function http:OnError(reason)
+    function client:OnError(reason)
         if on_error then
             on_error(reason)
         else
@@ -132,9 +132,9 @@ function sockets.Download(url, on_finish, on_error, on_chunks, on_header, on_cod
         table.removevalue(sockets.active_downloads, lookup)
     end
 
-    http:Request("GET", url, header)
+    client:Request("GET", url, header)
 
-    return http
+    return client
 end
 
 function sockets.DownloadToPath(url, path, on_finish, on_error, on_progress, on_header)
