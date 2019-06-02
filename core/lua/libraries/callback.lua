@@ -215,7 +215,8 @@ function callback.WrapKeyedTask(create_callback, max, queue_callback, start_on_c
     max = max or math.huge
 
     local function add(key, ...)
-        local args = {...}
+        local args = table.pack(...)
+
         if not callbacks[key] or callbacks[key].is_resolved then
             callbacks[key] = callback.Create(function(self)
                 create_callback(self, key, unpack(args))
