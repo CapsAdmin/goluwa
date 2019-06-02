@@ -6,10 +6,7 @@ META.Base = "tcp_client"
 META.Stage = "none"
 
 do
-
-    for k, v in pairs(sockets.HTTPMeta) do
-        META[k] = v
-    end
+    sockets.MixinHTTP(META)
 
     function META:OnReceiveChunk(data)
         self:WriteHTTP(data, self.FromClient)

@@ -68,11 +68,7 @@ sockets.MimeToExtension = {
     ["application/vnd.microsoft.portable-executable"] = "exe",
 }
 
-
-do
-    local META = {}
-
-
+function sockets.MixinHTTP(META)
     function META:InitializeHTTPParser()
         self.http = {
             raw_header = "",
@@ -241,8 +237,6 @@ do
 
     function META:OnHTTPEvent(what) end
     function META:Error(what) return false end
-
-    sockets.HTTPMeta = META
 end
 
 local legal_uri_characters = {
