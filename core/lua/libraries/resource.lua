@@ -34,7 +34,9 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 	if check_etag then
 		local etag = serializer.LookupInFile("luadata", etags_file, etag_path_override or from)
 
-		--llog("checking if ", etag_path_override or from, " has been modified.")
+		if VERBOSE then
+			llog("checking if ", etag_path_override or from, " has been modified.")
+		end
 
 		return sockets.Request({
 			method = "HEAD",
@@ -43,14 +45,15 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 				llog(from, ": unable to fetch etag, socket error: ", reason)
 				check_etag()
 			end,
-			callback = function(data)
-				if data.code ~= 200 then
-					llog(from, ": unable to fetch etag, server returned code ", data.code)
+			code_callback = function(code)
+				if code ~= 200 then
+					llog(from, ": unable to fetch etag, server returned code ", code)
 					check_etag()
-					return
+					return false
 				end
-
-				local res = data.header.etag or data.header["last-modified"]
+			end,
+			header_callback = function(header)
+				local res = header.etag or header["last-modified"]
 
 				if not res then
 					llog(from, ": no etag found")
@@ -66,7 +69,9 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 					end
 					download(from, to, callback, on_fail, on_header, nil, etag_path_override, need_extension, ext_override)
 				else
-					--llog(from, ": etag is the same")
+					if VERBOSE then
+						llog(from, ": etag is the same")
+					end
 					check_etag()
 				end
 			end,
