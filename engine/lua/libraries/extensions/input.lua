@@ -36,12 +36,24 @@ end
 
 input.disable_focus = 0
 
-function input.PushDisableFocus()
-	input.disable_focus = input.disable_focus + 1
-end
+do
+	local last_focus_frame = 0
+	function input.PushDisableFocus()
+		local frame = system.GetFrameNumber()
+		if last_focus_frame ~= frame then
+			input.disable_focus = input.disable_focus + 1
+			last_focus_frame = frame
+		end
+	end
 
-function input.PopDisableFocus()
-	input.disable_focus = math.max(input.disable_focus - 1, 0)
+	local last_unfocus_frame = 0
+	function input.PopDisableFocus()
+		local frame = system.GetFrameNumber()
+		if last_unfocus_frame ~= frame then
+			input.disable_focus = math.max(input.disable_focus - 1, 0)
+			last_unfocus_frame = frame
+		end
+	end
 end
 
 function input.Call(key, press)
