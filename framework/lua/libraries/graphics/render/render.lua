@@ -45,7 +45,9 @@ do
 			if not cache[str] then
 				llog("extension %s does not exist", str)
 			else
-				llog("extension %s exists", str)
+				if VERBOSE then
+					llog("extension %s exists", str)
+				end
 			end
 		end
 		return cache[str]
