@@ -198,7 +198,9 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 			check_etag,
 			path
 		)
-		client.socket.url = provider .. path
+		if not gmod then
+			client.socket.url = provider .. path
+		end
 	end
 end
 
