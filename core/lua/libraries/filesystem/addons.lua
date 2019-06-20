@@ -63,7 +63,9 @@ function vfs.FetchBniariesForAddon(addon, callback)
 						if ok == "deferred" then
 							llog("%q will be replaced after restart. (%i downloads left)", to:sub(#e.ROOT_FOLDER+1), done)
 						else
-							llog("%q was added (%i downloads left)", to:sub(#e.ROOT_FOLDER+1), done)
+							if VERBOSE then
+								llog("%q was added (%i downloads left)", to:sub(#e.ROOT_FOLDER+1), done)
+							end
 						end
 					end
 
