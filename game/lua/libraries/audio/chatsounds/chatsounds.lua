@@ -86,6 +86,33 @@ chatsounds.Modifiers = {
 			self.snd.obj:SetFilterFraction(num)
 		end,
 	},
+	startpos = {
+		args = {
+			function(start_percent)
+				return tonumber(start_percent) or 0
+			end
+		},
+
+		init = function(self, start_percent)
+			if start_percent ~= 0 then
+				self.startpos = start_percent / 100
+			end
+		end,
+
+		start = function(self)
+			if self.startpos then
+				self._started = true
+			end
+		end,
+
+		think = function(self)
+			-- SetSamplePosition must be called right after Play()
+			if self._started then
+				self._started = false
+				self.snd.obj:SetSamplePosition(self.snd.obj:GetSampleCount() * self.startpos)
+			end
+		end,
+	},
 	cutoff = {
 		args = {
 			function(stop_percent) return tonumber(stop_percent) or 100 end
@@ -201,6 +228,7 @@ chatsounds.LegacyModifiers = {
 	["%"] = "legacypitch",
 	["^^"] = "legacyvolume",
 	["^"] = "legacyvolume",
+	["++"] = "startpos",
 	["--"] = "cutoff",
 	["#"] = "choose",
 	["="] = "legacyduration",
