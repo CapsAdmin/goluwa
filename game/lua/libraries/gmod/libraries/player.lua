@@ -42,11 +42,11 @@ do
 end
 
 do
-	function gine.env.player.CreateNextBot(name)
-		local client = clients.CreateBot()
-		client:SetNick(name)
-		return gine.WrapObject(cllient, "Player")
-	end
+function gine.env.player.CreateNextBot(name)
+	local client = clients.CreateBot()
+	client:SetNick(name)
+	return gine.WrapObject(client, "Player")
+end
 
 	function gine.env.LocalPlayer()
 		gine.local_player = gine.local_player or gine.WrapObject(clients.GetLocalClient(), "Player")
