@@ -275,7 +275,7 @@ resource.Download = callback.WrapKeyedTask(function(self, path, crc, mixed_case,
 
 	if check_etag then
 		check_etag = function()
-			resolve(path, existing_path)
+			resolve(existing_path)
 		end
 	end
 
