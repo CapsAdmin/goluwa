@@ -53,11 +53,11 @@ function chatsounds.BuildFromGithub(repo, location)
 
 		local url = "https://api.github.com/repos/" .. repo .. "/git/trees/master?recursive=1"
 
-		resource.Download(url, nil, nil, true):Then(function(path)
+		resource.Download(url, nil, nil, true):Then(function(path, etag_updated)
 			local cached_path = "cache/" .. crypto.CRC32(url .. location) .. ".chatsounds_tree"
 			local sounds = serializer.ReadFile("msgpack", cached_path)
 
-			if sounds then
+			if not etag_updated and sounds then
 				if sounds[1] and #sounds[1] >= 3 then
 					read_list(base_url, sounds)
 					return
@@ -65,6 +65,7 @@ function chatsounds.BuildFromGithub(repo, location)
 				-- 	llog("found cached list but format doesn't look right, regenerating.")
 				end
 			end
+
 
 			local sounds = {}
 			local str = assert(io.open(path, "rb"):read("*all"))
