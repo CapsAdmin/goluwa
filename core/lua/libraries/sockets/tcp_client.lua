@@ -155,13 +155,19 @@ function META:Send(data)
     local ok, err
     if self.socket:is_connected() and not self.connecting then
         local pos = 0
+        local t = os.clock() + 1
         for i = 1, math.huge do
             ok, err = self.socket:send(data:sub(pos + 1))
-            if ok and err ~= "timeout" then
-                if not ok then
-                    self:Error(err)
-                    return
-                end
+
+            if t < os.clock() then
+                return false, "timeout"
+            end
+
+            if not ok and err ~= "timeout" then
+                return self:Error(err)
+            end
+
+            if err ~= "timeout" then
                 pos = pos + tonumber(ok)
 
                 if pos >= #data then
