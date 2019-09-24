@@ -1177,6 +1177,10 @@ do
         end
 
         if not len then
+            if not self.blocking and timeout_messages[err] then
+                return nil, "timeout"
+            end
+
             return len, err
         end
 
