@@ -236,7 +236,7 @@ function sockets.MixinHTTP(META)
     end
 
     function META:OnHTTPEvent(what) end
-    function META:Error(what) return false end
+    --function META:Error(what) return false end
 end
 
 local legal_uri_characters = {
