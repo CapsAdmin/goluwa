@@ -86,8 +86,11 @@ if not table.pack then
 end
 
 if not table.unpack then
-	function table.unpack(tbl, i)
-		return unpack(tbl, i)
+	function table.unpack(tbl, start, stop)
+		start = start or 1
+		stop = stop or tbl.n
+
+		return unpack(tbl, start, stop)
 	end
 end
 

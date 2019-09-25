@@ -166,7 +166,7 @@ if NETWORK then
 	end
 
 	function META:OnUpdate(dt)
-		if CLEINT and not network.IsConnected() then return end
+		if CLIENT and not network.IsConnected() then return end
 
 		self:UpdateVars()
 

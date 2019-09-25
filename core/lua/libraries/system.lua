@@ -377,10 +377,10 @@ function system.GetCLICommand(cmd)
 	end
 	return setmetatable({}, {__index = function(_, key)
 		return function(...)
-			local str = cmd " " .. key
+			local str = cmd .. " " .. key
 
 			if ... then
-				str = str .. " " .. table.concat(...)
+				str = str .. " " .. table.concat({...}, " ")
 			end
 
 			local f = io.popen(str)

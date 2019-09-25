@@ -215,10 +215,11 @@ function callback.WrapKeyedTask(create_callback, max, queue_callback, start_on_c
     max = max or math.huge
 
     local function add(key, ...)
-        local args = {...}
+        local args = table.pack(...)
+
         if not callbacks[key] or callbacks[key].is_resolved then
             callbacks[key] = callback.Create(function(self)
-                create_callback(self, key, unpack(args))
+                create_callback(self, key, table.unpack(args))
             end)
 
             callbacks[key].start_on_callback = start_on_callback
@@ -264,9 +265,9 @@ end
 
 function callback.WrapTask(create_callback)
     return function(...)
-        local args = {...}
+        local args = table.pack(...)
         local cb = callback.Create(function(self)
-            create_callback(self, unpack(args))
+            create_callback(self, table.unpack(args))
         end)
         cb:Start()
         return cb

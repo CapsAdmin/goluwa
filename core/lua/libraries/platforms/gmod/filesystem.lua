@@ -107,6 +107,18 @@ function fs.create_directory(path)
 	return nil, "file.IsDir returns false"
 end
 
+function fs.get_type(path)
+	local path, where = GoluwaToGmodPath(path)
+
+	if file_IsDir(path, where) then
+		return "directory"
+	elseif file_Exists(path, where) then
+		return "file"
+	end
+
+	return nil
+end
+
 function fs.get_attributes(path)
 	dprint("fs.get_attributes: ", path)
 
