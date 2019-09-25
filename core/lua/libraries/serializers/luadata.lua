@@ -58,7 +58,7 @@ luadata.SetModifier("table", function(tbl, context)
 			value = luadata.ToString(value, context)
 
 			if value then
-				if type(key) == "string" and key:find("^[%w_]+$") then
+				if type(key) == "string" and key:find("^[%w_]+$") and not tonumber(key) then
 					str[#str+1] = ("%s%s = %s,\n"):format(("\t"):rep(context.tab), key, value)
 				else
 					key = luadata.ToString(key, context)
