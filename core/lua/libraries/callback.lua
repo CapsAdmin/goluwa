@@ -274,6 +274,14 @@ function callback.WrapTask(create_callback)
     end
 end
 
+function callback.Resolve(...)
+    local args = table.pack(...)    
+    local cb = callback.Create(function(self) 
+        self.callbacks.resolve(table.unpack(args))
+    end)
+    event.Delay(function() cb:Start() end)
+    return cb:Then(function() print("lol") end)
+end
 
 if RELOAD then
     local function await(func)
