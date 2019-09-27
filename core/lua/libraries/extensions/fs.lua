@@ -172,3 +172,11 @@ function fs.Link(from, to)
 
     return fs.link(from, to, false)
 end
+
+function fs.IsFile(path)
+    return fs.get_type(path) == "file"
+end
+
+function fs.IsDirectory(path)
+    return fs.get_type(path) == "directory"
+end
