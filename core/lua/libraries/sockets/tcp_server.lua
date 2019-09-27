@@ -44,9 +44,18 @@ end
 function META:Host(host, service)
     local info = ljsocket.find_first_address(host, service)
 
-    if self:assert(self.socket:bind(info)) and self:assert(self.socket:listen()) then
-        self.hosting = true
+    local ok, err = self.socket:bind(host, service)
+
+    if ok then
+        ok, err = self.socket:listen()
     end
+
+    if ok then
+        self.hosting = true
+        return
+    end
+
+    return self:Error("Unable host " .. host .. ":" .. service .. " - " .. err)
 end
 
 function META:Update()
