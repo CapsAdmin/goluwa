@@ -207,7 +207,7 @@ end
 local ohno = false
 
 resource.Download = callback.WrapKeyedTask(function(self, path, crc, mixed_case, check_etag, ext)
-	local resolve = self.callbacks.resolve
+	local resolve = function(...) local args = table.pack(...) event.Delay(function() self.callbacks.resolve(table.unpack(args)) end) end
 	local reject = self.callbacks.reject
 
 	if resource.virtual_files[path] then
