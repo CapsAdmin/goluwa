@@ -176,6 +176,7 @@ function fs.Read(path)
 end
 
 fs.Copy = fs.copy
+fs.GetFiles = fs.get_files
 
 function fs.Link(from, to)
     if fs.get_type(from) == "directory" then
