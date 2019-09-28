@@ -6,12 +6,13 @@ ffi.cdef([[
 	typedef unsigned long ssize_t;
 	char *strerror(int);
 	void *fopen(const char *filename, const char *mode);
-	int open(const char *pathname, int flags);
+	int open(const char *pathname, int flags, ...);
 	size_t fread(void *ptr, size_t size, size_t nmemb, void *stream);
 	size_t fwrite(const void *ptr, size_t size, size_t nmemb, void *stream);
 	int fseek(void *stream, long offset, int whence);
 	long int ftell ( void * stream );
 	int fclose(void *fp);
+	int close(int fd);
 	int feof(void *stream);
 	char *getcwd(char *buf, size_t size);
 	int chdir(const char *filename);
@@ -19,11 +20,12 @@ ffi.cdef([[
 	int rmdir(const char *filename);
 	int fileno(void *stream);
 	int remove(const char *pathname);
+	int fchmod(int fd, int mode);
 
 	typedef struct DIR DIR;
 	DIR *opendir(const char *name);
 	int closedir(DIR *dirp);
-	long syscall(int number, ...);
+	ssize_t syscall(int number, ...);
 
 
 	ssize_t read(int fd, void *buf, size_t count);
@@ -412,6 +414,20 @@ do
 	do
 		local buff = statbox()
 
+		function fs.get_size(path, link)
+			local ret = link and stat_func_link(path, buff) or stat_func(path, buff)
+
+			if ret ~= 0 then
+				return nil, last_error()
+			end
+
+			return tonumber(buff[0].st_size)
+		end
+	end
+
+	do
+		local buff = statbox()
+
 		function fs.get_type(path)
 			if stat_func(path, buff) == 0 then
 				return bit.band(buff[0].st_mode, DIRECTORY) ~= 0 and "directory" or "file"
@@ -421,35 +437,66 @@ do
 		end
 	end
 
-	ffi.cdef([[ssize_t splice(int fd_in, long long *off_in, int fd_out, long long *off_out, size_t lenunsigned, int flags );]])
-	ffi.cdef([[int pipe(int pipefd[2]);]])
+	ffi.cdef([[
+		ssize_t splice(int fd_in, long long *off_in, int fd_out, long long *off_out, size_t lenunsigned, int flags );
+		int pipe(int pipefd[2]);
+	]])
 
-	function fs.copy(from, to)
+	local p = ffi.new("int[2]")
+
+	function fs.copy(from, to, permissions)
 		local in_ = fs.open(from, "r")
 		if in_ == nil then
 			return nil, "error opening " .. from .. " for reading: " .. last_error()
 		end
-		in_ = ffi.C.fileno(in_)
 
 		local out_ = fs.open(to, "w")
 		if out_ == nil then
+			fs.close(in_)
 			return nil, "error opening " .. to .. " for writing: " .. last_error()
 		end
+
+		in_ = ffi.C.fileno(in_)
 		out_ = ffi.C.fileno(out_)
 
-		local p = ffi.new("int[2]")
+		local size = fs.get_size(from)
+
 		ffi.C.pipe(p)
 
+		local ok, err
+		local ret
+
 		while true do
-			local ret = ffi.C.splice(p[0], nil, out_, nil, ffi.C.splice(in_, nil, p[1], nil, 4096, 0), 0)
+			ret = ffi.C.splice(in_, nil, p[1], nil, size, 0)
+
+			if ret == -1 then
+				ok, err = nil, last_error()
+				break
+			end
+
+			ret = ffi.C.splice(p[0], nil, out_, nil, ret, 0)
+
 			if ret <= 0 then
 				if ret == -1 then
-					return nil, last_error()
+					ok, err = nil, last_error()
+				else
+					ok = true
 				end
-
-				return true
+				break
 			end
 		end
+
+		if permissions then
+			ffi.C.fchmod(in_, fs.get_attributes(from).mode)
+		end
+
+		ffi.C.close(p[0])
+		ffi.C.close(p[1])
+
+		ffi.C.close(out_)
+		ffi.C.close(in_)
+
+		return ok, err
 	end
 
 	ffi.cdef([[
