@@ -571,6 +571,10 @@ local name_translate = {
 }
 
 function steam.GetAppIdFromName(search)
+	if tonumber(search) then
+		return tonumber(search)
+	end
+
 	for from, to in pairs(name_translate) do
 		if search:find("^" .. from .. "%s") or search:find("^" .. from .. "$") then
 			search = search:gsub("^" .. from, to)
