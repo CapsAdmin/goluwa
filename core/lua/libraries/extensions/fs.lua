@@ -49,15 +49,27 @@ function fs.RemoveRecursively(path)
     return files, err
 end
 
-function fs.CopyRecursively(path, to)
-	local files, err = fs.get_files_recursive(path)
+function fs.CopyRecursively(from, to)
+	local files, err = fs.get_files_recursive(from)
     if files then
         local errors = {}
-		table.sort(files, function(a, b) return #a > #b end)
-        for _, path in ipairs(files) do
-            local ok, err = fs.copy(path, to)
-            if not ok then
-                table.insert(errors, err)
+        table.sort(files, function(a, b) return #a < #b end)
+        for i, path in ipairs(files) do
+            if path:endswith("/") then
+                local ok, err = fs.CreateDirectory(to .. path:sub(#from + 1))
+                if not ok and err ~= "File exists" then
+                    table.insert(errors, err)
+                end
+            end
+        end
+        for i, path in ipairs(files) do
+            if not path:endswith("/") then
+                local ok, err = fs.copy(path, to .. path:sub(#from + 1))
+
+                if not ok then
+                    table.insert(errors, err)
+                    return ok, err
+                end
             end
         end
         if errors[1] then
