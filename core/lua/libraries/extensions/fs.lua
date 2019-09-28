@@ -22,7 +22,7 @@ function fs.CreateDirectory(path, force)
 
     if not ok and err == "File exists" then
         return true
-end
+    end
 
     return ok, err
 end
@@ -55,14 +55,23 @@ function fs.RemoveRecursively(path)
     return files, err
 end
 
-function fs.CopyRecursively(from, to)
+function fs.CopyRecursively(from, to, verbose)
 	local files, err = fs.get_files_recursive(from)
     if files then
         local errors = {}
         table.sort(files, function(a, b) return #a < #b end)
         for i, path in ipairs(files) do
             if path:endswith("/") then
-                local ok, err = fs.CreateDirectory(to .. path:sub(#from + 1))
+                local new_path = to .. path:sub(#from + 1)
+                local ok, err = fs.CreateDirectory(new_path)
+                if verbose then
+                    if ok then
+                        logn("created directory " .. new_path)
+                    else
+                        logn("failed to create directory " .. new_path)
+                        logn(err)
+                    end
+                end
                 if not ok and err ~= "File exists" then
                     table.insert(errors, err)
                 end
@@ -70,8 +79,16 @@ function fs.CopyRecursively(from, to)
         end
         for i, path in ipairs(files) do
             if not path:endswith("/") then
-                local ok, err = fs.copy(path, to .. path:sub(#from + 1))
-
+                local new_path = to .. path:sub(#from + 1)
+                local ok, err = fs.copy(path, new_path)
+                if verbose then
+                    if ok then
+                        logn("created file " .. new_path)
+                    else
+                        logn("failed to create file " .. new_path)
+                        logn(err)
+                    end
+                end
                 if not ok then
                     table.insert(errors, err)
                     return ok, err
