@@ -451,7 +451,7 @@ function vfs.WatchLuaFiles2(b)
 	local paths = {}
 
 	for _, dir in ipairs(fs.get_files(".")) do
-		if fs.get_type(dir) == "directory" and not dir:startswith(".") then
+		if fs.get_type(dir) == "directory" and not dir:startswith(".") and dir ~= "storage" then
 			local files, err = fs.get_files_recursive(dir)
 			if files then
 				for _, path in ipairs(files) do
@@ -474,6 +474,7 @@ function vfs.WatchLuaFiles2(b)
 
 		if time > next_check then
 			if WINDOW and window.IsFocused() then return end
+			if not WINDOW and not repl.IsFocused() then return end
 			if profiler.IsBusy() then return end -- I already know this is slow so it's just in the way
 
 			for i, data in ipairs(paths) do
@@ -484,11 +485,25 @@ function vfs.WatchLuaFiles2(b)
 						data.last_modified = info.last_modified
 					else
 						if data.last_modified ~= info.last_modified then
-							llog("reloading %s", vfs.GetFileNameFromPath(data.path))
 							_G.RELOAD = true
+							local content, err = vfs.Read(data.path)
+							local identical = false
+
+							if not content then
+								if err then
+									llog("error reading %s: ", err)
+								end
+								return
+							elseif data.last_content == content then
+								identical = true
+							end
+
+							llog("reloading %s", vfs.GetFileNameFromPath(data.path), identical and " (content is identical from last time)" or "")
+
 							system.pcall(runfile, data.path)
 							_G.RELOAD = nil
 							data.last_modified = info.last_modified
+							data.last_content = content
 						end
 					end
 				end
