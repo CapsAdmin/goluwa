@@ -18,7 +18,13 @@ function fs.CreateDirectory(path, force)
         return true
     end
 
-    return fs.create_directory(path)
+    local ok, err = fs.create_directory(path)
+
+    if not ok and err == "File exists" then
+        return true
+end
+
+    return ok, err
 end
 
 function fs.Remove(path)
