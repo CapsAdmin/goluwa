@@ -59,39 +59,27 @@ function fs.CopyRecursively(from, to, verbose)
 	local files, err = fs.get_files_recursive(from)
     if files then
         local errors = {}
-        table.sort(files, function(a, b) return #a < #b end)
+        table.sort(files, function(a, b) return a:endswith("/") and not b:endswith("/") end)
         for i, path in ipairs(files) do
+            local new_path = to .. path:sub(#from + 1)
+            local ok, err
+
             if path:endswith("/") then
-                local new_path = to .. path:sub(#from + 1)
-                local ok, err = fs.CreateDirectory(new_path)
-                if verbose then
-                    if ok then
-                        logn("created directory " .. new_path)
-                    else
-                        logn("failed to create directory " .. new_path)
-                        logn(err)
-                    end
-                end
-                if not ok and err ~= "File exists" then
-                    table.insert(errors, err)
-                end
+                ok, err = fs.CreateDirectory(new_path)
+            else
+                ok, err = fs.copy(path, new_path)
             end
-        end
-        for i, path in ipairs(files) do
-            if not path:endswith("/") then
-                local new_path = to .. path:sub(#from + 1)
-                local ok, err = fs.copy(path, new_path)
-                if verbose then
-                    if ok then
-                        logn("created file " .. new_path)
-                    else
-                        logn("failed to create file " .. new_path)
-                        logn(err)
-                    end
-                end
-                if not ok then
-                    table.insert(errors, err)
-                    return ok, err
+
+            if not ok and err ~= "File exists" then
+                table.insert(errors, err)
+            end
+
+            if verbose then
+                if ok then
+                    logn("created directory " .. new_path)
+                else
+                    logn("failed to create directory " .. new_path)
+                    logn(err)
                 end
             end
         end
@@ -185,14 +173,14 @@ end
 
 function fs.Write(path, content)
     local f, err = io.open(path, "wb")
-    if not f then return err end
+    if not f then return nil, err end
     f:write(content)
     return f:close()
 end
 
 function fs.Read(path)
     local f, err = io.open(path, "rb")
-    if not f then return err end
+    if not f then return nil, err end
     local content = f:read("*all")
     f:close()
     return content
