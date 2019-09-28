@@ -146,9 +146,14 @@ function META:Connect(host, service)
         self:SetupTLS()
     end
 
-    if self:assert(self.socket:connect(host, service)) then
+    local ok, err = self.socket:connect(host, service)
+
+    if ok then
         self.connecting = true
+        return
     end
+
+    return self:Error("Unable to connect to " .. host .. ":" .. service .. ": " .. err)
 end
 
 function META:Send(data)
@@ -251,7 +256,7 @@ end
 function META:Error(message, ...)
     local tr = debug.traceback()
     self:OnError(message, tr, ...)
-    return false
+    return false, message
 end
 
 function META:OnError(str, tr) logn(tr) llog(str) self:Remove(str) end

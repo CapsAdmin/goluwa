@@ -6,6 +6,7 @@ ffi.cdef([[
 	typedef unsigned long ssize_t;
 	char *strerror(int);
 	void *fopen(const char *filename, const char *mode);
+	int open(const char *pathname, int flags);
 	size_t fread(void *ptr, size_t size, size_t nmemb, void *stream);
 	size_t fwrite(const void *ptr, size_t size, size_t nmemb, void *stream);
 	int fseek(void *stream, long offset, int whence);
@@ -42,6 +43,19 @@ ffi.cdef([[
 
 	static const uint32_t IN_MODIFY = 0x00000002;
 ]])
+
+local O_RDONLY    = 0x0000    -- open for reading only
+local O_WRONLY    = 0x0001    -- open for writing only
+local O_RDWR      = 0x0002    -- open for reading and writing
+local O_NONBLOCK  = 0x0004    -- no delay
+local O_APPEND    = 0x0008    -- set append mode
+local O_SHLOCK    = 0x0010    -- open with shared file lock
+local O_EXLOCK    = 0x0020    -- open with exclusive file lock
+local O_ASYNC     = 0x0040    -- signal pgrp when data ready
+local O_NOFOLLOW  = 0x0100    -- don't follow symlinks
+local O_CREAT     = 0x0200    -- create if nonexistant
+local O_TRUNC     = 0x0400    -- truncate to zero length
+local O_EXCL      = 0x0800    -- error if already exists
 
 local function last_error(num)
 	num = num or ffi.errno()
@@ -407,31 +421,35 @@ do
 		end
 	end
 
+	ffi.cdef([[ssize_t splice(int fd_in, long long *off_in, int fd_out, long long *off_out, size_t lenunsigned, int flags );]])
+	ffi.cdef([[int pipe(int pipefd[2]);]])
+
 	function fs.copy(from, to)
-		local from_file = fs.open(from, "rb")
-		if from_file == nil then
-			return nil, "error opening " .. from .. ": " .. last_error()
+		local in_ = fs.open(from, "r")
+		if in_ == nil then
+			return nil, "error opening " .. from .. " for reading: " .. last_error()
 		end
+		in_ = ffi.C.fileno(in_)
 
-		local to_file = fs.open(to, "w")
-		if to_file == nil then
-			return nil, "error opening " .. to .. ": " .. last_error()
+		local out_ = fs.open(to, "w")
+		if out_ == nil then
+			return nil, "error opening " .. to .. " for writing: " .. last_error()
 		end
+		out_ = ffi.C.fileno(out_)
 
-		local pos = fs.tell(from_file)
-		fs.seek(from_file, 0, 2)
-		local size = fs.tell(from_file)
-		fs.seek(from_file, pos, 0)
+		local p = ffi.new("int[2]")
+		ffi.C.pipe(p)
 
-		repeat
-			local size_written = ffi.C.sendfile(ffi.C.fileno(to_file), ffi.C.fileno(from_file), nil, size)
-			if size_written == -1 then
-				return nil, last_error()
+		while true do
+			local ret = ffi.C.splice(p[0], nil, out_, nil, ffi.C.splice(in_, nil, p[1], nil, 4096, 0), 0)
+			if ret <= 0 then
+				if ret == -1 then
+					return nil, last_error()
+				end
+
+				return true
 			end
-			size = size - size_written
-		until size <= 0
-
-		return true
+		end
 	end
 
 	ffi.cdef([[

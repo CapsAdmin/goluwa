@@ -1,5 +1,23 @@
 local vfs = (...) or _G.vfs
 
+function vfs.CopyRecursively(from, to)
+	assert(vfs.CreateDirectory(to))
+	local done = {}
+	vfs.GetFilesRecursive(from .. "/", nil, function(_, _, path_info)
+		local relative = path_info.full_path:sub(#from + #path_info.filesystem + 3)
+
+		local full_dir = vfs.GetFolderFromPath(path_info.full_path)
+		local relative_dir = vfs.GetFolderFromPath(relative)
+
+		if relative_dir and not done[full_dir] and vfs.IsDirectory(full_dir) then
+			done[full_dir] = true
+			assert(vfs.CreateDirectory(to .. "/" .. relative_dir))
+		end
+
+		vfs.Write(to .. "/" .. relative, vfs.Read(path_info.full_path))
+	end)
+end
+
 function vfs.FindMixedCasePath(path)
 	-- try all lower case first just in case
 	if vfs.IsFile(path:lower()) then
@@ -432,18 +450,20 @@ function vfs.WatchLuaFiles2(b)
 
 	local paths = {}
 
-	for _, dir in ipairs({"core", "framework", "engine", "game"}) do
-		local files, err = fs.get_files_recursive(dir)
-		if files then
-			for _, path in ipairs(files) do
-				if path:endswith(".lua") or path:endswith(".oh") then
-					if not path:endswith("core/lua/boot.lua") then
-						table.insert(paths, {path = e.ROOT_FOLDER .. path})
+	for _, dir in ipairs(fs.get_files(".")) do
+		if fs.get_type(dir) == "directory" and not dir:startswith(".") and dir ~= "storage" then
+			local files, err = fs.get_files_recursive(dir)
+			if files then
+				for _, path in ipairs(files) do
+					if path:endswith(".lua") or path:endswith(".oh") then
+						if not path:endswith("core/lua/boot.lua") then
+							table.insert(paths, {path = e.ROOT_FOLDER .. path})
+						end
 					end
 				end
+			else
+				wlog(err)
 			end
-		else
-			wlog(err)
 		end
 	end
 
@@ -454,6 +474,7 @@ function vfs.WatchLuaFiles2(b)
 
 		if time > next_check then
 			if WINDOW and window.IsFocused() then return end
+			if not WINDOW and not repl.IsFocused() then return end
 			if profiler.IsBusy() then return end -- I already know this is slow so it's just in the way
 
 			for i, data in ipairs(paths) do
@@ -464,11 +485,25 @@ function vfs.WatchLuaFiles2(b)
 						data.last_modified = info.last_modified
 					else
 						if data.last_modified ~= info.last_modified then
-							llog("reloading %s", vfs.GetFileNameFromPath(data.path))
 							_G.RELOAD = true
+							local content, err = vfs.Read(data.path)
+							local identical = false
+
+							if not content then
+								if err then
+									llog("error reading %s: ", err)
+								end
+								return
+							elseif data.last_content == content then
+								identical = true
+							end
+
+							llog("reloading %s", vfs.GetFileNameFromPath(data.path), identical and " (content is identical from last time)" or "")
+
 							system.pcall(runfile, data.path)
 							_G.RELOAD = nil
 							data.last_modified = info.last_modified
+							data.last_content = content
 						end
 					end
 				end

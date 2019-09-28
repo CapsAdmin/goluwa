@@ -576,6 +576,26 @@ function repl.UpdateNow()
 	next_update = 0
 end
 
+function repl.IsFocused()
+	if os.getenv("GOLUWA_TMUX") then
+		local pipe, err = io.popen("tmux ls")
+		if pipe then
+			local str = pipe:read("*all")
+			pipe:close()
+			
+			for _, line in ipairs(str:split("\n")) do
+				if line:find("goluwa", nil, true) and line:endswith("(attached)") then
+					return true
+				end
+			end
+		end
+
+		return false
+	end
+
+	return true
+end
+
 event.AddListener("Update", "repl", function()
 	if not repl.started then
 		event.RemoveListener("Update", "repl")
@@ -596,7 +616,6 @@ event.AddListener("Update", "repl", function()
 		next_update = time + 1/30
 	end
 end)
-
 
 if os.getenv("GOLUWA_TMUX") then
 	os.remove(R("shared/") .. "tmux_log.txt")

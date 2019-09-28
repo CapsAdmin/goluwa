@@ -55,7 +55,11 @@ function vfs.GetExtensionFromPath(str)
 end
 
 function vfs.GetFolderFromPath(str)
-	return str:match("(.*)/") .. "/"
+	local pre = str:match("(.*)/")
+	if not pre then
+		return nil
+	end
+	return pre .. "/"
 end
 
 function vfs.GetFileFromPath(str)

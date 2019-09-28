@@ -217,7 +217,7 @@ function callback.WrapKeyedTask(create_callback, max, queue_callback, start_on_c
     local function add(key, ...)
         local args = table.pack(...)
 
-        if not callbacks[key] or callbacks[key].is_resolved then
+        if not callbacks[key] or callbacks[key].is_resolved or callbacks[key].is_rejected then
             callbacks[key] = callback.Create(function(self)
                 create_callback(self, key, table.unpack(args))
             end)
@@ -274,6 +274,14 @@ function callback.WrapTask(create_callback)
     end
 end
 
+function callback.Resolve(...)
+    local args = table.pack(...)    
+    local cb = callback.Create(function(self) 
+        self.callbacks.resolve(table.unpack(args))
+    end)
+    event.Delay(function() cb:Start() end)
+    return cb:Then(function() print("lol") end)
+end
 
 if RELOAD then
     local function await(func)
