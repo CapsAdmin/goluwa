@@ -12,6 +12,7 @@ server.OnClientConnected = function(_, client)
 
     client.OnReceiveChunk = function(_, str)
         test:expect("data received from client", str, client_msg)
+        server:Remove()
     end
 end
 
@@ -21,5 +22,6 @@ do
     client:Send("hello from client!")
     client.OnReceiveChunk = function(_, str)
         test:expect("data received from client", str, server_msg)
+        server:Remove()
     end
 end
