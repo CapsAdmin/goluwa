@@ -5,7 +5,7 @@ do
     utility.MakePushPopFunction(fs, "WorkingDirectory")
 end
 
-fs.GetAttributeus = fs.get_attributes
+fs.GetAttributes = fs.get_attributes
 
 function fs.CreateDirectory(path, force)
     if force then
@@ -171,7 +171,11 @@ do
     end
 end
 
-function fs.Write(path, content)
+function fs.Write(path, content, force)
+    if force then
+        fs.CreateDirectory(vfs.GetFolderFromPath(path), true)
+    end
+
     local f, err = io.open(path, "wb")
     if not f then return nil, err end
     f:write(content)
