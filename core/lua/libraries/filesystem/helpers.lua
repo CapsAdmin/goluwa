@@ -2,19 +2,9 @@ local vfs = (...) or _G.vfs
 
 function vfs.CopyRecursively(from, to)
 	assert(vfs.CreateDirectory(to))
-	local done = {}
 	vfs.GetFilesRecursive(from .. "/", nil, function(_, _, path_info)
 		local relative = path_info.full_path:sub(#from + #path_info.filesystem + 3)
-
-		local full_dir = vfs.GetFolderFromPath(path_info.full_path)
-		local relative_dir = vfs.GetFolderFromPath(relative)
-
-		if relative_dir and not done[full_dir] and vfs.IsDirectory(full_dir) then
-			done[full_dir] = true
-			assert(vfs.CreateDirectory(to .. "/" .. relative_dir))
-		end
-
-		vfs.Write(to .. "/" .. relative, vfs.Read(path_info.full_path))
+		vfs.CopyFile(path_info.full_path, to .. "/" .. relative)
 	end)
 end
 
