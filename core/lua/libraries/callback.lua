@@ -280,7 +280,7 @@ function callback.Resolve(...)
         self.callbacks.resolve(table.unpack(args))
     end)
     event.Delay(function() cb:Start() end)
-    return cb:Then(function() print("lol") end)
+    return cb
 end
 
 if RELOAD then

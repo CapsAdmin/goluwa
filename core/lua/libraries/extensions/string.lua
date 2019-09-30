@@ -184,20 +184,76 @@ function string.readablehex(str)
 	return (str:gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
 end
 
-function string.readablebinary(str)
-	return (str:gsub("(.)", function(str)
-		local byte = str:byte()
-		if byte >= 27 and byte <= 126 then
-			str = " " .. str
-		elseif str == "\r" then
-			str = "\\r"
-		elseif str == "\n" then
-			str = "\\n"
-		else
-			str = "\\" .. byte
-		end
+do
+	local map = {
+		[0] = {"NUL", "␀", "^@", "\\0", "Null character"},
+		[1] = {"SOH", "␁", "^A", "", "Start of Header"},
+		[2] = {"STX", "␂", "^B", "", "Start of Text"},
+		[3] = {"ETX", "␃", "^C", "", "End of Text"},
+		[4] = {"EOT", "␄", "^D", "", "End of Transmission"},
+		[5] = {"ENQ", "␅", "^E", "", "Enquiry"},
+		[6] = {"ACK", "␆", "^F", "", "Acknowledgment"},
+		[7] = {"BEL", "␇", "^G", "\\a", "Bell"},
+		[8] = {"BS", "␈", "^H", "\\b", "Backspace"},
+		[9] = {"HT", "␉", "^I", "\\t", "Horizontal Tab"},
+		[10] = {"LF", "␊", "^J", "\\n", "Line feed"},
+		[11] = {"VT", "␋", "^K", "\\v", "Vertical Tab"},
+		[12] = {"FF", "␌", "^L", "\\f", "Form feed"},
+		[13] = {"CR", "␍", "^M", "\\r", "Carriage return"},
+		[14] = {"SO", "␎", "^N", "", "Shift Out"},
+		[15] = {"SI", "␏", "^O", "", "Shift In"},
+		[16] = {"DLE", "␐", "^P", "", "Data Link Escape"},
+		[17] = {"DC1", "␑", "^Q", "", "Device Control 1 (oft. XON)"},
+		[18] = {"DC2", "␒", "^R", "", "Device Control 2"},
+		[19] = {"DC3", "␓", "^S", "", "Device Control 3 (oft. XOFF)"},
+		[20] = {"DC4", "␔", "^T", "", "Device Control 4"},
+		[21] = {"NAK", "␕", "^U", "", "Negative Acknowledgment"},
+		[22] = {"SYN", "␖", "^V", "", "Synchronous Idle"},
+		[23] = {"ETB", "␗", "^W", "", "End of Trans. Block"},
+		[24] = {"CAN", "␘", "^X", "", "Cancel"},
+		[25] = {"EM", "␙", "^Y", "", "End of Medium"},
+		[26] = {"SUB", "␚", "^Z", "", "Substitute"},
+		[27] = {"ESC", "␛", "^[", "\\e", "Escape"},
+		[28] = {"FS", "␜", "^\\", "", "File Separator"},
+		[29] = {"GS", "␝", "^]", "", "Group Separator"},
+		[30] = {"RS", "␞", "^^", "", "Record Separator"},
+		[31] = {"US", "␟", "^_", "", "Unit Separator"},
+		[127] ={"DEL", "␡", "^?", "", "Delete"}
+	}
+
+	local number_map = {
+		["0"] = "𝟶",
+		["1"] = "𝟷",
+		["2"] = "𝟸",
+		["3"] = "𝟹",
+		["4"] = "𝟺",
+		["5"] = "𝟻",
+		["6"] = "𝟼",
+		["7"] = "𝟽",
+		["8"] = "𝟾",
+		["9"] = "𝟿",
+		["A"] = "𝙰",
+		["B"] = "𝙱",
+		["C"] = "𝙲",
+		["D"] = "𝙳",
+		["E"] = "𝙴",
+		["F"] = "𝙵",
+	}
+
+	function string.readablebinary(str)
+		local str = (str:gsub("(.)", function(str)
+			local byte = str:byte()
+			if map[byte] then
+				return map[byte][2]
+			end
+			if byte > 127 then
+				return string.format("｢%X｣", byte):gsub(".", number_map)
+			end
+			return str
+		end))
+		str = str:gsub("(␀+)", function(nulls) return "NX" .. #nulls end)
 		return str
-	 end))
+	end
 end
 
 function string.hexformat(str, chunk_width, row_width, space_separator)

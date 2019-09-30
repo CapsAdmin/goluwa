@@ -18,7 +18,13 @@ function fs.CreateDirectory(path, force)
         return true
     end
 
-    return fs.create_directory(path)
+    local ok, err = fs.create_directory(path)
+
+    if not ok and err == "File exists" then
+        return true
+    end
+
+    return ok, err
 end
 
 function fs.Remove(path)
@@ -49,26 +55,31 @@ function fs.RemoveRecursively(path)
     return files, err
 end
 
-function fs.CopyRecursively(from, to)
+function fs.CopyRecursively(from, to, verbose)
 	local files, err = fs.get_files_recursive(from)
     if files then
         local errors = {}
-        table.sort(files, function(a, b) return #a < #b end)
+        table.sort(files, function(a, b) return a:endswith("/") and not b:endswith("/") end)
         for i, path in ipairs(files) do
-            if path:endswith("/") then
-                local ok, err = fs.CreateDirectory(to .. path:sub(#from + 1))
-                if not ok and err ~= "File exists" then
-                    table.insert(errors, err)
-                end
-            end
-        end
-        for i, path in ipairs(files) do
-            if not path:endswith("/") then
-                local ok, err = fs.copy(path, to .. path:sub(#from + 1))
+            local new_path = to .. path:sub(#from + 1)
+            local ok, err
 
-                if not ok then
-                    table.insert(errors, err)
-                    return ok, err
+            if path:endswith("/") then
+                ok, err = fs.CreateDirectory(new_path)
+            else
+                ok, err = fs.copy(path, new_path)
+            end
+
+            if not ok and err ~= "File exists" then
+                table.insert(errors, err)
+            end
+
+            if verbose then
+                if ok then
+                    logn("created directory " .. new_path)
+                else
+                    logn("failed to create directory " .. new_path)
+                    logn(err)
                 end
             end
         end
@@ -162,20 +173,21 @@ end
 
 function fs.Write(path, content)
     local f, err = io.open(path, "wb")
-    if not f then return err end
+    if not f then return nil, err end
     f:write(content)
     return f:close()
 end
 
 function fs.Read(path)
     local f, err = io.open(path, "rb")
-    if not f then return err end
+    if not f then return nil, err end
     local content = f:read("*all")
     f:close()
     return content
 end
 
 fs.Copy = fs.copy
+fs.GetFiles = fs.get_files
 
 function fs.Link(from, to)
     if fs.get_type(from) == "directory" then
