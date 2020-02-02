@@ -536,8 +536,10 @@ do
 		end
 		table.fixindices(script)
 
+		local limit = chatsounds.max_iterations
 		local i = 1
 		for _ = 1, chatsounds.max_iterations do
+			if limit <= 0 then break end
 			local chunk = script[i]
 
 			if chunk and chunk.type == "modifier" and chunk.mod == "repeat" then
@@ -548,7 +550,9 @@ do
 				if script[i - 1] then
 					if script[i - 1].type == "matched" then
 						for _ = 1, repetitions do
+							if limit <= 0 then break end
 							table.insert(script, i, table.copy(script[i - 1]))
+							limit = limit - 1
 						end
 					elseif script[i - 1].val == ")" then
 						local temp = {}
@@ -560,14 +564,17 @@ do
 							table.insert(temp, chunk)
 						end
 						for _ = 1, repetitions do
-							for _, chunk in ipairs(temp ) do
+							for _, chunk in ipairs(temp) do
+								if limit <= 0 then break end
 								table.insert(script, i - 1, table.copy(chunk))
+								limit = limit - 1
 							end
 						end
 					end
 				end
 			end
 			i = i + 1
+			limit = limit - 1
 		end
 
 		return script
