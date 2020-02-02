@@ -928,6 +928,8 @@ function chatsounds.Say(str, seed)
 	local script = chatsounds.GetScript(str)
 	if chatsounds.debug then dump_script(script) end
 	chatsounds.PlayScript(script)
+
+	return script
 end
 
 function chatsounds.GetLists()

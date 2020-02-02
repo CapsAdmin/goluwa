@@ -278,6 +278,8 @@ function META:Initialize()
 		function socket.OnEvent(_, data)
 			self:OnEvent(data)
 		end
+	end):Catch(function(reason, code) 
+		self:OnClose(reason, code or -1)
 	end)
 end
 
