@@ -43,7 +43,7 @@ function chatsounds.BuildFromGithub(repo, location)
 
 	local base_url = "https://raw.githubusercontent.com/" .. repo .. "/master/" .. location .. "/"
 
-	resource.Download(base_url .. "list.msgpack", nil, nil, true):Then(function(path)
+	resource.Download(base_url .. "list.msgpack", nil, nil, true, "msgpack"):Then(function(path)
 		--llog("found list.msgpack for ", location)
 		local val = vfs.Read(path)
 		read_list(base_url, val)
