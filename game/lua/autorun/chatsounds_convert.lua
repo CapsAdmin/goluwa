@@ -275,7 +275,7 @@ function chatsounds.BuildSoundLists()
 	thread.debug = true
 
 	local mounted = {}
-	for i,v in ipairs(steam.GetMountedSourceGames()) do
+	for i,v in pairs(steam.GetMountedSourceGames()) do
 		mounted[v.filesystem.steamappid] = v.game_dir
 	end
 
@@ -395,7 +395,7 @@ function chatsounds.BuildSoundInfoTranslations()
 	thread.debug = true
 
 	local mounted = {}
-	for i,v in ipairs(steam.GetMountedSourceGames()) do
+	for i,v in pairs(steam.GetMountedSourceGames()) do
 		mounted[v.filesystem.steamappid] = v.game_dir
 	end
 
@@ -665,7 +665,7 @@ function chatsounds.TranslateSoundLists()
 	thread.debug = true
 
 	local mounted = {}
-	for i,v in ipairs(steam.GetMountedSourceGames()) do
+	for i,v in pairs(steam.GetMountedSourceGames()) do
 		mounted[v.filesystem.steamappid] = v.game_dir
 	end
 
@@ -827,7 +827,7 @@ end
 
 function chatsounds.BuildListForGithub(appid)
 	local mounted = {}
-	for i,v in ipairs(steam.GetMountedSourceGames()) do
+	for i,v in pairs(steam.GetMountedSourceGames()) do
 		mounted[v.filesystem.steamappid] = v.game_dir
 	end
 
@@ -1014,7 +1014,7 @@ function chatsounds.ExtractSoundsFromLists()
 
 
 	local mounted = {}
-	for i,v in ipairs(steam.GetMountedSourceGames()) do
+	for i,v in pairs(steam.GetMountedSourceGames()) do
 		mounted[v.filesystem.steamappid] = v.game_dir
 	end
 
