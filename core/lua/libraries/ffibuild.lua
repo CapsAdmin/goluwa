@@ -1691,14 +1691,16 @@ do -- lua helper functions
 	}
 
 	function ffibuild.StartLibrary(ffi_header, ...)
+		local helpers = {...}
+
 		local lua =
 		"local ffi = require(\"ffi\");" ..
-		"local CLIB = assert(ffi.load(\""..(ffibuild.shared_library_name or ffibuild.GetBuildName()).."\"));" ..
+		(table.hasvalue(helpers, "ffi.C") and "local CLIB = ffi.C" or "local CLIB = assert(ffi.load(\""..(ffibuild.shared_library_name or ffibuild.GetBuildName()).."\"));") ..
 		"ffi.cdef([["..ffi_header.."]])\n" ..
 		"local library = {}\n"
 
 		if ... then
-			for _, which in ipairs({...}) do
+			for _, which in ipairs(helpers) do
 				if ffibuild.helper_functions[which] then
 					lua = lua .. "\n\n--====helper " .. which .. "====\n"
 					lua = lua .. ffibuild.helper_functions[which] .. "\n"

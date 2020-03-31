@@ -17,7 +17,7 @@ local instructions = {
 	end,
 
     build_lua = function(header, meta_data)
-		local lua = ffibuild.StartLibrary(header, "safe_clib_index")
+		local lua = ffibuild.StartLibrary(header, "safe_clib_index", "ffi.C")
 		lua = lua .. "CLIB = SAFE_INDEX(CLIB)"
         lua = lua .. "library = " .. meta_data:BuildFunctions("^lua_(.+)")
         lua = lua .. "library.L = " .. meta_data:BuildFunctions("^luaL_(.+)")
