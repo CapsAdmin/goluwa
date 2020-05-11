@@ -1,6 +1,4 @@
-local ffi = require("ffi")
-local CLIB = assert(ffi.load("enet"))
-ffi.cdef([[enum{ENET_PROTOCOL_MINIMUM_MTU=576,ENET_PROTOCOL_MAXIMUM_MTU=4096,ENET_PROTOCOL_MAXIMUM_PACKET_COMMANDS=32,ENET_PROTOCOL_MINIMUM_WINDOW_SIZE=4096,ENET_PROTOCOL_MAXIMUM_WINDOW_SIZE=65536,ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT=1,ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT=255,ENET_PROTOCOL_MAXIMUM_PEER_ID=4095,ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT=1048576,
+local ffi = require("ffi");local CLIB = assert(ffi.load("enet"));ffi.cdef([[enum{ENET_PROTOCOL_MINIMUM_MTU=576,ENET_PROTOCOL_MAXIMUM_MTU=4096,ENET_PROTOCOL_MAXIMUM_PACKET_COMMANDS=32,ENET_PROTOCOL_MINIMUM_WINDOW_SIZE=4096,ENET_PROTOCOL_MAXIMUM_WINDOW_SIZE=65536,ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT=1,ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT=255,ENET_PROTOCOL_MAXIMUM_PEER_ID=4095,ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT=1048576,
 ENET_HOST_RECEIVE_BUFFER_SIZE=262144,ENET_HOST_SEND_BUFFER_SIZE=262144,ENET_HOST_BANDWIDTH_THROTTLE_INTERVAL=1000,ENET_HOST_DEFAULT_MTU=1400,ENET_HOST_DEFAULT_MAXIMUM_PACKET_SIZE=33554432,ENET_HOST_DEFAULT_MAXIMUM_WAITING_DATA=33554432,ENET_PEER_DEFAULT_ROUND_TRIP_TIME=500,ENET_PEER_DEFAULT_PACKET_THROTTLE=32,ENET_PEER_PACKET_THROTTLE_SCALE=32,ENET_PEER_PACKET_THROTTLE_COUNTER=7,ENET_PEER_PACKET_THROTTLE_ACCELERATION=2,ENET_PEER_PACKET_THROTTLE_DECELERATION=2,ENET_PEER_PACKET_THROTTLE_INTERVAL=5000,ENET_PEER_PACKET_LOSS_SCALE=65536,ENET_PEER_PACKET_LOSS_INTERVAL=10000,ENET_PEER_WINDOW_SIZE_SCALE=65536,ENET_PEER_TIMEOUT_LIMIT=32,ENET_PEER_TIMEOUT_MINIMUM=5000,ENET_PEER_TIMEOUT_MAXIMUM=30000,ENET_PEER_PING_INTERVAL=500,ENET_PEER_UNSEQUENCED_WINDOWS=64,ENET_PEER_UNSEQUENCED_WINDOW_SIZE=1024,ENET_PEER_FREE_UNSEQUENCED_WINDOWS=32,ENET_PEER_RELIABLE_WINDOWS=16,ENET_PEER_RELIABLE_WINDOW_SIZE=4096,ENET_PEER_FREE_RELIABLE_WINDOWS=8,};typedef enum _ENetProtocolFlag{ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE=128,ENET_PROTOCOL_COMMAND_FLAG_UNSEQUENCED=64,ENET_PROTOCOL_HEADER_FLAG_COMPRESSED=16384,ENET_PROTOCOL_HEADER_FLAG_SENT_TIME=32768,ENET_PROTOCOL_HEADER_FLAG_MASK=49152,ENET_PROTOCOL_HEADER_SESSION_MASK=12288,ENET_PROTOCOL_HEADER_SESSION_SHIFT=12};
 typedef enum _ENetSocketWait{ENET_SOCKET_WAIT_NONE=0,ENET_SOCKET_WAIT_SEND=1,ENET_SOCKET_WAIT_RECEIVE=2,ENET_SOCKET_WAIT_INTERRUPT=4};
 typedef enum _ENetSocketOption{ENET_SOCKOPT_NONBLOCK=1,ENET_SOCKOPT_BROADCAST=2,ENET_SOCKOPT_RCVBUF=3,ENET_SOCKOPT_SNDBUF=4,ENET_SOCKOPT_REUSEADDR=5,ENET_SOCKOPT_RCVTIMEO=6,ENET_SOCKOPT_SNDTIMEO=7,ENET_SOCKOPT_ERROR=8,ENET_SOCKOPT_NODELAY=9};
@@ -65,43 +63,43 @@ struct _ENetOutgoingCommand*(enet_peer_queue_outgoing_command)(struct _ENetPeer*
 void(enet_peer_dispatch_incoming_reliable_commands)(struct _ENetPeer*,struct _ENetChannel*);
 int(enet_initialize)();
 unsigned long(enet_protocol_command_size)(unsigned char);
-int(enet_host_service)(struct _ENetHost*,struct _ENetEvent*,unsigned int);
 void(enet_range_coder_destroy)(void*);
 void*(enet_range_coder_create)();
-void(enet_host_channel_limit)(struct _ENetHost*,unsigned long);
+int(enet_host_service)(struct _ENetHost*,struct _ENetEvent*,unsigned int);
+struct _ENetPeer*(enet_host_connect)(struct _ENetHost*,const struct _ENetAddress*,unsigned long,unsigned int);
 void(enet_peer_on_connect)(struct _ENetPeer*);
 void(enet_peer_dispatch_incoming_unreliable_commands)(struct _ENetPeer*,struct _ENetChannel*);
-void(enet_peer_setup_outgoing_command)(struct _ENetPeer*,struct _ENetOutgoingCommand*);
 struct _ENetAcknowledgement*(enet_peer_queue_acknowledgement)(struct _ENetPeer*,const union _ENetProtocol*,unsigned short);
 struct _ENetIncomingCommand*(enet_peer_queue_incoming_command)(struct _ENetPeer*,const union _ENetProtocol*,const void*,unsigned long,unsigned int,unsigned int);
+void(enet_peer_setup_outgoing_command)(struct _ENetPeer*,struct _ENetOutgoingCommand*);
 int(enet_peer_throttle)(struct _ENetPeer*,unsigned int);
 void(enet_peer_throttle_configure)(struct _ENetPeer*,unsigned int,unsigned int,unsigned int);
 void(enet_peer_disconnect_later)(struct _ENetPeer*,unsigned int);
-void(enet_deinitialize)();
 void(enet_peer_ping_interval)(struct _ENetPeer*,unsigned int);
 void(enet_peer_ping)(struct _ENetPeer*);
 struct _ENetPacket*(enet_peer_receive)(struct _ENetPeer*,unsigned char*);
-void*(enet_malloc)(unsigned long);
+void(enet_deinitialize)();
+struct _ENetListNode*(enet_list_insert)(struct _ENetListNode*,void*);
 unsigned int(enet_host_random_seed)();
 void(enet_host_bandwidth_throttle)(struct _ENetHost*);
+void(enet_host_channel_limit)(struct _ENetHost*,unsigned long);
 void(enet_host_flush)(struct _ENetHost*);
-void(enet_peer_on_disconnect)(struct _ENetPeer*);
 int(enet_host_check_events)(struct _ENetHost*,struct _ENetEvent*);
-struct _ENetPeer*(enet_host_connect)(struct _ENetHost*,const struct _ENetAddress*,unsigned long,unsigned int);
+void(enet_peer_on_disconnect)(struct _ENetPeer*);
 void(enet_host_destroy)(struct _ENetHost*);
 struct _ENetHost*(enet_host_create)(const struct _ENetAddress*,unsigned long,unsigned long,unsigned int,unsigned int);
 unsigned int(enet_crc32)(const struct ENetBuffer*,unsigned long);
 int(enet_address_get_host)(const struct _ENetAddress*,char*,unsigned long);
 void(enet_socket_destroy)(int);
-struct _ENetListNode*(enet_list_move)(struct _ENetListNode*,void*,void*);
 int(enet_socket_set_option)(int,enum _ENetSocketOption,int);
 int(enet_socket_wait)(int,unsigned int*,unsigned int);
 int(enet_socket_connect)(int,const struct _ENetAddress*);
 int(enet_socket_get_address)(int,struct _ENetAddress*);
 void(enet_free)(void*);
+void*(enet_malloc)(unsigned long);
+struct _ENetListNode*(enet_list_move)(struct _ENetListNode*,void*,void*);
 int(enet_peer_send)(struct _ENetPeer*,unsigned char,struct _ENetPacket*);
 int(enet_socket_get_option)(int,enum _ENetSocketOption,int*);
-struct _ENetListNode*(enet_list_insert)(struct _ENetListNode*,void*);
 void(enet_packet_destroy)(struct _ENetPacket*);
 int(enet_socket_shutdown)(int,enum _ENetSocketShutdown);
 unsigned long(enet_range_coder_decompress)(void*,const unsigned char*,unsigned long,unsigned char*,unsigned long);
@@ -115,7 +113,7 @@ local library = {}
 library = {
 	HostCompress = CLIB.enet_host_compress,
 	PeerDisconnectNow = CLIB.enet_peer_disconnect_now,
-	--AddressSetHostIp = CLIB.enet_address_set_host_ip,
+	AddressSetHostIp = CLIB.enet_address_set_host_ip,
 	AddressSetHost = CLIB.enet_address_set_host,
 	PeerReset = CLIB.enet_peer_reset,
 	SocketBind = CLIB.enet_socket_bind,
@@ -141,43 +139,43 @@ library = {
 	PeerDispatchIncomingReliableCommands = CLIB.enet_peer_dispatch_incoming_reliable_commands,
 	Initialize = CLIB.enet_initialize,
 	ProtocolCommandSize = CLIB.enet_protocol_command_size,
-	HostService = CLIB.enet_host_service,
 	RangeCoderDestroy = CLIB.enet_range_coder_destroy,
 	RangeCoderCreate = CLIB.enet_range_coder_create,
-	HostChannelLimit = CLIB.enet_host_channel_limit,
+	HostService = CLIB.enet_host_service,
+	HostConnect = CLIB.enet_host_connect,
 	PeerOnConnect = CLIB.enet_peer_on_connect,
 	PeerDispatchIncomingUnreliableCommands = CLIB.enet_peer_dispatch_incoming_unreliable_commands,
-	PeerSetupOutgoingCommand = CLIB.enet_peer_setup_outgoing_command,
 	PeerQueueAcknowledgement = CLIB.enet_peer_queue_acknowledgement,
 	PeerQueueIncomingCommand = CLIB.enet_peer_queue_incoming_command,
+	PeerSetupOutgoingCommand = CLIB.enet_peer_setup_outgoing_command,
 	PeerThrottle = CLIB.enet_peer_throttle,
 	PeerThrottleConfigure = CLIB.enet_peer_throttle_configure,
 	PeerDisconnectLater = CLIB.enet_peer_disconnect_later,
-	Deinitialize = CLIB.enet_deinitialize,
 	PeerPingInterval = CLIB.enet_peer_ping_interval,
 	PeerPing = CLIB.enet_peer_ping,
 	PeerReceive = CLIB.enet_peer_receive,
-	Malloc = CLIB.enet_malloc,
+	Deinitialize = CLIB.enet_deinitialize,
+	ListInsert = CLIB.enet_list_insert,
 	HostRandomSeed = CLIB.enet_host_random_seed,
 	HostBandwidthThrottle = CLIB.enet_host_bandwidth_throttle,
+	HostChannelLimit = CLIB.enet_host_channel_limit,
 	HostFlush = CLIB.enet_host_flush,
-	PeerOnDisconnect = CLIB.enet_peer_on_disconnect,
 	HostCheckEvents = CLIB.enet_host_check_events,
-	HostConnect = CLIB.enet_host_connect,
+	PeerOnDisconnect = CLIB.enet_peer_on_disconnect,
 	HostDestroy = CLIB.enet_host_destroy,
 	HostCreate = CLIB.enet_host_create,
 	Crc32 = CLIB.enet_crc32,
 	AddressGetHost = CLIB.enet_address_get_host,
 	SocketDestroy = CLIB.enet_socket_destroy,
-	ListMove = CLIB.enet_list_move,
 	SocketSetOption = CLIB.enet_socket_set_option,
 	SocketWait = CLIB.enet_socket_wait,
 	SocketConnect = CLIB.enet_socket_connect,
 	SocketGetAddress = CLIB.enet_socket_get_address,
 	Free = CLIB.enet_free,
+	Malloc = CLIB.enet_malloc,
+	ListMove = CLIB.enet_list_move,
 	PeerSend = CLIB.enet_peer_send,
 	SocketGetOption = CLIB.enet_socket_get_option,
-	ListInsert = CLIB.enet_list_insert,
 	PacketDestroy = CLIB.enet_packet_destroy,
 	SocketShutdown = CLIB.enet_socket_shutdown,
 	RangeCoderDecompress = CLIB.enet_range_coder_decompress,

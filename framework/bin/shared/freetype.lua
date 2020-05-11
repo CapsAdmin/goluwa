@@ -92,131 +92,132 @@ int(FT_Set_Charmap)(struct FT_FaceRec_*,struct FT_CharMapRec_*);
 int(FT_Palette_Set_Foreground_Color)(struct FT_FaceRec_*,struct FT_Color_);
 void(FT_Vector_Polarize)(struct FT_Vector_*,signed long*,signed long*);
 int(FT_Get_Kerning)(struct FT_FaceRec_*,unsigned int,unsigned int,unsigned int,struct FT_Vector_*);
+int(FT_Outline_Done)(struct FT_LibraryRec_*,struct FT_Outline_*);
 int(FT_New_Library)(struct FT_MemoryRec_*,struct FT_LibraryRec_**);
-int(FT_Get_Advances)(struct FT_FaceRec_*,unsigned int,unsigned int,signed int,signed long*);
 struct FT_RendererRec_*(FT_Get_Renderer)(struct FT_LibraryRec_*,enum FT_Glyph_Format_);
-int(FT_Get_Glyph_Name)(struct FT_FaceRec_*,unsigned int,void*,unsigned int);
 int(FT_Set_Named_Instance)(struct FT_FaceRec_*,unsigned int);
-int(FT_Glyph_Transform)(struct FT_GlyphRec_*,struct FT_Matrix_*,struct FT_Vector_*);
-int(FT_Stream_OpenGzip)(struct FT_StreamRec_*,struct FT_StreamRec_*);
+int(FT_Get_Advances)(struct FT_FaceRec_*,unsigned int,unsigned int,signed int,signed long*);
 int(FT_Load_Sfnt_Table)(struct FT_FaceRec_*,unsigned long,signed long,unsigned char*,unsigned long*);
 void(FT_Set_Transform)(struct FT_FaceRec_*,struct FT_Matrix_*,struct FT_Vector_*);
-int(FT_Bitmap_Convert)(struct FT_LibraryRec_*,const struct FT_Bitmap_*,struct FT_Bitmap_*,signed int);
+int(FT_Get_Glyph_Name)(struct FT_FaceRec_*,unsigned int,void*,unsigned int);
+void(FT_Done_Glyph)(struct FT_GlyphRec_*);
+int(FT_Stream_OpenGzip)(struct FT_StreamRec_*,struct FT_StreamRec_*);
+int(FT_GlyphSlot_Own_Bitmap)(struct FT_GlyphSlotRec_*);
 int(FT_Get_CID_Is_Internally_CID_Keyed)(struct FT_FaceRec_*,unsigned char*);
 int(FT_Get_CID_Registry_Ordering_Supplement)(struct FT_FaceRec_*,const char**,const char**,signed int*);
 int(FT_Library_SetLcdGeometry)(struct FT_LibraryRec_*,struct FT_Vector_);
 int(FT_Library_SetLcdFilterWeights)(struct FT_LibraryRec_*,unsigned char*);
-int(FT_TrueTypeGX_Validate)(struct FT_FaceRec_*,unsigned int,const unsigned char*,unsigned int);
+int(FT_Get_PFR_Kerning)(struct FT_FaceRec_*,unsigned int,unsigned int,struct FT_Vector_*);
 unsigned long(FT_Get_CMap_Language_ID)(struct FT_CharMapRec_*);
+void(FT_Stroker_Done)(struct FT_StrokerRec_*);
 int(FT_Sfnt_Table_Info)(struct FT_FaceRec_*,unsigned int,unsigned long*,unsigned long*);
+void(FT_Bitmap_Init)(struct FT_Bitmap_*);
 void*(FT_Get_Sfnt_Table)(struct FT_FaceRec_*,enum FT_Sfnt_Tag_);
 void(FT_Vector_From_Polar)(struct FT_Vector_*,signed long,signed long);
-void(FT_Stroker_Done)(struct FT_StrokerRec_*);
-signed long(FT_Vector_Length)(struct FT_Vector_*);
-void(FT_Bitmap_Init)(struct FT_Bitmap_*);
-void(FT_Vector_Rotate)(struct FT_Vector_*,signed long);
 int(FT_Glyph_StrokeBorder)(struct FT_GlyphRec_**,struct FT_StrokerRec_*,unsigned char,unsigned char);
 int(FT_Open_Face)(struct FT_LibraryRec_*,const struct FT_Open_Args_*,signed long,struct FT_FaceRec_**);
-const char*(FT_Get_Font_Format)(struct FT_FaceRec_*);
+signed long(FT_Vector_Length)(struct FT_Vector_*);
+void(FT_Vector_Rotate)(struct FT_Vector_*,signed long);
 int(FT_Palette_Select)(struct FT_FaceRec_*,unsigned short,struct FT_Color_**);
 int(FT_ClassicKern_Validate)(struct FT_FaceRec_*,unsigned int,const unsigned char**);
-int(FT_Get_Glyph)(struct FT_GlyphSlotRec_*,struct FT_GlyphRec_**);
-enum FT_StrokerBorder_(FT_Outline_GetInsideBorder)(struct FT_Outline_*);
 signed long(FT_Atan2)(signed long,signed long);
 void(FT_Library_Version)(struct FT_LibraryRec_*,signed int*,signed int*,signed int*);
 int(FT_Glyph_Copy)(struct FT_GlyphRec_*,struct FT_GlyphRec_**);
-void(FT_GlyphSlot_Oblique)(struct FT_GlyphSlotRec_*);
-int(FT_Done_Library)(struct FT_LibraryRec_*);
+int(FT_Glyph_Transform)(struct FT_GlyphRec_*,struct FT_Matrix_*,struct FT_Vector_*);
+void(FT_List_Finalize)(struct FT_ListRec_*,void(*destroy)(struct FT_MemoryRec_*,void*,void*),struct FT_MemoryRec_*,void*);
 int(FT_Stroker_EndSubPath)(struct FT_StrokerRec_*);
+const char*(FT_Get_Font_Format)(struct FT_FaceRec_*);
+void(FT_GlyphSlot_Oblique)(struct FT_GlyphSlotRec_*);
+void(FT_OpenType_Free)(struct FT_FaceRec_*,const unsigned char*);
 int(FT_Glyph_Stroke)(struct FT_GlyphRec_**,struct FT_StrokerRec_*,unsigned char);
 void(FT_Stroker_Export)(struct FT_StrokerRec_*,struct FT_Outline_*);
-int(FT_Stroker_GetCounts)(struct FT_StrokerRec_*,unsigned int*,unsigned int*);
-void(FT_Stroker_ExportBorder)(struct FT_StrokerRec_*,enum FT_StrokerBorder_,struct FT_Outline_*);
 int(FT_Load_Glyph)(struct FT_FaceRec_*,unsigned int,signed int);
-int(FT_Stroker_CubicTo)(struct FT_StrokerRec_*,struct FT_Vector_*,struct FT_Vector_*,struct FT_Vector_*);
+int(FT_Stroker_GetCounts)(struct FT_StrokerRec_*,unsigned int*,unsigned int*);
 int(FT_Load_Char)(struct FT_FaceRec_*,unsigned long,signed int);
 int(FT_Get_Sfnt_LangTag)(struct FT_FaceRec_*,unsigned int,struct FT_SfntLangTag_*);
+void(FT_Stroker_ExportBorder)(struct FT_StrokerRec_*,enum FT_StrokerBorder_,struct FT_Outline_*);
+int(FT_Stroker_CubicTo)(struct FT_StrokerRec_*,struct FT_Vector_*,struct FT_Vector_*,struct FT_Vector_*);
 int(FT_Stroker_ConicTo)(struct FT_StrokerRec_*,struct FT_Vector_*,struct FT_Vector_*);
 int(FT_Stroker_BeginSubPath)(struct FT_StrokerRec_*,struct FT_Vector_*,unsigned char);
-unsigned char(FT_Face_CheckTrueTypePatents)(struct FT_FaceRec_*);
-int(FT_List_Iterate)(struct FT_ListRec_*,int(*iterator)(struct FT_ListNodeRec_*,void*),void*);
-int(FT_Stroker_New)(struct FT_LibraryRec_*,struct FT_StrokerRec_**);
+unsigned char(FT_Face_SetUnpatentedHinting)(struct FT_FaceRec_*,unsigned char);
 const char*(FT_Get_X11_Font_Format)(struct FT_FaceRec_*);
 void(FT_Glyph_Get_CBox)(struct FT_GlyphRec_*,unsigned int,struct FT_BBox_*);
 int(FT_Bitmap_Blend)(struct FT_LibraryRec_*,const struct FT_Bitmap_*,const struct FT_Vector_,struct FT_Bitmap_*,struct FT_Vector_*,struct FT_Color_);
-int(FT_Get_PFR_Kerning)(struct FT_FaceRec_*,unsigned int,unsigned int,struct FT_Vector_*);
-void(FT_ClassicKern_Free)(struct FT_FaceRec_*,const unsigned char*);
+int(FT_Stroker_New)(struct FT_LibraryRec_*,struct FT_StrokerRec_**);
+signed long(FT_MulFix)(signed long,signed long);
+enum FT_StrokerBorder_(FT_Outline_GetInsideBorder)(struct FT_Outline_*);
 int(FT_Library_SetLcdFilter)(struct FT_LibraryRec_*,enum FT_LcdFilter_);
-void(FT_OpenType_Free)(struct FT_FaceRec_*,const unsigned char*);
+void(FT_ClassicKern_Free)(struct FT_FaceRec_*,const unsigned char*);
 int(FT_Set_MM_Design_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
-enum FT_TrueTypeEngineType_(FT_Get_TrueType_Engine_Type)(struct FT_LibraryRec_*);
 void(FT_Bitmap_New)(struct FT_Bitmap_*);
+int(FT_TrueTypeGX_Validate)(struct FT_FaceRec_*,unsigned int,const unsigned char*,unsigned int);
 int(FT_Glyph_To_Bitmap)(struct FT_GlyphRec_**,enum FT_Render_Mode_,struct FT_Vector_*,unsigned char);
 void(FT_GlyphSlot_Embolden)(struct FT_GlyphSlotRec_*);
 int(FT_Get_MM_Var)(struct FT_FaceRec_*,struct FT_MM_Var_**);
+enum FT_TrueTypeEngineType_(FT_Get_TrueType_Engine_Type)(struct FT_LibraryRec_*);
+int(FT_Get_Sfnt_Name)(struct FT_FaceRec_*,unsigned int,struct FT_SfntName_*);
+int(FT_Done_Library)(struct FT_LibraryRec_*);
 int(FT_Reference_Library)(struct FT_LibraryRec_*);
 void(FT_Set_Default_Properties)(struct FT_LibraryRec_*);
-int(FT_Get_Sfnt_Name)(struct FT_FaceRec_*,unsigned int,struct FT_SfntName_*);
+int(FT_Set_Var_Design_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
 int(FT_Property_Get)(struct FT_LibraryRec_*,const char*,const char*,void*);
 int(FT_Property_Set)(struct FT_LibraryRec_*,const char*,const char*,const void*);
 int(FT_Remove_Module)(struct FT_LibraryRec_*,struct FT_ModuleRec_*);
-int(FT_Set_Var_Design_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
+int(FT_Outline_Get_BBox)(struct FT_Outline_*,struct FT_BBox_*);
 int(FT_Get_Var_Axis_Flags)(struct FT_MM_Var_*,unsigned int,unsigned int*);
 int(FT_Get_MM_WeightVector)(struct FT_FaceRec_*,unsigned int*,signed long*);
-int(FT_Set_MM_WeightVector)(struct FT_FaceRec_*,unsigned int,signed long*);
-int(FT_Outline_Get_BBox)(struct FT_Outline_*,struct FT_BBox_*);
-int(FT_Set_Var_Blend_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
 int(FT_Get_PS_Font_Info)(struct FT_FaceRec_*,struct PS_FontInfoRec_*);
-void(FT_List_Insert)(struct FT_ListRec_*,struct FT_ListNodeRec_*);
+int(FT_Set_MM_WeightVector)(struct FT_FaceRec_*,unsigned int,signed long*);
 int(FT_Stream_OpenLZW)(struct FT_StreamRec_*,struct FT_StreamRec_*);
+int(FT_Set_Var_Blend_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
+void(FT_List_Remove)(struct FT_ListRec_*,struct FT_ListNodeRec_*);
 int(FT_Set_MM_Blend_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
 int(FT_Get_Var_Design_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
 int(FT_Done_MM_Var)(struct FT_LibraryRec_*,struct FT_MM_Var_*);
-signed long(FT_Get_PS_Font_Value)(struct FT_FaceRec_*,enum PS_Dict_Keys_,unsigned int,void*,signed long);
+unsigned long(FT_Get_First_Char)(struct FT_FaceRec_*,unsigned int*);
 int(FT_Get_PS_Font_Private)(struct FT_FaceRec_*,struct PS_PrivateRec_*);
 int(FT_Get_BDF_Charset_ID)(struct FT_FaceRec_*,const char**,const char**);
 int(FT_Outline_Render)(struct FT_LibraryRec_*,struct FT_Outline_*,struct FT_Raster_Params_*);
-void(FT_Outline_Transform)(const struct FT_Outline_*,const struct FT_Matrix_*);
 signed long(FT_Angle_Diff)(signed long,signed long);
 signed long(FT_FloorFix)(signed long);
-void(FT_Outline_Translate)(const struct FT_Outline_*,signed long,signed long);
+void(FT_Outline_Transform)(const struct FT_Outline_*,const struct FT_Matrix_*);
 int(FT_Get_WinFNT_Header)(struct FT_FaceRec_*,struct FT_WinFNT_HeaderRec_*);
+void(FT_Outline_Translate)(const struct FT_Outline_*,signed long,signed long);
 void(FT_Outline_Get_CBox)(const struct FT_Outline_*,struct FT_BBox_*);
 int(FT_Outline_Check)(struct FT_Outline_*);
-int(FT_Outline_Done)(struct FT_LibraryRec_*,struct FT_Outline_*);
 int(FT_Outline_Decompose)(struct FT_Outline_*,const struct FT_Outline_Funcs_*,void*);
-void(FT_List_Finalize)(struct FT_ListRec_*,void(*destroy)(struct FT_MemoryRec_*,void*,void*),struct FT_MemoryRec_*,void*);
 void(FT_Stroker_Set)(struct FT_StrokerRec_*,signed long,enum FT_Stroker_LineCap_,enum FT_Stroker_LineJoin_,signed long);
+int(FT_List_Iterate)(struct FT_ListRec_*,int(*iterator)(struct FT_ListNodeRec_*,void*),void*);
 void(FT_List_Up)(struct FT_ListRec_*,struct FT_ListNodeRec_*);
-void(FT_List_Remove)(struct FT_ListRec_*,struct FT_ListNodeRec_*);
 int(FT_Get_MM_Blend_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
+void(FT_List_Insert)(struct FT_ListRec_*,struct FT_ListNodeRec_*);
+signed int(FT_Face_GetCharVariantIsDefault)(struct FT_FaceRec_*,unsigned long,unsigned long);
 int(FT_Set_Char_Size)(struct FT_FaceRec_*,signed long,signed long,unsigned int,unsigned int);
 int(FT_Get_Var_Blend_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
 int(FT_Bitmap_Done)(struct FT_LibraryRec_*,struct FT_Bitmap_*);
-int(FT_GlyphSlot_Own_Bitmap)(struct FT_GlyphSlotRec_*);
 signed int(FT_Get_Gasp)(struct FT_FaceRec_*,unsigned int);
+int(FT_Bitmap_Convert)(struct FT_LibraryRec_*,const struct FT_Bitmap_*,struct FT_Bitmap_*,signed int);
 int(FT_Bitmap_Copy)(struct FT_LibraryRec_*,const struct FT_Bitmap_*,struct FT_Bitmap_*);
 int(FT_Matrix_Invert)(struct FT_Matrix_*);
 void(FT_Matrix_Multiply)(const struct FT_Matrix_*,struct FT_Matrix_*);
-void(FT_Done_Glyph)(struct FT_GlyphRec_*);
 int(FT_Gzip_Uncompress)(struct FT_MemoryRec_*,unsigned char*,unsigned long*,const unsigned char*,unsigned long);
 signed long(FT_Sin)(signed long);
+int(FT_Get_Glyph)(struct FT_GlyphSlotRec_*,struct FT_GlyphRec_**);
 int(FT_New_Glyph)(struct FT_LibraryRec_*,enum FT_Glyph_Format_,struct FT_GlyphRec_**);
 int(FT_Stream_OpenBzip2)(struct FT_StreamRec_*,struct FT_StreamRec_*);
-unsigned char(FT_Face_SetUnpatentedHinting)(struct FT_FaceRec_*,unsigned char);
 int(FT_Stroker_ParseOutline)(struct FT_StrokerRec_*,struct FT_Outline_*,unsigned char);
+unsigned char(FT_Face_CheckTrueTypePatents)(struct FT_FaceRec_*);
 void(FT_Vector_Transform)(struct FT_Vector_*,const struct FT_Matrix_*);
-int(FT_New_Memory_Face)(struct FT_LibraryRec_*,const unsigned char*,signed long,signed long,struct FT_FaceRec_**);
-signed long(FT_MulFix)(signed long,signed long);
+int(FT_Done_FreeType)(struct FT_LibraryRec_*);
 enum FT_StrokerBorder_(FT_Outline_GetOutsideBorder)(struct FT_Outline_*);
 unsigned int*(FT_Face_GetVariantSelectors)(struct FT_FaceRec_*);
-signed int(FT_Face_GetCharVariantIsDefault)(struct FT_FaceRec_*,unsigned long,unsigned long);
 int(FT_Select_Charmap)(struct FT_FaceRec_*,enum FT_Encoding_);
+int(FT_New_Memory_Face)(struct FT_LibraryRec_*,const unsigned char*,signed long,signed long,struct FT_FaceRec_**);
 int(FT_Get_SubGlyph_Info)(struct FT_GlyphSlotRec_*,unsigned int,signed int*,unsigned int*,signed int*,signed int*,struct FT_Matrix_*);
 unsigned int(FT_Get_Name_Index)(struct FT_FaceRec_*,const char*);
 int(FT_Face_Properties)(struct FT_FaceRec_*,unsigned int,struct FT_Parameter_*);
 unsigned long(FT_Get_Next_Char)(struct FT_FaceRec_*,unsigned long,unsigned int*);
-unsigned long(FT_Get_First_Char)(struct FT_FaceRec_*,unsigned int*);
+signed long(FT_Get_PS_Font_Value)(struct FT_FaceRec_*,enum PS_Dict_Keys_,unsigned int,void*,signed long);
 unsigned int(FT_Get_Char_Index)(struct FT_FaceRec_*,unsigned long);
 int(FT_Done_Face)(struct FT_FaceRec_*);
 int(FT_Get_Advance)(struct FT_FaceRec_*,unsigned int,signed int,signed long*);
@@ -227,15 +228,13 @@ int(FT_Request_Size)(struct FT_FaceRec_*,struct FT_Size_RequestRec_*);
 const char*(FT_Get_Postscript_Name)(struct FT_FaceRec_*);
 int(FT_Attach_File)(struct FT_FaceRec_*,const char*);
 signed long(FT_RoundFix)(signed long);
-int(FT_Done_FreeType)(struct FT_LibraryRec_*);
-const char*(FT_Error_String)(int);
 unsigned int(FT_Get_Sfnt_Name_Count)(struct FT_FaceRec_*);
 int(FT_Get_PFR_Advance)(struct FT_FaceRec_*,unsigned int,signed long*);
 int(FT_Outline_Copy)(const struct FT_Outline_*,struct FT_Outline_*);
 signed long(FT_DivFix)(signed long,signed long);
 enum FT_Orientation_(FT_Outline_Get_Orientation)(struct FT_Outline_*);
 int(FT_Reference_Face)(struct FT_FaceRec_*);
-void(FT_Set_Debug_Hook)(struct FT_LibraryRec_*,unsigned int,void(*debug_hook)(void*));
+void(FT_Set_Debug_Hook)(struct FT_LibraryRec_*,unsigned int,int(*debug_hook)(void*));
 int(FT_Outline_Embolden)(struct FT_Outline_*,signed long);
 unsigned int*(FT_Face_GetCharsOfVariant)(struct FT_FaceRec_*,unsigned long);
 signed long(FT_Get_CMap_Format)(struct FT_CharMapRec_*);
@@ -253,6 +252,7 @@ void(FT_Vector_Unit)(struct FT_Vector_*,signed long);
 int(FT_Get_CID_From_Glyph_Index)(struct FT_FaceRec_*,unsigned int,unsigned int*);
 int(FT_Outline_EmboldenXY)(struct FT_Outline_*,signed long,signed long);
 int(FT_Select_Size)(struct FT_FaceRec_*,signed int);
+const char*(FT_Error_String)(int);
 int(FT_Outline_New)(struct FT_LibraryRec_*,unsigned int,signed int,struct FT_Outline_*);
 ]])
 local library = {}
@@ -285,131 +285,132 @@ library = {
 	PaletteSetForegroundColor = CLIB.FT_Palette_Set_Foreground_Color,
 	VectorPolarize = CLIB.FT_Vector_Polarize,
 	GetKerning = CLIB.FT_Get_Kerning,
+	OutlineDone = CLIB.FT_Outline_Done,
 	NewLibrary = CLIB.FT_New_Library,
-	GetAdvances = CLIB.FT_Get_Advances,
 	GetRenderer = CLIB.FT_Get_Renderer,
-	GetGlyphName = CLIB.FT_Get_Glyph_Name,
 	SetNamedInstance = CLIB.FT_Set_Named_Instance,
-	GlyphTransform = CLIB.FT_Glyph_Transform,
-	StreamOpenGzip = CLIB.FT_Stream_OpenGzip,
+	GetAdvances = CLIB.FT_Get_Advances,
 	LoadSfntTable = CLIB.FT_Load_Sfnt_Table,
 	SetTransform = CLIB.FT_Set_Transform,
-	BitmapConvert = CLIB.FT_Bitmap_Convert,
+	GetGlyphName = CLIB.FT_Get_Glyph_Name,
+	DoneGlyph = CLIB.FT_Done_Glyph,
+	StreamOpenGzip = CLIB.FT_Stream_OpenGzip,
+	GlyphSlotOwnBitmap = CLIB.FT_GlyphSlot_Own_Bitmap,
 	GetCIDIsInternallyCIDKeyed = CLIB.FT_Get_CID_Is_Internally_CID_Keyed,
 	GetCIDRegistryOrderingSupplement = CLIB.FT_Get_CID_Registry_Ordering_Supplement,
 	LibrarySetLcdGeometry = CLIB.FT_Library_SetLcdGeometry,
 	LibrarySetLcdFilterWeights = CLIB.FT_Library_SetLcdFilterWeights,
-	TrueTypeGXValidate = CLIB.FT_TrueTypeGX_Validate,
+	GetPFRKerning = CLIB.FT_Get_PFR_Kerning,
 	GetCMapLanguageID = CLIB.FT_Get_CMap_Language_ID,
+	StrokerDone = CLIB.FT_Stroker_Done,
 	SfntTableInfo = CLIB.FT_Sfnt_Table_Info,
+	BitmapInit = CLIB.FT_Bitmap_Init,
 	GetSfntTable = CLIB.FT_Get_Sfnt_Table,
 	VectorFromPolar = CLIB.FT_Vector_From_Polar,
-	StrokerDone = CLIB.FT_Stroker_Done,
-	VectorLength = CLIB.FT_Vector_Length,
-	BitmapInit = CLIB.FT_Bitmap_Init,
-	VectorRotate = CLIB.FT_Vector_Rotate,
 	GlyphStrokeBorder = CLIB.FT_Glyph_StrokeBorder,
 	OpenFace = CLIB.FT_Open_Face,
-	GetFontFormat = CLIB.FT_Get_Font_Format,
+	VectorLength = CLIB.FT_Vector_Length,
+	VectorRotate = CLIB.FT_Vector_Rotate,
 	PaletteSelect = CLIB.FT_Palette_Select,
 	ClassicKernValidate = CLIB.FT_ClassicKern_Validate,
-	GetGlyph = CLIB.FT_Get_Glyph,
-	OutlineGetInsideBorder = CLIB.FT_Outline_GetInsideBorder,
 	Atan2 = CLIB.FT_Atan2,
 	LibraryVersion = CLIB.FT_Library_Version,
 	GlyphCopy = CLIB.FT_Glyph_Copy,
-	GlyphSlotOblique = CLIB.FT_GlyphSlot_Oblique,
-	DoneLibrary = CLIB.FT_Done_Library,
+	GlyphTransform = CLIB.FT_Glyph_Transform,
+	ListFinalize = CLIB.FT_List_Finalize,
 	StrokerEndSubPath = CLIB.FT_Stroker_EndSubPath,
+	GetFontFormat = CLIB.FT_Get_Font_Format,
+	GlyphSlotOblique = CLIB.FT_GlyphSlot_Oblique,
+	OpenTypeFree = CLIB.FT_OpenType_Free,
 	GlyphStroke = CLIB.FT_Glyph_Stroke,
 	StrokerExport = CLIB.FT_Stroker_Export,
-	StrokerGetCounts = CLIB.FT_Stroker_GetCounts,
-	StrokerExportBorder = CLIB.FT_Stroker_ExportBorder,
 	LoadGlyph = CLIB.FT_Load_Glyph,
-	StrokerCubicTo = CLIB.FT_Stroker_CubicTo,
+	StrokerGetCounts = CLIB.FT_Stroker_GetCounts,
 	LoadChar = CLIB.FT_Load_Char,
 	GetSfntLangTag = CLIB.FT_Get_Sfnt_LangTag,
+	StrokerExportBorder = CLIB.FT_Stroker_ExportBorder,
+	StrokerCubicTo = CLIB.FT_Stroker_CubicTo,
 	StrokerConicTo = CLIB.FT_Stroker_ConicTo,
 	StrokerBeginSubPath = CLIB.FT_Stroker_BeginSubPath,
-	FaceCheckTrueTypePatents = CLIB.FT_Face_CheckTrueTypePatents,
-	ListIterate = CLIB.FT_List_Iterate,
-	StrokerNew = CLIB.FT_Stroker_New,
+	FaceSetUnpatentedHinting = CLIB.FT_Face_SetUnpatentedHinting,
 	GetX11FontFormat = CLIB.FT_Get_X11_Font_Format,
 	GlyphGetCBox = CLIB.FT_Glyph_Get_CBox,
 	BitmapBlend = CLIB.FT_Bitmap_Blend,
-	GetPFRKerning = CLIB.FT_Get_PFR_Kerning,
-	ClassicKernFree = CLIB.FT_ClassicKern_Free,
+	StrokerNew = CLIB.FT_Stroker_New,
+	MulFix = CLIB.FT_MulFix,
+	OutlineGetInsideBorder = CLIB.FT_Outline_GetInsideBorder,
 	LibrarySetLcdFilter = CLIB.FT_Library_SetLcdFilter,
-	OpenTypeFree = CLIB.FT_OpenType_Free,
+	ClassicKernFree = CLIB.FT_ClassicKern_Free,
 	SetMMDesignCoordinates = CLIB.FT_Set_MM_Design_Coordinates,
-	GetTrueTypeEngineType = CLIB.FT_Get_TrueType_Engine_Type,
 	BitmapNew = CLIB.FT_Bitmap_New,
+	TrueTypeGXValidate = CLIB.FT_TrueTypeGX_Validate,
 	GlyphToBitmap = CLIB.FT_Glyph_To_Bitmap,
 	GlyphSlotEmbolden = CLIB.FT_GlyphSlot_Embolden,
 	GetMMVar = CLIB.FT_Get_MM_Var,
+	GetTrueTypeEngineType = CLIB.FT_Get_TrueType_Engine_Type,
+	GetSfntName = CLIB.FT_Get_Sfnt_Name,
+	DoneLibrary = CLIB.FT_Done_Library,
 	ReferenceLibrary = CLIB.FT_Reference_Library,
 	SetDefaultProperties = CLIB.FT_Set_Default_Properties,
-	GetSfntName = CLIB.FT_Get_Sfnt_Name,
+	SetVarDesignCoordinates = CLIB.FT_Set_Var_Design_Coordinates,
 	PropertyGet = CLIB.FT_Property_Get,
 	PropertySet = CLIB.FT_Property_Set,
 	RemoveModule = CLIB.FT_Remove_Module,
-	SetVarDesignCoordinates = CLIB.FT_Set_Var_Design_Coordinates,
+	OutlineGetBBox = CLIB.FT_Outline_Get_BBox,
 	GetVarAxisFlags = CLIB.FT_Get_Var_Axis_Flags,
 	GetMMWeightVector = CLIB.FT_Get_MM_WeightVector,
-	SetMMWeightVector = CLIB.FT_Set_MM_WeightVector,
-	OutlineGetBBox = CLIB.FT_Outline_Get_BBox,
-	SetVarBlendCoordinates = CLIB.FT_Set_Var_Blend_Coordinates,
 	GetPSFontInfo = CLIB.FT_Get_PS_Font_Info,
-	ListInsert = CLIB.FT_List_Insert,
+	SetMMWeightVector = CLIB.FT_Set_MM_WeightVector,
 	StreamOpenLZW = CLIB.FT_Stream_OpenLZW,
+	SetVarBlendCoordinates = CLIB.FT_Set_Var_Blend_Coordinates,
+	ListRemove = CLIB.FT_List_Remove,
 	SetMMBlendCoordinates = CLIB.FT_Set_MM_Blend_Coordinates,
 	GetVarDesignCoordinates = CLIB.FT_Get_Var_Design_Coordinates,
 	DoneMMVar = CLIB.FT_Done_MM_Var,
-	GetPSFontValue = CLIB.FT_Get_PS_Font_Value,
+	GetFirstChar = CLIB.FT_Get_First_Char,
 	GetPSFontPrivate = CLIB.FT_Get_PS_Font_Private,
 	GetBDFCharsetID = CLIB.FT_Get_BDF_Charset_ID,
 	OutlineRender = CLIB.FT_Outline_Render,
-	OutlineTransform = CLIB.FT_Outline_Transform,
 	AngleDiff = CLIB.FT_Angle_Diff,
 	FloorFix = CLIB.FT_FloorFix,
-	OutlineTranslate = CLIB.FT_Outline_Translate,
+	OutlineTransform = CLIB.FT_Outline_Transform,
 	GetWinFNTHeader = CLIB.FT_Get_WinFNT_Header,
+	OutlineTranslate = CLIB.FT_Outline_Translate,
 	OutlineGetCBox = CLIB.FT_Outline_Get_CBox,
 	OutlineCheck = CLIB.FT_Outline_Check,
-	OutlineDone = CLIB.FT_Outline_Done,
 	OutlineDecompose = CLIB.FT_Outline_Decompose,
-	ListFinalize = CLIB.FT_List_Finalize,
 	StrokerSet = CLIB.FT_Stroker_Set,
+	ListIterate = CLIB.FT_List_Iterate,
 	ListUp = CLIB.FT_List_Up,
-	ListRemove = CLIB.FT_List_Remove,
 	GetMMBlendCoordinates = CLIB.FT_Get_MM_Blend_Coordinates,
+	ListInsert = CLIB.FT_List_Insert,
+	FaceGetCharVariantIsDefault = CLIB.FT_Face_GetCharVariantIsDefault,
 	SetCharSize = CLIB.FT_Set_Char_Size,
 	GetVarBlendCoordinates = CLIB.FT_Get_Var_Blend_Coordinates,
 	BitmapDone = CLIB.FT_Bitmap_Done,
-	GlyphSlotOwnBitmap = CLIB.FT_GlyphSlot_Own_Bitmap,
 	GetGasp = CLIB.FT_Get_Gasp,
+	BitmapConvert = CLIB.FT_Bitmap_Convert,
 	BitmapCopy = CLIB.FT_Bitmap_Copy,
 	MatrixInvert = CLIB.FT_Matrix_Invert,
 	MatrixMultiply = CLIB.FT_Matrix_Multiply,
-	DoneGlyph = CLIB.FT_Done_Glyph,
 	GzipUncompress = CLIB.FT_Gzip_Uncompress,
 	Sin = CLIB.FT_Sin,
+	GetGlyph = CLIB.FT_Get_Glyph,
 	NewGlyph = CLIB.FT_New_Glyph,
 	StreamOpenBzip2 = CLIB.FT_Stream_OpenBzip2,
-	FaceSetUnpatentedHinting = CLIB.FT_Face_SetUnpatentedHinting,
 	StrokerParseOutline = CLIB.FT_Stroker_ParseOutline,
+	FaceCheckTrueTypePatents = CLIB.FT_Face_CheckTrueTypePatents,
 	VectorTransform = CLIB.FT_Vector_Transform,
-	NewMemoryFace = CLIB.FT_New_Memory_Face,
-	MulFix = CLIB.FT_MulFix,
+	DoneFreeType = CLIB.FT_Done_FreeType,
 	OutlineGetOutsideBorder = CLIB.FT_Outline_GetOutsideBorder,
 	FaceGetVariantSelectors = CLIB.FT_Face_GetVariantSelectors,
-	FaceGetCharVariantIsDefault = CLIB.FT_Face_GetCharVariantIsDefault,
 	SelectCharmap = CLIB.FT_Select_Charmap,
+	NewMemoryFace = CLIB.FT_New_Memory_Face,
 	GetSubGlyphInfo = CLIB.FT_Get_SubGlyph_Info,
 	GetNameIndex = CLIB.FT_Get_Name_Index,
 	FaceProperties = CLIB.FT_Face_Properties,
 	GetNextChar = CLIB.FT_Get_Next_Char,
-	GetFirstChar = CLIB.FT_Get_First_Char,
+	GetPSFontValue = CLIB.FT_Get_PS_Font_Value,
 	GetCharIndex = CLIB.FT_Get_Char_Index,
 	DoneFace = CLIB.FT_Done_Face,
 	GetAdvance = CLIB.FT_Get_Advance,
@@ -420,8 +421,6 @@ library = {
 	GetPostscriptName = CLIB.FT_Get_Postscript_Name,
 	AttachFile = CLIB.FT_Attach_File,
 	RoundFix = CLIB.FT_RoundFix,
-	DoneFreeType = CLIB.FT_Done_FreeType,
-	ErrorString = CLIB.FT_Error_String,
 	GetSfntNameCount = CLIB.FT_Get_Sfnt_Name_Count,
 	GetPFRAdvance = CLIB.FT_Get_PFR_Advance,
 	OutlineCopy = CLIB.FT_Outline_Copy,
@@ -446,6 +445,7 @@ library = {
 	GetCIDFromGlyphIndex = CLIB.FT_Get_CID_From_Glyph_Index,
 	OutlineEmboldenXY = CLIB.FT_Outline_EmboldenXY,
 	SelectSize = CLIB.FT_Select_Size,
+	ErrorString = CLIB.FT_Error_String,
 	OutlineNew = CLIB.FT_Outline_New,
 }
 library.e = {
