@@ -199,7 +199,7 @@ do -- logging
 
 		log_file:write(str)
 
-		if log_files.console == log_file then
+		if log_files.console == log_file and can_print(str) then
 			if repl and repl.started and repl.StyledWrite then
 				repl.StyledWrite(str)
 			else
