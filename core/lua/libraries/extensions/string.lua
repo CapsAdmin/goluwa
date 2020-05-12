@@ -180,6 +180,14 @@ function string.removepadding(str, padding)
 	return table.concat(new)
 end
 
+function string.hex(str)
+	local copy = {}
+	for i = 1, #str do
+		copy[i] = ("%x"):format(str:byte(i,i))
+	end
+	return table.concat(copy)
+end
+
 function string.readablehex(str)
 	return (str:gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
 end

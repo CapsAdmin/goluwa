@@ -12,6 +12,7 @@ do
         self:WriteHTTP(data, self.FromClient)
     end
 
+    function META:OnReceiveResponse(method, path) end
     function META:OnReceiveStatus(code, status) end
     function META:OnReceiveHeader(header, raw_header) end
     function META:OnReceiveBodyChunk(chunk) end
@@ -128,6 +129,7 @@ end
 
 function sockets.ConnectedTCP2HTTP(obj)
     setmetatable(obj, prototype.GetRegistered("socket", "http11_client"))
+    obj:InitializeHTTPParser()
     obj:OnConnect()
     obj.connected = true
     obj.connecting = false
