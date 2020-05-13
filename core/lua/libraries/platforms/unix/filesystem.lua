@@ -505,15 +505,10 @@ do
 	]])
 
 	function fs.link(from, to, symbolic)
-		if symbolic then
-			if ffi.C.symlink(from, to) ~= 0 then
-				return nil, last_error()
-			end
-		else
-			if ffi.C.link(from, to) ~= 0 then
-				return nil, last_error()
-			end
+		if (symbolic and ffi.C.symlink or ffi.C.link)(from, to) ~= 0 then
+			return nil, last_error()
 		end
+
 
 		return true
 	end
