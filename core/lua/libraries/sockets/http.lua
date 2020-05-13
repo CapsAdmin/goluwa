@@ -142,13 +142,19 @@ function sockets.MixinHTTP(META)
 
                                 if is_response then
                                     state.method, state.path, state.version = line:match("^(%u+) (%S+) (HTTP/%d+%.%d+)$")
-                                    if self:OnHTTPEvent("response") == false then return end
+                                    if self:OnHTTPEvent("response") == false then
+                                        self:InitializeHTTPParser()
+                                        return
+                                    end
                                 else
                                     state.version, state.code, state.status = line:match("^(HTTP/%d+%.%d+) (%d+) (.+)$")
-                                    if self:OnHTTPEvent("status") == false then return end
+                                    if self:OnHTTPEvent("status") == false then
+                                        self:InitializeHTTPParser()
+                                        return
+                                    end
                                 end
 
-                                if state.version ~= "HTTP/1.1" then
+                                if state.version ~= "HTTP/1.1" and state.version ~= "HTTP/1.0" then
                                     return self:Error(state.version .. " protocol not supported")
                                 end
                             else
@@ -175,7 +181,10 @@ function sockets.MixinHTTP(META)
                         state.header = keyvalues
                     end
 
-                    if self:OnHTTPEvent("header") == false then return end
+                    if self:OnHTTPEvent("header") == false then
+                        self:InitializeHTTPParser()
+                        return
+                    end
 
                     state.stage = "body"
                 end
