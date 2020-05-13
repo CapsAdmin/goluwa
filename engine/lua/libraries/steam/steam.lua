@@ -5,7 +5,7 @@ steam.source2meters = 0.01905
 runfile("mount.lua", steam)
 runfile("vmt.lua", steam)
 
-function steam.DownloadWorkshop(id, callback, on_error)
+function steam.DownloadWorkshop(id, callback, on_error, last_modified)
 	if not tonumber(id) then
 		id = id:match("id=(%d+)")
 	end
@@ -25,8 +25,15 @@ function steam.DownloadWorkshop(id, callback, on_error)
 				return
 			end
 
-			if data.response.publishedfiledetails[1].file_url then
-				resource.Download(data.response.publishedfiledetails[1].file_url, nil, nil, nil, data.response.publishedfiledetails[1].creator_app_id == 4000 and "gma" or "zip"):Then(function(path)
+			local details = data.response.publishedfiledetails[1]
+
+			if details.file_url and details.file_url ~= "" then
+				if last_modified and details.time_updated < last_modified then
+					logn(id, ": no changes since last time")
+					return
+				end
+
+				resource.Download(details.file_url, nil, nil, true, details.creator_app_id == 4000 and "gma" or "zip"):Then(function(path)
 					local bin, err = serializer.ReadFile("lzma", path)
 					if not bin then
 						on_error("unable to extract data: " .. err)
