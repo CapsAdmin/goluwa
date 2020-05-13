@@ -57,39 +57,52 @@ end
 
 function fs.CopyRecursively(from, to, verbose)
 	local files, err = fs.get_files_recursive(from)
-    if files then
-        local errors = {}
-        table.sort(files, function(a, b) return a:endswith("/") and not b:endswith("/") end)
-        for i, path in ipairs(files) do
-            local new_path = to .. path:sub(#from + 1)
-            local ok, err
-
-            if path:endswith("/") then
-                ok, err = fs.CreateDirectory(new_path)
-            else
-                ok, err = fs.copy(path, new_path)
-            end
-
-            if not ok and err ~= "File exists" then
-                table.insert(errors, err)
-            end
-
-            if verbose then
-                if ok then
-                    logn("created directory " .. new_path)
-                else
-                    logn("failed to create directory " .. new_path)
-                    logn(err)
-                end
-            end
-        end
-        if errors[1] then
-            return nil, table.concat(errors, "\n")
-        end
-        return true
+    if not files then
+        return nil, err
     end
 
-    return files, err
+    local ok, err = fs.CreateDirectory(to, true)
+    if not ok then
+        return nil, err
+    end
+
+    local errors = {}
+
+    table.sort(files, function(a, b)
+        return a:endswith("/") and not b:endswith("/")
+    end)
+
+    for i, path in ipairs(files) do
+        local new_path = to .. path:sub(#from + 1)
+        local ok, err
+
+        if path:endswith("/") then
+            -- TODO: force creating directories shouldn't be nesseceary
+            -- the sorting mechanism further up probably doesn't work correctly
+            ok, err = fs.CreateDirectory(new_path, true)
+        else
+            ok, err = fs.copy(path, new_path)
+        end
+
+        if not ok and err ~= "File exists" then
+            table.insert(errors, err)
+        end
+
+        if verbose then
+            if ok then
+                logn("created directory " .. new_path)
+            else
+                logn("failed to create directory " .. new_path)
+                logn(err)
+            end
+        end
+    end
+
+    if errors[1] then
+        return nil, table.concat(errors, "\n")
+    end
+
+    return true
 end
 
 function fs.GetFilesRecursive(path, blacklist)
