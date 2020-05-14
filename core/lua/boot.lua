@@ -241,8 +241,7 @@ do
 		if WINDOWS then
 			os.execute("goluwa.cmd _DL \"" .. url .. "\" \"" .. to .. "\"")
 		else
-			os.execute("chmod +x goluwa")
-			os.execute("./goluwa _DL \"" .. url .. "\" \"" .. to .. "\"")
+			os.execute("sh goluwa _DL \"" .. url .. "\" \"" .. to .. "\"")
 		end
 
 		return os.isfile(to)
@@ -347,7 +346,9 @@ do
 		branch = branch or "master"
 		if os.iscmd("git") then
 			if os.isdir(to) and os.isdir(to .. "/.git") then
-				os.readexecute("git -C "..absolute_path(to).." pull")
+				local cmd = "git -C "..absolute_path(to).." pull"
+				io.write(cmd)
+				os.execute(cmd)
 			else
 				if to ~= "" and to:sub(#to, #to) ~= "/" then
 					to = to .. "/"
@@ -358,7 +359,9 @@ do
 				extract_dir = absolute_path(extract_dir)
 				to = absolute_path(to)
 
-				local ok, err = os.execute("git clone https://"..domain..".com/"..location..".git \""..extract_dir.."\" --depth 1")
+				local cmd = "git clone https://"..domain..".com/"..location..".git \""..extract_dir.."\" --depth 1"
+				io.write(cmd)
+				local ok, err = os.execute(cmd)
 
 				os.copyfiles(extract_dir, to)
 				os.removedir(extract_dir)
@@ -457,7 +460,7 @@ if ARG_LINE == "update" or not os.isfile("core/lua/init.lua") then
 		io.write("missing core/lua/init.lua\n")
 	end
 
-	if os.isfile(".git/config") and io.readfile(".git/config"):find("goluwa") and os.iscmd("git") then
+	if ARG_LINE == "update" and os.isfile(".git/config") and io.readfile(".git/config"):find("goluwa") and os.iscmd("git") then
 		io.write("updating from git repository\n")
 		os.execute("git pull")
 	else
