@@ -33,7 +33,7 @@ function META:SocketRestart(socket)
 end
 
 do
-    local tls = desire("libtls")
+    local tls, reason = desire("libtls")
     local ffi = desire("ffi")
 
     function META:SetupTLS()
@@ -41,7 +41,7 @@ do
 
         if not tls or not tls.config then
             if not tls then
-                return self:Error("unable to find libtls")
+                return self:Error("unable to find libtls: " .. reason)
             end
 
             self.tls_setup = true
