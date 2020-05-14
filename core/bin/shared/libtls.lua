@@ -1,4 +1,8 @@
-local ffi = require("ffi");local CLIB = assert(ffi.load("tls"));ffi.cdef([[struct tls {};
+local ffi = require("ffi");
+ffi.load("crypto")
+ffi.load("ssl")
+
+local CLIB = assert(ffi.load("libtls"));ffi.cdef([[struct tls {};
 struct tls_config {};
 const char*(tls_peer_ocsp_url)(struct tls*);
 int(tls_config_set_dheparams)(struct tls_config*,const char*);
@@ -103,7 +107,7 @@ local library = {}
 				end
 			end})
 		end
-	
+
 --====helper safe_clib_index====
 
 CLIB = SAFE_INDEX(CLIB)library = {
