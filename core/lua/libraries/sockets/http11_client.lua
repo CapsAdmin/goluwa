@@ -109,7 +109,7 @@ function META:Redirect(location)
     self:Connect(req.uri.host, req.uri.scheme)
     self:Send(sockets.HTTPRequest(req.method, req.uri, req.header, req.body))
 
-    self.HTTPParser:Restart()
+    self:InitializeHTTPParser()
 
     table.insert(self.LocationHistory, location)
 end
