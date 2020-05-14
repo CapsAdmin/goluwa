@@ -343,11 +343,12 @@ do
 	end
 
 	function extract_git_project(domain, location, branch, to)
+		io.write("extracting project\n")
 		branch = branch or "master"
 		if os.iscmd("git") then
 			if os.isdir(to) and os.isdir(to .. "/.git") then
 				local cmd = "git -C "..absolute_path(to).." pull"
-				io.write(cmd)
+				io.write(cmd, "\n")
 				os.execute(cmd)
 			else
 				if to ~= "" and to:sub(#to, #to) ~= "/" then
@@ -360,7 +361,7 @@ do
 				to = absolute_path(to)
 
 				local cmd = "git clone https://"..domain..".com/"..location..".git \""..extract_dir.."\" --depth 1"
-				io.write(cmd)
+				io.write(cmd, "\n")
 				local ok, err = os.execute(cmd)
 
 				os.copyfiles(extract_dir, to)
