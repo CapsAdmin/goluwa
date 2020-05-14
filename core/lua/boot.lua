@@ -241,6 +241,7 @@ do
 		if WINDOWS then
 			os.execute("goluwa.cmd _DL \"" .. url .. "\" \"" .. to .. "\"")
 		else
+			os.execute("chmod +x goluwa")
 			os.execute("./goluwa _DL \"" .. url .. "\" \"" .. to .. "\"")
 		end
 
