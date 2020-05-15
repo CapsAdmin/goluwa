@@ -148,29 +148,21 @@ function luadata.Encode(tbl, callback)
 	end
 end
 
-function luadata.Decode(str, skip_error)
-	if not str then return {} end
+function luadata.Decode(str)
+	if not str then return nil, "empty string" end
 
 	local func, err = loadstring("return {\n" .. str .. "\n}", "luadata")
 
 	if not func then
-		if not skip_error then wlog("luadata syntax error: ", err, 2) end
-		return {}
+		return nil, "luadata syntax error: " .. err
 	end
 
 	setfenv(func, env)
 
-	local ok, err
-
-	if not skip_error then
-		ok, err = xpcall(func, system and system.OnError or print)
-	else
-		ok, err = pcall(func)
-	end
+	local ok, err = pcall(func)
 
 	if not ok then
-		if not skip_error then wlog("luadata runtime error: ", err, 2) end
-		return {}
+		return nil, "luadata runtime error: " .. err
 	end
 
 	return err

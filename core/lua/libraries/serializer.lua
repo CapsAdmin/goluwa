@@ -52,11 +52,11 @@ do -- vfs extension
 	end
 
 	function serializer.ReadFile(lib, path, ...)
-		local str = vfs.Read(path)
+		local str, err = vfs.Read(path)
 		if str then
 			return serializer.Decode(lib, str)
 		end
-		return false, "no such file"
+		return false, err
 	end
 
 	function serializer.StoreInFile(lib, path, key, value)

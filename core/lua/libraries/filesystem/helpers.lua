@@ -48,10 +48,6 @@ function vfs.Delete(path, ...)
 
 	local err = ("No such file or directory %q"):format(path)
 
-	if CLI then
-		error(err, 2)
-	end
-
 	return nil, err
 end
 
@@ -71,22 +67,10 @@ function vfs.Rename(path, name, ...)
 
 		vfs.ClearCallCache()
 
-		if not ok then
-			if CLI then
-				error(err, 2)
-			else
-				wlog(err)
-			end
-		end
-
 		return ok, err
 	end
 
 	local err = ("No such file or directory %q"):format(path)
-
-	if CLI then
-		error(err, 2)
-	end
 
 	return nil, err
 end
@@ -223,11 +207,6 @@ local function add_helper(name, func, mode, cb)
 				if event then
 					local res, err = event.Call("VFSPost" .. name, path, res)
 					if res ~= nil or err then
-						if CLI then
-							debug.trace()
-							error(err, 2)
-						end
-
 						return res, err
 					end
 				end
@@ -242,11 +221,6 @@ local function add_helper(name, func, mode, cb)
 			end
 
 			return res, err
-		end
-
-		if CLI then
-			logn(path)
-			error(err, 2)
 		end
 
 		return nil, err

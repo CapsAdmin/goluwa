@@ -18,7 +18,14 @@ do
 end
 
 resource.Download("data/countries.lua"):Then(function(path)
-	language.world = assert(serializer.ReadFile("luadata", path))
+	local tbl, err = serializer.ReadFile("luadata", path)
+
+	if not tbl then
+		logn(err)
+		return
+	end
+
+	language.world = tbl
 
 	for lang_code, info in pairs(language.world.languages) do
 		if info.name then
