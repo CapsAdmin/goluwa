@@ -91,7 +91,11 @@ local function open_archive(path_info, skip_cache)
 	if CONTEXT.archive_cache[archive_path] then
 		str = CONTEXT.archive_cache[archive_path].str
 	else
-		str = vfs.Read("os:" .. archive_path)
+		local err
+		str, err = vfs.Read("os:" .. archive_path)
+		if not str then
+			return false, err
+		end
 	end
 
 	if not str then return false, "archive is empty" end

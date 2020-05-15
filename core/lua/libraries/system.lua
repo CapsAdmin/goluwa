@@ -36,6 +36,8 @@ function system.GetWorkingDirectory()
 		if dir then
 			return vfs.FixPathSlashes("os:" .. dir .. "/")
 		end
+
+		return "os:" .. e.ROOT_FOLDER
 	end
 
 	return "os:" .. e.USERDATA_FOLDER

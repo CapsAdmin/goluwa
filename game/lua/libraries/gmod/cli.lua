@@ -122,7 +122,7 @@ commands.Add("gluacheck=arg_line", function(str)
 		lua_strings[i] = code
 	end
 
-	local luacheck = require("luacheck")
+	local luacheck = require("luacheck.init")
 
 	local data = luacheck.check_strings(lua_strings, {
 		max_line_length = false,

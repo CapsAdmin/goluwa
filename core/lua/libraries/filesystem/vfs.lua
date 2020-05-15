@@ -282,8 +282,13 @@ function vfs.Open(path, mode, sub_mode)
 	mode = mode or "read"
 
 	local errors = {}
+	local paths = vfs.TranslatePath(path)
 
-	for i, data in ipairs(vfs.TranslatePath(path)) do
+	if #paths == 0 then
+		table.insert(errors, path .. " does not exist")
+	end
+
+	for i, data in ipairs(paths) do
 		local file = prototype.CreateDerivedObject("file_system", data.context.Name)
 		file:SetMode(mode)
 

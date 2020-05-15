@@ -40,7 +40,7 @@ return {
 
 			local str = os.getenv("GOLUWA_ARG_LINE") or ""
 
-			if str:find("--cli ") then
+			if str:find("--cli ", nil, true) then
 				CLI = true
 				GRAPHICS = false
 				SOUND = false

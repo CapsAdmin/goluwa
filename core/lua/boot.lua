@@ -241,7 +241,7 @@ do
 		if WINDOWS then
 			os.execute("goluwa.cmd _DL \"" .. url .. "\" \"" .. to .. "\"")
 		else
-			os.execute("sh goluwa _DL \"" .. url .. "\" \"" .. to .. "\"")
+			os.execute("./goluwa _DL \"" .. url .. "\" \"" .. to .. "\"")
 		end
 
 		return os.isfile(to)
