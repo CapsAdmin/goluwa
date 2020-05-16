@@ -611,7 +611,9 @@ do
 			end
 		end
 
-		table.insert(trees, chatsounds.tree)
+		if chatsounds.tree then
+			table.insert(trees, chatsounds.tree)
+		end
 
 		local root = table.virtualmerge({}, trees)
 
@@ -911,8 +913,6 @@ function chatsounds.Update()
 end
 
 function chatsounds.Say(str, seed, custom_id)
-	if not chatsounds.tree then return end
-
 	str = str:lower()
 
 	if str == "sh" or (str:find("sh%s") and not str:find("%Ssh")) or (str:find("%ssh") and not str:find("sh%S")) then

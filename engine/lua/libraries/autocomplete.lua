@@ -118,6 +118,7 @@ function autocomplete.DrawFound(id, x, y, found, max, offset)
 					end
 					if str then
 						local _, h = gfx.GetTextSize(str)
+						render2d.SetAlphaMultiplier(0.75)
 						gfx.DrawText(str, 5, (i - offset) * h + height_offset)
 						height_offset = height_offset + h
 						width_offset = 5
@@ -129,11 +130,6 @@ function autocomplete.DrawFound(id, x, y, found, max, offset)
 			local alpha = (-(i / max) + 1) ^ 5
 
 			render2d.SetAlphaMultiplier(alpha)
-			if v.id ~= "chatsounds" then
-				render2d.SetColor(0,1,0,1)
-			else
-				render2d.SetColor(1,1,1,1)
-			end
 
 			local _, h = gfx.GetTextSize(v.val)
 			gfx.DrawText(((env[id].scroll + i - 1)%#found + 1) .. ". " ..  v.val, 5 + width_offset, (i - offset) * h + height_offset)

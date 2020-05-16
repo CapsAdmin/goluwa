@@ -64,7 +64,9 @@ function chatsounds.GenerateAutocomplete()
 		autocomplete.AddList(id, list)
 	end
 
-	build(chatsounds.list, "chatsounds")
+	if chatsounds.list then
+		build(chatsounds.list, "chatsounds")
+	end
 
 	if chatsounds.custom then
 		for id, data in pairs(chatsounds.custom) do
