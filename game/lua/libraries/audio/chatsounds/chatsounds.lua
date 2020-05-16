@@ -922,6 +922,9 @@ function chatsounds.Say(str, seed)
 		return str:rep(count)
 	end)
 
+	if str:endswith("!") then
+		str = "(" .. str  .. "):volume("..(str:count("!")+1)..")"
+	end
 
 	if seed then math.randomseed(seed) end
 
