@@ -396,13 +396,14 @@ do
 		return words
 	end
 
-	local function find_sounds(words)
+	local function find_sounds(words, root)
+		root = root or chatsounds.tree
+
 		local word_count = #words
-		local node = chatsounds.tree
 		local reached_end = false
 		local out = {}
 		local matched = {}
-
+		local node = root
 		local i = 1
 
 		for _ = 1, chatsounds.max_iterations do
@@ -446,7 +447,18 @@ do
 				end
 
 				if found then
-					table.insert(out, {type = "matched", val = found.node.SOUND_DATA})
+					local SOUND_DATA = found.node.SOUND_DATA
+
+					-- virtual tree
+					if getmetatable(SOUND_DATA) then
+						local temp = {}
+						for k,v in pairs(SOUND_DATA) do
+							table.merge(temp, v)
+						end
+						SOUND_DATA = temp
+					end
+
+					table.insert(out, {type = "matched", val = SOUND_DATA})
 
 					for i2 = i + 1, word_count do
 						local mod = words[i2]
@@ -459,7 +471,7 @@ do
 					end
 				end
 
-				node = chatsounds.tree
+				node = root
 				table.clear(matched)
 			end
 
@@ -580,14 +592,7 @@ do
 		return script
 	end
 
-	chatsounds.script_cache = table.weak()
-
-	function chatsounds.GetScript(str)
-
-		if chatsounds.script_cache[str] then
-			return chatsounds.script_cache[str]
-		end
-
+	function chatsounds.GetScript(str, custom_id)
 		str = preprocess(str)
 
 		local words = build_word_list(str)
@@ -596,11 +601,23 @@ do
 			words = find_modifiers(words)
 		end
 
-		local script = find_sounds(words)
+		local trees = {}
+
+		if custom_id and chatsounds.custom then
+			for _, id in ipairs(custom_id) do
+				if chatsounds.custom[id] then
+					table.insert(trees, chatsounds.custom[id].tree)
+				end
+			end
+		end
+
+		table.insert(trees, chatsounds.tree)
+
+		local root = table.virtualmerge({}, trees)
+
+		local script = find_sounds(words, root)
 
 		script = apply_modifiers(script)
-
-		--chatsounds.script_cache[str] = script
 
 		return script
 	end
@@ -647,7 +664,6 @@ local function unpack_args(data)
 end
 
 function chatsounds.PlayScript(script)
-
 	local sounds = {}
 
 	for _, chunk in ipairs(script) do
@@ -894,7 +910,7 @@ function chatsounds.Update()
 	end
 end
 
-function chatsounds.Say(str, seed)
+function chatsounds.Say(str, seed, custom_id)
 	if not chatsounds.tree then return end
 
 	str = str:lower()
@@ -928,7 +944,7 @@ function chatsounds.Say(str, seed)
 
 	if seed then math.randomseed(seed) end
 
-	local script = chatsounds.GetScript(str)
+	local script = chatsounds.GetScript(str, custom_id)
 	if chatsounds.debug then dump_script(script) end
 	chatsounds.PlayScript(script)
 
@@ -945,19 +961,6 @@ end
 
 function chatsounds.Initialize()
 	event.AddListener("Update", "chatsounds", chatsounds.Update)
-
-	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "csgo")
-	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "css")
-	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "ep1")
-	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "ep2")
-	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "hl1")
-	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "hl2")
-	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "l4d")
-	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "l4d2")
-	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "portal")
-	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "tf2")
-	chatsounds.BuildFromGithub("PAC3-Server/chatsounds")
-	chatsounds.BuildFromGithub("Metastruct/garrysmod-chatsounds", "sound/chatsounds/autoadd")
 end
 
 function chatsounds.Shutdown()

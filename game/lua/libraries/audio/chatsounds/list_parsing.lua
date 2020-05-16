@@ -46,21 +46,33 @@ function chatsounds.BuildFromSoundDirectory(where)
 end
 
 function chatsounds.GenerateAutocomplete()
-	local list = {}
-	local done = {}
+	local function build(root_list, id)
+		local list = {}
+		local done = {}
 
-	for _, val in pairs(chatsounds.list) do
-		for key in pairs(val) do
-			if not done[key] then
-				table.insert(list, key)
-				done[key] = true
+		for _, val in pairs(root_list) do
+			for key in pairs(val) do
+				if not done[key] then
+					table.insert(list, key)
+					done[key] = true
+				end
+			end
+		end
+
+		table.sort(list, function(a, b) return #a < #b end)
+
+		autocomplete.AddList(id, list)
+	end
+
+	build(chatsounds.list, "chatsounds")
+
+	if chatsounds.custom then
+		for id, data in pairs(chatsounds.custom) do
+			if data.list then
+				build(data.list, "chatsounds_custom_" .. id)
 			end
 		end
 	end
-
-	table.sort(list, function(a, b) return #a < #b end)
-
-	autocomplete.AddList("chatsounds", list)
 end
 
 function chatsounds.ListToTable(data)

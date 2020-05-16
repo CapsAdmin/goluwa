@@ -1,6 +1,6 @@
 local chatsounds = ... or chatsounds
 
-local function read_list(base_url, sounds)
+local function read_list(base_url, sounds, list_id, skip_list)
 	local tree = {}
 	local list = {}
 	local count = 0
@@ -27,18 +27,30 @@ local function read_list(base_url, sounds)
 		end
 	end
 
-	tree = chatsounds.TableToTree(tree)
-	chatsounds.tree = chatsounds.tree or {}
-	table.merge(chatsounds.tree, tree)
+	tree = chatsounds.TableToTree(tree, list_id)
 
-	chatsounds.list = chatsounds.list or {}
-	table.merge(chatsounds.list, list, true)
+	if list_id then
+		chatsounds.custom = chatsounds.custom or {}
+		chatsounds.custom[list_id] = {
+			tree = tree,
+			list = list,
+		}
+	else
+		chatsounds.tree = chatsounds.tree or {}
+		table.merge(chatsounds.tree, tree)
+
+		chatsounds.list = chatsounds.list or {}
+		table.merge(chatsounds.list, list, true)
+	end
+
 	chatsounds.GenerateAutocomplete()
 
-	--llog("loaded sounds from ", base_url)
+	if list_id then
+		llog("loaded " .. #sounds .. " unqiue sounds from ", base_url)
+	end
 end
 
-function chatsounds.BuildFromGithub(repo, location)
+function chatsounds.BuildFromGithub(repo, location, list_id)
 	location = location or "sounds/chatsounds"
 
 	local base_url = "https://raw.githubusercontent.com/" .. repo .. "/master/" .. location .. "/"
@@ -46,10 +58,12 @@ function chatsounds.BuildFromGithub(repo, location)
 	resource.Download(base_url .. "list.msgpack", nil, nil, true, "msgpack"):Then(function(path)
 		--llog("found list.msgpack for ", location)
 		local val = vfs.Read(path)
-		read_list(base_url, val)
+		read_list(base_url, val, list_id)
 	end):Catch(function(reason)
-		llog(repo, ": unable to find list.msgpack from \"", location, "\"")
-		llog(repo, ": parsing with github api instead (slow)")
+		if list_id then
+			--llog(repo, ": unable to find list.msgpack from \"", location, "\"")
+			--llog(repo, ": parsing with github api instead (slower)")
+		end
 
 		local url = "https://api.github.com/repos/" .. repo .. "/git/trees/master?recursive=1"
 
@@ -59,13 +73,14 @@ function chatsounds.BuildFromGithub(repo, location)
 
 			if not etag_updated and sounds then
 				if sounds[1] and #sounds[1] >= 3 then
-					read_list(base_url, sounds)
+					read_list(base_url, sounds, list_id)
 					return
-				-- else
-				-- 	llog("found cached list but format doesn't look right, regenerating.")
+				else
+				 	llog("found cached list but format doesn't look right, regenerating.")
 				end
 			end
 
+			llog("change detected ", base_url)
 
 			local sounds = {}
 			local str = assert(io.open(path, "rb"):read("*all"))
@@ -98,8 +113,7 @@ function chatsounds.BuildFromGithub(repo, location)
 			end
 
 			serializer.WriteFile("msgpack", cached_path, sounds)
-
-			read_list(base_url, sounds)
+			read_list(base_url, sounds, list_id)
 		end)
 	end)
 end

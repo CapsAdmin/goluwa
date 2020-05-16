@@ -34,7 +34,7 @@ do -- lists
 	end
 end
 
-local function search(list, str, found, found_list)
+local function search(list, str, found, found_list, id)
 	local pattern = "^.-" .. str
 
 	if not pcall(string.find, pattern, pattern) then return found end
@@ -42,19 +42,25 @@ local function search(list, str, found, found_list)
 	if type(list) == "table" then
 		if str == "" then
 			for _ = 1, 100 do
-				found[#found + 1] = list[math.random(#list)]
+				found[#found + 1] = {val = list[math.random(#list)], id = id}
 			end
 		else
 			for i = found_list and 1 or math.max(#str+1, 1), #list do
-				if list[i]:find(pattern) then
-					found[#found + 1] = list[i]
+				if type(list[i]) == "table" then
+					if list[i].val:find(pattern) then
+						found[#found + 1] = list[i]
+					end
+				else
+					if list[i]:find(pattern) then
+						found[#found + 1] = {val = list[i], id = id}
+					end
 				end
 			end
 		end
 	elseif type(list) == "function" then
 		local v = list(str)
 		if v then
-			found[#found + 1] = v
+			found[#found + 1] = {val = v, id = id}
 		end
 	end
 end
@@ -67,8 +73,11 @@ function autocomplete.Search(str, id)
 	if not pcall(string.find, "", str) then return found end
 
 	if type(id) == "string" then
-		local list = autocomplete.GetList(id)
-		search(list, str, found)
+		search(autocomplete.GetList(id), str, found)
+	elseif type(id) == "table" and type(id[1]) == "string" then
+		for _, id in ipairs(id) do
+			search(autocomplete.GetList(id), str, found, nil, id)
+		end
 	elseif type(id) == "table" then
 		search(id, str, found, true)
 	else
@@ -80,6 +89,8 @@ function autocomplete.Search(str, id)
 	return found
 end
 
+autocomplete.translate_list_id = {}
+
 function autocomplete.DrawFound(id, x, y, found, max, offset)
 	if not env[id] then
 		env[id] = {found_autocomplete = {}, scroll = 0}
@@ -88,19 +99,44 @@ function autocomplete.DrawFound(id, x, y, found, max, offset)
 	offset = offset or 1
 	max = max or 100
 
-	render2d.SetColor(1,1,1,1)
+	local height_offset = 0
+	local width_offset = 0
 
+	render2d.SetColor(1,1,1,1)
 	render2d.PushMatrix(x, y)
+	local done = {}
 		for i = offset, max do
 			local v = found[i]
 
 			if not v then break end
 
-			local _, h = gfx.GetTextSize(v)
+			if v.id then
+				if not done[v.id] then
+					local str = autocomplete.translate_list_id[v.id]
+					if type(str) == "function" then
+						str = str()
+					end
+					if str then
+						local _, h = gfx.GetTextSize(str)
+						gfx.DrawText(str, 5, (i - offset) * h + height_offset)
+						height_offset = height_offset + h
+						width_offset = 5
+					end
+					done[v.id] = true
+				end
+			end
+
 			local alpha = (-(i / max) + 1) ^ 5
 
 			render2d.SetAlphaMultiplier(alpha)
-			gfx.DrawText(((env[id].scroll + i - 1)%#found + 1) .. ". " ..  v, 5, (i - offset) * h)
+			if v.id ~= "chatsounds" then
+				render2d.SetColor(0,1,0,1)
+			else
+				render2d.SetColor(1,1,1,1)
+			end
+
+			local _, h = gfx.GetTextSize(v.val)
+			gfx.DrawText(((env[id].scroll + i - 1)%#found + 1) .. ". " ..  v.val, 5 + width_offset, (i - offset) * h + height_offset)
 		end
 
 		render2d.SetAlphaMultiplier(1)
