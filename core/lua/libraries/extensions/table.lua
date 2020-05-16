@@ -320,6 +320,33 @@ function table.merge(a, b, merge_aray)
 	return a
 end
 
+function table.virtualmerge(tbl, nodes)
+	return setmetatable(tbl, {
+		__index = function(_, key)
+			local found = {}
+
+			for _, node in ipairs(nodes) do
+				local val = node[key]
+
+				if val ~= nil then
+					if type(val) ~= "table" then
+						return val
+					else
+						table.insert(found, val)
+					end
+				end
+			end
+
+			if #found == 0 then
+				return nil
+			end
+
+			return table.virtualmerge(found, found)
+		end
+	})
+end
+
+
 function table.add(a, b)
 	for _, v in pairs(b) do
 		table.insert(a, v)
