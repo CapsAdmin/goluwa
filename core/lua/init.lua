@@ -100,8 +100,24 @@ do -- constants
 			local length = ffi.C.GetCurrentDirectoryA(260, buffer)
 			e.ROOT_FOLDER = ffi.string(buffer, length):gsub("\\", "/") .. "/"
 		else
+			ffi.cdef("char *strerror(int)")
 			ffi.cdef("char *realpath(const char *, char *);")
-			e.ROOT_FOLDER = ffi.string(ffi.C.realpath(".", nil)) .. "/"
+
+			local resolved_name = ffi.new("char[?]", 256)
+
+			local ret = ffi.C.realpath("./", resolved_name)
+
+			if ret == nil then
+				local num = ffi.errno()
+				local err = ffi.string(ffi.C.strerror(num))
+				err = err == "" and tostring(num) or err
+
+				print("realpath failed: " .. err)
+				print("defaulting to ./")
+				e.ROOT_FOLDER = ""
+			else
+				e.ROOT_FOLDER = ffi.string(ret) .. "/"
+			end
 		end
 	end
 
@@ -211,10 +227,12 @@ profiler = runfile("lua/libraries/profiler.lua")
 tasks = runfile("!lua/libraries/tasks.lua") -- high level coroutine library
 threads = runfile("!lua/libraries/threads.lua")
 
-_G.P = profiler.ToggleTimer
-_G.I = profiler.ToggleInstrumental
-_G.S = profiler.ToggleStatistical
-_G.LOOM = profiler.ToggleLoom
+if profiler then
+	_G.P = profiler.ToggleTimer
+	_G.I = profiler.ToggleInstrumental
+	_G.S = profiler.ToggleStatistical
+	_G.LOOM = profiler.ToggleLoom
+end
 
 oh = runfile("lua/libraries/oh/oh.lua") -- lua tokenizer, parser and emitter
 repl = runfile("lua/libraries/repl.lua")

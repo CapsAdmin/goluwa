@@ -563,11 +563,14 @@ for _, what in ipairs({"SIGSEGV"}) do
 
 			io.write()
 
-			io.write("\n\n attempting lua traceback:")
+			local header = "========== attempting lua traceback =========="
+			io.write("\n\n",header,"\n")
 			lua.L.traceback(state, state, nil, 0)
 			local len = ffi.new("uint64_t[1]")
 			local ptr = lua.tolstring(state, -1, len)
 			io.write(ffi.string(ptr, len[0]))
+
+			io.write("\n",("="):rep(#header),"\n")
 
 			ffi.C.signal(int, nil)
 			ffi.C.kill(ffi.C.getpid(), int)

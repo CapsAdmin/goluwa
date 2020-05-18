@@ -311,7 +311,7 @@ function vfs.MountAddon(path, force)
 		info.gmod_addon = true
 	end
 
-	local folder = path:match(".+/(.+)/")
+	local folder = path:match(".+/(.+)/") or path:match(".-:(.+)/")
 
 	info.path = path
 	info.file_info = folder
