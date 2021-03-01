@@ -129,7 +129,7 @@ local providers = {
 	},
 	{
 		url = "http://www.speedywristbands.com/public/files/fonts/",
-		translate = function(path) print(path, "!!") return (" " .. path):gsub("%s(%l)", function(str) return str:upper() end) .. ".ttf" end,
+		translate = function(path) return (" " .. path):gsub("%s(%l)", function(str) return str:upper() end) .. ".ttf" end,
 	},
 	{
 		url = "http://dl.dafont.com/dl/?f=", -- roboto | Roboto-BoldItalic.ttf
