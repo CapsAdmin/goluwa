@@ -191,6 +191,26 @@ function sockets.MixinHTTP(META)
             end
 
             if state.stage == "body" then
+
+                if state.header["transfer-encoding"] == "chunked" then
+                    if not state.received_bytes or state.received_bytes > state.to_receive then
+                        local hex_num, rest = chunk:match("^(.-)\r\n(.+)")
+                        
+                        if hex_num == "0" then
+                            state.chunked_done = true
+                        else
+                            local num = tonumber("0x" .. hex_num)
+                            self:SetBufferSize(num)
+                            state.to_receive = num
+                        end
+
+                        chunk = rest or chunk
+                        state.received_bytes = 0
+                    end
+                    
+                    state.received_bytes = (state.received_bytes or 0) + #chunk
+                end
+
                 state.current_body_chunk = chunk
 
                 if self:OnHTTPEvent("chunk") == false then return end
@@ -199,7 +219,9 @@ function sockets.MixinHTTP(META)
 
                 local body = nil
 
-                if state.header["content-length"] and self:GetWrittenBodySize() >= state.header["content-length"] then
+                if state.header["transfer-encoding"] == "chunked" and state.chunked_done then
+                    body = self:GetWrittenBodyString()
+                elseif state.header["content-length"] and self:GetWrittenBodySize() >= state.header["content-length"] then
                     body = self:GetWrittenBodyString()
                 elseif self:GetWrittenBodyString():endswith("0\r\n\r\n") then
                     body = decode_chunked_body(self, self:GetWrittenBodyString())
@@ -465,7 +487,7 @@ function sockets.HTTPResponse(code, status, header, body)
     return str
 end
 
-if RELOAD then
+if RELOAD then 
     local client = sockets.HTTPClient()
 
     client:Request("GET", "https://primes.utm.edu/lists/small/100000.txt")

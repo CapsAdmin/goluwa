@@ -4,6 +4,8 @@ local ljsocket = require("ljsocket")
 
 local META = prototype.CreateTemplate("socket", "tcp_client")
 
+prototype.GetSet(META, "BufferSize", 64000)
+
 function META:assert(val, err)
     if not val then
         self:Error(err)
@@ -239,7 +241,7 @@ function META:Update()
             end
         end
 
-        local chunk, err = self.socket:receive()
+        local chunk, err = self.socket:receive(self.BufferSize)
 
         if chunk then
             self:OnReceiveChunk(chunk)
