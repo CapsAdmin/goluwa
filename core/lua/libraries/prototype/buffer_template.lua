@@ -815,6 +815,10 @@ do -- extended
 		return Color(self:ReadFloat(), self:ReadFloat(), self:ReadFloat(), self:ReadFloat())
 	end
 
+	function META:ReadByteColor()
+		return ColorBytes(self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte())
+	end
+
 	-- integer/long
 	META.WriteInt = META.WriteLong
 	META.WriteUnsignedInt = META.WriteUnsignedLong

@@ -266,38 +266,69 @@ function steam.LoadMap(path)
 				for i = 1, count do
 					leafs[i] = bsp_file:ReadShort()
 				end
-
+				
 				count = bsp_file:ReadLong()
+				
+				local lump_size = ((lump.filelen + lump.fileofs) - bsp_file:GetPosition()) / count
+
 				for _ = 1, count do
+					local pos = bsp_file:GetPosition()
+					
 					local lump = bsp_file:ReadStructure([[
-						vec3 origin;
-						ang3 angles;
-						short prop_type;
-						short first_leaf;
-						short leaf_count;
+						vec3 origin; // origin
+						ang3 angles; // orientation (pitch yaw roll)
+						unsigned short prop_type; // index into model name dictionary
+						unsigned short first_leaf; // index into leaf array
+						unsigned short leaf_count; // solidity type
 						byte solid;
-						byte flags;
-						long skin;
+						byte flags; // model skin numbers
+						int skin;
 						float fade_min_dist;
 						float fade_max_dist;
-
-						long lighting_origin_x;
-						long lighting_origin_y;
-						long lighting_origin_z;
+						vec3 lighting_origin; // for lighting
 					]])
-
-					if version > 4 then
+					
+					if version >= 5 then
 						lump.forced_fade_scale = bsp_file:ReadFloat()
 					end
 
-					if version > 5 then
-						lump.min_dx_level = bsp_file:ReadShort()
-						lump.max_dx_level = bsp_file:ReadShort()
+					if version == 6 or version == 7 then
+						lump.min_dx_level = bsp_file:ReadUnsignedShort()
+						lump.max_dx_level = bsp_file:ReadUnsignedShort()
 					end
 
-					if version > 6 then
-						lump.rendercolor = ColorBytes(bsp_file:ReadByte(), bsp_file:ReadByte(), bsp_file:ReadByte(), bsp_file:ReadByte())
-						bsp_file:Advance(8) -- ???
+					if version >= 8 then
+						lump.min_cpu_level = bsp_file:ReadUnsignedByte()
+						lump.max_cpu_level = bsp_file:ReadUnsignedByte()
+
+						lump.min_gpu_level = bsp_file:ReadUnsignedByte()
+						lump.max_gpu_level = bsp_file:ReadUnsignedByte()
+					end
+
+					if version >= 7 then
+						lump.rendercolor = bsp_file:ReadByteColor()
+					end
+
+
+					if version == 11  then
+						-- not sure what this padding is
+						bsp_file:Advance(4)
+
+						if version == 9 or version == 10 then
+							lump.disable_xbox360 = bsp_file:ReadBoolean()
+						end
+
+						if version >= 10 then
+							lump.flags_ex = bsp_file:ReadUnsignedLong()
+						end
+
+						if version >= 11 then
+							lump.uniform_scale = bsp_file:ReadFloat()
+						end
+					else
+						local remaining = tonumber(lump_size - (bsp_file:GetPosition() - pos))
+						bsp_file:Advance(remaining)
+						--local bytes = bsp_file:ReadBytes(remaining)
 					end
 
 					lump.model = paths[lump.prop_type + 1] or paths[1]
