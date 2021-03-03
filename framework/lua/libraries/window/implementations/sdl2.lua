@@ -492,7 +492,7 @@ if OPENGL and not NULL_OPENGL then
 
 	function META:PostWindowSetup(wnd_ptr)
 		local context
-		local errors = ""
+		local errors = {}
 		local failed_once = false
 
 		for _, attempt in ipairs(attempts) do
@@ -511,19 +511,19 @@ if OPENGL and not NULL_OPENGL then
 			context = sdl.GL_CreateContext(wnd_ptr)
 
 			if context ~= nil then
-				if errors ~= "" then
+				if not errors[1] then
 					llog("successfully created OpenGL context ", attempt.version or "??", " ", attempt.profile_mask)
 				end
 				break
 			else
-				local err = ffi.string(sdl.GetError())
-				llog("could not requested OpenGL ", attempt.version or "??", " ", attempt.profile_mask, ": ", err)
-				errors = errors .. err .. "\n"
+				local err = ffi.string(sdl.GetError()):trim()
+				llog("could not request OpenGL ", attempt.version or "??", " ", attempt.profile_mask, ": ", err)
+				table.insert(errors, err)
 			end
 		end
 
 		if context == nil then
-			error("sdl.GL_CreateContext failed: " .. errors, 2)
+			error("sdl.GL_CreateContext failed: " .. table.concat(errors, "\n"), 2)
 		end
 
 		gl.GetProcAddress = sdl.GL_GetProcAddress
