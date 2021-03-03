@@ -485,5 +485,7 @@ function table.weak(k, v)
 		mode = "kv"
 	end
 
-	return setmetatable({}, {__mode  = mode})
+	--return setmetatable({}, {__mode  = mode})
+
+	return {}
 end
