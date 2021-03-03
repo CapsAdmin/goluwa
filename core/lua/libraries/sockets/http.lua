@@ -91,8 +91,10 @@ function sockets.MixinHTTP(META)
                 local size_stop, chunk_start = body:find("\r\n", pos, true)
                 local size = tonumber(body:sub(pos, size_stop), 16)
 
+                
+
                 if not size then
-                    return self:Error("chunk #" .. i .. " has no size? " .. body:sub(pos, size_stop))
+                    return self:Error("chunk #" .. i .. " has no size?")
                 end
 
                 pos = size_stop + 2
@@ -194,14 +196,16 @@ function sockets.MixinHTTP(META)
 
                 if state.header["transfer-encoding"] == "chunked" then
                     if not state.received_bytes or state.received_bytes > state.to_receive then
-                        local hex_num, rest = chunk:match("^(.-)\r\n(.+)")
+                        local hex_num, rest = chunk:match("^([abcdefABCDEF0123456789]-)\r\n(.+)")
                         
                         if hex_num == "0" then
                             state.chunked_done = true
-                        else
+                        elseif hex_num then
                             local num = tonumber("0x" .. hex_num)
                             self:SetBufferSize(num)
                             state.to_receive = num
+                        else
+                            state.to_receive = 0
                         end
 
                         chunk = rest or chunk
@@ -209,6 +213,14 @@ function sockets.MixinHTTP(META)
                     end
                     
                     state.received_bytes = (state.received_bytes or 0) + #chunk
+
+                    if state.received_bytes > state.to_receive then
+                        local hex_num, rest = chunk:match("^([abcdefABCDEF0123456789]-)\r\n(.+)")
+
+                        if hex_num == "0" or chunk:endswith("0\r\n\r\n") then
+                            state.chunked_done = true
+                        end
+                    end
                 end
 
                 state.current_body_chunk = chunk
@@ -219,8 +231,10 @@ function sockets.MixinHTTP(META)
 
                 local body = nil
 
-                if state.header["transfer-encoding"] == "chunked" and state.chunked_done then
+                if state.header["transfer-encoding"] == "chunked" then
+                    if state.chunked_done then
                     body = self:GetWrittenBodyString()
+                    end
                 elseif state.header["content-length"] and self:GetWrittenBodySize() >= state.header["content-length"] then
                     body = self:GetWrittenBodyString()
                 elseif self:GetWrittenBodyString():endswith("0\r\n\r\n") then
