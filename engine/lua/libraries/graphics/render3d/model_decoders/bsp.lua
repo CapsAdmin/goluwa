@@ -196,7 +196,7 @@ function steam.LoadMap(path)
 		local ok, err = vfs.Mount(R(name))
 		
 		if not vfs.IsDirectory(R(name)) then
-			wlog("cannot mount bsp zip " .. name .. ": " .. err)
+			wlog("cannot mount bsp zip " .. name .. " because the zip file is not a directory")
 			wlog("assets from this map will be missing")
 		end
 	end
