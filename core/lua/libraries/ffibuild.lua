@@ -1980,6 +1980,11 @@ do -- lua helper functions
 			local res = not info.filter_library or info.filter_library(vfs.RemoveExtensionFromPath(path))
 			if res then
 				local name = (WINDOWS and "" or "lib") .. info.name
+
+				if name:startswith("liblib") then
+					name = name:sub(4)
+				end
+
 				if res == true and info.filter_library then
 					name = vfs.RemoveExtensionFromPath(vfs.GetFileNameFromPath(path))
 				end

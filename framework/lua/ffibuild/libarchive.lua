@@ -7,7 +7,7 @@
 ffibuild.Build({
 	name = "libarchive",
 	url = "https://github.com/libarchive/libarchive.git",
-	cmd = "cmake . && make",
+	cmd = "cmake -DENABLE_NETTLE=OFF -D -DENABLE_LIBB2=OFF . && make",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 
 	c_source = [[
