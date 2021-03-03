@@ -50,10 +50,13 @@ function steam.SetMap(name)
 	steam.bsp_world:SetPhysicsModelPath(path)
 	steam.bsp_world:RemoveChildren()
 
-	tasks.WaitForTask(path, function()
-		utility.PushTimeWarning()
-		steam.SpawnMapEntities(path, steam.bsp_world)
-		utility.PopTimeWarning("spawning map entities")
+	-- hack because promises will force SetModelPath to run one frame later
+	event.Delay(0.1, function() 
+		tasks.WaitForTask(path, function()
+			utility.PushTimeWarning()
+			steam.SpawnMapEntities(path, steam.bsp_world)
+			utility.PopTimeWarning("spawning map entities")
+		end)
 	end)
 end
 
@@ -117,7 +120,7 @@ end
 
 function steam.LoadMap(path)
 	path = R(path)
-
+	
 	logn("loading map: ", path)
 
 	local bsp_file = assert(vfs.Open(path))
@@ -190,7 +193,12 @@ function steam.LoadMap(path)
 
 		vfs.Write(name, pak)
 
-		vfs.Mount(R(name))
+		local ok, err = vfs.Mount(R(name))
+		
+		if not vfs.IsDirectory(R(name)) then
+			wlog("cannot mount bsp zip " .. name .. ": " .. err)
+			wlog("assets from this map will be missing")
+		end
 	end
 
 	do
