@@ -276,7 +276,13 @@ do
 		gl.GenQueries(1, temp)
 		local self = ffi.new(ctype)
 		self.id = temp[0]
+
+		if gl.IsQuery(self.id) == 0 then
+			return nil, "unable to create query of type " .. type .. " id is 0"
+		end
+
 		self.type = translate[type]
+
 		return self
 	end
 end

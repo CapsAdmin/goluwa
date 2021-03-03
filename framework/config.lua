@@ -13,8 +13,7 @@ return {
 			SRGB = true,
 			NULL_OPENGL = false,
 			BUILD_SHADER_OUTPUT = false,
-			DEBUG_OPENGL = false,
-
+			RENDER_EXT_ARB_bindless_texture = false,
 
 			OPENGL = true,
 			VULKAN = false,
