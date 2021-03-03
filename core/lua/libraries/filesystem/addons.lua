@@ -100,16 +100,9 @@ function vfs.FetchBniariesForAddon(addon, callback)
 
 		http.Download(url)
 		:Subscribe("header", function(header)
-
 			if header["x-next-page"] and header["x-next-page"] ~= "" then
 				page = header["x-next-page"]
 				paged_request()
-			else
-				if #found == 0 then
-					llog("no binaries found for %s", addon)
-				else
-					handle_content(found)
-				end
 			end
 		end)
 		:Then(function(content)
@@ -120,6 +113,12 @@ function vfs.FetchBniariesForAddon(addon, callback)
 						table.insert(found, {url = base_url .. path, path = path})
 					end
 				end
+			end
+
+			if #found == 0 then
+				llog("no binaries found for %s", addon)
+			else
+				handle_content(found)
 			end
 		end)
 		:Catch(function(err)

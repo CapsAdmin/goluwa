@@ -437,8 +437,15 @@ function vfs.WatchLuaFiles2(b)
 		local time = system.GetElapsedTime()
 
 		if time > next_check then
-			if WINDOW and window.IsFocused() then return end
-			if not WINDOW and not repl.IsFocused() then return end
+			if window then
+				-- TODO: window does not exist in core
+				if window.IsFocused() then 
+					return
+				end
+			elseif repl.IsFocused() then 
+				return 
+			end
+
 			if profiler.IsBusy() then return end -- I already know this is slow so it's just in the way
 
 			for i, data in ipairs(paths) do
