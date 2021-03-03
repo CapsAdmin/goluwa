@@ -174,125 +174,174 @@ function steam.GetSourceGames()
 
 	local done = {}
 
-	for _, game_dir in ipairs(steam.GetGameFolders()) do
-		for _, dir in ipairs(vfs.Find("os:" .. game_dir, true)) do
-			dir = dir .. "/"
+	local function collect_gameinfos()
+		local gameinfos = {}
 
-			local path = "os:" .. dir .. "gameinfo.txt"
-			local str = vfs.Read(path)
+		for _, game_dir in ipairs(steam.GetGameFolders()) do
 
-			if not str then
-				path = "os:" .. dir .. "GameInfo.txt"
-				str = vfs.Read(path)
-			end
+			if vfs.IsDirectory("os:" .. game_dir .. "/game") then
+				for _, dir in ipairs(vfs.Find("os:" .. game_dir .. "game/", true)) do
+					if not dir:endswith("/core") then
+						dir = dir .. "/"
+						
+						local path = "os:" .. dir .. "gameinfo.gi"
+						local str = vfs.Read(path)
 
-			local game_info_dir = dir
-			dir = vfs.GetParentFolderFromPath(dir)
+						local game_info_dir = dir
+						dir = vfs.GetParentFolderFromPath(dir)
+		
+						if str then
+							local tbl = utility.VDFToTable(str, true)
+		
+							if tbl and tbl.gameinfo and tbl.gameinfo.game and tbl.gameinfo.filesystem then
+		
+								local core = utility.VDFToTable(vfs.Read("os:" .. game_dir .. "game/core/gameinfo.gi"), true)
 
-			if str then
-				local tbl = utility.VDFToTable(str, true)
-				if tbl and tbl.gameinfo and tbl.gameinfo.game and tbl.gameinfo.filesystem then
-					tbl = tbl.gameinfo
-
-					if not tbl.filesystem.steamappid or not done[tbl.filesystem.steamappid] then
-
-						done[tbl.filesystem.steamappid] = true
-
-						tbl.gameinfo_path = path
-
-						tbl.game_dir = game_dir
-
-						local name = tbl.game
-						if tbl.title and tbl.title ~= name then
-							name = name .. " - " .. tbl.title
-						end
-						if tbl.title and tbl.title2 and tbl.title2 ~= tbl.title then
-							name = name .. " - " .. tbl.title2
-						end
-						tbl.name = name
-
-						if tbl.filesystem then
-							local fixed = {}
-
-							local done = {}
-							for _, v in pairs(tbl.filesystem.searchpaths) do
-								local tbl = type(v) == "string" and {v} or v
-								for _, path in pairs(tbl) do
-									if path:find("|", nil, true) then
-										path = path:replace("|gameinfo_path|", game_info_dir)
-										path = path:replace("|all_source_engine_paths|", dir)
-									else
-										path = dir .. path
-									end
-
-									path = vfs.FixPathSlashes(path)
-
-									if path:endswith("*") then
-										if not done[path] then
-											table.insert(fixed, path)
-											done[path] = true
-										end
-									else
-										if path:endswith(".") then
-											path = path:sub(0,-2)
-										end
-
-										if path:endswith("/") then
-											local test = path .. "/"
-											if vfs.IsDirectory(test) then
-												if not done[test] then
-													table.insert(fixed, test)
-													done[test] = true
-												end
-											end
-										else
-											local test = path .. "/"
-											if vfs.IsDirectory(test) then
-												if not done[test] then
-													table.insert(fixed, test)
-													done[test] = true
-												end
-											end
-
-											local test = path .. "/pak01_dir.vpk/"
-											if vfs.IsDirectory(test) then
-												if not done[test] then
-													table.insert(fixed, test)
-													done[test] = true
-												end
-											end
-										end
-
-										if path:endswith(".vpk") and not vfs.IsFile("os:" .. path) then
-											local path = path:gsub("(.+/.+)%.vpk", "%1_dir.vpk") .. "/"
-											if not done[path] then
-												table.insert(fixed, path)
-												done[path] = true
-											end
-										end
-									end
-								end
+								tbl = tbl.gameinfo
+								
+								tbl = table.merge(core.gameinfo, tbl)
+		
+								tbl.gameinfo_path = path
+								tbl.game_dir = game_dir
+								tbl.vdf_directory = dir
+		
+								table.insert(gameinfos, tbl)
 							end
-
-							-- utility.VDFToTable does not support ordered keys.
-							-- lets just prioritize vpk in the meantime
-							local sorted = {}
-							for _, v in ipairs(fixed) do
-								if v:endswith(".vpk/") then
-									table.insert(sorted, v)
-								end
-							end
-							for _, v in ipairs(fixed) do
-								if not v:endswith(".vpk/") then
-									table.insert(sorted, v)
-								end
-							end
-							tbl.filesystem.searchpaths = sorted
-
-							table.insert(found, tbl)
 						end
 					end
 				end
+			end
+
+			for _, dir in ipairs(vfs.Find("os:" .. game_dir, true)) do
+				dir = dir .. "/"
+				
+				local path = "os:" .. dir .. "gameinfo.txt"
+				local str = vfs.Read(path)
+	
+				if not str then
+					path = "os:" .. dir .. "GameInfo.txt"
+					str = vfs.Read(path)
+				end
+	
+				local game_info_dir = dir
+				dir = vfs.GetParentFolderFromPath(dir)
+
+				if str then
+					local tbl = utility.VDFToTable(str, true)
+
+					if tbl and tbl.gameinfo and tbl.gameinfo.game and tbl.gameinfo.filesystem then
+
+						tbl = tbl.gameinfo
+
+						tbl.gameinfo_path = path
+						tbl.game_dir = game_dir
+						tbl.vdf_directory = dir
+
+						table.insert(gameinfos, tbl)
+					end
+				end
+			end
+		end
+
+		return gameinfos
+	end
+
+	for _, tbl in ipairs(collect_gameinfos()) do
+		if not tbl.filesystem.steamappid or not done[tbl.filesystem.steamappid] then
+
+			if tbl.filesystem.steamappid then
+				done[tbl.filesystem.steamappid] = true
+			end
+
+			local name = tbl.game
+			if tbl.title and tbl.title ~= name then
+				name = name .. " - " .. tbl.title
+			end
+			if tbl.title and tbl.title2 and tbl.title2 ~= tbl.title then
+				name = name .. " - " .. tbl.title2
+			end
+			tbl.name = name
+
+			if tbl.filesystem then
+				local fixed = {}
+
+				local done = {}
+				for _, v in pairs(tbl.filesystem.searchpaths) do
+					local vdf_directory = tbl.vdf_directory
+					local tbl = type(v) == "string" and {v} or v
+					for _, path in pairs(tbl) do
+						if path:find("|", nil, true) then
+							path = path:replace("|gameinfo_path|", game_info_dir)
+							path = path:replace("|all_source_engine_paths|", dir)
+						else
+							path = vdf_directory .. path
+						end
+
+						path = vfs.FixPathSlashes(path)
+
+						if path:endswith("*") then
+							if not done[path] then
+								table.insert(fixed, path)
+								done[path] = true
+							end
+						else
+							if path:endswith(".") then
+								path = path:sub(0,-2)
+							end
+
+							if path:endswith("/") then
+								local test = path .. "/"
+								if vfs.IsDirectory(test) then
+									if not done[test] then
+										table.insert(fixed, test)
+										done[test] = true
+									end
+								end
+							else
+								local test = path .. "/"
+								if vfs.IsDirectory(test) then
+									if not done[test] then
+										table.insert(fixed, test)
+										done[test] = true
+									end
+								end
+
+								local test = path .. "/pak01_dir.vpk/"
+								if vfs.IsDirectory(test) then
+									if not done[test] then
+										table.insert(fixed, test)
+										done[test] = true
+									end
+								end
+							end
+
+							if path:endswith(".vpk") and not vfs.IsFile("os:" .. path) then
+								local path = path:gsub("(.+/.+)%.vpk", "%1_dir.vpk") .. "/"
+								if not done[path] then
+									table.insert(fixed, path)
+									done[path] = true
+								end
+							end
+						end
+					end
+				end
+
+				-- utility.VDFToTable does not support ordered keys.
+				-- lets just prioritize vpk in the meantime
+				local sorted = {}
+				for _, v in ipairs(fixed) do
+					if v:endswith(".vpk/") then
+						table.insert(sorted, v)
+					end
+				end
+				for _, v in ipairs(fixed) do
+					if not v:endswith(".vpk/") then
+						table.insert(sorted, v)
+					end
+				end
+				tbl.filesystem.searchpaths = sorted
+
+				table.insert(found, tbl)
 			end
 		end
 	end
