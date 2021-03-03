@@ -527,7 +527,9 @@ function editor.Open()
 		end
 
 		local clipboard = serializer.Decode("luadata", window.GetClipboard(), true)
-		if not clipboard.config or not clipboard.self or not clipboard.self.GUID then clipboard = nil end
+		if clipboard then
+			if not clipboard.config or not clipboard.self or not clipboard.self.GUID then clipboard = nil end
+		end
 
 		--add("wear", nil, frame:GetSkin().icons.wear)
 
