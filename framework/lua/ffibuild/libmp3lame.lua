@@ -4,7 +4,7 @@ ffibuild.Build({
 	cmd = "./configure && make",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 
-	c_source = [[#include "lame/lame.h"]],
+	c_source = [[#include "lame.h"]],
 	gcc_flags = "-I./include",
 
 	process_header = function(header)

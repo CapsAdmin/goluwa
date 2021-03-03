@@ -128,6 +128,9 @@ function ffibuild.SourceControlClone(str, dir)
 			os.execute("hg clone " .. str .. " " .. dir)
 		end
 	elseif str:find("svn%.") or str:find("svn%:") then
+		if not system.OSCommandExists("svn") then
+			error("svn is not found in PATH")
+		end
 		os.execute("svn checkout " .. str .. " " .. dir)
 	else
 		os.execute(str)
@@ -1695,7 +1698,7 @@ do -- lua helper functions
 
 		local lua =
 		"local ffi = require(\"ffi\");" ..
-		(table.hasvalue(helpers, "ffi.C") and "local CLIB = ffi.C" or "local CLIB = assert(ffi.load(\""..(ffibuild.shared_library_name or ffibuild.GetBuildName()).."\"));") ..
+		(table.hasvalue(helpers, "ffi.C") and "local CLIB = ffi.C;" or "local CLIB = assert(ffi.load(\""..(ffibuild.shared_library_name or ffibuild.GetBuildName()).."\"));") ..
 		"ffi.cdef([["..ffi_header.."]])\n" ..
 		"local library = {}\n"
 
@@ -1991,7 +1994,7 @@ do -- lua helper functions
 				local to =  git_dir .. bin_path
 				if vfs.IsDirectory(git_dir) then
 					vfs.CopyFile(path, to)
-					llog("%q was added", path)
+					llog("%q was added to %q", path, to)
 				end
 
 				local to =  addon_dir .. bin_path

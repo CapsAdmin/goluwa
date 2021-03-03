@@ -1,3 +1,9 @@
+--[[
+	ubuntu dependencies
+
+	https://github.com/libarchive/libarchive/blob/master/.github/workflows/ci.yml#L54
+
+]]
 ffibuild.Build({
 	name = "libarchive",
 	url = "https://github.com/libarchive/libarchive.git",
