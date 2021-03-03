@@ -489,6 +489,10 @@ do
 		return children
 	end
 
+	function META:ChildCount()
+		return #self:GetChildren()
+	end
+
 	function META:GetChild(idx)
 		return self:GetChildren()[idx - 1]
 	end
@@ -532,6 +536,10 @@ do
 
 	function META:IsVisible()
 		return self.__obj.Visible
+	end
+
+	function META:IsWorldClicker()
+		return false
 	end
 
 	function META:GetTable()
@@ -829,6 +837,7 @@ do
 
 	do -- z pos stuff
 		function META:SetZPos(pos)
+			pos = pos or 0
 			self.__obj:SetChildOrder(-pos)
 		end
 
