@@ -67,12 +67,28 @@ end
 
 	end
 
+	function META:GetShootPos()
+		if CLIENT then
+			gine.env.EyePos()
+		end
+
+		return gine.env.Vector()
+	end
+
 	function META:GetAimVector()
 		if CLIENT then
 			return gine.env.EyeVector()
 		end
 
 		return gine.env.Vector()
+	end
+
+	function META:GetHull()
+		return gine.env.Vector(-16, -16, 0), gine.env.Vector(16, 16, 72)
+	end
+
+	function META:GetHullDuck()
+		return gine.env.Vector(-16, -16, 0), gine.env.Vector(16, 16, 32)
 	end
 
 	function META:GetViewEntity()

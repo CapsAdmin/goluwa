@@ -239,6 +239,10 @@ do
 		return 0
 	end
 
+	function META:WaterLevel()
+		return 0
+	end
+	
 	function META:LookupBone(name)
 		return 0
 	end
@@ -350,6 +354,10 @@ do
 	end
 
 	function META:BoundingRadius()
+		return 1
+	end
+
+	function META:GetModelScale()
 		return 1
 	end
 

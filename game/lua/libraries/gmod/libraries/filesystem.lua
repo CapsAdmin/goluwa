@@ -9,6 +9,21 @@ local search_paths = {
 	base_path = "os:" .. gine.dir .. "../bin/",
 }
 
+local function resolve_path(path, where)
+	if not path then error("path is nil", 3) end
+	where = where or "data"
+	local search_path = search_paths[where:lower()]
+	
+	if not search_path then
+		wlog("%q is not a valid search path! defaulting to GAME", where)
+		search_path = search_paths.game
+	end
+	
+	path = search_path .. path
+
+	return path, where
+end
+
 do
 	local file = gine.env.file
 
@@ -54,18 +69,18 @@ do
 	end
 
 	function file.Exists(path, where)
-		where = where or "data"
-		return vfs.Exists(search_paths[where:lower()] .. path)
+		path, where = resolve_path(path, where)
+		return vfs.Exists(path)
 	end
 
 	function file.IsDir(path, where)
-		where = where or "data"
-		return vfs.IsDirectory(search_paths[where:lower()] .. path)
+		path, where = resolve_path(path, where)
+		return vfs.IsDirectory(path)
 	end
 
 	function file.Size(path, where)
-		where = where or "data"
-		local str = vfs.Read(search_paths[where:lower()] .. path)
+		path, where = resolve_path(path, where)
+		local str = vfs.Read(path)
 		if str then
 			return #str
 		end
@@ -73,8 +88,8 @@ do
 	end
 
 	function file.Time(path, where)
-		where = where or "data"
-		return vfs.GetLastModified(search_paths[where:lower()] .. path) or 0
+		path, where = resolve_path(path, where)
+		return vfs.GetLastModified(path) or 0
 	end
 
 	function file.CreateDir(path, where)
@@ -84,8 +99,7 @@ end
 
 do
 	function gine.env.file.Open(path, how, where)
-		where = where or "data"
-		path = search_paths[where:lower()] .. path
+		path, where = resolve_path(path, where)
 
 		--llog("file.Open(%s, %s, %s)", R(path), how, where)
 

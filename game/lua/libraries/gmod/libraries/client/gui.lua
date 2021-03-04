@@ -63,6 +63,10 @@ do
 	function vgui.CursorVisible()
 		return window.GetCursor() ~= "trapped"
 	end
+
+	function vgui.GetWorldPanel()
+		return gine.WrapObject(gine.gui_world, "Panel")
+	end
 end
 
 do
@@ -418,7 +422,7 @@ do
 	end
 
 	function META:GetClassName()
-		return self.ClassName
+		return self.ClassName or ""
 	end
 
 	function META:IsMarkedForDeletion()
@@ -531,11 +535,15 @@ do
 	end
 
 	function META:GetName(name)
-		return self.__obj.name
+		return self.__obj.name or ""
 	end
 
 	function META:IsVisible()
 		return self.__obj.Visible
+	end
+
+	function META:IsModal()
+		return false
 	end
 
 	function META:IsWorldClicker()
@@ -752,6 +760,10 @@ do
 	function META:SetTextInset(x, y)
 		self.__obj.text_inset.x = x
 		self.__obj.text_inset.y = y
+	end
+
+	function META:GetTextInset()
+		return self.__obj.text_inset.x, self.__obj.text_inset.y
 	end
 
 	function META:SizeToChildren(size_w, size_h)

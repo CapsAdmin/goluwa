@@ -7,6 +7,7 @@ function util.KeyValuesToTable(str)
 		return {}
 	end
 	local key, val = next(tbl)
+	print(str, key, val, "?!?!")
 	return val
 end
 
@@ -55,4 +56,19 @@ end
 
 function gine.env.WorldToLocal()
 	return gine.env.Vector(), gine.env.Angle()
+end
+
+function util.GetSunInfo()
+	return {
+		direction = gine.env.Vector(0,0,1),
+		obstruction = 0,
+	}
+end
+
+function util.GetPixelVisibleHandle()
+	return {}
+end
+
+function util.PixelVisible(pos, radius, handle)
+	return 1
 end
