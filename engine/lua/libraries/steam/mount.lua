@@ -70,7 +70,7 @@ commands.Add("list_games", function()
 	end
 end)
 
-commands.Add("list_maps=string", function(search)
+commands.Add("list_maps", function(search)
 	for _, name in ipairs(vfs.Find("maps/%.bsp$")) do
 		if not search or name:find(search) then
 			logn(name:sub(0, -5))
