@@ -121,7 +121,7 @@ do -- constants
 		end
 	end
 
-	e.BIN_FOLDER = e.ROOT_FOLDER .. os.getenv("GOLUWA_BINARY_DIR") .. "/"
+	e.BIN_FOLDER = e.ROOT_FOLDER .. (os.getenv("GOLUWA_BINARY_DIR") or "core/bin/linux_x64/") .. "/"
 	e.CORE_FOLDER = e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/"
 
 	e.STORAGE_FOLDER = e.ROOT_FOLDER .. "storage/"
