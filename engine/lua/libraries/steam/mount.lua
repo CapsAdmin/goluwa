@@ -401,6 +401,16 @@ do
 			end
 		end
 
+		for _, lib_folder in ipairs(steam.GetLibraryFolders()) do
+			for _, path in ipairs(vfs.Find(lib_folder .. "workshop/content/" .. game_info.filesystem.steamappid .. "/", true)) do
+				if vfs.IsFile(path .. "/temp.gma") then
+					llog("mounting workshop addon %s", path)
+					vfs.Mount(path .. "/temp.gma", nil, game_info)
+				end
+
+			end
+		end
+		
 		cache_mounted[game_info.filesystem.steamappid] = game_info
 
 		return game_info
