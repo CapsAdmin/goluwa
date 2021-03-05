@@ -693,7 +693,9 @@ do -- extended
 	end
 
 	function META:ReadChar()
-		return string.char(self:ReadByte())
+		local b = self:ReadByte()
+		if not b then return end
+		return string.char(b)
 	end
 
 	-- nil

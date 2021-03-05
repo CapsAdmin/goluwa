@@ -16,9 +16,11 @@ function repl.RenderInput()
 	local w,h = terminal.GetSize()
 	local x,y = repl.GetCaretPosition()
 
+	w = 100
+
 	-- clear the input row
 	repl.WriteStringToScreen(0, y, (" "):rep(w))
-
+	
 	repl.SetCaretPosition(0,y)
 	repl.WriteStringToScreen(0, y, repl.buffer)
 	repl.SetCaretPosition(x,y)

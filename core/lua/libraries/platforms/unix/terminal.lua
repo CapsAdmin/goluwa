@@ -31,7 +31,21 @@ else
     ]])
 end
 
+local STDOUT_FILENO = 1
+local TIOCGWINSZ = 0x5413
+
 ffi.cdef([[
+
+    struct terminal_winsize
+    {
+        unsigned short int ws_row;
+        unsigned short int ws_col;
+        unsigned short int ws_xpixel;
+        unsigned short int ws_ypixel;
+    };
+
+    int ioctl(int fd, unsigned long int req, ...);
+
     int tcgetattr(int, struct termios *);
     int tcsetattr(int, int, const struct termios *);
 
@@ -169,99 +183,119 @@ function terminal.SetCaretPosition(x, y)
     terminal.Write("\27[" .. y .. ";" .. x .. "f")
 end
 
+local function add_event(...)
+    table.insert(terminal.event_buffer, {...})
+end
+
 local function process_input(str)
-    if str == "" or str == "\n" or str == "\r" then
-        table.insert(terminal.event_buffer, {"enter"})
-    elseif str:byte() >= 32 and str:byte() < 127 then
-        table.insert(terminal.event_buffer, {"string", str})
-    elseif str:sub(1,2) == "\27[" then
-        local seq = str:sub(3, str:len())
+    
+    if str == "" then
+        add_event("enter")
+        return
+    end
 
-        if seq == "3~" then
-            table.insert(terminal.event_buffer, {"delete"})
-        elseif seq == "3;5~" then
-            table.insert(terminal.event_buffer, {"ctrl_delete"})
-        elseif seq == "D" then
-            table.insert(terminal.event_buffer, {"left"})
-        elseif seq == "C" then
-            table.insert(terminal.event_buffer, {"right"})
-        elseif seq == "A" then
-            table.insert(terminal.event_buffer, {"up"})
-        elseif seq == "B" then
-            table.insert(terminal.event_buffer, {"down"})
-        elseif seq == "H" or seq == "1~" then
-            table.insert(terminal.event_buffer, {"home"})
-        elseif seq == "F" or seq == "4~" then
-            table.insert(terminal.event_buffer, {"end"})
-        elseif seq == "1;5C" then
-            table.insert(terminal.event_buffer, {"ctrl_right"})
-        elseif seq == "1;5D" then
-            table.insert(terminal.event_buffer, {"ctrl_left"})
-        else
-            --print("ansi escape sequence: " .. seq)
-        end
-    elseif str:sub(1,1) == "\27" then
-        local seq = str:sub(2, str:len())
-        if seq == "b" then
-            table.insert(terminal.event_buffer, {"ctrl_left"})
-        elseif seq == "f" then
-            table.insert(terminal.event_buffer, {"ctrl_right"})
-        elseif seq == "D" then
-            table.insert(terminal.event_buffer, {"ctrl_delete"})
-        end
-    else
-        -- in a tmux session over ssh
-        if str == "\127\127" then
-            str = "\127"
-        end
+    local buf = utility.CreateBuffer(str)
+    buf:SetPosition(0)
+    
+    while true do
+        local c = buf:ReadChar()
+        if not c then break end
 
-        if #str == 1 then
-            local byte = str:byte()
-            if byte == 3 then -- ctrl c
-                table.insert(terminal.event_buffer, {"ctrl_c"})
-            elseif byte == 127 then -- backspace
-                table.insert(terminal.event_buffer, {"backspace"})
-            elseif byte == 23 or byte == 8 then -- ctrl backspace
-                table.insert(terminal.event_buffer, {"ctrl_backspace"})
-            elseif byte == 22 then
-                table.insert(terminal.event_buffer, {"ctrl_v"})
-            elseif byte == 1 then
-                table.insert(terminal.event_buffer, {"home"})
-            elseif byte == 5 then
-                table.insert(terminal.event_buffer, {"end"})
-            elseif byte == 21 then
-                table.insert(terminal.event_buffer, {"cmd_backspace"})
-            else
-                --print("byte: " .. byte)
-            end
-        elseif str:byte() < 127 then
-            if str == "\27\68" then -- ctrl delete
-                table.insert(terminal.event_buffer, {"ctrl_delete"})
-            else
-                for _, char in ipairs(str:utotable()) do
-                    process_input(char)
+        if c:byte() < 32 then
+            if c == "\27" then
+                local c = buf:ReadChar()
+    
+                if c == "[" then
+                    local c = buf:ReadChar()
+                    
+                    if c == "D" then
+                        add_event("left")
+                    elseif c == "1" then
+                        local c = buf:ReadString(3)
+                        
+                        if c == ";5D" then
+                            add_event("ctrl_left")
+                        elseif c == ";5C" then
+                            add_event("ctrl_right")
+                        elseif c == ";5F" then
+                            add_event("home")
+                        elseif c == ";5H" then
+                            add_event("end")
+                        end
+
+                    elseif c == "C" then
+                        add_event("right")
+                    elseif c == "A" then
+                        add_event("up")
+                    elseif c == "B" then
+                        add_event("down")
+                    elseif c == "H" then
+                        add_event("home")
+                    elseif c == "F" then
+                        add_event("end")
+                    elseif c == "3" then
+                        add_event("delete")
+                        local c = buf:ReadChar()
+
+                        if c == ";" then
+                            -- prevents alt and meta delete key from spilling ;9 and ;3
+                            buf:Advance(2)
+                        elseif c ~= "~" then
+                            -- spill all other keys except ~
+                            buf:Advance(-1)
+                        end
+
+                    elseif c == "2" then
+                        add_event("backspace")
+                    else
+                        wlog("unhandled control character %q", c)
+                    end
+                elseif c == "b" then
+                    add_event("ctrl_left")
+                elseif c == "f" then
+                    add_event("ctrl_right")
+                elseif c == "d" then
+                    add_event("ctrl_delete")
+                else
+                    wlog("unhandled control character %q", c)
                 end
-                --print("char sequence: " .. table.concat({str:byte(1, str:ulen())}, ", ") .. " (" .. str:ulen() .. ")")
+            elseif c == "\r" or c == "\n" then
+                add_event("enter")
+            elseif c == "\3" then
+                add_event("ctrl_c")
+            elseif c == "\23" or c == "\8" then -- ctrl backspace
+                add_event("ctrl_backspace")
+            elseif c == "\22" then
+                add_event("ctrl_v")
+            elseif c == "\1" then
+                add_event("home")
+            elseif c == "\5" then
+                add_event("end")
+            elseif c == "\21" then
+                add_event("ctrl_backspace")
+            else
+                wlog("unhandled control character %q", c)
             end
-        else -- unicode ?
-            table.insert(terminal.event_buffer, {"string", str})
+        elseif c == "\127" then
+            add_event("backspace")
+        elseif utf8.bytelength(c) then
+            buf:Advance(-1)
+            add_event("string", buf:ReadString(utf8.bytelength(c)))
         end
+
+        if buf:GetPosition() >= buf:GetSize() then break end
     end
 end
 
 local function read_coordinates()
     while true do
-
 		local str = terminal.Read()
 
 		if str then
             local a,b = str:match("^\27%[(%d+);(%d+)R$")
             if a then
                 return tonumber(a), tonumber(b)
-            else
-                process_input(str)
             end
-            return
         end
     end
 end
@@ -283,18 +317,12 @@ do
 end
 
 do
-    local _w, _h = 0, 0
+    local size = ffi.new("struct terminal_winsize[1]")
 
     function terminal.GetSize()
-        terminal.WriteNow("\27[s\27[999;999f\x1b[6n\27[u")
+        ffi.C.ioctl(STDOUT_FILENO, TIOCGWINSZ, size);
 
-        local h,w = read_coordinates()
-
-        if h then
-            _w, _h = w, h
-        end
-
-        return _w,_h
+        return size[0].ws_row, size[0].ws_col
     end
 end
 
