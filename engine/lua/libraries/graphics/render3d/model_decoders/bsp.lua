@@ -277,22 +277,24 @@ function steam.LoadMap(path)
 				
 				count = bsp_file:ReadLong()
 				
-				local lump_size = ((lump.filelen + lump.fileofs) - bsp_file:GetPosition()) / count
-
+				local lump_size = ((filelen + fileofs) - bsp_file:GetPosition()) / count
 				for _ = 1, count do
 					local pos = bsp_file:GetPosition()
 					
 					local lump = bsp_file:ReadStructure([[
 						vec3 origin; // origin
 						ang3 angles; // orientation (pitch yaw roll)
+
 						unsigned short prop_type; // index into model name dictionary
 						unsigned short first_leaf; // index into leaf array
 						unsigned short leaf_count; // solidity type
 						byte solid;
 						byte flags; // model skin numbers
+
 						int skin;
 						float fade_min_dist;
 						float fade_max_dist;
+
 						vec3 lighting_origin; // for lighting
 					]])
 					
