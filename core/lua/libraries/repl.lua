@@ -16,8 +16,6 @@ function repl.RenderInput()
 	local w,h = terminal.GetSize()
 	local x,y = repl.GetCaretPosition()
 
-	w = 100
-
 	-- clear the input row
 	repl.WriteStringToScreen(0, y, (" "):rep(w))
 	
@@ -79,8 +77,14 @@ do
 	function repl.Flush()
 		if not buf[1] then return end
 
-		terminal.EnableCaret(false)
+		if repl.move_caret_to_tail then
+			local tx, ty = repl.GetTailPosition()
+			repl.SetCaretPosition(repl.move_caret_to_tail,ty)
+			repl.move_caret_to_tail = nil
+		end
 
+		terminal.EnableCaret(false)
+		
 		local str = table.concat(buf)
 		table.clear(buf)
 
@@ -329,12 +333,9 @@ end
 function repl.Echo(str)
 	local x, y = repl.GetCaretPosition()
 	local w, h = terminal.GetSize()
-
+	repl.WriteStringToScreen(0, y, (" "):rep(w))
 	repl.WriteStringToScreen(0, y, (" "):rep(utf8.length(str)))
-	repl.SetCaretPositionReal(0,y)
-	repl.StyledWrite("> " .. str, true)
-	repl.Flush()
-	repl.WriteNow("\n")
+	repl.StyledWrite("> " .. str .. "\n", true)
 	repl.SetCaretPosition(0,y+1)
 	repl.Flush()
 end

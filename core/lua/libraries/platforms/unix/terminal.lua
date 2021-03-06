@@ -31,21 +31,7 @@ else
     ]])
 end
 
-local STDOUT_FILENO = 1
-local TIOCGWINSZ = 0x5413
-
 ffi.cdef([[
-
-    struct terminal_winsize
-    {
-        unsigned short int ws_row;
-        unsigned short int ws_col;
-        unsigned short int ws_xpixel;
-        unsigned short int ws_ypixel;
-    };
-
-    int ioctl(int fd, unsigned long int req, ...);
-
     int tcgetattr(int, struct termios *);
     int tcsetattr(int, int, const struct termios *);
 
@@ -317,12 +303,31 @@ do
 end
 
 do
-    local size = ffi.new("struct terminal_winsize[1]")
+    local STDOUT_FILENO = 1
 
+    ffi.cdef([[
+        struct terminal_winsize
+        {
+            unsigned short int ws_row;
+            unsigned short int ws_col;
+            unsigned short int ws_xpixel;
+            unsigned short int ws_ypixel;
+        };
+    
+        int ioctl(int fd, unsigned long int req, ...);    
+    ]])
+
+    local TIOCGWINSZ = 0x5413
+    if jit.os == "OSX" then
+        TIOCGWINSZ = 0x40087468
+    end
+
+    local size = ffi.new("struct terminal_winsize[1]")
+    
     function terminal.GetSize()
         ffi.C.ioctl(STDOUT_FILENO, TIOCGWINSZ, size);
 
-        return size[0].ws_row, size[0].ws_col
+        return size[0].ws_col, size[0].ws_row
     end
 end
 
