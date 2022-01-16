@@ -25,3 +25,4 @@ jobs:
           context: https://github.com/CapsAdmin/goluwa.git#develop:.
           push: true
           tags: capsadmin/goluwa:latest
+          no-cache: true
