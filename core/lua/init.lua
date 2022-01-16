@@ -103,7 +103,7 @@ do -- constants
 
 	if pcall(require, "ffi") then
 		local ffi = require("ffi")
-		ffi.load("pthread")
+		pcall(ffi.load, "pthread")
 		if OS == "windows" then
 			ffi.cdef("unsigned long GetCurrentDirectoryA(unsigned long, char *);")
 			local buffer = ffi.new("char[260]")
@@ -253,7 +253,7 @@ sockets = runfile("lua/libraries/sockets/sockets.lua")
 http = runfile("lua/libraries/http.lua")
 test = runfile("lua/libraries/test.lua")
 
-if not TEST then
+if not TEST and not os.getenv("GOLUWA_ARG_LINE"):startswith("build") then
 	local ok, err = pcall(repl.Start)
 	if not ok then logn(err) end
 end
@@ -280,20 +280,18 @@ if VERBOSE then
 	logn("[runfile] ", os.clock() - start_time," seconds spent in core/lua/init.lua")
 end
 
-if os.getenv("GOLUWA_ARG_LINE") == "build" then
-	runfile("lua/ffibuild/libressl.lua")
-	runfile("lua/ffibuild/luajit.lua")
-	runfile("lua/ffibuild/enet.lua")
-	runfile("lua/ffibuild/freeimage.lua")
-	runfile("lua/ffibuild/freetype.lua")
-	runfile("lua/ffibuild/libarchive.lua")
-	runfile("lua/ffibuild/libmp3lame.lua")
-	runfile("lua/ffibuild/mpg123.lua")
-	runfile("lua/ffibuild/libsndfile.lua")
-	runfile("lua/ffibuild/openal.lua")
-	runfile("lua/ffibuild/sdl2.lua")
+if os.getenv("GOLUWA_ARG_LINE"):startswith("build") then
+	local what = os.getenv("GOLUWA_ARG_LINE"):sub(7)
+	
+	if what == "*" then
+		for _, filename in ipairs(vfs.Find("lua/ffibuild/")) do
+			runfile("lua/ffibuild/"..filename)
+		end
+	else
+		runfile("lua/ffibuild/"..what..".lua")
+	end
 
-	return
+	os.realexit(os.exitcode)
 end
 
 -- this can be overriden later, but by default we limit the fps to 30

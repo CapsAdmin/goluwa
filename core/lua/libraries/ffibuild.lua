@@ -1972,6 +1972,9 @@ do -- lua helper functions
 
 			if not ok then
 				llog("build failed, exited with code %s", code)
+				if os.getenv("GOLUWA_ARG_LINE"):startswith("build") then
+					system.ShutDown(code)
+				end
 				return
 			end
 		end

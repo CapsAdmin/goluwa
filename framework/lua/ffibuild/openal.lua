@@ -14,7 +14,7 @@ for lib_name, enum_name in pairs({al = "AL_", alc = "ALC_"}) do
 			#include "AL/al.h"
 			#include "AL/efx.h"
 		]],
-		gcc_flags = "-I./include/AL",
+		gcc_flags = "-I./include",
 
 		process_header = function(header)
 			ffibuild.SetBuildName(lib_name)

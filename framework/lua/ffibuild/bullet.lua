@@ -4,9 +4,6 @@ if render then
 	return
 end
 
-package.path = package.path .. ";../?.lua"
-local ffibuild = require("ffibuild")
-
 --ffibuild.Clone("https://github.com/bulletphysics/bullet3.git", "repo/bullet")
 --ffibuild.Clone("https://github.com/AndresTraks/BulletSharpPInvoke.git", "repo/libbulletc")
 
@@ -20,8 +17,6 @@ local header = ffibuild.ProcessSourceFileGCC([[
 	#include "bulletc.h"
 
 ]], "-I./repo/libbulletc/libbulletc/src/")
-
-io.writefile("lol.c", header)
 
 local meta_data = ffibuild.GetMetaData(header)
 

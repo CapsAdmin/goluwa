@@ -589,5 +589,4 @@ end
 
 check_error(lua.L.loadfile(state, initlua))
 check_error(lua.pcall(state, 0, 0, 0))
-
 os.exit(0)

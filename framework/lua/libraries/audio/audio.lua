@@ -29,7 +29,7 @@ function audio.Initialize(name)
 	local device
 
 	if name == "loopback" then
-		device = alc.LoopbackOpenDeviceSOFT(nil)
+		device = alc.LoopbackOpenDeviceSOFT("default")
 	else
 		device = alc.OpenDevice(name)
 	end
