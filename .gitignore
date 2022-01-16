@@ -7,6 +7,7 @@
 !/.github/
 !/.github/**
 !/Dockerfile
+!/.dockerignore
 
 !/README.md
 !/goluwa.cmd
