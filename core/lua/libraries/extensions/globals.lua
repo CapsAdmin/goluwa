@@ -298,7 +298,11 @@ do
 		local num = tonumber(str)
 		if num then return num end
 		luadata = luadata or serializer.GetLibrary("luadata")
-		return unpack(luadata.Decode(str, true)) or str
+		local res, err = luadata.Decode(str, true)
+		if res == nil then
+			return str
+		end
+		return unpack(res) or str
 	end
 end
 

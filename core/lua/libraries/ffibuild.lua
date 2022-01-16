@@ -1895,7 +1895,10 @@ do -- lua helper functions
 		local old = ffi.load
 		local errored = false
 		ffi.load = function(...)
-			local clib = old(...)
+			local clib, err = old(...)
+			if not clib then
+				wlog(err)
+			end
 			return setmetatable({}, {__index = function(_, key)
 				local ok, ret = pcall(function() return clib[key] end)
 				if ok then

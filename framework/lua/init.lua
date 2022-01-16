@@ -53,7 +53,7 @@ resource.AddProvider("https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/base
 
 event.AddListener("Initialize", function()
 	if SOUND then
-		audio.Initialize(os.getenv("GOLUWA_AUDIO_DEVICE"))
+		audio.Initialize(AUDIO_DEVICE)
 	end
 
 	--steam.InitializeWebAPI()

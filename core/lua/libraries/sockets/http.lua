@@ -157,7 +157,7 @@ function sockets.MixinHTTP(META)
                                 end
 
                                 if state.version ~= "HTTP/1.1" and state.version ~= "HTTP/1.0" then
-                                    return self:Error(state.version .. " protocol not supported")
+                                    return self:Error(tostring(state.version) .. " protocol not supported")
                                 end
                             else
                                 local keyval = line:split(": ")

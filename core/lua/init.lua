@@ -1,5 +1,14 @@
 _G.TEST = (os.getenv("GOLUWA_ARG_LINE") or ""):find("RUN_TEST", nil, true)
 
+pcall(function()
+	local f = io.open(os.getenv("HOME") .. "/.goluwa.lua", "r")
+	if f then
+		local lua = f:read("*all")
+		assert(loadstring(lua))()
+		f:close()
+	end
+end)
+
 if TEST then
 	jit.off(true, true)
 	local call_count = {}
@@ -94,6 +103,7 @@ do -- constants
 
 	if pcall(require, "ffi") then
 		local ffi = require("ffi")
+		ffi.load("pthread")
 		if OS == "windows" then
 			ffi.cdef("unsigned long GetCurrentDirectoryA(unsigned long, char *);")
 			local buffer = ffi.new("char[260]")

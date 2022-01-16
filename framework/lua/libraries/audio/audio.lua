@@ -17,7 +17,7 @@ function audio.Initialize(name)
 	os.setenv("ALSOFT_CONF", R"temp/al_config.ini")
 	audio.Shutdown()
 
-	if not name then
+	if not name or name == "default" then
 		name = audio.GetAllOutputDevices()[1]
 	end
 
