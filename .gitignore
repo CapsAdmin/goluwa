@@ -6,7 +6,7 @@
 
 !/.github/
 !/.github/**
-
+!/Dockerfile
 
 !/README.md
 !/goluwa.cmd
