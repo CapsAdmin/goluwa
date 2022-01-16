@@ -3,7 +3,10 @@
 **.DS_Store
 
 !/.gitignore
-!/.github
+
+!/.github/
+!/.github/**
+
 
 !/README.md
 !/goluwa.cmd
