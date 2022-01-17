@@ -86,55 +86,57 @@ function utility.GetLikelyLibraryDependencies(path)
 	local done = {}
 	local found = {}
 
-	if ext == "so" then
-		for name in content:gmatch("([%.%w_-]+%.so[%w%.]*)\0") do
-			if not done[name] then
-				table.insert(found, {name = name, status = "MISSING"})
-				done[name] = true
+	if content then
+		if ext == "so" then
+			for name in content:gmatch("([%.%w_-]+%.so[%w%.]*)\0") do
+				if not done[name] then
+					table.insert(found, {name = name, status = "MISSING"})
+					done[name] = true
+				end
 			end
-		end
-		original = table.remove(found, #found).name
-	elseif ext == "dll" then
-		for name in content:gmatch("([%.%w_-]+%.dll)\0") do
-			if not done[name] then
-				table.insert(found, {name = name, status = "MISSING"})
-				done[name] = true
+			original = table.remove(found, #found).name
+		elseif ext == "dll" then
+			for name in content:gmatch("([%.%w_-]+%.dll)\0") do
+				if not done[name] then
+					table.insert(found, {name = name, status = "MISSING"})
+					done[name] = true
+				end
 			end
-		end
-		--original = table.remove(found, 1).name
-	elseif ext == "dylib" then
-		for name in content:gmatch("([%.%w_-]+%.dylib)\0") do
-			if not done[name] then
-				table.insert(found, {name = name, status = "MISSING"})
-				done[name] = true
+			--original = table.remove(found, 1).name
+		elseif ext == "dylib" then
+			for name in content:gmatch("([%.%w_-]+%.dylib)\0") do
+				if not done[name] then
+					table.insert(found, {name = name, status = "MISSING"})
+					done[name] = true
+				end
 			end
+			original = table.remove(found, 1).name
 		end
-		original = table.remove(found, 1).name
-	end
 
-	for i, info in ipairs(found) do
-		local where = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
-		local found = vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})
+		for i, info in ipairs(found) do
+			local where = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
+			local found = vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})
 
-		if found[1] then
-			for _, full_path in ipairs(found) do
-				-- look first in the vfs' bin directories
-				fs.PushWorkingDirectory(full_path:match("(.+/)"))
-					local ok, err, what = package.loadlib(info.name, "")
-					if what == "open" then
-						info.status = "MISSING"
-					elseif what == "init" then
-						info.status = "FOUND"
-						break
-					end
-				fs.PopWorkingDirectory()
-			end
-		else
-			local ok, err, what = package.loadlib(info.name, "")
-			if what == "open" then
-				info.status = "MISSING"
-			elseif what == "init" then
-				info.status = "FOUND"
+			if found[1] then
+				for _, full_path in ipairs(found) do
+					-- look first in the vfs' bin directories
+					fs.PushWorkingDirectory(full_path:match("(.+/)"))
+						local ok, err, what = package.loadlib(info.name, "")
+						if what == "open" then
+							info.status = "MISSING"
+						elseif what == "init" then
+							info.status = "FOUND"
+							break
+						end
+					fs.PopWorkingDirectory()
+				end
+			else
+				local ok, err, what = package.loadlib(info.name, "")
+				if what == "open" then
+					info.status = "MISSING"
+				elseif what == "init" then
+					info.status = "FOUND"
+				end
 			end
 		end
 	end
