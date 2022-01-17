@@ -195,7 +195,7 @@ function sockets.MixinHTTP(META)
             if state.stage == "body" then
 
                 if state.header["transfer-encoding"] == "chunked" then
-                    if not state.received_bytes or state.received_bytes > state.to_receive then
+                    if (not state.received_bytes or not state.to_receive) or state.received_bytes > state.to_receive then
                         local hex_num, rest = chunk:match("^([abcdefABCDEF0123456789]-)\r\n(.+)")
                         
                         if hex_num == "0" then
