@@ -20,10 +20,10 @@ void(alGetListener3f)(int,float*,float*,float*);
 void(alSourcef)(unsigned int,int,float);
 void(alGetBufferiv)(unsigned int,int,int*);
 void(alListener3i)(int,int,int,int);
-void(alDopplerFactor)(float);
+void(alGetBuffer3i)(unsigned int,int,int*,int*,int*);
 void(alListener3f)(int,float,float,float);
 void(alBufferSamplesSOFT)(unsigned int,unsigned int,int,int,int,int,const void*);
-char(alIsEnabled)(int);
+void(alEffectfv)(unsigned int,int,const float*);
 void(alSourcefv)(unsigned int,int,const float*);
 void(alGetEffectf)(unsigned int,int,float*);
 void(alDeferUpdatesSOFT)();
@@ -34,7 +34,7 @@ void(alProcessUpdatesSOFT)();
 void(alGetSource3i)(unsigned int,int,int*,int*,int*);
 char(alIsSource)(unsigned int);
 void(alListeneri)(int,int);
-void(alBuffer3i)(unsigned int,int,int,int,int);
+void(alGetAuxiliaryEffectSlotiv)(unsigned int,int,int*);
 void(alGetListenerf)(int,float*);
 void(alGetFilterfv)(unsigned int,int,float*);
 void(alSource3i64SOFT)(unsigned int,int,signed long,signed long,signed long);
@@ -42,68 +42,72 @@ void(alGetListener3i)(int,int*,int*,int*);
 int(alGetInteger)(int);
 void(alGetSource3i64SOFT)(unsigned int,int,signed long*,signed long*,signed long*);
 void(alSourcePlayv)(int,const unsigned int*);
+void*(alGetPointerSOFT)(int);
 void(alSourceRewindv)(int,const unsigned int*);
 void(alListenerfv)(int,const float*);
+void(alGetPointervSOFT)(int,void**);
 void(alGetBufferf)(unsigned int,int,float*);
 void(alGetSourcei64SOFT)(unsigned int,int,signed long*);
 void(alEnable)(int);
-void(alGetFilteriv)(unsigned int,int,int*);
+void(alDistanceModel)(int);
 void(alBufferDataStatic)(const int,int,void*,int,int);
-void(alSourceQueueBuffers)(unsigned int,int,const unsigned int*);
+void(alAuxiliaryEffectSlotfv)(unsigned int,int,const float*);
 void(alRequestFoldbackStart)(int,int,int,float*,void(*callback)(int,int));
-void(alSource3f)(unsigned int,int,float,float,float);
+void(alGetBuffer3f)(unsigned int,int,float*,float*,float*);
 char(alIsBufferFormatSupportedSOFT)(int);
 char(alIsBuffer)(unsigned int);
 void(alGenSources)(int,unsigned int*);
-float(alGetFloat)(int);
+void(alGetAuxiliaryEffectSlotfv)(unsigned int,int,float*);
 void(alSourcedSOFT)(unsigned int,int,double);
 void(alGetSourcef)(unsigned int,int,float*);
 char(alIsFilter)(unsigned int);
+void(alGetBufferPtrvSOFT)(unsigned int,int,void**);
+void(alGetSourcedSOFT)(unsigned int,int,double*);
 double(alGetDouble)(int);
-const char*(alGetStringiSOFT)(int,int);
+void(alGetIntegerv)(int,int*);
+void(alBufferCallbackSOFT)(unsigned int,int,int,int(*callback)(void*,void*,int),void*);
+void(alEventCallbackSOFT)(void(*callback)(int,unsigned int,unsigned int,int,const char*,void*),void*);
 void(alGenFilters)(int,unsigned int*);
 void(alAuxiliaryEffectSlotf)(unsigned int,int,float);
+void(alEventControlSOFT)(int,const int*,char);
+const char*(alGetStringiSOFT)(int,int);
 int(alGetError)();
-void(alGetSourcei64vSOFT)(unsigned int,int,signed long*);
 void(alSource3i)(unsigned int,int,int,int,int);
-void(alEffectfv)(unsigned int,int,const float*);
 void(alBufferSubDataSOFT)(unsigned int,int,const void*,int,int);
 void(alFilteriv)(unsigned int,int,const int*);
-void(alSourcei64SOFT)(unsigned int,int,signed long);
-void(alGetSourcedvSOFT)(unsigned int,int,double*);
+void(alGetSourcei64vSOFT)(unsigned int,int,signed long*);
+char(alIsEnabled)(int);
 void(alGetListeneri)(int,int*);
 void(alBufferfv)(unsigned int,int,const float*);
-void(alGetSource3dSOFT)(unsigned int,int,double*,double*,double*);
+void(alSourcei64SOFT)(unsigned int,int,signed long);
 void(alDisable)(int);
 void(alSourceStop)(unsigned int);
-void(alGetSourcedSOFT)(unsigned int,int,double*);
+void(alGetSourcedvSOFT)(unsigned int,int,double*);
+void(alGetSource3dSOFT)(unsigned int,int,double*,double*,double*);
+void(alGetBuffer3PtrSOFT)(unsigned int,int,void**,void**,void**);
 void(alSourcedvSOFT)(unsigned int,int,const double*);
 void(alSource3dSOFT)(unsigned int,int,double,double,double);
-void(alGetBuffer3i)(unsigned int,int,int*,int*,int*);
 char(alIsEffect)(unsigned int);
-void(alBufferSubSamplesSOFT)(unsigned int,int,int,int,int,const void*);
 void(alGetDoublev)(int,double*);
 char(alIsAuxiliaryEffectSlot)(unsigned int);
-void(alGetFloatv)(int,float*);
-void(alGetAuxiliaryEffectSloti)(unsigned int,int,int*);
+void(alSourceQueueBuffers)(unsigned int,int,const unsigned int*);
+void(alBufferSubSamplesSOFT)(unsigned int,int,int,int,int,const void*);
 void(alFilterf)(unsigned int,int,float);
-void(alGetAuxiliaryEffectSlotfv)(unsigned int,int,float*);
-void(alGetAuxiliaryEffectSlotiv)(unsigned int,int,int*);
-void(alAuxiliaryEffectSlotfv)(unsigned int,int,const float*);
 void(alSourceStopv)(int,const unsigned int*);
 void(alDopplerVelocity)(float);
+const char*(alGetString)(int);
+void(alGetBufferPtrSOFT)(unsigned int,int,void**);
 void(alRequestFoldbackStop)();
 void(alBufferiv)(unsigned int,int,const int*);
-const char*(alGetString)(int);
+void(alBufferf)(unsigned int,int,float);
 void(alBuffer3f)(unsigned int,int,float,float,float);
 void(alSourceiv)(unsigned int,int,const int*);
-void(alGetIntegerv)(int,int*);
 void(alSourceUnqueueBuffers)(unsigned int,int,unsigned int*);
 void(alGetEffecti)(unsigned int,int,int*);
-void(alSpeedOfSound)(float);
+void(alEffectiv)(unsigned int,int,const int*);
 void(alDeleteBuffers)(int,const unsigned int*);
 void(alGenBuffers)(int,unsigned int*);
-void(alGetBuffer3f)(unsigned int,int,float*,float*,float*);
+void(alGetFloatv)(int,float*);
 void(alDeleteAuxiliaryEffectSlots)(int,const unsigned int*);
 void(alListeneriv)(int,const int*);
 void(alSourcei64vSOFT)(unsigned int,int,const signed long*);
@@ -113,18 +117,22 @@ void(alSourcei)(unsigned int,int,int);
 void(alGetFilterf)(unsigned int,int,float*);
 void(alGenAuxiliaryEffectSlots)(int,unsigned int*);
 void(alGetSourcei)(unsigned int,int,int*);
+void(alSpeedOfSound)(float);
 char(alGetBoolean)(int);
 void(alGetSourcefv)(unsigned int,int,float*);
-void(alDistanceModel)(int);
+void(alBuffer3i)(unsigned int,int,int,int,int);
 void(alGetListeneriv)(int,int*);
-void(alFilterfv)(unsigned int,int,const float*);
-void(alGetBooleanv)(int,char*);
-void(alBufferf)(unsigned int,int,float);
 void(alGetBufferfv)(unsigned int,int,float*);
 void(alEffecti)(unsigned int,int,int);
-void(alEffectiv)(unsigned int,int,const int*);
-void*(alGetProcAddress)(const char*);
+void(alFilterfv)(unsigned int,int,const float*);
+void(alGetBooleanv)(int,char*);
+void(alGetAuxiliaryEffectSloti)(unsigned int,int,int*);
 void(alGetEffectiv)(unsigned int,int,int*);
+void(alSource3f)(unsigned int,int,float,float,float);
+void(alDopplerFactor)(float);
+void*(alGetProcAddress)(const char*);
+void(alGetFilteriv)(unsigned int,int,int*);
+float(alGetFloat)(int);
 void(alSourcePausev)(int,const unsigned int*);
 void(alFilteri)(unsigned int,int,int);
 ]])
@@ -158,10 +166,10 @@ local library = {}
 	Sourcef = get_proc_address("alSourcef", "void(* )( unsigned int , int , float )"),
 	GetBufferiv = get_proc_address("alGetBufferiv", "void(* )( unsigned int , int , int * )"),
 	Listener3i = get_proc_address("alListener3i", "void(* )( int , int , int , int )"),
-	DopplerFactor = get_proc_address("alDopplerFactor", "void(* )( float )"),
+	GetBuffer3i = get_proc_address("alGetBuffer3i", "void(* )( unsigned int , int , int * , int * , int * )"),
 	Listener3f = get_proc_address("alListener3f", "void(* )( int , float , float , float )"),
 	BufferSamplesSOFT = get_proc_address("alBufferSamplesSOFT", "void(* )( unsigned int , unsigned int , int , int , int , int , const void * )"),
-	IsEnabled = get_proc_address("alIsEnabled", "char(* )( int )"),
+	Effectfv = get_proc_address("alEffectfv", "void(* )( unsigned int , int , const float * )"),
 	Sourcefv = get_proc_address("alSourcefv", "void(* )( unsigned int , int , const float * )"),
 	GetEffectf = get_proc_address("alGetEffectf", "void(* )( unsigned int , int , float * )"),
 	DeferUpdatesSOFT = get_proc_address("alDeferUpdatesSOFT", "void(* )(  )"),
@@ -172,7 +180,7 @@ local library = {}
 	GetSource3i = get_proc_address("alGetSource3i", "void(* )( unsigned int , int , int * , int * , int * )"),
 	IsSource = get_proc_address("alIsSource", "char(* )( unsigned int )"),
 	Listeneri = get_proc_address("alListeneri", "void(* )( int , int )"),
-	Buffer3i = get_proc_address("alBuffer3i", "void(* )( unsigned int , int , int , int , int )"),
+	GetAuxiliaryEffectSlotiv = get_proc_address("alGetAuxiliaryEffectSlotiv", "void(* )( unsigned int , int , int * )"),
 	GetListenerf = get_proc_address("alGetListenerf", "void(* )( int , float * )"),
 	GetFilterfv = get_proc_address("alGetFilterfv", "void(* )( unsigned int , int , float * )"),
 	Source3i64SOFT = get_proc_address("alSource3i64SOFT", "void(* )( unsigned int , int , signed long , signed long , signed long )"),
@@ -180,68 +188,72 @@ local library = {}
 	GetInteger = get_proc_address("alGetInteger", "int(* )( int )"),
 	GetSource3i64SOFT = get_proc_address("alGetSource3i64SOFT", "void(* )( unsigned int , int , signed long * , signed long * , signed long * )"),
 	SourcePlayv = get_proc_address("alSourcePlayv", "void(* )( int , const unsigned int * )"),
+	GetPointerSOFT = get_proc_address("alGetPointerSOFT", "void *(* )( int )"),
 	SourceRewindv = get_proc_address("alSourceRewindv", "void(* )( int , const unsigned int * )"),
 	Listenerfv = get_proc_address("alListenerfv", "void(* )( int , const float * )"),
+	GetPointervSOFT = get_proc_address("alGetPointervSOFT", "void(* )( int , void * * )"),
 	GetBufferf = get_proc_address("alGetBufferf", "void(* )( unsigned int , int , float * )"),
 	GetSourcei64SOFT = get_proc_address("alGetSourcei64SOFT", "void(* )( unsigned int , int , signed long * )"),
 	Enable = get_proc_address("alEnable", "void(* )( int )"),
-	GetFilteriv = get_proc_address("alGetFilteriv", "void(* )( unsigned int , int , int * )"),
+	DistanceModel = get_proc_address("alDistanceModel", "void(* )( int )"),
 	BufferDataStatic = get_proc_address("alBufferDataStatic", "void(* )( const int , int , void * , int , int )"),
-	SourceQueueBuffers = get_proc_address("alSourceQueueBuffers", "void(* )( unsigned int , int , const unsigned int * )"),
+	AuxiliaryEffectSlotfv = get_proc_address("alAuxiliaryEffectSlotfv", "void(* )( unsigned int , int , const float * )"),
 	RequestFoldbackStart = get_proc_address("alRequestFoldbackStart", "void(* )( int , int , int , float * , void(* callback)( int , int ) )"),
-	Source3f = get_proc_address("alSource3f", "void(* )( unsigned int , int , float , float , float )"),
+	GetBuffer3f = get_proc_address("alGetBuffer3f", "void(* )( unsigned int , int , float * , float * , float * )"),
 	IsBufferFormatSupportedSOFT = get_proc_address("alIsBufferFormatSupportedSOFT", "char(* )( int )"),
 	IsBuffer = get_proc_address("alIsBuffer", "char(* )( unsigned int )"),
 	GenSources = get_proc_address("alGenSources", "void(* )( int , unsigned int * )"),
-	GetFloat = get_proc_address("alGetFloat", "float(* )( int )"),
+	GetAuxiliaryEffectSlotfv = get_proc_address("alGetAuxiliaryEffectSlotfv", "void(* )( unsigned int , int , float * )"),
 	SourcedSOFT = get_proc_address("alSourcedSOFT", "void(* )( unsigned int , int , double )"),
 	GetSourcef = get_proc_address("alGetSourcef", "void(* )( unsigned int , int , float * )"),
 	IsFilter = get_proc_address("alIsFilter", "char(* )( unsigned int )"),
+	GetBufferPtrvSOFT = get_proc_address("alGetBufferPtrvSOFT", "void(* )( unsigned int , int , void * * )"),
+	GetSourcedSOFT = get_proc_address("alGetSourcedSOFT", "void(* )( unsigned int , int , double * )"),
 	GetDouble = get_proc_address("alGetDouble", "double(* )( int )"),
-	GetStringiSOFT = get_proc_address("alGetStringiSOFT", "const char *(* )( int , int )"),
+	GetIntegerv = get_proc_address("alGetIntegerv", "void(* )( int , int * )"),
+	BufferCallbackSOFT = get_proc_address("alBufferCallbackSOFT", "void(* )( unsigned int , int , int , int(* callback)( void * , void * , int ) , void * )"),
+	EventCallbackSOFT = get_proc_address("alEventCallbackSOFT", "void(* )( void(* callback)( int , unsigned int , unsigned int , int , const char * , void * ) , void * )"),
 	GenFilters = get_proc_address("alGenFilters", "void(* )( int , unsigned int * )"),
 	AuxiliaryEffectSlotf = get_proc_address("alAuxiliaryEffectSlotf", "void(* )( unsigned int , int , float )"),
+	EventControlSOFT = get_proc_address("alEventControlSOFT", "void(* )( int , const int * , char )"),
+	GetStringiSOFT = get_proc_address("alGetStringiSOFT", "const char *(* )( int , int )"),
 	GetError = get_proc_address("alGetError", "int(* )(  )"),
-	GetSourcei64vSOFT = get_proc_address("alGetSourcei64vSOFT", "void(* )( unsigned int , int , signed long * )"),
 	Source3i = get_proc_address("alSource3i", "void(* )( unsigned int , int , int , int , int )"),
-	Effectfv = get_proc_address("alEffectfv", "void(* )( unsigned int , int , const float * )"),
 	BufferSubDataSOFT = get_proc_address("alBufferSubDataSOFT", "void(* )( unsigned int , int , const void * , int , int )"),
 	Filteriv = get_proc_address("alFilteriv", "void(* )( unsigned int , int , const int * )"),
-	Sourcei64SOFT = get_proc_address("alSourcei64SOFT", "void(* )( unsigned int , int , signed long )"),
-	GetSourcedvSOFT = get_proc_address("alGetSourcedvSOFT", "void(* )( unsigned int , int , double * )"),
+	GetSourcei64vSOFT = get_proc_address("alGetSourcei64vSOFT", "void(* )( unsigned int , int , signed long * )"),
+	IsEnabled = get_proc_address("alIsEnabled", "char(* )( int )"),
 	GetListeneri = get_proc_address("alGetListeneri", "void(* )( int , int * )"),
 	Bufferfv = get_proc_address("alBufferfv", "void(* )( unsigned int , int , const float * )"),
-	GetSource3dSOFT = get_proc_address("alGetSource3dSOFT", "void(* )( unsigned int , int , double * , double * , double * )"),
+	Sourcei64SOFT = get_proc_address("alSourcei64SOFT", "void(* )( unsigned int , int , signed long )"),
 	Disable = get_proc_address("alDisable", "void(* )( int )"),
 	SourceStop = get_proc_address("alSourceStop", "void(* )( unsigned int )"),
-	GetSourcedSOFT = get_proc_address("alGetSourcedSOFT", "void(* )( unsigned int , int , double * )"),
+	GetSourcedvSOFT = get_proc_address("alGetSourcedvSOFT", "void(* )( unsigned int , int , double * )"),
+	GetSource3dSOFT = get_proc_address("alGetSource3dSOFT", "void(* )( unsigned int , int , double * , double * , double * )"),
+	GetBuffer3PtrSOFT = get_proc_address("alGetBuffer3PtrSOFT", "void(* )( unsigned int , int , void * * , void * * , void * * )"),
 	SourcedvSOFT = get_proc_address("alSourcedvSOFT", "void(* )( unsigned int , int , const double * )"),
 	Source3dSOFT = get_proc_address("alSource3dSOFT", "void(* )( unsigned int , int , double , double , double )"),
-	GetBuffer3i = get_proc_address("alGetBuffer3i", "void(* )( unsigned int , int , int * , int * , int * )"),
 	IsEffect = get_proc_address("alIsEffect", "char(* )( unsigned int )"),
-	BufferSubSamplesSOFT = get_proc_address("alBufferSubSamplesSOFT", "void(* )( unsigned int , int , int , int , int , const void * )"),
 	GetDoublev = get_proc_address("alGetDoublev", "void(* )( int , double * )"),
 	IsAuxiliaryEffectSlot = get_proc_address("alIsAuxiliaryEffectSlot", "char(* )( unsigned int )"),
-	GetFloatv = get_proc_address("alGetFloatv", "void(* )( int , float * )"),
-	GetAuxiliaryEffectSloti = get_proc_address("alGetAuxiliaryEffectSloti", "void(* )( unsigned int , int , int * )"),
+	SourceQueueBuffers = get_proc_address("alSourceQueueBuffers", "void(* )( unsigned int , int , const unsigned int * )"),
+	BufferSubSamplesSOFT = get_proc_address("alBufferSubSamplesSOFT", "void(* )( unsigned int , int , int , int , int , const void * )"),
 	Filterf = get_proc_address("alFilterf", "void(* )( unsigned int , int , float )"),
-	GetAuxiliaryEffectSlotfv = get_proc_address("alGetAuxiliaryEffectSlotfv", "void(* )( unsigned int , int , float * )"),
-	GetAuxiliaryEffectSlotiv = get_proc_address("alGetAuxiliaryEffectSlotiv", "void(* )( unsigned int , int , int * )"),
-	AuxiliaryEffectSlotfv = get_proc_address("alAuxiliaryEffectSlotfv", "void(* )( unsigned int , int , const float * )"),
 	SourceStopv = get_proc_address("alSourceStopv", "void(* )( int , const unsigned int * )"),
 	DopplerVelocity = get_proc_address("alDopplerVelocity", "void(* )( float )"),
+	GetString = get_proc_address("alGetString", "const char *(* )( int )"),
+	GetBufferPtrSOFT = get_proc_address("alGetBufferPtrSOFT", "void(* )( unsigned int , int , void * * )"),
 	RequestFoldbackStop = get_proc_address("alRequestFoldbackStop", "void(* )(  )"),
 	Bufferiv = get_proc_address("alBufferiv", "void(* )( unsigned int , int , const int * )"),
-	GetString = get_proc_address("alGetString", "const char *(* )( int )"),
+	Bufferf = get_proc_address("alBufferf", "void(* )( unsigned int , int , float )"),
 	Buffer3f = get_proc_address("alBuffer3f", "void(* )( unsigned int , int , float , float , float )"),
 	Sourceiv = get_proc_address("alSourceiv", "void(* )( unsigned int , int , const int * )"),
-	GetIntegerv = get_proc_address("alGetIntegerv", "void(* )( int , int * )"),
 	SourceUnqueueBuffers = get_proc_address("alSourceUnqueueBuffers", "void(* )( unsigned int , int , unsigned int * )"),
 	GetEffecti = get_proc_address("alGetEffecti", "void(* )( unsigned int , int , int * )"),
-	SpeedOfSound = get_proc_address("alSpeedOfSound", "void(* )( float )"),
+	Effectiv = get_proc_address("alEffectiv", "void(* )( unsigned int , int , const int * )"),
 	DeleteBuffers = get_proc_address("alDeleteBuffers", "void(* )( int , const unsigned int * )"),
 	GenBuffers = get_proc_address("alGenBuffers", "void(* )( int , unsigned int * )"),
-	GetBuffer3f = get_proc_address("alGetBuffer3f", "void(* )( unsigned int , int , float * , float * , float * )"),
+	GetFloatv = get_proc_address("alGetFloatv", "void(* )( int , float * )"),
 	DeleteAuxiliaryEffectSlots = get_proc_address("alDeleteAuxiliaryEffectSlots", "void(* )( int , const unsigned int * )"),
 	Listeneriv = get_proc_address("alListeneriv", "void(* )( int , const int * )"),
 	Sourcei64vSOFT = get_proc_address("alSourcei64vSOFT", "void(* )( unsigned int , int , const signed long * )"),
@@ -251,18 +263,22 @@ local library = {}
 	GetFilterf = get_proc_address("alGetFilterf", "void(* )( unsigned int , int , float * )"),
 	GenAuxiliaryEffectSlots = get_proc_address("alGenAuxiliaryEffectSlots", "void(* )( int , unsigned int * )"),
 	GetSourcei = get_proc_address("alGetSourcei", "void(* )( unsigned int , int , int * )"),
+	SpeedOfSound = get_proc_address("alSpeedOfSound", "void(* )( float )"),
 	GetBoolean = get_proc_address("alGetBoolean", "char(* )( int )"),
 	GetSourcefv = get_proc_address("alGetSourcefv", "void(* )( unsigned int , int , float * )"),
-	DistanceModel = get_proc_address("alDistanceModel", "void(* )( int )"),
+	Buffer3i = get_proc_address("alBuffer3i", "void(* )( unsigned int , int , int , int , int )"),
 	GetListeneriv = get_proc_address("alGetListeneriv", "void(* )( int , int * )"),
-	Filterfv = get_proc_address("alFilterfv", "void(* )( unsigned int , int , const float * )"),
-	GetBooleanv = get_proc_address("alGetBooleanv", "void(* )( int , char * )"),
-	Bufferf = get_proc_address("alBufferf", "void(* )( unsigned int , int , float )"),
 	GetBufferfv = get_proc_address("alGetBufferfv", "void(* )( unsigned int , int , float * )"),
 	Effecti = get_proc_address("alEffecti", "void(* )( unsigned int , int , int )"),
-	Effectiv = get_proc_address("alEffectiv", "void(* )( unsigned int , int , const int * )"),
-	GetProcAddress = get_proc_address("alGetProcAddress", "void *(* )( const char * )"),
+	Filterfv = get_proc_address("alFilterfv", "void(* )( unsigned int , int , const float * )"),
+	GetBooleanv = get_proc_address("alGetBooleanv", "void(* )( int , char * )"),
+	GetAuxiliaryEffectSloti = get_proc_address("alGetAuxiliaryEffectSloti", "void(* )( unsigned int , int , int * )"),
 	GetEffectiv = get_proc_address("alGetEffectiv", "void(* )( unsigned int , int , int * )"),
+	Source3f = get_proc_address("alSource3f", "void(* )( unsigned int , int , float , float , float )"),
+	DopplerFactor = get_proc_address("alDopplerFactor", "void(* )( float )"),
+	GetProcAddress = get_proc_address("alGetProcAddress", "void *(* )( const char * )"),
+	GetFilteriv = get_proc_address("alGetFilteriv", "void(* )( unsigned int , int , int * )"),
+	GetFloat = get_proc_address("alGetFloat", "float(* )( int )"),
 	SourcePausev = get_proc_address("alSourcePausev", "void(* )( int , const unsigned int * )"),
 	Filteri = get_proc_address("alFilteri", "void(* )( unsigned int , int , int )"),
 }
@@ -491,6 +507,27 @@ library.e = {
 	AUTO_SOFT = 2,
 	SAMPLE_OFFSET_CLOCK_SOFT = 4610,
 	SEC_OFFSET_CLOCK_SOFT = 4611,
+	SOFT_direct_channels_remix = 1,
+	DROP_UNMATCHED_SOFT = 1,
+	REMIX_UNMATCHED_SOFT = 2,
+	SOFT_bformat_ex = 1,
+	AMBISONIC_LAYOUT_SOFT = 6551,
+	AMBISONIC_SCALING_SOFT = 6552,
+	FUMA_SOFT = 0,
+	ACN_SOFT = 1,
+	SN3D_SOFT = 1,
+	N3D_SOFT = 2,
+	SOFT_effect_target = 1,
+	EFFECTSLOT_TARGET_SOFT = 6556,
+	SOFT_events = 1,
+	EVENT_CALLBACK_FUNCTION_SOFT = 6562,
+	EVENT_CALLBACK_USER_PARAM_SOFT = 6563,
+	EVENT_TYPE_BUFFER_COMPLETED_SOFT = 6564,
+	EVENT_TYPE_SOURCE_STATE_CHANGED_SOFT = 6565,
+	EVENT_TYPE_DISCONNECTED_SOFT = 6566,
+	SOFT_callback_buffer = 1,
+	BUFFER_CALLBACK_FUNCTION_SOFT = 6560,
+	BUFFER_CALLBACK_USER_PARAM_SOFT = 6561,
 	EFX_H = 1,
 	METERS_PER_UNIT = 131076,
 	DIRECT_FILTER = 131077,
@@ -961,156 +998,6 @@ library.EffectParams = {
 			},
 		},
 	},
-	dedicated_dialogue = {
-		enum = 36865,
-		params = {
-		},
-	},
-	reverb = {
-		enum = 1,
-		params = {
-			modulation_depth = {
-				max = 1,
-				enum = 18,
-				min = 0,
-				default = 0,
-			},
-			late_reverb_pan = {
-				enum = 14,
-			},
-			reflections_gain = {
-				max = 3.16,
-				enum = 9,
-				min = 0,
-				default = 0.05,
-			},
-			gainlf = {
-				max = 1,
-				enum = 5,
-				min = 0,
-				default = 1,
-			},
-			gainhf = {
-				max = 1,
-				enum = 4,
-				min = 0,
-				default = 0.89,
-			},
-			density = {
-				max = 1,
-				enum = 1,
-				min = 0,
-				default = 1,
-			},
-			reflections_pan_xyz = {
-				default = 0,
-			},
-			room_rolloff_factor = {
-				max = 10,
-				enum = 22,
-				min = 0,
-				default = 0,
-			},
-			echo_depth = {
-				max = 1,
-				enum = 16,
-				min = 0,
-				default = 0,
-			},
-			gain = {
-				max = 1,
-				enum = 3,
-				min = 0,
-				default = 0.32,
-			},
-			air_absorption_gainhf = {
-				max = 1,
-				enum = 11,
-				min = 0.892,
-				default = 0.994,
-			},
-			modulation_time = {
-				max = 4,
-				enum = 17,
-				min = 0.04,
-				default = 0.25,
-			},
-			hfreference = {
-				max = 20000,
-				enum = 20,
-				min = 1000,
-				default = 5000,
-			},
-			lfreference = {
-				max = 1000,
-				enum = 21,
-				min = 20,
-				default = 250,
-			},
-			decay_lfratio = {
-				max = 2,
-				enum = 8,
-				min = 0.1,
-				default = 1,
-			},
-			echo_time = {
-				max = 0.25,
-				enum = 15,
-				min = 0.075,
-				default = 0.25,
-			},
-			reflections_delay = {
-				max = 0.3,
-				enum = 8,
-				min = 0,
-				default = 0.007,
-			},
-			late_reverb_pan_xyz = {
-				default = 0,
-			},
-			decay_time = {
-				max = 20,
-				enum = 6,
-				min = 0.1,
-				default = 1.49,
-			},
-			decay_hflimit = {
-				enum = 23,
-			},
-			reflections_pan = {
-				enum = 11,
-			},
-			late_reverb_delay = {
-				max = 0.1,
-				enum = 13,
-				min = 0,
-				default = 0.011,
-			},
-			late_reverb_gain = {
-				max = 10,
-				enum = 12,
-				min = 0,
-				default = 1.26,
-			},
-			diffusion = {
-				max = 1,
-				enum = 2,
-				min = 0,
-				default = 1,
-			},
-			decay_hfratio = {
-				max = 2,
-				enum = 6,
-				min = 0.1,
-				default = 0.83,
-			},
-		},
-	},
-	dedicated_low_frequency_effect = {
-		enum = 36864,
-		params = {
-		},
-	},
 	eaxreverb = {
 		enum = 32768,
 		params = {
@@ -1174,9 +1061,155 @@ library.EffectParams = {
 			decay_hflimit = {
 				enum = 23,
 			},
+			gain = {
+				max = 1,
+				enum = 3,
+				min = 0,
+				default = 0.32,
+			},
+			lfreference = {
+				max = 1000,
+				enum = 21,
+				min = 20,
+				default = 250,
+			},
 			decay_time = {
 				max = 20,
 				enum = 6,
+				min = 0.1,
+				default = 1.49,
+			},
+			echo_time = {
+				max = 0.25,
+				enum = 15,
+				min = 0.075,
+				default = 0.25,
+			},
+			hfreference = {
+				max = 20000,
+				enum = 20,
+				min = 1000,
+				default = 5000,
+			},
+			reflections_delay = {
+				max = 0.3,
+				enum = 10,
+				min = 0,
+				default = 0.007,
+			},
+			modulation_time = {
+				max = 4,
+				enum = 17,
+				min = 0.04,
+				default = 0.25,
+			},
+			decay_hfratio = {
+				max = 2,
+				enum = 7,
+				min = 0.1,
+				default = 0.83,
+			},
+			echo_depth = {
+				max = 1,
+				enum = 16,
+				min = 0,
+				default = 0,
+			},
+			reflections_pan = {
+				enum = 11,
+			},
+			late_reverb_gain = {
+				max = 10,
+				enum = 12,
+				min = 0,
+				default = 1.26,
+			},
+			diffusion = {
+				max = 1,
+				enum = 2,
+				min = 0,
+				default = 1,
+			},
+			decay_lfratio = {
+				max = 2,
+				enum = 8,
+				min = 0.1,
+				default = 1,
+			},
+		},
+	},
+	reverb = {
+		enum = 1,
+		params = {
+			modulation_depth = {
+				max = 1,
+				enum = 18,
+				min = 0,
+				default = 0,
+			},
+			late_reverb_pan = {
+				enum = 14,
+			},
+			reflections_gain = {
+				max = 3.16,
+				enum = 9,
+				min = 0,
+				default = 0.05,
+			},
+			gainlf = {
+				max = 1,
+				enum = 5,
+				min = 0,
+				default = 1,
+			},
+			gainhf = {
+				max = 1,
+				enum = 4,
+				min = 0,
+				default = 0.89,
+			},
+			density = {
+				max = 1,
+				enum = 1,
+				min = 0,
+				default = 1,
+			},
+			reflections_pan_xyz = {
+				default = 0,
+			},
+			room_rolloff_factor = {
+				max = 10,
+				enum = 22,
+				min = 0,
+				default = 0,
+			},
+			echo_depth = {
+				max = 1,
+				enum = 16,
+				min = 0,
+				default = 0,
+			},
+			gain = {
+				max = 1,
+				enum = 3,
+				min = 0,
+				default = 0.32,
+			},
+			air_absorption_gainhf = {
+				max = 1,
+				enum = 19,
+				min = 0.892,
+				default = 0.994,
+			},
+			hfreference = {
+				max = 20000,
+				enum = 20,
+				min = 1000,
+				default = 5000,
+			},
+			decay_time = {
+				max = 20,
+				enum = 5,
 				min = 0.1,
 				default = 1.49,
 			},
@@ -1200,15 +1233,12 @@ library.EffectParams = {
 			},
 			reflections_delay = {
 				max = 0.3,
-				enum = 10,
+				enum = 8,
 				min = 0,
 				default = 0.007,
 			},
-			hfreference = {
-				max = 20000,
-				enum = 20,
-				min = 1000,
-				default = 5000,
+			late_reverb_pan_xyz = {
+				default = 0,
 			},
 			modulation_time = {
 				max = 4,
@@ -1216,23 +1246,20 @@ library.EffectParams = {
 				min = 0.04,
 				default = 0.25,
 			},
+			decay_hflimit = {
+				enum = 23,
+			},
+			late_reverb_delay = {
+				max = 0.1,
+				enum = 13,
+				min = 0,
+				default = 0.011,
+			},
 			decay_hfratio = {
 				max = 2,
 				enum = 7,
 				min = 0.1,
 				default = 0.83,
-			},
-			gain = {
-				max = 1,
-				enum = 3,
-				min = 0,
-				default = 0.32,
-			},
-			echo_depth = {
-				max = 1,
-				enum = 16,
-				min = 0,
-				default = 0,
 			},
 			late_reverb_gain = {
 				max = 10,
@@ -1249,6 +1276,16 @@ library.EffectParams = {
 			reflections_pan = {
 				enum = 11,
 			},
+		},
+	},
+	dedicated_dialogue = {
+		enum = 36865,
+		params = {
+		},
+	},
+	dedicated_low_frequency_effect = {
+		enum = 36864,
+		params = {
 		},
 	},
 	distortion = {
@@ -1319,9 +1356,9 @@ library.EffectParams = {
 				min = 0.01,
 				default = 1,
 			},
-			low_gain = {
+			mid1_gain = {
 				max = 7.943,
-				enum = 1,
+				enum = 3,
 				min = 0.126,
 				default = 1,
 			},
@@ -1331,9 +1368,9 @@ library.EffectParams = {
 				min = 4000,
 				default = 6000,
 			},
-			mid1_gain = {
+			low_gain = {
 				max = 7.943,
-				enum = 3,
+				enum = 1,
 				min = 0.126,
 				default = 1,
 			},
@@ -1509,17 +1546,20 @@ library.EffectParams = {
 	echo = {
 		enum = 4,
 		params = {
-			spread = {
-				max = 1,
-				enum = 5,
-				min = -1,
-				default = -1,
+			time = {
+				enum = 0.075,
 			},
 			lrdelay = {
 				max = 0.404,
 				enum = 2,
 				min = 0,
 				default = 0.1,
+			},
+			spread = {
+				max = 1,
+				enum = 5,
+				min = -1,
+				default = -1,
 			},
 			delay = {
 				max = 0.207,
@@ -1532,9 +1572,6 @@ library.EffectParams = {
 				enum = 3,
 				min = 0,
 				default = 0.5,
-			},
-			time = {
-				enum = 0.075,
 			},
 			feedback = {
 				max = 1,
