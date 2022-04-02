@@ -101,6 +101,10 @@ function steam.GetInstallPath()
 		if not vfs.IsDirectory(path) then
 			path = os.getenv("HOME") .. "/.wine/drive_c/Program Files (x86)/Steam"
 		end
+
+		if not vfs.IsDirectory(path) then
+			path = os.getenv("HOME") .. "/.var/app/com.valvesoftware.Steam/.local/share/Steam"
+		end
 	end
 
 	return path --lfs.symlinkattributes(path, "mode") and path or nil
@@ -262,6 +266,8 @@ function steam.GetSourceGames()
 			end
 			tbl.name = name
 
+			local gameinfo = tbl
+
 			if tbl.filesystem then
 				local fixed = {}
 
@@ -313,7 +319,25 @@ function steam.GetSourceGames()
 										done[test] = true
 									end
 								end
+
+								local test = gameinfo.game_dir .. path
+
+								if not vfs.IsDirectory(path) and vfs.IsDirectory(test) then
+									if not done[test] then
+										table.insert(fixed, test)
+										done[test] = true
+									end
+								end
+
+								if test:endswith(".vpk") and not vfs.IsFile("os:" .. test) then
+									local path = test:gsub("(.+/.+)%.vpk", "%1_dir.vpk") .. "/"
+									if not done[path] then
+										table.insert(fixed, path)
+										done[path] = true
+									end
+								end
 							end
+
 
 							if path:endswith(".vpk") and not vfs.IsFile("os:" .. path) then
 								local path = path:gsub("(.+/.+)%.vpk", "%1_dir.vpk") .. "/"
