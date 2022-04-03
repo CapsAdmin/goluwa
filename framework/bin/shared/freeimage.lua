@@ -734,6 +734,8 @@ library.e = {
 				format = "bgr"
 			elseif color_type == library.e.COLOR_TYPE_MINISBLACK or color_type == library.e.COLOR_TYPE_MINISWHITE then
 				format = "r"
+			elseif color_type == library.e.COLOR_TYPE_CMYK then
+				format = "rgba"
 			else
 				bitmap = library.ConvertTo32Bits(bitmap)
 
