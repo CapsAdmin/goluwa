@@ -40,12 +40,12 @@ local shader_sky = render.CreateShader({
 			sunPosition = Vec3(0),
 		},
 		source = [[
-		varying vec3 vWorldPosition;
-		varying vec3 vSunDirection;
-		varying float vSunfade;
-		varying vec3 vBetaR;
-		varying vec3 vBetaM;
-		varying float vSunE;
+		vec3 vWorldPosition;
+		vec3 vSunDirection;
+		float vSunfade;
+		vec3 vBetaR;
+		vec3 vBetaM;
+		float vSunE;
 
 		const vec3 up = vec3(0.0, 1.0, 0.0);
 
@@ -113,12 +113,12 @@ local shader_sky = render.CreateShader({
 			mieDirectionalG = 0.8,
 		},
 		source = [[
-		varying vec3 vWorldPosition;
-		varying vec3 vSunDirection;
-		varying float vSunfade;
-		varying vec3 vBetaR;
-		varying vec3 vBetaM;
-		varying float vSunE;
+		vec3 vWorldPosition;
+		vec3 vSunDirection;
+		float vSunfade;
+		vec3 vBetaR;
+		vec3 vBetaM;
+		float vSunE;
 
 		const vec3 cameraPos = vec3(0., 0., 0.);
 

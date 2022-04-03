@@ -103,7 +103,7 @@ local shader = render.CreateShader({
 			}
 
 
-			float GetAverage3(vec2 uv, float unit)
+			vec3 GetAverage3(vec2 uv, float unit)
 			{
 				//declare stuff
 				const int mSize = 11;

@@ -5,7 +5,7 @@ tex:SetInternalFormat("rgba32f")
 tex:SetMipMapLevels(1)
 tex:SetMinFilter("nearest")
 tex:SetMagFilter("nearest")
-tex:SetAnisotropy(0)
+--tex:SetAnisotropy(0)
 
 tex:Fill(function()
 	local c = math.random(255) return 255,255,255,c
