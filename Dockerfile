@@ -32,6 +32,9 @@ RUN \
     ln -sf luajit-2.1.0-beta3 /usr/local/bin/luajit
 WORKDIR /goluwa
 
+RUN git config --global user.email "foo@bar.com"
+RUN git config --global user.name "foo"
+
 # libressl
 WORKDIR /goluwa/storage/temp/ffibuild/libtls
 RUN git clone https://github.com/libressl-portable/portable.git .
