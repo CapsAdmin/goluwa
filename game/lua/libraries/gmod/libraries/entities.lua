@@ -298,6 +298,10 @@ do
 		end
 	end
 
+	function META:IsNextBot()
+		return false
+	end
+
 	function META:GetNumBodyGroups() return 1 end
 	function META:GetBodygroupCount() return 1 end
 	function META:SkinCount() return 1 end

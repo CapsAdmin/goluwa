@@ -203,6 +203,10 @@ end
 		return true
 	end
 
+	function META:FlashlightIsOn()
+		return false
+	end
+
 	--if SERVER then
 		function META:IPAddress()
 			return "192.168.1.101:27005"
