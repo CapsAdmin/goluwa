@@ -123,7 +123,7 @@ for k, v in pairs(exported.enums) do
 	else
 		output = output .. "\t\t" .. k .. " = {\n"
 		for k, v in pairs(v) do
-			output = output .. "\t\t\t" .. k .. " = " .. v .. ",\n"
+			output = output .. "\t\t\t[\"" .. k .. "\"] = " .. v .. ",\n"
 		end
 		output = output .. "\t\t},\n"
 	end
