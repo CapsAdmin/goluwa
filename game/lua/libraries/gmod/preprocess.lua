@@ -150,6 +150,12 @@ function gine.PreprocessLua(code, add_newlines)
 	if code:wholeword("continue") and not loadstring(code) then
 		local tokens = {}
 
+		local CONTINUE_LABEL = "CONTINUE"
+		
+		while code:find("::"..CONTINUE_LABEL.."::", nil, true) do
+			CONTINUE_LABEL = CONTINUE_LABEL .. "_" .. tostring(math.random(1, 1000000))
+		end
+
 		local ls = require("lang.lexer")(require("lang.reader").string(code), code)
 
 		for i = 1, math.huge do
@@ -245,7 +251,7 @@ function gine.PreprocessLua(code, add_newlines)
 					error("unable to find stop of loop")
 				end
 
-				lines[token.linenumber] = lines[token.linenumber]:gsub("continue", "goto CONTINUE")
+				lines[token.linenumber] = lines[token.linenumber]:gsub("continue", "goto " .. CONTINUE_LABEL)
 
 				if return_token and not return_token.fixed then
 					local space = " "
@@ -274,7 +280,7 @@ function gine.PreprocessLua(code, add_newlines)
 
 					space = space:match("^(%s*)") or " "
 
-					lines[stop_token.linenumber] = space .. "::CONTINUE::" .. (add_newlines and "\n" or "") .. lines[stop_token.linenumber]
+					lines[stop_token.linenumber] = space .. "::"..CONTINUE_LABEL.."::" .. (add_newlines and "\n" or "") .. lines[stop_token.linenumber]
 
 					stop_token.fixed = true
 				end
