@@ -128,6 +128,9 @@ function ffibuild.SourceControlClone(str, dir)
 			os.execute("hg clone " .. str .. " " .. dir)
 		end
 	elseif str:find("svn%.") or str:find("svn%:") then
+		if not system.OSCommandExists("svn") then
+			error("svn is not found in PATH")
+		end
 		os.execute("svn checkout " .. str .. " " .. dir)
 	else
 		os.execute(str)
@@ -1695,7 +1698,7 @@ do -- lua helper functions
 
 		local lua =
 		"local ffi = require(\"ffi\");" ..
-		(table.hasvalue(helpers, "ffi.C") and "local CLIB = ffi.C" or "local CLIB = assert(ffi.load(\""..(ffibuild.shared_library_name or ffibuild.GetBuildName()).."\"));") ..
+		(table.hasvalue(helpers, "ffi.C") and "local CLIB = ffi.C;" or "local CLIB = assert(ffi.load(\""..(ffibuild.shared_library_name or ffibuild.GetBuildName()).."\"));") ..
 		"ffi.cdef([["..ffi_header.."]])\n" ..
 		"local library = {}\n"
 
@@ -1892,7 +1895,10 @@ do -- lua helper functions
 		local old = ffi.load
 		local errored = false
 		ffi.load = function(...)
-			local clib = old(...)
+			local clib, err = old(...)
+			if not clib then
+				wlog(err)
+			end
 			return setmetatable({}, {__index = function(_, key)
 				local ok, ret = pcall(function() return clib[key] end)
 				if ok then
@@ -1966,6 +1972,9 @@ do -- lua helper functions
 
 			if not ok then
 				llog("build failed, exited with code %s", code)
+				if os.getenv("GOLUWA_ARG_LINE"):startswith("build") then
+					system.ShutDown(code)
+				end
 				return
 			end
 		end
@@ -1977,6 +1986,11 @@ do -- lua helper functions
 			local res = not info.filter_library or info.filter_library(vfs.RemoveExtensionFromPath(path))
 			if res then
 				local name = (WINDOWS and "" or "lib") .. info.name
+
+				if name:startswith("liblib") then
+					name = name:sub(4)
+				end
+
 				if res == true and info.filter_library then
 					name = vfs.RemoveExtensionFromPath(vfs.GetFileNameFromPath(path))
 				end
@@ -1991,7 +2005,7 @@ do -- lua helper functions
 				local to =  git_dir .. bin_path
 				if vfs.IsDirectory(git_dir) then
 					vfs.CopyFile(path, to)
-					llog("%q was added", path)
+					llog("%q was added to %q", path, to)
 				end
 
 				local to =  addon_dir .. bin_path

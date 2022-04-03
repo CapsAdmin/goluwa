@@ -5,7 +5,7 @@ local tex = render.CreateTexture("2d")
 tex:SetSize(Vec2(render2d.GetSize()) / scale)
 tex:SetInternalFormat("rgba32f")
 tex:SetMipMapLevels(1)
-tex:SetAnisotropy(0)
+--tex:SetAnisotropy(0)
 tex:SetMinFilter("nearest")
 tex:SetMagFilter("nearest")
 

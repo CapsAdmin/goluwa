@@ -138,7 +138,20 @@ function render3d.DrawScene(what)
 			--for _, model in ipairs(scene) do
 			for i = 1, render3d.SortDistanceScene(what) do
 				local model = render3d.scene_dist[i]
-				model.occluders[what] = model.occluders[what] or render.CreateQuery("any_samples_passed_conservative")
+
+				if not model.occluders[what] then
+					local query, err = render.CreateQuery("any_samples_passed_conservative")
+					if not query then
+						wlog(err)
+						render3d.noculling = true
+						render.PopCullMode()
+						render.SetColorMask(1,1,1,1)
+						render.PopDepth()
+						framebuffers[what]:End()
+						return
+					end
+					model.occluders[what] = query
+				end
 
 				-- TODO: upload aabb only
 				occlusion_shader.model = model.tr.FinalMatrix -- don't call model:GetMatrix() as it migth rebuild, it's not that important

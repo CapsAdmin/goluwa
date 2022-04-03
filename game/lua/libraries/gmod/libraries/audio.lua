@@ -45,6 +45,7 @@ end
 
 if CLIENT then
 	function gine.env.surface.PlaySound(path)
+		if not SOUND then return end
 		resource.skip_providers = true
 		audio.CreateSource("sound/" .. path):Play()
 		resource.skip_providers = false

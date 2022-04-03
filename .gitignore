@@ -4,6 +4,11 @@
 
 !/.gitignore
 
+!/.github/
+!/.github/**
+!/Dockerfile
+!/.dockerignore
+
 !/README.md
 !/goluwa.cmd
 !/goluwa
@@ -25,3 +30,4 @@
 */data/**
 
 *.directory
+

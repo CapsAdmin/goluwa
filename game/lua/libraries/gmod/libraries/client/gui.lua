@@ -63,6 +63,10 @@ do
 	function vgui.CursorVisible()
 		return window.GetCursor() ~= "trapped"
 	end
+
+	function vgui.GetWorldPanel()
+		return gine.WrapObject(gine.gui_world, "Panel")
+	end
 end
 
 do
@@ -418,7 +422,7 @@ do
 	end
 
 	function META:GetClassName()
-		return self.ClassName
+		return self.ClassName or ""
 	end
 
 	function META:IsMarkedForDeletion()
@@ -489,6 +493,10 @@ do
 		return children
 	end
 
+	function META:ChildCount()
+		return #self:GetChildren()
+	end
+
 	function META:GetChild(idx)
 		return self:GetChildren()[idx - 1]
 	end
@@ -527,11 +535,19 @@ do
 	end
 
 	function META:GetName(name)
-		return self.__obj.name
+		return self.__obj.name or ""
 	end
 
 	function META:IsVisible()
 		return self.__obj.Visible
+	end
+
+	function META:IsModal()
+		return false
+	end
+
+	function META:IsWorldClicker()
+		return false
 	end
 
 	function META:GetTable()
@@ -746,6 +762,10 @@ do
 		self.__obj.text_inset.y = y
 	end
 
+	function META:GetTextInset()
+		return self.__obj.text_inset.x, self.__obj.text_inset.y
+	end
+
 	function META:SizeToChildren(size_w, size_h)
 		if size_w == nil then size_w = true end
 		if size_h == nil then size_h = true end
@@ -829,6 +849,7 @@ do
 
 	do -- z pos stuff
 		function META:SetZPos(pos)
+			pos = pos or 0
 			self.__obj:SetChildOrder(-pos)
 		end
 

@@ -127,7 +127,8 @@ encode = function(val, stack)
   if f then
     return f(val, stack)
   end
-  error("unexpected type '" .. t .. "'")
+  wlog("unexpected type '" .. t .. "'")
+  return "null"
 end
 
 

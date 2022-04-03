@@ -693,7 +693,9 @@ do -- extended
 	end
 
 	function META:ReadChar()
-		return string.char(self:ReadByte())
+		local b = self:ReadByte()
+		if not b then return end
+		return string.char(b)
 	end
 
 	-- nil
@@ -813,6 +815,10 @@ do -- extended
 
 	function META:ReadColor()
 		return Color(self:ReadFloat(), self:ReadFloat(), self:ReadFloat(), self:ReadFloat())
+	end
+
+	function META:ReadByteColor()
+		return ColorBytes(self:ReadByte(), self:ReadByte(), self:ReadByte(), self:ReadByte())
 	end
 
 	-- integer/long

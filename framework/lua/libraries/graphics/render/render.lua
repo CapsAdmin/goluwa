@@ -58,7 +58,7 @@ function render.Initialize(wnd)
 	for k,v in pairs(_G) do
 		if type(k) == "string" and type(v) == "boolean" and k:sub(1, #"RENDER_EXT_")  == "RENDER_EXT_" then
 			render.extension_cache[k] = v
-			if render.IsExtensionSupported(str:sub(#"RENDER_EXT_" + 1)) then
+			if render.IsExtensionSupported(k:sub(#"RENDER_EXT_" + 1)) then
 				llog("extension %s was forced to %s", k, v)
 			end
 		end

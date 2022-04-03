@@ -1,5 +1,14 @@
 _G.TEST = (os.getenv("GOLUWA_ARG_LINE") or ""):find("RUN_TEST", nil, true)
 
+pcall(function()
+	local f = io.open(os.getenv("HOME") .. "/.goluwa.lua", "r")
+	if f then
+		local lua = f:read("*all")
+		assert(loadstring(lua))()
+		f:close()
+	end
+end)
+
 if TEST then
 	jit.off(true, true)
 	local call_count = {}
@@ -94,18 +103,35 @@ do -- constants
 
 	if pcall(require, "ffi") then
 		local ffi = require("ffi")
+		pcall(ffi.load, "pthread")
 		if OS == "windows" then
 			ffi.cdef("unsigned long GetCurrentDirectoryA(unsigned long, char *);")
 			local buffer = ffi.new("char[260]")
 			local length = ffi.C.GetCurrentDirectoryA(260, buffer)
 			e.ROOT_FOLDER = ffi.string(buffer, length):gsub("\\", "/") .. "/"
 		else
+			ffi.cdef("char *strerror(int)")
 			ffi.cdef("char *realpath(const char *, char *);")
-			e.ROOT_FOLDER = ffi.string(ffi.C.realpath(".", nil)) .. "/"
+
+			local resolved_name = ffi.new("char[?]", 256)
+
+			local ret = ffi.C.realpath("./", resolved_name)
+
+			if ret == nil then
+				local num = ffi.errno()
+				local err = ffi.string(ffi.C.strerror(num))
+				err = err == "" and tostring(num) or err
+
+				print("realpath failed: " .. err)
+				print("defaulting to ./")
+				e.ROOT_FOLDER = ""
+			else
+				e.ROOT_FOLDER = ffi.string(ret) .. "/"
+			end
 		end
 	end
 
-	e.BIN_FOLDER = e.ROOT_FOLDER .. os.getenv("GOLUWA_BINARY_DIR") .. "/"
+	e.BIN_FOLDER = e.ROOT_FOLDER .. (os.getenv("GOLUWA_BINARY_DIR") or "core/bin/linux_x64/") .. "/"
 	e.CORE_FOLDER = e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/"
 
 	e.STORAGE_FOLDER = e.ROOT_FOLDER .. "storage/"
@@ -211,10 +237,12 @@ profiler = runfile("lua/libraries/profiler.lua")
 tasks = runfile("!lua/libraries/tasks.lua") -- high level coroutine library
 threads = runfile("!lua/libraries/threads.lua")
 
-_G.P = profiler.ToggleTimer
-_G.I = profiler.ToggleInstrumental
-_G.S = profiler.ToggleStatistical
-_G.LOOM = profiler.ToggleLoom
+if profiler then
+	_G.P = profiler.ToggleTimer
+	_G.I = profiler.ToggleInstrumental
+	_G.S = profiler.ToggleStatistical
+	_G.LOOM = profiler.ToggleLoom
+end
 
 oh = runfile("lua/libraries/oh/oh.lua") -- lua tokenizer, parser and emitter
 repl = runfile("lua/libraries/repl.lua")
@@ -225,7 +253,7 @@ sockets = runfile("lua/libraries/sockets/sockets.lua")
 http = runfile("lua/libraries/http.lua")
 test = runfile("lua/libraries/test.lua")
 
-if not TEST then
+if not TEST and not os.getenv("GOLUWA_ARG_LINE"):startswith("build") then
 	local ok, err = pcall(repl.Start)
 	if not ok then logn(err) end
 end
@@ -252,20 +280,18 @@ if VERBOSE then
 	logn("[runfile] ", os.clock() - start_time," seconds spent in core/lua/init.lua")
 end
 
-if os.getenv("GOLUWA_ARG_LINE") == "build" then
-	runfile("lua/ffibuild/libressl.lua")
-	runfile("lua/ffibuild/luajit.lua")
-	runfile("lua/ffibuild/enet.lua")
-	runfile("lua/ffibuild/freeimage.lua")
-	runfile("lua/ffibuild/freetype.lua")
-	runfile("lua/ffibuild/libarchive.lua")
-	runfile("lua/ffibuild/libmp3lame.lua")
-	runfile("lua/ffibuild/mpg123.lua")
-	runfile("lua/ffibuild/libsndfile.lua")
-	runfile("lua/ffibuild/openal.lua")
-	runfile("lua/ffibuild/sdl2.lua")
+if os.getenv("GOLUWA_ARG_LINE"):startswith("build") then
+	local what = os.getenv("GOLUWA_ARG_LINE"):sub(7)
+	
+	if what == "*" then
+		for _, filename in ipairs(vfs.Find("lua/ffibuild/")) do
+			runfile("lua/ffibuild/"..filename)
+		end
+	else
+		runfile("lua/ffibuild/"..what..".lua")
+	end
 
-	return
+	os.realexit(os.exitcode)
 end
 
 -- this can be overriden later, but by default we limit the fps to 30

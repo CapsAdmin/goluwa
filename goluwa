@@ -96,15 +96,15 @@ DownloadFile () {
 
 	echo "downloading $url to $output_path"
 
-	if command -v wget >/dev/null 2>&1; then
-		wget --server-response -O "$output_path" "$url"
-		error_code=$?
-	elif command -v curl >/dev/null 2>&1; then
+	if command -v curl >/dev/null 2>&1; then
 		http_code=$(curl -L --url "$url" --output "$output_path" -w "%{http_code}")
 		error_code=$?
 		if [ "$http_code" != "200" ]; then
 			error_code=1
 		fi
+	elif command -v wget >/dev/null 2>&1; then
+		wget --server-response -O "$output_path" "$url"
+		error_code=$?
 	else
 		Alert "unable to find wget or curl" "error"
 		exit 1

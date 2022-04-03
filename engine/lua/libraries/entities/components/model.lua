@@ -268,31 +268,29 @@ if GRAPHICS then
 				local indices = data.index_buffer.Indices
 
 				for I = 0, indices:GetLength() - 1, 3 do
-					Count = Count + 1
 					local Index = indices[I]
 					local Vertex = string.format("v %.6f %.6f %.6f\n", vertices[Index].pos[0], vertices[Index].pos[1], vertices[Index].pos[2])
 					Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", vertices[Index].normal[0], vertices[Index].normal[1], vertices[Index].normal[2])
-					--Make vertex coordinate Y up.
-					Vertex = Vertex .. string.format("vt %.6f %.6f\n", vertices[Index].uv[0], 1.0 - vertices[Index].uv[1])
+					
+					Vertex = Vertex .. string.format("vt %.6f %.6f\n", vertices[Index].uv[0], vertices[Index].uv[1])
 					Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
-
-					Count = Count + 1
+					
 					Index = indices[I + 1]
 					Vertex = Vertex .. string.format("v %.6f %.6f %.6f\n", vertices[Index].pos[0], vertices[Index].pos[1], vertices[Index].pos[2])
 					Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", vertices[Index].normal[0], vertices[Index].normal[1], vertices[Index].normal[2])
-					--Make vertex coordinate Y up.
-					Vertex = Vertex .. string.format("vt %.6f %.6f\n", vertices[Index].uv[0], 1.0 - vertices[Index].uv[1])
+					
+					Vertex = Vertex .. string.format("vt %.6f %.6f\n", vertices[Index].uv[0], vertices[Index].uv[1])
 					Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
-
-					Count = Count + 1
+					
 					Index = indices[I + 2]
 					Vertex = Vertex .. string.format("v %.6f %.6f %.6f\n", vertices[Index].pos[0], vertices[Index].pos[1], vertices[Index].pos[2])
 					Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", vertices[Index].normal[0], vertices[Index].normal[1], vertices[Index].normal[2])
-					--Make vertex coordinate Y up.
-					Vertex = Vertex .. string.format("vt %.6f %.6f\n", vertices[Index].uv[0], 1.0 - vertices[Index].uv[1])
+					
+					Vertex = Vertex .. string.format("vt %.6f %.6f\n", vertices[Index].uv[0], vertices[Index].uv[1])
 					Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
 
-					Vertex = Vertex .. string.format("f %i/%i/%i %i/%i/%i %i/%i/%i\n", Count - 2, Count - 2, Count - 2, Count - 1, Count - 1, Count - 1, Count, Count, Count)
+					Count = Count + 3
+					Vertex = Vertex .. string.format("f %i/%i/%i %i/%i/%i %i/%i/%i\n", Count, Count, Count, Count - 1, Count - 1, Count - 1, Count - 2, Count - 2, Count - 2)
 
 					table.insert(out, Vertex)
 				end
@@ -315,7 +313,7 @@ if GRAPHICS then
 						SubmeshCount = SubmeshCount + 1
 						UsedMaterials[MaterialName] = true
 
-						table.insert(out, "o " .. MaterialName .. "\n")
+						table.insert(out, "g " .. MaterialName .. "\n")
 
 						for _, model in ipairs(self:GetSubModels()) do
 							for _, data in ipairs(model:GetSubMeshes()) do
@@ -328,7 +326,7 @@ if GRAPHICS then
 					end
 				else
 					SubmeshCount = SubmeshCount + 1
-					table.insert(out, "o error\n")
+					table.insert(out, "g error\n")
 					export(model)
 				end
 			end

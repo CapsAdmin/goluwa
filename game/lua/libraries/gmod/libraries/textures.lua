@@ -224,6 +224,8 @@ if CLIENT then
 
 	do
 		local surface = gine.env.surface
+		local idmap = {}
+		local id = 0
 
 		function surface.GetTextureID(path)
 			local tex
@@ -242,16 +244,18 @@ if CLIENT then
 
 			resource.skip_providers = nil
 
-			return tex
+			idmap[id] = tex
+			id = id + 1
+
+			return id
 		end
 
 		function surface.SetMaterial(mat)
 			gine.env.render.SetMaterial(mat)
 		end
 
-		function surface.SetTexture(tex)
-			if type(tex) == "number" then tex = render.GetWhiteTexture() end
-			render2d.SetTexture(tex)
+		function surface.SetTexture(id)
+			render2d.SetTexture(idmap[id])
 		end
 	end
 

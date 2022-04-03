@@ -1,5 +1,3 @@
-local git = system.GetCLICommand("git")
-
 local addons = {
 	"https://github.com/PAC3-Server/notagain",
 	--"https://github.com/PAC3-Server/gm-http-discordrelay",
@@ -9,6 +7,8 @@ local addons = {
 }
 
 commands.Add("setup_pac3server_addons", function()
+	local git = system.GetCLICommand("git")
+
 	local gmod_path = steam.GetGamePath("GarrysMod")
 	assert(steam.GetGamePath("GarrysMod"), "could not find gmod install")
 
@@ -178,6 +178,7 @@ end
 	}
 
 commands.Add("setup_metastruct_addons", function()
+	local git = system.GetCLICommand("git")
 	local npm = system.GetCLICommand("npm")
 
 	fs.CreateDirectory("metastruct_addons")

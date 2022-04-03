@@ -51,6 +51,10 @@ function CONTEXT:GetFileTree(path_info)
 	local archive_path, relative = path_info.full_path:slice((self.NameEndsWith or "") .. "." .. self.Extension .. "/", 0, 1)
 
 	if not archive_path then
+		archive_path, relative = path_info.full_path:slice("." .. self.Extension .. "/", 0, 1)
+	end
+
+	if not archive_path then
 		return false, "not a valid archive path"
 	end
 
@@ -127,6 +131,7 @@ end
 
 function CONTEXT:IsFolder(path_info)
 	local tree, relative, archive_path = self:GetFileTree(path_info)
+
 	if relative == "" then return true end
 	if not tree then return tree, relative end
 	local entry = tree:GetEntry(relative)
@@ -157,7 +162,7 @@ function CONTEXT:TranslateArchivePath(file_info)
 	return file_info.archive_path
 end
 
-local cache = {}
+local cache = table.weak()
 
 function CONTEXT:Open(path_info, mode, ...)
 	if self:GetMode() == "read" then

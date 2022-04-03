@@ -53,3 +53,29 @@ function engine.LightStyle() end
 function engine.ServerFrameTime()
 	return 1/33
 end
+
+function engine.GetGamemodes()
+	return {
+		{
+			["maps"] = "",
+			["title"] = "Base",
+			["menusystem"] = false,
+			["name"] = "base",
+			["workshopid"] = "0",
+		},
+		{
+			["maps"] = "^gm_|^gmod_|^phys_",
+			["title"] = "Sandbox",
+			["menusystem"] = true,
+			["name"] = "sandbox",
+			["workshopid"] = "0",
+		},
+		{
+			["maps"] = "^ttt_",
+			["title"] = "Trouble in Terrorist Town",
+			["menusystem"] = true,
+			["name"] = "terrortown",
+			["workshopid"] = "0",
+		},
+	}
+end

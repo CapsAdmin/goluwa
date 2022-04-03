@@ -1,6 +1,5 @@
-local archive = desire("libarchive")
-
-if not archive then return end
+local archive, err = desire("libarchive")
+if not archive then wlog("cannot load libarchive, zip archive are not supported: " .. err) return end
 
 local vfs = (...) or _G.vfs
 local ffi = require("ffi")
@@ -372,8 +371,11 @@ function CONTEXT:GetLastModified()
 end
 
 vfs.RegisterFileSystem(CONTEXT)
+
 if RELOAD then
-	for _, path in pairs(vfs.Find("/media/caps/ssd_840_120gb/goluwa/data/users/caps/temp_bsp.zip/materials/maps/", nil, nil, nil, nil, true)) do
+	print(R"temp_bsp.zip")
+
+	for _, path in pairs(vfs.Find(R"temp_bsp.zip/materials/maps/", nil, nil, nil, nil, true)) do
 		print(path.name, "!")
 		--local file = vfs.Open(path.full_path)
 		--print(file:GetSize())

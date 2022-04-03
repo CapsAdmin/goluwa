@@ -276,7 +276,9 @@ do
 		gl.GenQueries(1, temp)
 		local self = ffi.new(ctype)
 		self.id = temp[0]
+
 		self.type = translate[type]
+
 		return self
 	end
 end

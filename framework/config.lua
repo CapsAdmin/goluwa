@@ -6,6 +6,7 @@ return {
 			CLIENT = true,
 			GRAPHICS = true,
 			SOUND = true,
+			AUDIO_DEVICE = "default",
 			DEBUG = false,
 			WINDOW = true,
 			WINDOW_IMPLEMENTATION = "sdl2",
@@ -13,8 +14,6 @@ return {
 			SRGB = true,
 			NULL_OPENGL = false,
 			BUILD_SHADER_OUTPUT = false,
-			DEBUG_OPENGL = false,
-
 
 			OPENGL = true,
 			VULKAN = false,
@@ -77,7 +76,7 @@ return {
 				io.write("os.getenv('DISPLAY') is nil.\nsetting GRAPHICS and WINDOW to false.\n")
 			end
 
-			if SOUND and not vfs.IsDirectory("/proc/asound") and not os.getenv("DISPLAY") and not os.getenv("GOLUWA_AUDIO_DEVICE") then
+			if SOUND and not vfs.IsDirectory("/proc/asound") and not os.getenv("DISPLAY") and not AUDIO_DEVICE then
 				SOUND = false
 				io.write("/proc/asound is not a directory and DISPLAY is not set, assuming no sound.\nsetting SOUND to false.\n")
 			end

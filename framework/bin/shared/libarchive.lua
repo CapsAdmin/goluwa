@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local CLIB = assert(ffi.load("liblibarchive"))
+local CLIB = assert(ffi.load("libarchive"))
 ffi.cdef([[struct archive {};
 struct archive_entry {};
 struct archive_acl {};

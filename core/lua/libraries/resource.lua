@@ -198,7 +198,8 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 			check_etag,
 			path
 		)
-		if not gmod then
+		-- TODO
+		if not gmod and client.socket then
 			client.socket.url = provider .. path
 		end
 	end
@@ -207,7 +208,7 @@ end
 local ohno = false
 
 resource.Download = callback.WrapKeyedTask(function(self, path, crc, mixed_case, check_etag, ext)
-	local resolve = function(...) local args = table.pack(...) event.Delay(function() self.callbacks.resolve(table.unpack(args)) end) end
+	local resolve = function(...) self.callbacks.resolve(...) end
 	local reject = self.callbacks.reject
 
 	if resource.virtual_files[path] then

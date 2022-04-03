@@ -239,6 +239,10 @@ do
 		return 0
 	end
 
+	function META:WaterLevel()
+		return 0
+	end
+	
 	function META:LookupBone(name)
 		return 0
 	end
@@ -292,6 +296,10 @@ do
 		if what == "UserGroup" then
 			return "Player"
 		end
+	end
+
+	function META:IsNextBot()
+		return false
 	end
 
 	function META:GetNumBodyGroups() return 1 end
@@ -350,6 +358,10 @@ do
 	end
 
 	function META:BoundingRadius()
+		return 1
+	end
+
+	function META:GetModelScale()
 		return 1
 	end
 
