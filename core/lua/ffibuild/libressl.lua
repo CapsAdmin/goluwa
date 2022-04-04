@@ -1,7 +1,7 @@
 ffibuild.Build({
 	name = "libtls",
 	url = "https://github.com/libressl-portable/portable.git",
-	cmd = "./autogen.sh && ./configure && make",
+	cmd = "./autogen.sh && ./configure && make -j32",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 
 	c_source = [[
