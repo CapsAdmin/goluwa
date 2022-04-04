@@ -1,4 +1,4 @@
-_G.TEST = (os.getenv("GOLUWA_ARG_LINE") or ""):find("RUN_TEST", nil, true)
+_G.TEST = (os.getenv("GOLUWA_ARG_LINE") or ""):find("test", nil, true)
 
 pcall(function()
 	local f = io.open(os.getenv("HOME") .. "/.goluwa.lua", "r")
@@ -359,33 +359,8 @@ if TEST then
 		system.ShutDown(1)
 	end
 
-	do
-		local lua_time = os.clock() + 0.5
-		local system_time = system.GetTime() + 0.25
-		local called = false
-
-		event.AddListener("Update", "test", function()
-			called = true
-
-			if system_time < system.GetTime() then
-				system.ShutDown(0)
-				return e.EVENT_DESTROY
-			end
-
-			if lua_time < os.clock() then
-				logn("system.GetTime() does not work?: ", system.GetTime())
-				system.ShutDown(1)
-				return e.EVENT_DESTROY
-			end
-		end)
-
-		event.Call("Update", system.GetFrameTime())
-
-		if not called then
-			logn("Update function could not be called for some reason")
-			system.ShutDown(1)
-		end
-	end
+	system.ShutDown(0)
+	return
 end
 
 local last_time = 0

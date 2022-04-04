@@ -20,7 +20,7 @@ commands.Add("cli", function() end)
 commands.Add("verbose", function() end)
 commands.Add("tmux", function() end)
 commands.Add("gdb", function() end)
-commands.Add("RUN_TEST", function() end)
+commands.Add("test", function() end)
 
 do
 	local show = pvars.Setup("system_fps_show", true, nil, "show fps in titlebar")
