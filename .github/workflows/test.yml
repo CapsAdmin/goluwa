@@ -1,0 +1,15 @@
+name: test
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout the project
+        uses: actions/checkout@v2
+        with:
+          path: "."
+
+      - name: test
+        run: ./goluwa test
