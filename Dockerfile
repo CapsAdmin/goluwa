@@ -20,29 +20,28 @@ RUN apt-get install -y \
     libtool \
     perl
 
+RUN git config --global user.email "foo@bar.com"
+RUN git config --global user.name "foo"
+
+RUN alias make='make -j32'
+
 # luajit v2.1
 WORKDIR /goluwa/storage/temp/ffibuild/luajit
 RUN git clone https://github.com/LuaJIT/LuaJIT . && git checkout v2.1
-RUN \
-    make \
-    amalg CCDEBUG=-g \
-    XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT \
-    MACOSX_DEPLOYMENT_TARGET=10.6 \
-    && make install && \
-    ln -sf luajit-2.1.0-beta3 /usr/local/bin/luajit
+RUN make -j32 CCDEBUG=-g XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
 WORKDIR /goluwa
 
-RUN git config --global user.email "foo@bar.com"
-RUN git config --global user.name "foo"
+COPY storage/temp/ffibuild/luajit/src/luajit /golwua/core/bin/linux_x64/luajit
+COPY storage/temp/ffibuild/luajit/src/libluajit.so /golwua/framework/bin/linux_x64/libluajit.so
+
+RUN rm -rf /goluwa/storage/temp/ffibuild/luajit
 
 # libressl
 WORKDIR /goluwa/storage/temp/ffibuild/libtls
 RUN git clone https://github.com/libressl-portable/portable.git .
-RUN ./autogen.sh && ./configure && make
+RUN ./autogen.sh && ./configure && make -j32
 WORKDIR /goluwa
 
-COPY storage/temp/ffibuild/luajit/src/luajit core/bin/linux_x64/luajit
-COPY storage/temp/ffibuild/luajit/src/libluajit.so core/bin/linux_x64/libluajit.so
 COPY storage/temp/ffibuild/libtls/crypto/.libs/libcrypto.so core/bin/linux_x64/libcrypto.so
 COPY storage/temp/ffibuild/libtls/ssl/.libs/libssl.so core/bin/linux_x64/libssl.so
 COPY storage/temp/ffibuild/libtls/tls/.libs/libtls.so core/bin/linux_x64/libtls.so
@@ -119,11 +118,10 @@ RUN apt-get install -y \
 RUN ./goluwa build sdl2
 
 RUN ./goluwa build vtflib
-RUN ./goluwa build vtflib
 
 COPY engine ./engine
 COPY game ./game
 
-RUN rm -rf storage/temp/ffibuild
+COPY goluwa ./goluwa
 
-CMD ["ls"]
+RUN rm -rf storage
