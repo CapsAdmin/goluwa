@@ -13,14 +13,18 @@ local whitelist
 end)
 
 function vfs.FetchBniariesForAddon(addon, callback)
-	local keep_local_binaries = "shared/keep_local_binaries"
-	
-	if vfs.IsFile(keep_local_binaries) then if callback then callback() end return end
-	
 	local signature = jit.os:lower() .. "_" .. jit.arch:lower()
-	local signature_path = "shared/binaries_downloaded_" .. addon ..  "_" .. signature
+	local already_downloaded_path = e.ROOT_FOLDER .. addon .. "/bin/" .. signature .. "/binaries_downloaded"
+	local skip_path = e.ROOT_FOLDER .. addon .. "/bin/" .. signature .. "/keep_local_binaries"
 
-	if vfs.IsFile(signature_path) then
+	if fs.IsFile(skip_path) then 
+		if callback then callback() end
+		return
+	end
+
+	if fs.IsFile(already_downloaded_path) then
+		-- if already downloaded, callback right away and download in background
+		-- binaries will be replaced by the new ones after restart
 		if callback then
 			callback()
 		end
@@ -45,13 +49,13 @@ function vfs.FetchBniariesForAddon(addon, callback)
 
 		for i, v in ipairs(found) do
 			local to = bin_dir .. v.path:sub(#relative_bin_dir + 1)
-			if not vfs.IsFile(signature_path) and vfs.IsFile(to) then
+			if not fs.IsFile(already_downloaded_path) and fs.IsFile(to) then
 				llog("%q already exists before a fetch was ran, skipping", to:sub(#e.ROOT_FOLDER+1))
 				done = done - 1
 
 				if done == 0 then
-					if not vfs.IsFile(signature_path) then
-						vfs.Write(signature_path, "")
+					if not fs.IsFile(already_downloaded_path) then
+						fs.Write(already_downloaded_path, "")
 						llog("finished downloading binaries for %s", addon)
 						if callback then
 							callback()
@@ -62,7 +66,7 @@ function vfs.FetchBniariesForAddon(addon, callback)
 				resource.Download(v.url, nil,nil, true):Then(function(file_path, modified)
 					local name = vfs.GetFileNameFromPath(v.path)
 
-					if modified or not vfs.IsFile(to) then
+					if modified or not fs.IsFile(to) then
 						local ok = vfs.CopyFileFileOnBoot(file_path, to)
 						if ok == "deferred" then
 							llog("%q will be replaced after restart. (%i downloads left)", to:sub(#e.ROOT_FOLDER+1), done)
@@ -76,8 +80,8 @@ function vfs.FetchBniariesForAddon(addon, callback)
 					done = done - 1
 					
 					if done == 0 then
-						if not vfs.IsFile(signature_path) then
-							vfs.Write(signature_path, "")
+						if not fs.IsFile(already_downloaded_path) then
+							fs.Write(already_downloaded_path, "")
 							llog("finished downloading binaries for %s", addon)
 							if callback then
 								callback()

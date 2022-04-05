@@ -41,7 +41,7 @@ RUN mkdir -p storage/shared/
 
 RUN apt-get install -y wget
 RUN wget -O storage/shared/cert.pem https://raw.githubusercontent.com/libressl-portable/openbsd/master/src/lib/libcrypto/cert.pem
-RUN touch storage/shared/keep_local_binaries
+RUN touch core/bin/linux_x64/keep_local_binaries
 
 RUN ./goluwa build luajit
 RUN ./goluwa build libressl
@@ -195,6 +195,8 @@ COPY --from=goluwa-framework-openal goluwa/framework/bin/linux_x64/ ./framework/
 COPY --from=goluwa-framework-sdl2 goluwa/framework/bin/linux_x64/ ./framework/bin/linux_x64/
 COPY --from=goluwa-framework-vtflib goluwa/framework/bin/linux_x64/ ./framework/bin/linux_x64/
 
+RUN touch framework/bin/linux_x64/keep_local_binaries
+
 RUN rm -rf storage/temp/
 
 ##################################################################################
@@ -224,3 +226,5 @@ COPY --from=goluwa-game /goluwa/storage ./storage
 COPY --from=goluwa-game /goluwa/goluwa ./goluwa
 
 RUN ./goluwa test
+
+RUN rm -rf storage/userdata/
