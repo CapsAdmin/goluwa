@@ -15,7 +15,7 @@ end)
 function vfs.FetchBniariesForAddon(addon, callback)
 	local keep_local_binaries = "shared/keep_local_binaries"
 	
-	if vfs.IsFile(keep_local_binaries) then return end
+	if vfs.IsFile(keep_local_binaries) then if callback then callback() end return end
 	
 	local signature = jit.os:lower() .. "_" .. jit.arch:lower()
 	local signature_path = "shared/binaries_downloaded_" .. addon ..  "_" .. signature
