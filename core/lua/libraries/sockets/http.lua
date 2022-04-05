@@ -201,7 +201,7 @@ function sockets.MixinHTTP(META)
                         if hex_num == "0" then
                             state.chunked_done = true
                         elseif hex_num then
-                            local num = tonumber("0x" .. hex_num)
+                            local num = tonumber("0x" .. hex_num) or 0
                             self:SetBufferSize(num)
                             state.to_receive = num
                         else
