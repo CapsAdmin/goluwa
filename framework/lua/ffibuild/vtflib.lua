@@ -1,7 +1,7 @@
 ffibuild.Build({
 	name = "vtflib",
 	url = "https://github.com/CapsAdmin/VTFLib.git",
-	cmd = "cmake . -DUSE_LIBTXC_DXTN=0 && make",
+	cmd = "cmake . -DUSE_LIBTXC_DXTN=0 && make --jobs 32",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 
 	c_source = [[

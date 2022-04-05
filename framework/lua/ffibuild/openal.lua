@@ -2,7 +2,7 @@ for lib_name, enum_name in pairs({al = "AL_", alc = "ALC_"}) do
 	ffibuild.Build({
 		name = "openal",
 		url = "https://github.com/kcat/openal-soft.git",
-		cmd = "cmake . && make",
+		cmd = "cmake . && make --jobs 32",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 		lua_name = lib_name,
 		shared_library_name = "openal",

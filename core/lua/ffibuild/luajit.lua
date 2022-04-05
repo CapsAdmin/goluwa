@@ -27,7 +27,7 @@ end,
 local instructions = table.copy(instructions)
 instructions.name = "luajit"
 instructions.url = "https://github.com/LuaJIT/LuaJIT/tree/v2.1.git"
-instructions.cmd = "make -j32 amalg CCDEBUG=-g XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT MACOSX_DEPLOYMENT_TARGET=10.6"
+instructions.cmd = "make --jobs 32 amalg CCDEBUG=-g XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT MACOSX_DEPLOYMENT_TARGET=10.6"
 instructions.clean = "make clean"
 
 ffibuild.Build(instructions)

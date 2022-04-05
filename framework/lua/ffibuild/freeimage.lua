@@ -1,7 +1,7 @@
 ffibuild.Build({
 	name = "freeimage",
 	url = "https://svn.code.sf.net/p/freeimage/svn/FreeImage/trunk",
-	cmd = "make",
+	cmd = "make --jobs 32",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 
 	c_source = [[#include "FreeImage.h"]],

@@ -1,7 +1,7 @@
 ffibuild.Build({
 	name = "sndfile",
 	url = "https://github.com/erikd/libsndfile.git", -- --host=x86_64-w64-mingw32
-	cmd = "mkdir out && cd out && cmake -DBUILD_SHARED_LIBS=ON .. && make",
+	cmd = "mkdir out && cd out && cmake -DBUILD_SHARED_LIBS=ON .. && make --jobs 32",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 	c_source = [[
 		#include "sndfile.h"

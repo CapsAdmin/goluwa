@@ -1,7 +1,7 @@
 ffibuild.Build({
 	name = "freetype",
 	url = "git://git.sv.nongnu.org/freetype/freetype2.git", -- --host=x86_64-w64-mingw32
-	cmd = "mkdir build && cd build && cmake .. -DBUILD_SHARED_LIBS=1 && make && cd ../",
+	cmd = "mkdir build && cd build && cmake .. -DBUILD_SHARED_LIBS=1 && make --jobs 32 && cd ../",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 	strip_undefined_symbols = true,
 

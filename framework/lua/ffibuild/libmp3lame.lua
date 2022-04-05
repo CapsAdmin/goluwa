@@ -1,7 +1,7 @@
 ffibuild.Build({
 	name = "lame",
 	url = "https://svn.code.sf.net/p/lame/svn/trunk/lame",
-	cmd = "./configure && make",
+	cmd = "./configure && make --jobs 32",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 
 	c_source = [[#include "lame.h"]],

@@ -1,7 +1,7 @@
 ffibuild.Build({
 	name = "lame",
 	url = "svn://scm.orgis.org/mpg123/trunk",
-	cmd = "autoreconf -iv && ./configure && make",
+	cmd = "autoreconf -iv && ./configure && make --jobs 32",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 
 	c_source = [[#include "src/libmpg123/mpg123.h"]],

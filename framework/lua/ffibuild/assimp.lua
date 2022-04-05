@@ -1,7 +1,7 @@
 ffibuild.Build({
 	name = "assimp",
 	url = "https://github.com/assimp/assimp.git",
-	cmd = "cmake CMakeLists.txt && make",
+	cmd = "cmake CMakeLists.txt && make --jobs 32",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 
 	c_source = [[

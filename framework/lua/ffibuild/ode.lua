@@ -5,7 +5,7 @@ local ffibuild = require("ffibuild")
 ffibuild.ManualBuild(
 	"ode",
 	"hg clone https://bitbucket.org/odedevs/ode repo",
-	"./bootstrap && ./configure --enable-shared --enable-double-precision --with-libccd=system --with-gimpact --with-libccd && make"
+	"./bootstrap && ./configure --enable-shared --enable-double-precision --with-libccd=system --with-gimpact --with-libccd && make --jobs 32"
 )
 
 local header = ffibuild.ProcessSourceFileGCC([[

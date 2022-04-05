@@ -6,7 +6,7 @@ os.checkcmds("cmake", "git", "make")
 ffibuild.ManualBuild(
 	"vulkan",
 	"https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers.git",
-	"./update_external_sources.sh && mkdir build && cd build && cmake .. && make"
+	"./update_external_sources.sh && mkdir build && cd build && cmake .. && make --jobs 32"
 )
 
 local extensions = {
