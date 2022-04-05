@@ -106,7 +106,9 @@ WORKDIR /goluwa
 COPY framework ./framework
 
 # https://github.com/libsndfile/libsndfile/blob/master/.github/workflows/action.yml
-RUN apt-get install -y autogen ninja-build libogg-dev libvorbis-dev libflac-dev libopus-dev libasound2-dev libsqlite3-dev libspeex-dev libmp3lame-dev libmpg123-dev
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=America/New_York
+RUN apt-get install -y autogen ninja-build libogg-dev libvorbis-dev libflac-dev libopus-dev libasound2-dev libsqlite3-dev libspeex-dev libmp3lame-dev libmpg123-dev cmake g++ python3
 RUN ./goluwa build libsndfile
 
 ##################################################################################
@@ -119,7 +121,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/New_York
 
 # https://github.com/kcat/openal-soft/blob/master/.github/workflows/ci.yml
-RUN apt-get install -y libpulse-dev portaudio19-dev libasound2-dev libjack-dev qtbase5-dev libdbus-1-dev
+RUN apt-get install -y libpulse-dev portaudio19-dev libasound2-dev libjack-dev qtbase5-dev libdbus-1-dev cmake g++ 
 RUN ./goluwa build openal
 
 ##################################################################################
@@ -174,6 +176,7 @@ FROM goluwa-core as goluwa-framework-vtflib
 WORKDIR /goluwa
 COPY framework ./framework
 
+RUN apt-get install -y cmake g++
 RUN ./goluwa build vtflib
 
 ##################################################################################
@@ -192,8 +195,6 @@ COPY --from=goluwa-framework-openal goluwa/framework/bin/linux_x64/ ./framework/
 COPY --from=goluwa-framework-sdl2 goluwa/framework/bin/linux_x64/ ./framework/bin/linux_x64/
 COPY --from=goluwa-framework-vtflib goluwa/framework/bin/linux_x64/ ./framework/bin/linux_x64/
 
-RUN rm storage/shared/copy_binaries_instructions
-RUN rm storage/shared/library_crashes.lua
 RUN rm -rf storage/temp/
 
 ##################################################################################
@@ -221,3 +222,5 @@ COPY --from=goluwa-game /goluwa/engine ./engine
 COPY --from=goluwa-game /goluwa/game ./game
 COPY --from=goluwa-game /goluwa/storage ./storage
 COPY --from=goluwa-game /goluwa/goluwa ./goluwa
+
+RUN ./goluwa test
