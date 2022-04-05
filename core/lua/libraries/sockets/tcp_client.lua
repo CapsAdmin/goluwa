@@ -143,12 +143,18 @@ function META:Close(reason)
     self:Remove()
 end
 
+-- in case /etc/service don't exist
+local services = {
+    https = "443",
+    http = "80",
+}
+
 function META:Connect(host, service)
     if service == "https" then
         self:SetupTLS()
     end
 
-    local ok, err = self.socket:connect(host, service)
+    local ok, err = self.socket:connect(host, services[service] or service)
 
     if ok then
         self.connecting = true
