@@ -16,8 +16,8 @@ serializer.AddLibrary("lzma", nil, function(archive, str)
 		end
 
 		archive.ReadFree(a)
-		wlog(err)
-		return
+
+		return nil, err
 	end
 
 	local entry = archive.EntryNew()
@@ -31,8 +31,8 @@ serializer.AddLibrary("lzma", nil, function(archive, str)
 
 		archive.EntryFree(entry)
 		archive.ReadFree(a)
-		wlog(err)
-		return
+
+		return nil, err
 	end
 
 	local path = ffi.string(archive.EntryPathname(entry))
@@ -40,8 +40,8 @@ serializer.AddLibrary("lzma", nil, function(archive, str)
 	if path ~= "data" then
 		archive.EntryFree(entry)
 		archive.ReadFree(a)
-		wlog("not an lzma archive?")
-		return
+
+		return nil, "not an archive"
 	end
 
 	if archive.EntrySizeIsSet(entry) == 0 then
