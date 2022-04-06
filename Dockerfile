@@ -228,3 +228,9 @@ COPY --from=goluwa-game /goluwa/goluwa ./goluwa
 RUN ./goluwa test
 
 RUN rm -rf storage/userdata/
+
+RUN apt-get update
+RUN apt-get install -y tmux git
+
+# needed by steamcmd
+RUN apt-get install -y lib32gcc-s1
