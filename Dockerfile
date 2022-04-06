@@ -88,7 +88,27 @@ WORKDIR /goluwa
 COPY framework ./framework
 
 # https://github.com/libarchive/libarchive/blob/master/.github/workflows/ci.yml
-RUN apt-get install -y autoconf automake bsdmainutils build-essential cmake ghostscript git groff libssl-dev libacl1-dev libbz2-dev liblzma-dev liblz4-dev libzstd-dev lzop pkg-config zip zlib1g-dev
+RUN apt-get install -y \
+    autoconf \
+    automake \
+    bsdmainutils \
+    build-essential \
+    cmake \
+    ghostscript \ 
+    git \
+    groff \
+    libssl-dev \
+    libacl1-dev \
+    libbz2-dev \
+    liblzma-dev \
+    liblz4-dev \
+    libzstd-dev \
+    lzop \
+    pkg-config \
+    zip \
+    zlib1g-dev \
+    libtool
+
 RUN ./goluwa build libarchive
 
 ##################################################################################
@@ -214,7 +234,7 @@ WORKDIR /goluwa
 COPY game ./game
 
 ##################################################################################
-FROM ubuntu:21.10
+FROM ubuntu:21.10 as goluwa
 
 WORKDIR /goluwa
 
@@ -229,8 +249,17 @@ RUN ./goluwa test
 
 RUN rm -rf storage/userdata/
 
+##################################################################################
+FROM goluwa as goluwa-gserv
+
 RUN apt-get update
 RUN apt-get install -y tmux git
 
 # needed by steamcmd
 RUN apt-get install -y lib32gcc-s1
+
+RUN git clone https://github.com/PAC3-Server/gserv.git
+
+RUN apt-get clean
+
+RUN ./goluwa
