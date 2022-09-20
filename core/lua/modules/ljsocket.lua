@@ -1,6 +1,7 @@
 local ffi = require("ffi")
 local socket = {}
 local e = {}
+local errno = {}
 
 do
 	local C
@@ -223,7 +224,7 @@ do
 					cache[num] = ffi.string(buffer, len - 2)
 				end
 
-				return cache[num]
+				return cache[num], num
 			end
 		end
 
@@ -338,7 +339,7 @@ do
 					cache[num] = err == "" and tostring(num) or err
 				end
 
-				return cache[num]
+				return cache[num], num
 			end
 		end
 
@@ -400,7 +401,7 @@ do
 
 		if ret == 0 then return true end
 
-		return nil, ffi.string(C.gai_strerror(ret))
+		return nil, ffi.string(socket.lasterror(ret))
 	end
 
 	function socket.getnameinfo(address, length, host, hostlen, serv, servlen, flags)
@@ -408,7 +409,7 @@ do
 
 		if ret == 0 then return true end
 
-		return nil, ffi.string(C.gai_strerror(ret))
+		return nil, ffi.string(socket.lasterror(ret))
 	end
 
 	do
@@ -665,6 +666,14 @@ do
 		MSG_WAITFORONE = 0x10000,
 		MSG_CMSG_CLOEXEC = 0x40000000,
 	}
+	errno = {
+		EAGAIN = 11,
+		EWOULDBLOCK = 11, -- is errno.EAGAIN
+		EINVAL = 22,
+		ENOTSOCK = 88,
+		ECONNRESET = 104,
+		EINPROGRESS = 115,
+	}
 
 	if ffi.os == "Windows" then
 		e.SO_SNDLOWAT = 4099
@@ -694,6 +703,12 @@ do
 		e.POLLRDNORM = 256
 		e.SO_DONTROUTE = 16
 		e.SO_RCVLOWAT = 4100
+		errno.EINVAL = 10022
+		errno.EAGAIN = 10035 -- Note: Does not exist on Windows
+		errno.EWOULDBLOCK = 10035
+		errno.EINPROGRESS = 10036
+		errno.ENOTSOCK = 10038
+		errno.ECONNRESET = 10054
 	end
 
 	if ffi.os == "OSX" then
@@ -704,6 +719,12 @@ do
 		e.SO_KEEPALIVE = 0x0008
 		e.SO_DONTROUTE = 0x0010
 		e.SO_BROADCAST = 0x0020
+		errno.EINVAL = 22
+		errno.EAGAIN = 35
+		errno.EWOULDBLOCK = errno.EAGAIN
+		errno.EINPROGRESS = 36
+		errno.ENOTSOCK = 38
+		errno.ECONNRESET = 54
 	end
 
 	if socket.initialize then assert(socket.initialize()) end
@@ -790,9 +811,9 @@ end
 
 local M = {}
 local timeout_messages = {}
-timeout_messages["Operation now in progress"] = true
-timeout_messages["Resource temporarily unavailable"] = true
-timeout_messages["A non-blocking socket operation could not be completed immediately."] = true
+timeout_messages[errno.EINPROGRESS] = true
+timeout_messages[errno.EAGAIN] = true
+timeout_messages[errno.EWOULDBLOCK] = true
 
 function M.poll(socket, flags, timeout)
 	local pfd = ffi.new(
@@ -817,7 +838,12 @@ local function addrinfo_get_ip(self)
 
 	local str = ffi.new("char[256]")
 	local addr = assert(
-		socket.inet_ntop(AF.lookup[self.family], self.addrinfo.ai_addr.sa_data, str, ffi.sizeof(str))
+		socket.inet_ntop(
+			AF.lookup[self.family],
+			ffi.cast("struct sockaddr_in*", self.addrinfo.ai_addr).sin_addr,
+			str,
+			ffi.sizeof(str)
+		)
 	)
 	return ffi.string(addr)
 end
@@ -826,9 +852,9 @@ local function addrinfo_get_port(self)
 	if self.addrinfo.ai_addr == nil then return nil end
 
 	if self.family == "inet" then
-		return ffi.cast("struct sockaddr_in*", self.addrinfo.ai_addr).sin_port
+		return socket.ntohs(ffi.cast("struct sockaddr_in*", self.addrinfo.ai_addr).sin_port)
 	elseif self.family == "inet6" then
-		return ffi.cast("struct sockaddr_in6*", self.addrinfo.ai_addr).sin6_port
+		return socket.ntohs(ffi.cast("struct sockaddr_in6*", self.addrinfo.ai_addr).sin6_port)
 	end
 
 	return nil, "unknown family " .. tostring(self.family)
@@ -935,13 +961,13 @@ do
 	end
 
 	function M.create(family, socket_type, protocol)
-		local fd, err = socket.create(
+		local fd, err, num = socket.create(
 			AF.strict_lookup(family),
 			SOCK.strict_lookup(socket_type),
 			IPPROTO.strict_lookup(protocol)
 		)
 
-		if not fd then return fd, err end
+		if not fd then return fd, err, num end
 
 		return setmetatable(
 			{
@@ -962,12 +988,11 @@ do
 	end
 
 	function meta:set_blocking(b)
-		local ok, err = socket.blocking(self.fd, b)
+		local ok, err, num = socket.blocking(self.fd, b)
 
-		if not ok then return ok, err end
+		if ok then self.blocking = b end
 
-		self.blocking = b
-		return ok, err
+		return ok, err, num
 	end
 
 	function meta:set_option(key, val, level)
@@ -1015,10 +1040,10 @@ do
 			res = res_
 		end
 
-		local ok, err = socket.connect(self.fd, res.addrinfo.ai_addr, res.addrinfo.ai_addrlen)
+		local ok, err, num = socket.connect(self.fd, res.addrinfo.ai_addr, res.addrinfo.ai_addrlen)
 
 		if not ok and not self.blocking then
-			if timeout_messages[err] then
+			if timeout_messages[num] then
 				self.timeout_connected = {host, service}
 				return true
 			end
@@ -1026,16 +1051,16 @@ do
 			self:on_connect(host, service)
 		end
 
-		if not ok then return ok, err end
+		if not ok then return ok, err, num end
 
 		return true
 	end
 
 	function meta:poll_connect()
 		if self.on_connect and self.timeout_connected and self:is_connected() then
-			local ok, err = self:on_connect(unpack(self.timeout_connected))
+			local ok, err, num = self:on_connect(unpack(self.timeout_connected))
 			self.timeout_connected = nil
-			return ok, err
+			return ok, err, num
 		end
 
 		return nil, "timeout"
@@ -1103,29 +1128,30 @@ do
 			return client
 		end
 
-		local err = socket.lasterror()
+		local err, num = socket.lasterror()
 
-		if not self.blocking and timeout_messages[err] then
-			return nil, "timeout"
+		if not self.blocking and timeout_messages[num] then
+			return nil, "timeout", num
 		end
 
 		if self.debug then
-			print(tostring(self), ": accept error: ", err)
+			print(tostring(self), ": accept error", num, ":", err)
 		end
 
-		return nil, err
+		return nil, err, num
 	end
 
-	if ffi.os == "Windows" then
-		function meta:is_connected()
-			local ip, service = self:get_peer_name()
-			local ip2, service2 = self:get_name()
-			return ip ~= "0.0.0.0" and ip2 ~= "0.0.0.0" and service ~= 0 and service2 ~= 0
+	function meta:is_connected()
+		local ip, service, num = self:get_peer_name()
+		local ip2, service2, num2 = self:get_name()
+
+		if not ip and (num == errno.ECONNRESET or num == errno.ENOTSOCK) then
+			return false, service, num
 		end
-	else
-		function meta:is_connected()
-			local ip, service = self:get_peer_name()
-			local ip2, service2 = self:get_name()
+
+		if ffi.os == "Windows" then
+			return ip ~= "0.0.0.0" and ip2 ~= "0.0.0.0" and service ~= 0 and service2 ~= 0
+		else
 			return ip and ip2 and service ~= 0 and service2 ~= 0
 		end
 	end
@@ -1133,9 +1159,9 @@ do
 	function meta:get_peer_name()
 		local data = ffi.new("struct sockaddr_in")
 		local len = ffi.new("unsigned int[1]", ffi.sizeof(data))
-		local ok, err = socket.getpeername(self.fd, ffi.cast("struct sockaddr *", data), len)
+		local ok, err, num = socket.getpeername(self.fd, ffi.cast("struct sockaddr *", data), len)
 
-		if not ok then return ok, err end
+		if not ok then return ok, err, num end
 
 		return ffi.string(socket.inet_ntoa(data.sin_addr)), socket.ntohs(data.sin_port)
 	end
@@ -1143,9 +1169,9 @@ do
 	function meta:get_name()
 		local data = ffi.new("struct sockaddr_in")
 		local len = ffi.new("unsigned int[1]", ffi.sizeof(data))
-		local ok, err = socket.getsockname(self.fd, ffi.cast("struct sockaddr *", data), len)
+		local ok, err, num = socket.getsockname(self.fd, ffi.cast("struct sockaddr *", data), len)
 
-		if not ok then return ok, err end
+		if not ok then return ok, err, num end
 
 		return ffi.string(socket.inet_ntoa(data.sin_addr)), socket.ntohs(data.sin_port)
 	end
@@ -1163,21 +1189,15 @@ do
 
 		if self.on_send then return self:on_send(data, flags) end
 
-		local len, err
+		local len, err, num
 
 		if addr then
-			len, err = socket.sendto(self.fd, data, #data, flags, addr.addrinfo.ai_addr, addr.addrinfo.ai_addrlen)
+			len, err, num = socket.sendto(self.fd, data, #data, flags, addr.addrinfo.ai_addr, addr.addrinfo.ai_addrlen)
 		else
-			len, err = socket.send(self.fd, data, #data, flags)
+			len, err, num = socket.send(self.fd, data, #data, flags)
 		end
 
-		if not len then
-			if not self.blocking and timeout_messages[err] then
-				return nil, "timeout"
-			end
-
-			return len, err
-		end
+		if not len then return len, err, num end
 
 		if len > 0 then return len end
 	end
@@ -1205,12 +1225,12 @@ do
 			return self:on_receive(buff, size, flags)
 		end
 
-		local len, err
+		local len, err, num
 		local len_res
 
 		if src_address then
 			len_res = ffi.new("int[1]", address_len)
-			len, err = socket.recvfrom(
+			len, err, num = socket.recvfrom(
 				self.fd,
 				buff,
 				ffi.sizeof(buff),
@@ -1219,19 +1239,29 @@ do
 				len_res
 			)
 		else
-			len, err = socket.recv(self.fd, buff, ffi.sizeof(buff), flags or 0)
+			len, err, num = socket.recv(self.fd, buff, ffi.sizeof(buff), flags or 0)
+		end
+
+		if num == errno.ECONNRESET then
+			self:close()
+
+			if self.debug then
+				print(tostring(self), ": closed")
+			end
+
+			return nil, "closed", num
 		end
 
 		if not len then
-			if not self.blocking and timeout_messages[err] then
-				return nil, "timeout"
+			if not self.blocking and timeout_messages[num] then
+				return nil, "timeout", num
 			end
 
 			if self.debug then
-				print(tostring(self), " error: ", err)
+				print(tostring(self), " error", num, ":", err)
 			end
 
-			return len, err
+			return len, err, num
 		end
 
 		if len > 0 then
@@ -1255,9 +1285,7 @@ do
 			return ffi.string(buff, len)
 		end
 
-		if self.debug then print(tostring(self), ": closed") end
-
-		return nil, "closed"
+		return nil, err, num
 	end
 end
 
@@ -1275,14 +1303,14 @@ function M.bind(host, service)
 
 	if not info then return info, err end
 
-	local server, err = M.create(info.family, info.socket_type, info.protocol)
+	local server, err, num = M.create(info.family, info.socket_type, info.protocol)
 
-	if not server then return server, err end
+	if not server then return server, err, num end
 
 	server:set_option("reuseaddr", 1)
-	local ok, err = server:bind(info)
+	local ok, err, num = server:bind(info)
 
-	if not ok then return ok, err end
+	if not ok then return ok, err, num end
 
 	server:set_option("sndbuf", 65536)
 	server:set_option("rcvbuf", 65536)
