@@ -14,7 +14,7 @@ world:SetSize(Vec2() + 500)
 local world = gui.CreatePanel("base", nil, "sheep_world2")
 world:SetTexture(
 	render.CreateTextureFromPath(
-		"http://41.media.tumblr.com/8dfd7eaed633373c13dea2c2b8a2ddd8/tumblr_mhmabftdcN1rrftcdo1_1280.png"
+		"https://64.media.tumblr.com/8dfd7eaed633373c13dea2c2b8a2ddd8/tumblr_mhmabftdcN1rrftcdo1_1280.png"
 	)
 )
 world:SetThreeDee(true)
