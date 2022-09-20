@@ -9,22 +9,18 @@ function render.GetScreenFrameBuffer()
 		render.screen_buffer.Size.x = render.GetWidth()
 		render.screen_buffer.Size.y = render.GetHeight()
 		render.screen_buffer.draw_buffers_size = 0
-
 	end
 
 	return render.screen_buffer
 end
 
 local META = prototype.CreateTemplate("framebuffer")
-
 META:GetSet("BindMode", "all", {"all", "read", "write"})
-META:GetSet("Size", Vec2(128,128))
+META:GetSet("Size", Vec2(128, 128))
 
 function render.CreateFrameBuffer(size, textures, id_override)
 	local self = META:CreateObject()
-
 	render._CreateFrameBuffer(self, id_override)
-
 	self:SetBindMode("read_write")
 
 	if size then
@@ -44,18 +40,15 @@ function render.CreateFrameBuffer(size, textures, id_override)
 		for i, v in ipairs(textures) do
 			local attach = v.attach or "color"
 
-			if attach == "color" then
-				attach = i
-			end
+			if attach == "color" then attach = i end
 
 			local name = v.name or attach
-
 			local tex = render.CreateTexture()
 			tex:SetSize(self:GetSize():Copy())
 
 			if attach == "depth" then
 				tex:SetMagFilter("nearest")
-				--tex:SetMinFilter("nearest")
+			--tex:SetMinFilter("nearest")
 			else
 				if v.filter == "nearest" then
 					--tex:SetMinFilter("nearest")
@@ -66,9 +59,7 @@ function render.CreateFrameBuffer(size, textures, id_override)
 			tex:SetWrapS("clamp_to_edge")
 			tex:SetWrapT("clamp_to_edge")
 
-			if v.internal_format then
-				tex:SetInternalFormat(v.internal_format)
-			end
+			if v.internal_format then tex:SetInternalFormat(v.internal_format) end
 
 			if v.depth_texture_mode then
 				tex:SetDepthTextureMode(v.depth_texture_mode)
@@ -79,9 +70,9 @@ function render.CreateFrameBuffer(size, textures, id_override)
 			else
 				tex:SetMipMapLevels(1)
 			end
+
 			tex:SetupStorage()
 			--tex:Clear()
-
 			self:SetTexture(attach, tex, nil, name)
 		end
 	end
@@ -90,17 +81,13 @@ function render.CreateFrameBuffer(size, textures, id_override)
 end
 
 do -- binding
-
 	do
 		local current
 
 		function render.SetFrameBuffer(fb)
-			if fb == nil then
-				fb = render.GetScreenFrameBuffer()
-			end
+			if fb == nil then fb = render.GetScreenFrameBuffer() end
 
 			current = fb
-
 			fb:Bind()
 		end
 
@@ -123,6 +110,7 @@ do -- binding
 		function META:End()
 			render.PopViewport()
 			self:Pop()
+
 			if self.gen_mip_map_textures then
 				for _, tex in ipairs(self.gen_mip_map_textures) do
 					tex:GenerateMipMap()

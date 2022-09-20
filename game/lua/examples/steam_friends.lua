@@ -1,6 +1,7 @@
 if not steam.IsSteamClientAvailible() then
 	logn("steam friends extension not available")
- return end
+	return
+end
 
 local subject
 
@@ -14,21 +15,22 @@ function goluwa.SteamFriendsMessage(sender_steam_id, txt, receiver_steam_id)
 	end
 
 	subject = sender_steam_id
-	event.Delay(0.1, function() subject = nil end)
+
+	event.Delay(0.1, function()
+		subject = nil
+	end)
 
 	if ply:IsValid() then
 		if SERVER then
 			chat.PlayerSay(ply, txt)
 		elseif txt:sub(1, 1) == "!" then
-			commands.RunString(txt:sub(2),nil,nil,true)
+			commands.RunString(txt:sub(2), nil, nil, true)
 		end
 	end
 end
 
 function goluwa.ReplPrint(line)
-	if subject then
-		steam.SendChatMessage(subject, ">> " .. line)
-	end
+	if subject then steam.SendChatMessage(subject, ">> " .. line) end
 end
 
 for i, steam_id in pairs(steam.GetFriends()) do

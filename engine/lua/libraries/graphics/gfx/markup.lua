@@ -1,9 +1,6 @@
 local gfx = (...) or _G.gfx
-
 local META = prototype.CreateTemplate("markup")
-
 META.tags = {}
-
 META:GetSet("Table", {})
 META:GetSet("MaxWidth", math.huge)
 META:GetSet("ControlDown", false)
@@ -29,29 +26,26 @@ else
 end
 
 function gfx.CreateMarkup(str, skip_invalidate)
-	local self = prototype.CreateObject(META, {
-		w = 0,
-		h = 0,
-		chunks = {},
+	local self = prototype.CreateObject(
+		META,
+		{
+			w = 0,
+			h = 0,
+			chunks = {},
+			cull_x = 0,
+			cull_y = 0,
+			cull_w = math.huge,
+			cull_h = math.huge,
+			blink_offset = 0,
+			remove_these = {},
+			started_tags = {},
+			undo = {},
+		}
+	)
 
-		cull_x = 0,
-		cull_y = 0,
-		cull_w = math.huge,
-		cull_h = math.huge,
-		blink_offset = 0,
-		remove_these = {},
-		started_tags = {},
+	if str then self:SetText(str) end
 
-		undo = {},
-	})
-
-	if str then
-		self:SetText(str)
-	end
-
-	if not skip_invalidate then
-		self:Invalidate()
-	end
+	if not skip_invalidate then self:Invalidate() end
 
 	return self
 end
@@ -79,14 +73,12 @@ function META:Clear(skip_invalidate)
 	table.clear(self.chunks)
 	table.clear(self.remove_these)
 	table.clear(self.started_tags)
-	if not skip_invalidate then
-		self:Invalidate()
-	end
+
+	if not skip_invalidate then self:Invalidate() end
 end
 
 function META:SetTable(tbl, tags)
 	self.Table = tbl
-
 	self:Clear()
 
 	for _, var in ipairs(tbl) do
@@ -102,7 +94,15 @@ end
 
 function META:BeginLifeTime(time, fade_time)
 	fade_time = fade_time or 2
-	table.insert(self.chunks, {type = "start_fade", val = system.GetElapsedTime() + time + fade_time, fade_time = fade_time, time = time})
+	table.insert(
+		self.chunks,
+		{
+			type = "start_fade",
+			val = system.GetElapsedTime() + time + fade_time,
+			fade_time = fade_time,
+			time = time,
+		}
+	)
 end
 
 function META:EndLifeTime()
@@ -155,9 +155,7 @@ end
 
 function META:TagPanic()
 	for _, v in ipairs(self.chunks) do
-		if v.type == "custom" then
-			v.panic = true
-		end
+		if v.type == "custom" then v.panic = true end
 	end
 end
 
@@ -165,7 +163,6 @@ function META:CallTagFunction(chunk, name, ...)
 	if not chunk.val.tag then return end
 
 	if chunk.type == "custom" and not chunk.panic then
-
 		local func = chunk.val.tag and chunk.val.tag[name]
 
 		if func then
@@ -176,20 +173,15 @@ function META:CallTagFunction(chunk, name, ...)
 
 				if type(val) == "function" then
 					local ok, v = pcall(val, chunk.exp_env)
-					if ok then
-						val = v
-					else
-						wlog(v)
-					end
+
+					if ok then val = v else wlog(v) end
 				end
 
 				-- type isn't right? revert to default!
 				if type(val) ~= t then
 					val = chunk.val.tag.arguments[i]
 
-					if type(val) == "table" then
-						val = val.default
-					end
+					if type(val) == "table" then val = val.default end
 				end
 
 				table.insert(args, val)
@@ -197,9 +189,7 @@ function META:CallTagFunction(chunk, name, ...)
 
 			args = {pcall(func, unpack(args))}
 
-			if not args[1] then
-				llog("tag error %s", args[2])
-			end
+			if not args[1] then llog("tag error %s", args[2]) end
 
 			return unpack(args)
 		end
@@ -207,43 +197,43 @@ function META:CallTagFunction(chunk, name, ...)
 end
 
 function META:GetNextCharacterClassPosition(delta, next_space)
-
-	if next_space == nil then
-		next_space = not self.caret_shift_pos
-	end
+	if next_space == nil then next_space = not self.caret_shift_pos end
 
 	local pos = self.caret_pos.i
 
-	if delta > 0 then
-		pos = pos + 1
-	end
+	if delta > 0 then pos = pos + 1 end
 
 	if delta > 0 then
-
-		if pos > 0 and self.chars[pos-1] then
-			local type = string.getchartype(self.chars[pos-1].str)
+		if pos > 0 and self.chars[pos - 1] then
+			local type = string.getchartype(self.chars[pos - 1].str)
 
 			while pos > 0 and self.chars[pos] and string.getchartype(self.chars[pos].str) == type do
 				pos = pos + 1
 			end
 		end
 
-		if pos >= #self.chars then
-			return pos, self.chars[#self.chars].y
-		end
+		if pos >= #self.chars then return pos, self.chars[#self.chars].y end
 
 		if next_space then
-			while pos > 0 and self.chars[pos] and string.getchartype(self.chars[pos].str) == "space" and self.chars[pos].str ~= "\n" do
+			while
+				pos > 0 and
+				self.chars[pos] and
+				string.getchartype(self.chars[pos].str) == "space" and
+				self.chars[pos].str ~= "\n"
+			do
 				pos = pos + 1
 			end
 		end
 
-		return self.chars[pos-1].x, self.chars[pos-1].y
+		return self.chars[pos - 1].x, self.chars[pos - 1].y
 	else
-
 		-- this isn't really scintilla behaviour but I think it makes sense
 		if next_space then
-			while pos > 1 and string.getchartype(self.chars[pos - 1].str) == "space" and self.chars[pos - 1].str ~= "\n" do
+			while
+				pos > 1 and
+				string.getchartype(self.chars[pos - 1].str) == "space" and
+				self.chars[pos - 1].str ~= "\n"
+			do
 				pos = pos - 1
 			end
 		end
@@ -256,20 +246,16 @@ function META:GetNextCharacterClassPosition(delta, next_space)
 			end
 		end
 
-		if pos == 1 then
-			return 0, 1
-		end
+		if pos == 1 then return 0, 1 end
 
-		return self.chars[pos+1].x, self.chars[pos+1].y
+		return self.chars[pos + 1].x, self.chars[pos + 1].y
 	end
 end
 
 function META:InsertString(str, skip_move, start_offset, stop_offset)
 	start_offset = start_offset or 0
 	stop_offset = stop_offset or 0
-
 	local sub_pos = self:GetCaretSubPosition()
-
 	self:DeleteSelection(true)
 
 	do
@@ -285,7 +271,6 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 		end
 
 		self:SelectStart(x, y)
-
 		x, y = self.caret_pos.x, self.caret_pos.y
 
 		for _ = 1, stop_offset do
@@ -298,7 +283,6 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 		end
 
 		self:SelectStop(x, y)
-
 		self:DeleteSelection(true)
 	end
 
@@ -309,7 +293,24 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 		local chunk = self.caret_pos.char.chunk
 
 		-- if we're in a sea of non strings we need to make one
-		if (chunk.type ~= "string" or chunk.internal) and ((self.chunks[chunk.i-1] and self.chunks[chunk.i-1].type ~= "string") or (self.chunks[chunk.i+1] and self.chunks[chunk.i+1].type ~= "string")) then
+		if
+			(
+				chunk.type ~= "string" or
+				chunk.internal
+			)
+			and
+			(
+				(
+					self.chunks[chunk.i - 1] and
+					self.chunks[chunk.i - 1].type ~= "string"
+				)
+				or
+				(
+					self.chunks[chunk.i + 1] and
+					self.chunks[chunk.i + 1].type ~= "string"
+				)
+			)
+		then
 			table.insert(self.chunks, chunk.i, {type = "string", val = str})
 		else
 			if chunk.internal then
@@ -327,9 +328,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 				end
 
 				if chunk.type == "string" then
-					if not sub_pos then
-						sub_pos = #chunk.chars + 1
-					end
+					if not sub_pos then sub_pos = #chunk.chars + 1 end
 
 					chunk.val = utf8.sub(chunk.val, 1, sub_pos - 1) .. str .. utf8.sub(chunk.val, sub_pos)
 				else
@@ -345,15 +344,12 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 		local x = self.caret_pos.x + utf8.length(str)
 		local y = self.caret_pos.y + string.count(str, "\n")
 
-		if self.caret_pos.char.str == "\n" then
-			x = 0
-		end
+		if self.caret_pos.char.str == "\n" then x = 0 end
 
 		self:SetCaretPosition(x, y)
 	end
 
 	self:InvalidateEditedText()
-
 	self.caret_shift_pos = nil
 end
 
@@ -365,27 +361,19 @@ function META:InvalidateEditedText()
 end
 
 function META:GetSubPosFromPosition(x, y)
+	if x == math.huge and y == math.huge then return #self.chars end
 
-	if x == math.huge and y == math.huge then
-		return #self.chars
-	end
-
-	if x == 0 and y == 0 then
-		return 0
-	end
+	if x == 0 and y == 0 then return 0 end
 
 	for sub_pos, char in ipairs(self.chars) do
-		if char.x == x and char.y == y then
-			return sub_pos
-		end
+		if char.x == x and char.y == y then return sub_pos end
 	end
 
 	if x == math.huge then
 		for sub_pos, char in ipairs(self.chars) do
-			if char.y == y and char.str == "\n" then
-				return sub_pos - 1
-			end
+			if char.y == y and char.str == "\n" then return sub_pos - 1 end
 		end
+
 		return self.chars[#self.chars]
 	end
 
@@ -394,9 +382,7 @@ function META:GetSubPosFromPosition(x, y)
 			i = -i + #self.chars
 			local char = self.chars[i]
 
-			if char.x == x then
-				return 1
-			end
+			if char.x == x then return 1 end
 		end
 	end
 
@@ -405,72 +391,70 @@ end
 
 do -- tags
 	local function set_font(self, font)
-		if self.FixedSize == 0 then
-			gfx.SetFont(font)
-		end
+		if self.FixedSize == 0 then gfx.SetFont(font) end
 	end
 
-	META.tags.click =
-	{
+	META.tags.click = {
 		arguments = {},
-
 		mouse = function(markup, self, button, press, x, y)
 			if button == "button_1" and press then
 				local str = ""
-				for i = self.i+1, math.huge do
+
+				for i = self.i + 1, math.huge do
 					local chunk = markup.chunks[i]
+
 					if chunk.type == self.type or i > #markup.chunks then
 						system.OpenURL(str)
+
 						break
 					elseif chunk.type == "string" then
 						str = str .. chunk.val
 					end
 				end
+
 				return false
 			end
 		end,
-
 		post_draw_chunks = function(markup, self, chunk)
 			local y_offset = markup.HeightSpacing + 1
 			gfx.DrawLine(chunk.x - 2, chunk.top - y_offset, chunk.right + 2, chunk.top - y_offset)
 		end,
 	}
-	META.tags.console =
-	{
+	META.tags.console = {
 		arguments = {},
-
 		mouse = function(markup, self, button, press, x, y)
 			if button == "button_1" and press then
 				local str = ""
-				for i = self.i+1, math.huge do
+
+				for i = self.i + 1, math.huge do
 					local chunk = markup.chunks[i]
+
 					if chunk.type == self.type or i > #markup.chunks then
 						commands.RunString(str)
+
 						break
 					elseif chunk.type == "string" then
 						str = str .. chunk.val
 					end
 				end
+
 				return false
 			end
 		end,
-
 		post_draw_chunks = function(markup, self, chunk)
 			local y_offset = markup.HeightSpacing + 1
 			gfx.DrawLine(chunk.x - 2, chunk.top - y_offset, chunk.right + 2, chunk.top - y_offset)
 		end,
 	}
-
 	META.tags.nolinebreak = {
 		arguments = {},
 		post_init = function(markup, self)
 			local ok = false
+
 			for i = 1, #markup.chunks do
 				local chunk = markup.chunks[i]
 
-				if ok then
-					chunk.nolinebreak = true
-				end
+				if ok then chunk.nolinebreak = true end
 
 				if chunk.type == "custom" and chunk.val.type == "nolinebreak" then
 					if not chunk.val.stop_tag then
@@ -484,8 +468,7 @@ do -- tags
 	}
 
 	if string.anime then
-		META.tags.anime =
-		{
+		META.tags.anime = {
 			arguments = {},
 			modify_text = function(markup, self, str)
 				return str:anime()
@@ -493,8 +476,7 @@ do -- tags
 		}
 	end
 
-	META.tags.wrong =
-	{
+	META.tags.wrong = {
 		arguments = {},
 		post_draw_chunks = function(markup, self, chunk)
 			render2d.PushColor(1, 0, 0, 1)
@@ -507,26 +489,22 @@ do -- tags
 			render2d.PopColor()
 		end,
 	}
-
-	META.tags.background =
-	{
-		arguments = {1,1,1,1},
-		pre_draw = function(markup, self, x,y, r,g,b,a)
-			render2d.PushColor(r,g,b,a)
+	META.tags.background = {
+		arguments = {1, 1, 1, 1},
+		pre_draw = function(markup, self, x, y, r, g, b, a)
+			render2d.PushColor(r, g, b, a)
 			local w, h = self.tag_width, self.tag_height
+
 			if h > self.h then y = y - h end
+
 			render2d.SetTexture()
 			render2d.DrawRect(x, y, w, h)
 			render2d.PopColor()
 		end,
-
-		post_draw = function()
-			-- if we don't have this we don't get tag_center_x and stuff due to performance reasons
+		post_draw = function() -- if we don't have this we don't get tag_center_x and stuff due to performance reasons
 		end,
 	}
-
-	META.tags.mark =
-	{
+	META.tags.mark = {
 		arguments = {},
 		post_draw_chunks = function(markup, self, chunk)
 			render2d.PushColor(1, 1, 0, 0.25)
@@ -535,74 +513,78 @@ do -- tags
 			render2d.PopColor()
 		end,
 	}
-
-	META.tags.hsv =
-	{
+	META.tags.hsv = {
 		arguments = {0, 1, 1},
-
-		pre_draw = function(markup, self, x,y, h, s, v)
-			local c = ColorHSV(h,s,v)
-			local r,g,b = c:Unpack()
+		pre_draw = function(markup, self, x, y, h, s, v)
+			local c = ColorHSV(h, s, v)
+			local r, g, b = c:Unpack()
 			render2d.PushColor(r, g, b, 1)
 
-			for i = self.i+1, math.huge do
+			for i = self.i + 1, math.huge do
 				local chunk = markup.chunks[i]
-				if not chunk or (chunk.type == "custom" and chunk.val.type == "hsv") or chunk.type == "tag_stopper" then break end
 
-				if chunk.color then
-					chunk.color = c
+				if
+					not chunk or
+					(
+						chunk.type == "custom" and
+						chunk.val.type == "hsv"
+					)
+					or
+					chunk.type == "tag_stopper"
+				then
+					break
 				end
+
+				if chunk.color then chunk.color = c end
 			end
 		end,
-
 		post_draw = function()
 			render2d.PopColor()
 		end,
 	}
-
-	META.tags.color =
-	{
+	META.tags.color = {
 		arguments = {1, 1, 1, 1},
-
-		pre_draw = function(markup, self, x,y, r,g,b,a)
-			local c = Color(r,g,b,a)
+		pre_draw = function(markup, self, x, y, r, g, b, a)
+			local c = Color(r, g, b, a)
 			render2d.PushColor(r, g, b, 1)
 
-			for i = self.i+1, math.huge do
+			for i = self.i + 1, math.huge do
 				local chunk = markup.chunks[i]
-				if not chunk or (chunk.type == "custom" and chunk.val.type == "hsv") or chunk.type == "tag_stopper" then break end
 
-				if chunk.color then
-					chunk.color = c
+				if
+					not chunk or
+					(
+						chunk.type == "custom" and
+						chunk.val.type == "hsv"
+					)
+					or
+					chunk.type == "tag_stopper"
+				then
+					break
 				end
+
+				if chunk.color then chunk.color = c end
 			end
 		end,
-
 		post_draw = function()
 			render2d.PopColor()
 		end,
 	}
-
-	META.tags.alpha =
-	{
+	META.tags.alpha = {
 		arguments = {1},
-
 		pre_draw = function(markup, self, x, y, alpha)
 			render2d.SetAlphaMultiplier(alpha)
 		end,
-
 		post_draw = function(markup, self)
 			render2d.SetAlphaMultiplier(1)
 		end,
 	}
-
 	META.tags.blackhole = {
 		arguments = {1},
-
-		pre_draw = function(markup, self, x,y, force)
+		pre_draw = function(markup, self, x, y, force)
 			local delta = system.GetFrameTime() * 2
 
-			for _,v in ipairs(markup.chunks) do
+			for _, v in ipairs(markup.chunks) do
 				if v ~= self and v.w > 0 and v.h > 0 then
 					if not v.phys then
 						v.phys = {
@@ -612,67 +594,49 @@ do -- tags
 					end
 
 					local phys = v.phys
-
 					phys.vel.x = phys.vel.x + ((self.x - phys.pos.x) * 0.01 * force)
 					phys.vel.y = phys.vel.y + ((self.y - phys.pos.y) * 0.01 * force)
-
 					-- velocity
 					phys.pos.x = phys.pos.x + (phys.vel.x * delta)
 					phys.pos.y = phys.pos.y + (phys.vel.y * delta)
-
 					-- friction
 					phys.vel.x = phys.vel.x * 0.97
 					phys.vel.y = phys.vel.y * 0.97
-
 					v.x = phys.pos.x
 					v.y = phys.pos.y
 				end
 			end
 		end,
 	}
-
-	META.tags.physics =
-	{
+	META.tags.physics = {
 		arguments = {1, 0, 0, 0, 0.997, 0.1},
-
 		draw_init = function(markup, self, gx, gy, vx, vy, drag, rand_mult)
 			local part = {}
-
-			part =
-			{
+			part = {
 				pos = {x = 0, y = 0},
 				vel = {x = vx, y = vy},
 				siz = {x = self.tag_width, y = self.tag_height},
 				rand_mult = rand_mult,
 				drag = drag,
 			}
-
 			self.part = part
 		end,
-
-		pre_draw = function(markup, self, x,y, gravity_y, gravity_x, vx, vy, drag, rand_mult)
+		pre_draw = function(markup, self, x, y, gravity_y, gravity_x, vx, vy, drag, rand_mult)
 			local delta = system.GetFrameTime() * 2
-
 			local part = self.part
-
 			local W, H = markup.width, markup.height
 			W = W - self.x
 			H = H - self.y + part.siz.y
-
 			--local xvel = (self.last_world_x or markup.current_x) - markup.current_x
 			--local yvel = (self.last_world_y or markup.current_y) - markup.current_y
-
 			--self.last_world_x = markup.current_x or 0
 			--self.last_world_y = markup.current_y or 0
-
 			-- random velocity for some variation
-			part.vel.y = part.vel.y + gravity_y + (math.randomf(-1,1) * rand_mult) --+ yvel
-			part.vel.x = part.vel.x + gravity_x + (math.randomf(-1,1) * rand_mult) --+ xvel
-
+			part.vel.y = part.vel.y + gravity_y + (math.randomf(-1, 1) * rand_mult) --+ yvel
+			part.vel.x = part.vel.x + gravity_x + (math.randomf(-1, 1) * rand_mult) --+ xvel
 			-- velocity
 			part.pos.x = part.pos.x + (part.vel.x * delta)
 			part.pos.y = part.pos.y + (part.vel.y * delta)
-
 			-- friction
 			part.vel.x = part.vel.x * part.drag
 			part.vel.y = part.vel.y * part.drag
@@ -699,101 +663,77 @@ do -- tags
 			end
 
 			render2d.PushMatrix()
-
-
 			local center_x = self.tag_center_x
 			local center_y = self.tag_center_y
-
 			render2d.Translate(part.pos.x, part.pos.y)
-
 			render2d.Translate(center_x, center_y)
-				render2d.Rotate(math.deg(math.atan2(part.vel.y, part.vel.x)))
+			render2d.Rotate(math.deg(math.atan2(part.vel.y, part.vel.x)))
 			render2d.Translate(-center_x, -center_y)
-
-
 		end,
-
 		post_draw = function()
 			render2d.PopMatrix()
 		end,
 	}
-
-	META.tags.font =
-	{
+	META.tags.font = {
 		arguments = {},
-
-		pre_draw = function(markup, self, x,y, font)
+		pre_draw = function(markup, self, x, y, font)
 			if not self.font then return end
-			for i = self.i+1, math.huge do
+
+			for i = self.i + 1, math.huge do
 				local chunk = markup.chunks[i]
+
 				if not chunk or chunk.type == "tag_stopper" then break end
 
-				if chunk.font then
-					chunk.font = self.font
-				end
+				if chunk.font then chunk.font = self.font end
 			end
 		end,
-
 		init = function(markup, self, font)
 			self.font = fonts.FindFont(font)
 		end,
 	}
-
-	META.tags.createfont =
-	{
-		arguments = {"roboto black", 18, 0, 0,0,0,1, 0},
-
-		pre_draw = function(markup, self, x,y, font)
-			for i = self.i+1, math.huge do
+	META.tags.createfont = {
+		arguments = {"roboto black", 18, 0, 0, 0, 0, 1, 0},
+		pre_draw = function(markup, self, x, y, font)
+			for i = self.i + 1, math.huge do
 				local chunk = markup.chunks[i]
+
 				if not chunk or chunk.type == "tag_stopper" then break end
 
-				if chunk.font then
-					chunk.font = self.font
-				end
+				if chunk.font then chunk.font = self.font end
 			end
 		end,
-
 		init = function(markup, self, font, size, blur_size, bgr, bgg, bgb, bga, blur_overdraw)
-			self.font = fonts.CreateFont({
-				font = font,
-				size = size,
-				blur_size = blur_size,
-				background_color = Color(bgr, bgg, bgb, bga),
-				blur_overdraw = blur_overdraw,
-			})
+			self.font = fonts.CreateFont(
+				{
+					font = font,
+					size = size,
+					blur_size = blur_size,
+					background_color = Color(bgr, bgg, bgb, bga),
+					blur_overdraw = blur_overdraw,
+				}
+			)
 		end,
 	}
-
-	META.tags.texture =
-	{
+	META.tags.texture = {
 		arguments = {"error", {min = 4, max = 128}, {min = 4, max = 128}},
-
 		init = function(markup, self, path)
 			self.mat = render.CreateTextureFromPath(path)
 		end,
-
 		get_size = function(markup, self, path, size_x, size_y)
 			size_x = tonumber(size_x)
 			size_y = tonumber(size_y) or size_x
 
-			if self.mat:IsLoading() then
-				return size_x or 16, size_y or 16
-			end
+			if self.mat:IsLoading() then return size_x or 16, size_y or 16 end
 
 			size_x = size_x or self.mat:GetSize().x
 			size_y = size_y or self.mat:GetSize().y
-
 			return size_x, size_y
 		end,
-
-		pre_draw = function(markup, self, x,y, path, size_x, size_y)
+		pre_draw = function(markup, self, x, y, path, size_x, size_y)
 			size_x = tonumber(size_x)
 			size_y = tonumber(size_y) or size_x
-
 			size_x = size_x or self.mat:GetSize().x
 			size_y = size_y or self.mat:GetSize().y
-
 			render2d.SetTexture(self.mat)
 			render2d.DrawRect(x, y, size_x, size_y)
 		end,
@@ -801,15 +741,14 @@ do -- tags
 end
 
 do -- tags matrix
-	local function set_cull_clockwise()
-		-- ???
+	local function set_cull_clockwise() -- ???
 	end
 
-	local function detM2x2 (m11, m12, m21, m22)
+	local function detM2x2(m11, m12, m21, m22)
 		return m11 * m22 - m12 * m21
 	end
 
-	local function mulM2x2V2 (m11, m12, m21, m22, v1, v2)
+	local function mulM2x2V2(m11, m12, m21, m22, v1, v2)
 		return v1 * m11 + v2 * m12, v1 * m21 + v2 * m22
 	end
 
@@ -825,7 +764,8 @@ do -- tags matrix
 	local function eigenvector2(l, a, d)
 		-- (a - ?) u1 + d u2 = 0
 		if a - l == 0 then return 1, 0 end
-		if     d == 0 then return 0, 1 end
+
+		if d == 0 then return 0, 1 end
 
 		return normalizeV2(-d / (a - l), 1)
 	end
@@ -833,167 +773,118 @@ do -- tags matrix
 	local function orthonormalM2x2ToVMatrix(m11, m12, m21, m22)
 		local det = detM2x2(m11, m12, m21, m22)
 
-		if det < 0 then
-			render2d.Scale(1, -1)
-		end
+		if det < 0 then render2d.Scale(1, -1) end
 
-		local angle = math.atan2 (m21, m11)
+		local angle = math.atan2(m21, m11)
 		render2d.Rotate(math.deg(angle))
 	end
 
-	META.tags.translate =
-	{
+	META.tags.translate = {
 		arguments = {0, 0},
-
 		pre_draw = function(markup, self, x, y, dx, dy)
 			render2d.PushMatrix()
-
 			render2d.Translate(dx, dy)
-
-
 		end,
-
 		post_draw = function()
 			render2d.PopMatrix()
 		end,
 	}
-
-	META.tags.scale =
-	{
+	META.tags.scale = {
 		arguments = {1, 1},
-
-		init = function()
-
-		end,
-
+		init = function() end,
 		pre_draw = function(markup, self, x, y, scaleX, scaleY)
 			render2d.PushMatrix()
-
 			self.matrixDeterminant = scaleX * scaleY
 
-			if math.abs (self.matrixDeterminant) > 10 then
+			if math.abs(self.matrixDeterminant) > 10 then
 				scaleX, scaleY = normalizeV2(scaleX, scaleY)
 				scaleX, scaleY = scaleV2(scaleX, scaleY, 10)
 			end
 
 			local centerY = y - self.tag_height / 2
-
 			render2d.Translate(x, centerY)
-				render2d.Scale(scaleX, scaleY)
+			render2d.Scale(scaleX, scaleY)
 
-				if scaleX < 0 then
-					render2d.Translate(-self.tag_width, 0)
-				end
+			if scaleX < 0 then render2d.Translate(-self.tag_width, 0) end
+
 			render2d.Translate(-x, -centerY)
-
-
-
 			set_cull_clockwise(self.matrixDeterminant < 0)
 		end,
-
 		post_draw = function(markup, self)
-			if self.matrixDeterminant < 0 then
-				set_cull_clockwise(false)
-			end
+			if self.matrixDeterminant < 0 then set_cull_clockwise(false) end
 
 			render2d.PopMatrix()
 		end,
 	}
-
-	META.tags.size =
-	{
+	META.tags.size = {
 		arguments = {1},
-
 		pre_draw = function(markup, self, x, y, size)
 			markup.tags.scale.pre_draw(markup, self, x, y, size, size)
 		end,
-
 		post_draw = function(markup, self)
 			markup.tags.scale.post_draw(markup, self)
 		end,
 	}
-
-	META.tags.rotate =
-	{
+	META.tags.rotate = {
 		arguments = {45},
-
 		pre_draw = function(markup, self, x, y, deg)
 			render2d.PushMatrix()
-
 			local center_x = self.tag_center_x
 			local center_y = self.tag_center_y
-
 			render2d.Translate(center_x, center_y)
-				render2d.Rotate(math.rad(deg))
+			render2d.Rotate(math.rad(deg))
 			render2d.Translate(-center_x, -center_y)
 		end,
-
 		post_draw = function()
 			render2d.PopMatrix()
 		end,
 	}
-
-	META.tags.matrixez =
-	{
-		arguments = {0,0,1,1,0},
-
+	META.tags.matrixez = {
+		arguments = {0, 0, 1, 1, 0},
 		pre_draw = function(markup, self, x, y, X, Y, scaleX, scaleY, angleInDegrees)
 			self.matrixDeterminant = scaleX * scaleY
 
-			if math.abs (self.matrixDeterminant) > 10 then
+			if math.abs(self.matrixDeterminant) > 10 then
 				scaleX, scaleY = normalizeV2(scaleX, scaleY)
 				scaleX, scaleY = scaleV2(scaleX, scaleY, 10)
 			end
 
 			local centerX = self.tag_center_x
 			local centerY = self.tag_center_y
-
 			render2d.PushMatrix()
-
 			render2d.Translate(x, centerY)
-				render2d.Translate(X,Y)
-				render2d.Scale(scaleX, scaleY)
-				if scaleX < 0 then
-					render2d.Translate(-self.tag_width, 0)
-				end
-				if angleInDegrees ~= 0 then
-					render2d.Translate(centerX)
-						render2d.Rotate(angleInDegrees)
-					render2d.Translate(-centerX)
-				end
+			render2d.Translate(X, Y)
+			render2d.Scale(scaleX, scaleY)
+
+			if scaleX < 0 then render2d.Translate(-self.tag_width, 0) end
+
+			if angleInDegrees ~= 0 then
+				render2d.Translate(centerX)
+				render2d.Rotate(angleInDegrees)
+				render2d.Translate(-centerX)
+			end
+
 			render2d.Translate(x, -centerY)
-
-
-
 			set_cull_clockwise(self.matrixDeterminant < 0)
 		end,
-
 		post_draw = function(markup, self)
-			if self.matrixDeterminant < 0 then
-				set_cull_clockwise(false)
-			end
+			if self.matrixDeterminant < 0 then set_cull_clockwise(false) end
 
 			render2d.PopMatrix()
 		end,
 	}
-
-	META.tags.matrix =
-	{
+	META.tags.matrix = {
 		arguments = {1, 0, 0, 1, 0, 0},
-
 		pre_draw = function(markup, self, x, y, a11, a12, a21, a22, dx, dy)
 			-- Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn
-
 			-- A = Q1 ? Q2
-
 			-- B = transpose (A) * A
 			local b11 = a11 * a11 + a21 * a21
 			local b12 = a11 * a12 + a21 * a22
 			local b21 = a12 * a11 + a22 * a21
 			local b22 = a12 * a12 + a22 * a22
-			local trB  = b11 + b22
+			local trB = b11 + b22
 			local detB = detM2x2(b11, b12, b21, b22)
-
 			-- Finding eigenvalues of B...
 			-- det (B - ?I) = 0
 			-- | a - ?        b | = 0
@@ -1005,12 +896,10 @@ do -- tags matrix
 			--     a + d ± sqrt ((a + d)² - 4 (ad - bc))
 			-- ? = -------------------------------------
 			--                      2
-
 			-- This is never negative
 			local sqrtInside = trB * trB - 4 * detB
 			local eigenvalue1 = 0.5 * (trB + math.sqrt(sqrtInside))
 			local eigenvalue2 = 0.5 * (trB - math.sqrt(sqrtInside))
-
 			-- (B - ?I) u = 0
 			--
 			-- [ a - ?        b ] [ u1 ] = [ 0 ]
@@ -1026,9 +915,8 @@ do -- tags matrix
 			end
 
 			-- Those will never be negative as well #yolo
-			local scaleX = math.sqrt (eigenvalue1)
-			local scaleY = math.sqrt (eigenvalue2)
-
+			local scaleX = math.sqrt(eigenvalue1)
+			local scaleY = math.sqrt(eigenvalue2)
 			local q111, q121 = mulM2x2V2(a11, a12, a21, a22, q211, q221)
 			local q112, q122 = mulM2x2V2(a11, a12, a21, a22, q212, q222)
 			q111, q121 = scaleV2(q111, q121, (scaleX ~= 0) and (1 / scaleX) or 0)
@@ -1042,31 +930,19 @@ do -- tags matrix
 
 			-- transpose Q2
 			q212, q221 = q221, q212
-
 			-- End of Cthulhu summoning
-
 			self.matrixDeterminant = detM2x2(a11, a12, a21, a22)
-
 			render2d.PushMatrix()
-
 			render2d.Translate(x, y)
-				render2d.Translate(dx, dy)
-
-				orthonormalM2x2ToVMatrix(q211, q212, q221, q222)
-					render2d.Scale(scaleX, scaleY)
-				orthonormalM2x2ToVMatrix(q111, q112, q121, q122)
-
+			render2d.Translate(dx, dy)
+			orthonormalM2x2ToVMatrix(q211, q212, q221, q222)
+			render2d.Scale(scaleX, scaleY)
+			orthonormalM2x2ToVMatrix(q111, q112, q121, q122)
 			render2d.Translate(-x, -y)
-
-
-
 			set_cull_clockwise(self.matrixDeterminant < 0)
 		end,
-
 		post_draw = function(markup, self)
-			if self.matrixDeterminant < 0 then
-				set_cull_clockwise(false)
-			end
+			if self.matrixDeterminant < 0 then set_cull_clockwise(false) end
 
 			render2d.PopMatrix()
 		end,
@@ -1074,7 +950,7 @@ do -- tags matrix
 end
 
 do -- parse tags
-		local function parse_tag_arguments(self, arg_line)
+	local function parse_tag_arguments(self, arg_line)
 		local out = {}
 		local str = {}
 		local in_lua = false
@@ -1086,6 +962,7 @@ do -- parse tags
 				in_lua = false
 				local exp = table.concat(str, "")
 				local ok, func = expression.Compile(exp)
+
 				if ok then
 					table.insert(out, func)
 				else
@@ -1093,6 +970,7 @@ do -- parse tags
 					logf("markup expression error: %s", func)
 					system.OnError(func)
 				end
+
 				str = {}
 			elseif char == "," and not in_lua then
 				if #str > 0 then
@@ -1109,80 +987,74 @@ do -- parse tags
 			str = {}
 		end
 
-		for k,v in ipairs(out) do
-			if tonumber(v) then
-				out[k] = tonumber(v)
-			end
+		for k, v in ipairs(out) do
+			if tonumber(v) then out[k] = tonumber(v) end
 		end
 
 		return out
 	end
 
 	function META:StringTagsToTable(str)
-
 		str = tostring(str)
-
 		str = str:gsub("<rep=(%d+)>(.-)</rep>", function(count, str)
 			count = math.min(math.max(tonumber(count), 1), 500)
 
-			if #str:rep(count):gsub("<(.-)=(.-)>", ""):gsub("</(.-)>", ""):gsub("%^%d","") > 500 then
+			if #str:rep(count):gsub("<(.-)=(.-)>", ""):gsub("</(.-)>", ""):gsub("%^%d", "") > 500 then
 				return "rep limit reached"
 			end
 
 			return str:rep(count)
 		end)
-
 		str = str:gsub("<foreach=\"(.-)\">(.-)</foreach>", function(replace, str)
 			local tbl = {}
 			local current_pos = 1
 
 			for i = 1, #str do
 				local start_pos, end_pos = str:find("%b<>", current_pos)
+
 				if not start_pos then break end
+
 				local res = str:sub(current_pos, start_pos - 1)
-				if res ~= "" then
-					table.insert(tbl, res)
-				end
+
+				if res ~= "" then table.insert(tbl, res) end
+
 				local res = str:sub(start_pos, end_pos)
-				if res ~= "" then
-					table.insert(tbl, res)
-				end
+
+				if res ~= "" then table.insert(tbl, res) end
+
 				current_pos = end_pos + 1
 			end
 
 			if current_pos > 1 then
 				local res = str:sub(current_pos)
-				if res ~= "" then
-					table.insert(tbl, res)
-				end
+
+				if res ~= "" then table.insert(tbl, res) end
 			else
 				tbl[1] = str
 			end
 
-			for i,v in ipairs(tbl) do
+			for i, v in ipairs(tbl) do
 				if v:startswith("<") then
 					tbl[i] = replace:replace("@", v)
 				else
-					tbl[i] = v:gsub("(.)", function(c) return replace:replace("@", c) end)
+					tbl[i] = v:gsub("(.)", function(c)
+						return replace:replace("@", c)
+					end)
 				end
 			end
 
 			return table.concat(tbl)
 		end)
-
 		local chunks = {}
 		local found = false
-
 		local in_tag = false
 		local current_string = {}
 		local current_tag = {}
-
 		local last_font
 		local last_color
 
 		for _, char in ipairs(utf8.totable(str)) do
 			if char == "<" then
-
 				-- if we've been parsing a string add it
 				if current_string then
 					table.insert(chunks, {type = "string", val = table.concat(current_string, "")})
@@ -1215,14 +1087,12 @@ do -- parse tags
 
 						if not stop_tag then
 							info.arg_types = {}
-
 							args = parse_tag_arguments(self, arg_str or "")
 
 							for i = 1, #info.arguments do
 								local arg = args[i]
 								local default = info.arguments[i]
 								local t = type(default)
-
 								info.arg_types[i] = t == "table" and "number" or t
 
 								if t == "number" then
@@ -1235,9 +1105,7 @@ do -- parse tags
 
 									args[i] = num or default
 								elseif t == "string" then
-									if not arg or arg == "" then
-										arg = default
-									end
+									if not arg or arg == "" then arg = default end
 
 									args[i] = arg
 								elseif t == "table" then
@@ -1255,12 +1123,19 @@ do -- parse tags
 										else
 											if type(arg) == "function" then
 												if default.min and default.max then
-													args[i] = function(...) return math.min(math.max(arg(...) or default.default, default.min), default.max) end
+													args[i] = function(...)
+														return math.min(math.max(arg(...) or default.default, default.min), default.max)
+													end
 												elseif default.min then
-													args[i] = function(...) return math.min(arg(...) or default.default, default.min) end
+													args[i] = function(...)
+														return math.min(arg(...) or default.default, default.min)
+													end
 												elseif default.max then
-													args[i] = function(...) return math.max(arg(...) or default.default, default.max) end
+													args[i] = function(...)
+														return math.max(arg(...) or default.default, default.max)
+													end
 												end
+
 												is_expression = true
 											else
 												args[i] = default.default
@@ -1294,9 +1169,14 @@ do -- parse tags
 								last_color = args
 							end
 						else
-							table.insert(chunks, {type = "custom", val = {tag = info, type = tag, args = args, stop_tag = stop_tag}})
+							table.insert(
+								chunks,
+								{
+									type = "custom",
+									val = {tag = info, type = tag, args = args, stop_tag = stop_tag},
+								}
+							)
 						end
-
 					end
 				end
 
@@ -1332,7 +1212,14 @@ do -- parse tags
 						chunk.val = func(self, chunk, chunk.val, unpack(start_chunk.val.args)) or chunk.val
 					end
 
-					if chunk.type == "tag_stopper" or (chunk.type == "custom" and chunk.val.type == start_chunk.val.type and chunk.val.stop_tag) then
+					if
+						chunk.type == "tag_stopper" or
+						(
+							chunk.type == "custom" and
+							chunk.val.type == start_chunk.val.type and
+							chunk.val.stop_tag
+						)
+					then
 						break
 					end
 				end
@@ -1354,21 +1241,19 @@ do -- invalidate
 	function META:DumpState()
 		for _, chunk in ipairs(self.chunks) do
 			log(chunk.i, ": ")
-			if chunk.internal then
-				log(" INTERNAL ")
-			end
+
+			if chunk.internal then log(" INTERNAL ") end
+
 			if chunk.type == "color" or chunk.type == "font" then
 				logn("<", chunk.val, ">")
 			else
-				logn("'", chunk.val:luaescape(), "' ", chunk.x,",",chunk.y, " ", chunk.w,",",chunk.h)
+				logn("'", chunk.val:luaescape(), "' ", chunk.x, ",", chunk.y, " ", chunk.w, ",", chunk.h)
 			end
 		end
 	end
 
 	local function set_font(self, font)
-		if self.FixedSize == 0 then
-			gfx.SetFont(font)
-		end
+		if self.FixedSize == 0 then gfx.SetFont(font) end
 	end
 
 	local function get_text_size(self, text)
@@ -1382,7 +1267,6 @@ do -- invalidate
 	local function add_chunk(self, out, chunk, pos)
 		if chunk.type == "string" then
 			local w, h = get_text_size(self, chunk.val)
-
 			chunk.w = w
 			chunk.h = h + self.HeightSpacing
 
@@ -1394,25 +1278,24 @@ do -- invalidate
 			end
 		elseif chunk.type == "newline" then
 			local w, h = get_text_size(self, "|")
-
 			chunk.w = w
 			chunk.h = h + self.HeightSpacing
-		elseif chunk.type == "custom" and not chunk.val.stop_tag  then
+		elseif chunk.type == "custom" and not chunk.val.stop_tag then
 			if not chunk.init_called and not chunk.val.stop_tag then
 				self:CallTagFunction(chunk, "init")
 				chunk.init_called = true
 			end
 
 			local _, w, h = self:CallTagFunction(chunk, "get_size")
+
 			if h then h = h + self.HeightSpacing end
+
 			chunk.w = w
 			chunk.h = h
-
 			chunk.pre_called = false
 		end
 
 		-- for consistency everything should have x y w h
-
 		chunk.x = chunk.x or 0
 		chunk.y = chunk.y or 0
 		chunk.w = chunk.w or 0
@@ -1429,11 +1312,8 @@ do -- invalidate
 		-- this is needed when invalidating the chunks table again
 		-- anything that need to add more chunks need to store the
 		-- old chunk as old_chunk key
-
-
 		local out = {}
 		local found = {}
-
 		local last_type
 
 		for _, chunk in ipairs(self.chunks) do
@@ -1448,6 +1328,7 @@ do -- invalidate
 
 					if old then
 						chunk = nil
+
 						if not found[old] then
 							chunk = old
 							found[old] = true
@@ -1455,7 +1336,6 @@ do -- invalidate
 					end
 
 					if chunk then
-
 						if not chunk.internal and chunk.type == "string" and string.haswhitespace(chunk.val) then
 							if self.LineWrap then
 								local str = {}
@@ -1495,6 +1375,7 @@ do -- invalidate
 						else
 							add_chunk(self, out, chunk)
 						end
+
 						last_type = chunk.type
 					end
 				end
@@ -1517,20 +1398,22 @@ do -- invalidate
 
 	local function additional_split(self, word, max_width, out)
 		out = out or {}
-
 		local left_word, right_word = word:umidsplit()
-
 		local left_width, left_height = get_text_size(self, left_word)
 
 		if left_width >= max_width and left_word:ulength() > 1 then
 			additional_split(self, left_word, max_width, out)
 		else
-			table.insert(out, 1, {
-				type = "string",
-				w = left_width,
-				h = left_height,
-				val = left_word,
-			})
+			table.insert(
+				out,
+				1,
+				{
+					type = "string",
+					w = left_width,
+					h = left_height,
+					val = left_word,
+				}
+			)
 		end
 
 		local right_width, right_height = get_text_size(self, right_word)
@@ -1538,12 +1421,16 @@ do -- invalidate
 		if right_width >= max_width and right_word:ulength() > 1 then
 			additional_split(self, right_word, max_width, out)
 		else
-			table.insert(out, 1, {
-				type = "string",
-				w = right_width,
-				h = right_height,
-				val = right_word,
-			})
+			table.insert(
+				out,
+				1,
+				{
+					type = "string",
+					w = right_width,
+					h = right_height,
+					val = right_word,
+				}
+			)
 		end
 
 		return out
@@ -1551,13 +1438,13 @@ do -- invalidate
 
 	local function solve_max_width(self, chunks)
 		for i, chunk in ipairs(chunks) do
-			if chunk.type == "font" then
-				set_font(self, chunk.val)
-			end
+			if chunk.type == "font" then set_font(self, chunk.val) end
+
 			if chunk.type == "string" and not chunk.val:find("^%s+$") then
 				if chunk.val:ulength() > 1 then
 					if not chunk.nolinebreak and chunk.w >= self.MaxWidth then
 						table.remove(chunks, i)
+
 						for _, new_chunk in ipairs(additional_split(self, chunk.val, self.MaxWidth)) do
 							new_chunk.old_chunk = chunk
 							new_chunk.h = chunk.h
@@ -1574,24 +1461,25 @@ do -- invalidate
 		local chunk_height = 0
 
 		for i, chunk in ipairs(chunks) do
-			if chunk.type == "font" then
-				set_font(self, chunk.val)
-			end
+			if chunk.type == "font" then set_font(self, chunk.val) end
 
-			if chunk.h > chunk_height then
-				chunk_height = chunk.h
-			end
+			if chunk.h > chunk_height then chunk_height = chunk.h end
 
-			if not (chunk.type == "string" and chunk.val:find("^%s*$")) and chunk.type ~= "newline" then
+			if
+				not (
+					chunk.type == "string" and
+					chunk.val:find("^%s*$")
+				) and
+				chunk.type ~= "newline"
+			then
 				if x + chunk.w > self.MaxWidth then
 					local left_over_space = x - self.MaxWidth
 
 					if not chunk.nolinebreak then
 						y = y + chunk_height
 						x = 0
-
 						chunk_height = 0
---[[
+					--[[
 						-- go backwards and stretch all the words so
 						-- it fits the line using the leftover space
 						local x = 0
@@ -1608,23 +1496,21 @@ do -- invalidate
 						end
 
 						prev_line_i = i
-						]]
-					end
+						]] end
 				end
 			end
 
 			chunk.x = x
 			chunk.y = y
 
-
-				if chunk.type == "newline" then
+			if chunk.type == "newline" then
 				if not chunk.nolinebreak then
 					y = y + chunk_height
 					x = 0
 				end
+
 				chunk.w = 0
 			end
-
 
 			x = x + chunk.w
 		end
@@ -1637,17 +1523,14 @@ do -- invalidate
 			set_font(chunk.markup, chunk.font)
 			chunk.chars = {}
 			local width = 0
-
 			local str = chunk.val
 
-			if str == "" and chunk.internal then
-				str = " "
-			end
+			if str == "" and chunk.internal then str = " " end
+
 			for i, char in ipairs(utf8.totable(str)) do
 				local char_width, char_height = get_text_size(chunk.markup, char)
 				local x = chunk.x + width
 				local y = chunk.y
-
 				chunk.chars[i] = {
 					x = x,
 					y = y,
@@ -1656,24 +1539,18 @@ do -- invalidate
 					right = x + char_width,
 					top = y + char_height,
 					char = char,
-					i  = i,
+					i = i,
 					chunk = chunk,
 				}
 
-				if chunk.internal then
-					chunk.chars[i].internal = true
-				end
+				if chunk.internal then chunk.chars[i].internal = true end
 
 				chunk.chars[i].unicode = #char > 1
 				chunk.chars[i].length = #char
-
 				width = width + char_width
 			end
 
-			if str == " " and chunk.internal then
-				chunk.chars[1].char = ""
-
-			end
+			if str == " " and chunk.internal then chunk.chars[1].char = "" end
 		end
 	end
 
@@ -1682,23 +1559,18 @@ do -- invalidate
 		local width = 0
 		local height = 0
 		local last_y
-
 		local font = gfx.GetDefaultFont()
-		local color = Color(1,1,1,1)
-
+		local color = Color(1, 1, 1, 1)
 		local chunk_line = {}
 		local line_height = 0
 		local line_width = 0
-
 		self.chars = {}
 		self.lines = {}
-
 		local char_line = 1
 		local char_line_pos = 0
 		local char_line_str = {}
 
 		for i, chunk in ipairs(chunks) do
-
 			if chunk.type == "font" then
 				font = chunk.val
 			elseif chunk.type == "color" then
@@ -1709,36 +1581,30 @@ do -- invalidate
 			end
 
 			local w = chunk.x + chunk.w
-			if w > width then
-				width = w
-			end
+
+			if w > width then width = w end
 
 			local h = chunk.y + chunk.h
-			if h > height then
-				height = h
-			end
 
-			if chunk.h > line_height then
-				line_height = chunk.h
-			end
+			if h > height then height = h end
+
+			if chunk.h > line_height then line_height = chunk.h end
 
 			line_width = line_width + chunk.w
 
 			if chunk.y ~= last_y then
-				line =  line + 1
+				line = line + 1
 				last_y = chunk.y
 
 				for _, chunk in ipairs(chunk_line) do
 					--if type(chunk.val) == "string" and chunk.val:find("bigtable") then print("\n\n",chunk,"\n\n")  end
-			--		log(chunk.type == "string" and chunk.val or ( "<"..  chunk.type .. ">"))
+					--		log(chunk.type == "string" and chunk.val or ( "<"..  chunk.type .. ">"))
 					chunk.line_height = line_height
 					chunk.line_width = line_width
 				end
 
 				table.clear(chunk_line)
-
-		--		log(chunk.y - chunks[i+1].y, "\n")
-
+				--		log(chunk.y - chunks[i+1].y, "\n")
 				line_height = chunk.h
 				line_width = chunk.w
 			end
@@ -1748,7 +1614,6 @@ do -- invalidate
 			chunk.build_chars = build_chars
 			chunk.i = i
 			chunk.real_i = chunk.real_i or i -- expressions need this
-
 			-- this is for expressions to be use d like line.i+time()
 			chunk.exp_env = {
 				i = chunk.real_i,
@@ -1760,29 +1625,27 @@ do -- invalidate
 			}
 
 			if chunk.type == "custom" and not chunk.val.stop_tag then
-
 				-- only bother with this if theres post_draw or post_draw_chunks for performance
-				if self.tags[chunk.val.type].post_draw or self.tags[chunk.val.type].post_draw_chunks or self.tags[chunk.val.type].pre_draw_chunks then
-
+				if
+					self.tags[chunk.val.type].post_draw or
+					self.tags[chunk.val.type].post_draw_chunks or
+					self.tags[chunk.val.type].pre_draw_chunks
+				then
 					local current_width = 0
 					local current_height = 0
 					local width = 0
 					local height = 0
 					local last_y
-
 					local tag_type = chunk.val.type
 					local line = {}
-
 					local start_found = 1
 					local stops = {}
-
 					local tag_chunk = chunk
 
-					for i = i+1, #chunks do
+					for i = i + 1, #chunks do
 						local chunk = chunks[i]
 
 						if chunk then
-
 							chunk.tag_chunks = chunk.tag_chunks or {}
 							chunk.tag_chunks[tag_chunk] = tag_chunk
 
@@ -1790,14 +1653,10 @@ do -- invalidate
 
 							current_width = current_width + chunk.w
 
-							if chunk.h > current_height then
-								current_height = chunk.h
-							end
+							if chunk.h > current_height then current_height = chunk.h end
 
 							if last_y ~= chunk.y then
-								if current_width > width then
-									width = current_width
-								end
+								if current_width > width then width = current_width end
 
 								height = height + current_height
 								current_height = 0
@@ -1814,9 +1673,8 @@ do -- invalidate
 									start_found = start_found + 1
 								else
 									table.insert(stops, chunk)
-									if start_found == 1 then
-										break
-									end
+
+									if start_found == 1 then break end
 								end
 							else
 								table.insert(line, chunk)
@@ -1828,9 +1686,7 @@ do -- invalidate
 
 					height = height + current_height
 
-					if current_width > width then
-						width = current_width
-					end
+					if current_width > width then width = current_width end
 
 					local stop_chunk = stops[start_found] or line[#line]
 
@@ -1838,10 +1694,8 @@ do -- invalidate
 						stop_chunk.chunks_inbetween = line
 						stop_chunk.start_chunk = chunk
 						stop_chunk.tag_stop_draw = true
-
 						local center_x = chunk.x + width / 2
 						local center_y = chunk.y + height / 2
-
 						chunk.tag_start_draw = true
 						chunk.tag_center_x = center_x
 						chunk.tag_center_y = center_y
@@ -1857,7 +1711,6 @@ do -- invalidate
 							chunk.tag_width = width
 							chunk.chunks_inbetween = line
 						end
-
 					end
 				else
 					chunk.tag_start_draw = true
@@ -1871,72 +1724,69 @@ do -- invalidate
 					chunk:build_chars()
 
 					for _, char in ipairs(chunk.chars) do
-						table.insert(self.chars, {
-							chunk = chunk,
-							i = i,
-							str = char.char,
-							data = char,
-							y = char_line,
-							x = char_line_pos,
-							unicode = char.unicode,
-							length = char.length,
-							internal = char.internal,
-						})
-
+						table.insert(
+							self.chars,
+							{
+								chunk = chunk,
+								i = i,
+								str = char.char,
+								data = char,
+								y = char_line,
+								x = char_line_pos,
+								unicode = char.unicode,
+								length = char.length,
+								internal = char.internal,
+							}
+						)
 						char_line_pos = char_line_pos + 1
-
 						table.insert(char_line_str, char.char)
 					end
-
 				elseif chunk.type == "newline" then
 					local data = {}
-
 					data.w = chunk.w
 					data.h = line_height
 					data.x = chunk.x
 					data.y = chunk.y
 					data.right = chunk.x + chunk.w
 					data.top = chunk.y + chunk.h
-
-					table.insert(self.chars, {
-						chunk = chunk,
-						i = i,
-						str = "\n",
-						data = data,
-						y = char_line,
-						x = char_line_pos
-					})
-
+					table.insert(
+						self.chars,
+						{
+							chunk = chunk,
+							i = i,
+							str = "\n",
+							data = data,
+							y = char_line,
+							x = char_line_pos,
+						}
+					)
 					char_line = char_line + 1
 					char_line_pos = 0
-
 					table.insert(self.lines, table.concat(char_line_str, ""))
-
 					table.clear(char_line_str)
 				elseif chunk.w > 0 and chunk.h > 0 then
-					table.insert(self.chars, {
-						chunk = chunk,
-						i = i,
-						str = " ",
-						data = {
-							char = " ",
-							w = chunk.w,
-							h = chunk.h,
-
-							x = chunk.x,
-							y = chunk.y,
-
-							top = chunk.y + chunk.h,
-							right = chunk.x + chunk.w,
-						},
-						y = char_line,
-						x = char_line_pos,
-						unicode = 0,
-						length = 0,
-					})
-
+					table.insert(
+						self.chars,
+						{
+							chunk = chunk,
+							i = i,
+							str = " ",
+							data = {
+								char = " ",
+								w = chunk.w,
+								h = chunk.h,
+								x = chunk.x,
+								y = chunk.y,
+								top = chunk.y + chunk.h,
+								right = chunk.x + chunk.w,
+							},
+							y = char_line,
+							x = char_line_pos,
+							unicode = 0,
+							length = 0,
+						}
+					)
 					char_line_pos = char_line_pos + 1
-
 					table.insert(char_line_str, " ")
 				end
 
@@ -1950,8 +1800,7 @@ do -- invalidate
 		end
 
 		for _, chunk in ipairs(chunk_line) do
-	--		log(chunk.type == "string" and chunk.val or ( "<"..  chunk.type .. ">"))
-
+			--		log(chunk.type == "string" and chunk.val or ( "<"..  chunk.type .. ">"))
 			chunk.line_height = line_height
 			chunk.line_width = line_width
 		end
@@ -1973,9 +1822,7 @@ do -- invalidate
 
 		-- add the last line since there's probably not a newline at the very end
 		table.insert(self.lines, table.concat(char_line_str, ""))
-
 		self.text = table.concat(self.lines, "\n")
-
 		self.line_count = line
 		self.width = width
 		self.height = height
@@ -1996,11 +1843,9 @@ do -- invalidate
 		if self.suppress_layout then return end
 
 		local chunks = prepare_chunks(self)
-
 		solve_max_width(self, chunks)
 		store_tag_info(self, chunks)
 		--P"align y axis"
-
 		self.chunks = chunks
 
 		-- preserve caret positions
@@ -2022,24 +1867,18 @@ do -- invalidate
 			self.light_mode_obj = self:CompileString()
 		end
 
-		if self.OnInvalidate then
-			self:OnInvalidate()
-		end
+		if self.OnInvalidate then self:OnInvalidate() end
 	end
 
 	function META:CompileString()
 		local last_font
-
 		local strings = {}
 		local data
 
 		for _, chunk in ipairs(self.chunks) do
 			if chunk.type == "string" or chunk.type == "newline" then
 				if chunk.font then
-
-					if not chunk.font:IsReady() then
-						return nil, "fonts not ready"
-					end
+					if not chunk.font:IsReady() then return nil, "fonts not ready" end
 
 					if chunk.font ~= last_font then
 						data = {}
@@ -2053,16 +1892,14 @@ do -- invalidate
 					table.insert(data, chunk.val or "\n")
 				end
 
-				if chunk.font then
-					last_font = chunk.font
-				end
+				if chunk.font then last_font = chunk.font end
 			end
 		end
 
 		local W, H = 0, 0
 
 		for i, v in ipairs(strings) do
-			local obj, w,h = v.font:CompileString(v.data)
+			local obj, w, h = v.font:CompileString(v.data)
 			strings[i] = obj
 			W = math.max(W, w)
 			H = H + h
@@ -2075,21 +1912,19 @@ do -- invalidate
 				v:Draw(0, 0, max_w)
 			end
 		end
+
 		self.width = W
 		self.height = H
-
 		return obj
 	end
-
 end
 
 do -- shortcuts
-		function META:Backspace()
+	function META:Backspace()
 		local sub_pos = self:GetCaretSubPosition()
 
 		if not self:DeleteSelection() and sub_pos ~= 1 then
 			if self.ControlDown then
-
 				local x, y = self:GetNextCharacterClassPosition(-1, true)
 				x = x - 1
 
@@ -2101,7 +1936,6 @@ do -- shortcuts
 				self:SelectStart(self.caret_pos.x, self.caret_pos.y)
 				self:SelectStop(x, y)
 				self:DeleteSelection()
-
 				self.real_x = x
 			else
 				local x, y = self.caret_pos.x, self.caret_pos.y
@@ -2109,10 +1943,8 @@ do -- shortcuts
 				if self.chars[self.caret_pos.i - 1] then
 					x = self.chars[self.caret_pos.i - 1].x
 					y = self.chars[self.caret_pos.i - 1].y
-
 					self:SelectStart(self.caret_pos.x, self.caret_pos.y)
 					self:SelectStop(x, y)
-
 					self:DeleteSelection()
 				end
 			end
@@ -2127,12 +1959,9 @@ do -- shortcuts
 
 			if self.ControlDown then
 				local x, y = self:GetNextCharacterClassPosition(1, true)
-
 				x = x + 1
-
 				self:SelectStart(self.caret_pos.x, self.caret_pos.y)
 				self:SelectStop(x, y)
-
 				ok = self:DeleteSelection()
 			end
 
@@ -2142,7 +1971,6 @@ do -- shortcuts
 				if self.chars[self.caret_pos.i + 1] then
 					x = self.chars[self.caret_pos.i + 1].x
 					y = self.chars[self.caret_pos.i + 1].y
-
 					self:SelectStart(self.caret_pos.x, self.caret_pos.y)
 					self:SelectStop(x, y)
 					self:DeleteSelection()
@@ -2155,51 +1983,44 @@ do -- shortcuts
 
 	function META:Indent(back)
 		local sub_pos = self:GetCaretSubPosition()
-
 		local select_start = self:GetSelectStart()
 		local select_stop = self:GetSelectStop()
 
 		if select_start and select_start.y ~= select_stop.y then
-
 			-- first select everything
 			self:SelectStart(0, select_start.y)
 			self:SelectStop(math.huge, select_stop.y)
-
 			-- and move the caret to bottom
 			self:SetCaretPosition(select_stop.x, select_stop.y)
-
 			local select_start = self:GetSelectStart()
 			local select_stop = self:GetSelectStop()
-
 			local text = utf8.sub(self.text, select_start.sub_pos, select_stop.sub_pos)
 
 			if back then
-				if utf8.sub(text, 1, 1) == "\t" then
-					text = utf8.sub(text, 2)
-				end
+				if utf8.sub(text, 1, 1) == "\t" then text = utf8.sub(text, 2) end
+
 				text = text:gsub("\n\t", "\n")
 			else
 				text = "\t" .. text
 				text = text:gsub("\n", "\n\t")
 
 				-- ehhh, don't add \t at the next line..
-				if utf8.sub(text, -1) == "\t" then
-					text = utf8.sub(text, 0, -2)
-				end
+				if utf8.sub(text, -1) == "\t" then text = utf8.sub(text, 0, -2) end
 			end
 
 			self.text = utf8.sub(self.text, 1, select_start.sub_pos - 1) .. text .. utf8.sub(self.text, select_stop.sub_pos + 1)
 
 			do -- fix chunks
 				local first_line = true
-				for i = select_start.char.chunk.i-1, select_stop.char.chunk.i-1 do
-					local chunk = self.chunks[i]
-					if chunk.type == "newline" or (chunk.line == 1 and first_line) then
 
+				for i = select_start.char.chunk.i - 1, select_stop.char.chunk.i - 1 do
+					local chunk = self.chunks[i]
+
+					if chunk.type == "newline" or (chunk.line == 1 and first_line) then
 						first_line = false
 
-						if not back and self.chunks[i+1].type ~= "string" then
-							table.insert(self.chunks, i+1, {type = "string", val = "\t"})
+						if not back and self.chunks[i + 1].type ~= "string" then
+							table.insert(self.chunks, i + 1, {type = "string", val = "\t"})
 						else
 							local pos = i
 
@@ -2209,13 +2030,12 @@ do -- shortcuts
 							end
 
 							if back then
-								if utf8.sub(chunk.val, 1,1) == "\t" then
+								if utf8.sub(chunk.val, 1, 1) == "\t" then
 									chunk.val = utf8.sub(chunk.val, 2)
 								end
 							else
 								chunk.val = "\t" .. chunk.val
 							end
-
 						end
 					end
 				end
@@ -2225,7 +2045,7 @@ do -- shortcuts
 		else
 			-- TODO
 			--print(self.text:usub(sub_pos-1, sub_pos-1), back)
-			if back and utf8.sub(self.text, sub_pos-1, sub_pos-1) == "\t" then
+			if back and utf8.sub(self.text, sub_pos - 1, sub_pos - 1) == "\t" then
 				self:Backspace()
 			else
 				self:InsertString("\t")
@@ -2237,21 +2057,15 @@ do -- shortcuts
 
 	function META:Enter()
 		self:SaveUndoState()
-
 		self:DeleteSelection(true)
 
 		if self.PreserveTabsOnEnter then
 			local x = 0
 			local y = self.caret_pos.y
-
 			local cur_space = utf8.sub(self.lines[y], 1, self.caret_pos.x):match("^(%s*)") or ""
-
 			x = x + #cur_space
-
 			self:InsertString("\n" .. cur_space)
-
 			self.real_x = x
-
 			self:SetCaretPosition(x, y + 1, true)
 		else
 			self:InsertString("\n")
@@ -2286,18 +2100,17 @@ do -- caret
 			if
 				x > char.data.x and
 				x < char.data.right and
-
 				y > char.data.y and
 				y < char.data.top
 			then
 				POS = i
 				CHAR = char
+
 				break
 			end
 		end
 
 		-- if nothing was found we need to check things differently
-
 		if not CHAR then
 			local line = {}
 
@@ -2318,9 +2131,11 @@ do -- caret
 			if not CHAR then
 				for _, v in ipairs(line) do
 					local i, char = unpack(v)
+
 					if x < char.data.right then
 						POS = i
 						CHAR = self.chars[POS]
+
 						break
 					end
 				end
@@ -2333,7 +2148,6 @@ do -- caret
 		end
 
 		local data = CHAR.data
-
 		return {
 			px = data.x,
 			py = data.y,
@@ -2350,10 +2164,8 @@ do -- caret
 	function META:CaretFromPosition(x, y)
 		x = x or 0
 		y = y or 0
-
 		y = math.clamp(y, 1, #self.lines)
 		x = math.clamp(x, 0, self.lines[y] and utf8.length(self.lines[y]) or 0)
-
 		local CHAR
 		local POS
 
@@ -2361,6 +2173,7 @@ do -- caret
 			if char.y == y and char.x == x then
 				CHAR = char
 				POS = i
+
 				break
 			end
 		end
@@ -2389,7 +2202,6 @@ do -- caret
 		end
 
 		local data = CHAR.data
-
 		return {
 			px = data.x,
 			py = data.y,
@@ -2404,7 +2216,6 @@ do -- caret
 	end
 
 	function META:AdvanceCaret(X, Y)
-
 		if self.ControlDown then
 			if X < 0 then
 				self:SetCaretPosition(self:GetNextCharacterClassPosition(-1))
@@ -2424,7 +2235,6 @@ do -- caret
 			end
 
 			if pixel_y > 0 or Y > 0 then
-
 				local h = self.caret_pos.char.data.h
 
 				if h == 0 and Y > 0 then return end
@@ -2435,20 +2245,18 @@ do -- caret
 					pixel_y = pixel_y + h * Y + 1
 				end
 
-				if pixel_y <= self.height+1 then
-
+				if pixel_y <= self.height + 1 then
 					local pcaret = self:CaretFromPixels(
 						(self.real_x or self.caret_pos.char.data.x) + self.caret_pos.char.data.w / 2,
 						pixel_y
 					)
 					y = pcaret.y
 					x = pcaret.x
-					--self.real_x = self:CaretFromPosition(x, y).char.data.x
+				--self.real_x = self:CaretFromPosition(x, y).char.data.x
 				end
 			end
 		elseif X ~= math.huge and X ~= -math.huge then
 			x = x + X
-
 			self.real_x = self:CaretFromPosition(x, y).char.data.x
 
 			-- move to next or previous line
@@ -2463,27 +2271,20 @@ do -- caret
 			if X == math.huge then
 				x = utf8.length(line)
 				self.real_x = math.huge
-
 			elseif X == -math.huge then
 				local pos = #(line:match("^(%s*)") or "")
 
-				if x == pos then
-					pos = 0
-				end
+				if x == pos then pos = 0 end
 
 				x = pos
-
 				self.real_x = 0
 			end
 		end
 
 		if x ~= self.caret_pos.x or y ~= self.caret_pos.y then
-			if x < self.caret_pos.x then
-				self.suppress_end_char = true
-			end
+			if x < self.caret_pos.x then self.suppress_end_char = true end
 
 			self:SetCaretPosition(x, y)
-
 			self.suppress_end_char = false
 		end
 
@@ -2492,7 +2293,7 @@ do -- caret
 end
 
 do -- selection
-		function META:SelectStart(x, y)
+	function META:SelectStart(x, y)
 		self.select_start = self:CaretFromPosition(x, y)
 	end
 
@@ -2502,7 +2303,7 @@ do -- selection
 
 	function META:GetSelectStart()
 		if self.select_start and self.select_stop then
-			if self.select_start.i == self.select_stop.i  then return end
+			if self.select_start.i == self.select_stop.i then return end
 
 			if self.select_start.i < self.select_stop.i then
 				return self.select_start
@@ -2533,10 +2334,8 @@ do -- selection
 	function META:SelectCurrentWord()
 		local x, y = self:GetNextCharacterClassPosition(-1, false)
 		self:SelectStart(x - 1, y)
-
 		x, y = self:GetNextCharacterClassPosition(1, false)
 		self:SelectStop(x + 1, y)
-
 		self:SetCaretPosition(x + 1, y)
 	end
 
@@ -2602,7 +2401,6 @@ do -- selection
 
 	function META:GetSelection(tags, start, stop)
 		local out = {}
-
 		local START = start or self:GetSelectStart()
 		local STOP = stop or self:GetSelectStop()
 
@@ -2625,7 +2423,17 @@ do -- selection
 					end
 
 					if chunk.color and last_color ~= chunk.color then
-						table.insert(out, ("<color=%s,%s,%s,%s>"):format(math.round(chunk.color.r, 2), math.round(chunk.color.g, 2), math.round(chunk.color.b, 2), math.round(chunk.color.a, 2)))
+						table.insert(
+							out,
+							(
+								"<color=%s,%s,%s,%s>"
+							):format(
+								math.round(chunk.color.r, 2),
+								math.round(chunk.color.g, 2),
+								math.round(chunk.color.b, 2),
+								math.round(chunk.color.a, 2)
+							)
+						)
 						last_color = chunk.color
 					end
 
@@ -2645,7 +2453,9 @@ do -- selection
 
 	function META:Undo()
 		if not self.undo then return end
+
 		local chunks = table.remove(self.undo)
+
 		if chunks then
 			self:SetTable(chunks)
 			self:Invalidate()
@@ -2655,9 +2465,11 @@ do -- selection
 
 	function META:SaveUndoState()
 		local chunks = {}
-		for i,v in ipairs(self.chunks) do
+
+		for i, v in ipairs(self.chunks) do
 			chunks[i] = {type = v.type, val = table.copy(v.val)}
 		end
+
 		table.insert(self.undo, chunks)
 	end
 
@@ -2668,17 +2480,14 @@ do -- selection
 		if start then
 			self:SaveUndoState()
 
-			if not skip_move then
-				self:SetCaretPosition(start.x, start.y)
-			end
+			if not skip_move then self:SetCaretPosition(start.x, start.y) end
 
 			self.text = utf8.sub(self.text, 1, start.sub_pos - 1) .. utf8.sub(self.text, stop.sub_pos)
-
 			self:Unselect()
 
 			do -- fix chunks
-
 				local need_fix = false
+
 				for i = start.char.chunk.i + 1, stop.char.chunk.i - 1 do
 					if not self.chunks[i].internal then
 						self.chunks[i] = nil
@@ -2704,27 +2513,29 @@ do -- selection
 					if stop_chunk.type == "string" then
 						local sub_pos = stop.char.data.i
 						stop_chunk.val = utf8.sub(stop_chunk.val, sub_pos)
-					elseif stop_chunk.type ~= "newline" and not stop_chunk.internal and stop_chunk.type ~= "custom" then
+					elseif
+						stop_chunk.type ~= "newline" and
+						not stop_chunk.internal and
+						stop_chunk.type ~= "custom"
+					then
 						self.chunks[stop_chunk.i] = nil
 						need_fix = true
 					end
 				end
 
-				if need_fix then
-					table.fixindices(self.chunks)
-				end
+				if need_fix then table.fixindices(self.chunks) end
 
 				self:Invalidate()
 			end
 
 			self:InvalidateEditedText()
-
 			return true
 		end
 
 		return false
 	end
 end
+
 do -- clipboard
 	function META:Copy(tags)
 		return self:GetSelection(tags)
@@ -2738,7 +2549,6 @@ do -- clipboard
 
 	function META:Paste(str)
 		str = str:gsub("\r", "")
-
 		self:DeleteSelection()
 
 		if #str > 0 then
@@ -2764,7 +2574,6 @@ do -- input
 		down = true,
 		left = true,
 		right = true,
-
 		home = true,
 		["end"] = true,
 	}
@@ -2802,16 +2611,12 @@ do -- input
 			if x ~= 0 or y ~= 0 then
 				self:AdvanceCaret(x, y)
 
-				if self.OnAdvanceCaret then
-					self:OnAdvanceCaret(x, y)
-				end
+				if self.OnAdvanceCaret then self:OnAdvanceCaret(x, y) end
 			end
 		end
 
 		if is_caret_move[key] then
-			if not self.ShiftDown then
-				self:Unselect()
-			end
+			if not self.ShiftDown then self:Unselect() end
 		end
 
 		if key == "tab" then
@@ -2869,7 +2674,6 @@ do -- input
 		if button == "mwheel_up" or button == "mwheel_down" then return end
 
 		local x, y = self:GetMousePosition():Unpack()
-
 		local chunk = self:CaretFromPixels(x, y).char.chunk
 
 		if chunk.type == "custom" then
@@ -2900,21 +2704,20 @@ do -- input
 					end
 
 					self:SelectCurrentWord()
-				elseif self.times_clicked == 3  then
+				elseif self.times_clicked == 3 then
 					self:SelectCurrentLine()
 				end
 
 				self.last_click = system.GetElapsedTime() + 0.2
+
 				if self.times_clicked > 1 then return end
 			end
 
 			if press then
 				local caret = self:CaretFromPixels(x, y)
-
 				self.select_start = self:CaretFromPixels(x + caret.w / 2, y)
 				self.select_stop = nil
 				self.mouse_selecting = true
-
 				self.caret_pos = self:CaretFromPixels(x + caret.w / 2, y)
 
 				if self.caret_pos and self.caret_pos.char then
@@ -2923,6 +2726,7 @@ do -- input
 			else
 				if not self.Editable then
 					local str = self:Copy(self.CopyTags)
+
 					if str ~= "" then
 						window.SetClipboard(str)
 						self:Unselect()
@@ -2937,9 +2741,7 @@ end
 
 do -- drawing
 	local function set_font(self, font)
-		if self.FixedSize == 0 then
-			gfx.SetFont(font)
-		end
+		if self.FixedSize == 0 then gfx.SetFont(font) end
 	end
 
 	function META:Update()
@@ -2957,9 +2759,7 @@ do -- drawing
 					caret = self:CaretFromPixels(x + caret.w / 2, y)
 				end
 
-				if caret then
-					self.select_stop = caret
-				end
+				if caret then self.select_stop = caret end
 			end
 
 			if self.ShiftDown then
@@ -2992,43 +2792,40 @@ do -- drawing
 			render2d.SetColor(1, 1, 1, 1)
 			self.light_mode_obj:Draw(max_w)
 
-			if self.Selectable then
-				self:DrawSelection()
-			end
+			if self.Selectable then self:DrawSelection() end
 
-			if self.SuperLightMode then
-				return
-			end
+			if self.SuperLightMode then return end
 		end
 
 		if not self.chunks[1] then return end
+
 		-- reset font and color for every line
 		set_font(self, gfx.GetDefaultFont())
 		render2d.SetColor(1, 1, 1, 1)
-
 		start_remove = false
 		remove_these = false
 		started_tags = false
 
 		for i, chunk in ipairs(self.chunks) do
-
 			if not chunk.internal then
 				if not chunk.x then return end -- UMM
-
 				if
 					(
 						chunk.x + chunk.w >= self.cull_x and
 						chunk.y + chunk.h >= self.cull_y and
-
 						chunk.x - self.cull_x <= self.cull_w and
 						chunk.y - self.cull_y <= self.cull_h
-					) or
+					)
+					or
 					-- these are important since they will remove anything in between
-					(chunk.type == "start_fade" or chunk.type == "end_fade") or
+					(
+						chunk.type == "start_fade" or
+						chunk.type == "end_fade"
+					)
+					or
 					start_remove
 				then
 					if chunk.type == "start_fade" then
-
 						local time = chunk.val - system.GetElapsedTime()
 
 						if time <= chunk.fade_time then
@@ -3039,9 +2836,7 @@ do -- drawing
 
 						render2d.SetAlphaMultiplier(chunk.alpha)
 
-						if chunk.alpha <= 0 then
-							start_remove = true
-						end
+						if chunk.alpha <= 0 then start_remove = true end
 					end
 
 					if start_remove then
@@ -3051,15 +2846,12 @@ do -- drawing
 
 					if chunk.type == "string" and not self.LightMode then
 						set_font(self, chunk.font)
-
 						local c = chunk.color
-						if c then
-							render2d.SetColor(c.r, c.g, c.b, c.a)
-						end
+
+						if c then render2d.SetColor(c.r, c.g, c.b, c.a) end
 
 						gfx.DrawText(chunk.val, chunk.x, chunk.y, max_w)
 					elseif chunk.type == "custom" then
-
 						-- init
 						if not chunk.draw_init_called and not chunk.val.stop_tag then
 							self:CallTagFunction(chunk, "draw_init")
@@ -3069,14 +2861,12 @@ do -- drawing
 						-- we need to make sure post_draw is called on tags to prevent
 						-- engine matrix stack inbalance with the matrix tags
 						self.started_tags[chunk.val.type] = self.started_tags[chunk.val.type] or {}
-
 						started_tags = true
 
 						-- draw_under
 						if chunk.tag_start_draw then
 							if self:CallTagFunction(chunk, "pre_draw", chunk.x, chunk.y) then
 								--print("pre_draw", chunk.val.type, chunk.i)
-
 								-- only if there's a post_draw
 								if self.tags[chunk.val.type].post_draw then
 									table.insert(self.started_tags[chunk.val.type], chunk)
@@ -3103,8 +2893,10 @@ do -- drawing
 					-- this is not only for tags. a tag might've been started without being ended
 					if chunk.tag_stop_draw then
 						--print("post_draw_chunks", chunk.type, chunk.i, chunk.chunks_inbetween, chunk.start_chunk.val.type)
-
-						if self.started_tags[chunk.start_chunk.val.type] and table.remove(self.started_tags[chunk.start_chunk.val.type]) then
+						if
+							self.started_tags[chunk.start_chunk.val.type] and
+							table.remove(self.started_tags[chunk.start_chunk.val.type])
+						then
 							--print("post_draw", chunk.start_chunk.val.type, chunk.i)
 							self:CallTagFunction(chunk.start_chunk, "post_draw", chunk.start_chunk.x, chunk.start_chunk.y)
 						end
@@ -3126,6 +2918,7 @@ do -- drawing
 									self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
 								end
 							end
+
 							table.clear(self.started_tags)
 							started_tags = false
 						end
@@ -3142,7 +2935,6 @@ do -- drawing
 			for _, chunks in pairs(self.started_tags) do
 				for _, chunk in ipairs(chunks) do
 					--print("force stop", chunk.val.type, chunk.i)
-
 					self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
 				end
 			end
@@ -3154,14 +2946,13 @@ do -- drawing
 			for i in pairs(self.remove_these) do
 				self.chunks[i] = nil
 			end
+
 			table.clear(self.remove_these)
 			table.fixindices(self.chunks)
 			self:Invalidate()
 		end
 
-		if self.Selectable then
-			self:DrawSelection()
-		end
+		if self.Selectable then self:DrawSelection() end
 	end
 
 	function META:DrawSelection()
@@ -3174,15 +2965,14 @@ do -- drawing
 
 			for i = START.i, END.i - 1 do
 				local char = self.chars[i]
+
 				if char then
 					local data = char.data
 					render2d.DrawRect(data.x, data.y, data.w, data.h)
 				end
 			end
 
-			if self.Editable then
-				self:DrawLineHighlight(self.select_stop.y)
-			end
+			if self.Editable then self:DrawLineHighlight(self.select_stop.y) end
 		elseif self.Editable then
 			self:DrawCaret()
 			self:DrawLineHighlight(self.caret_pos.char.y)
@@ -3190,14 +2980,17 @@ do -- drawing
 	end
 
 	function META:DrawLineHighlight(y)
-		do return end
+		do
+			return
+		end
+
 		local start_chunk = self:CaretFromPosition(0, y).char.chunk
 		render2d.SetColor(1, 1, 1, 0.1)
 		render2d.DrawRect(start_chunk.x, start_chunk.y, self.width, start_chunk.line_height)
 	end
 
 	function META:IsCaretVisible()
-		return self.Editable and (system.GetElapsedTime() - self.blink_offset)%0.5 > 0.25
+		return self.Editable and (system.GetElapsedTime() - self.blink_offset) % 0.5 > 0.25
 	end
 
 	function META:DrawCaret()
@@ -3206,12 +2999,15 @@ do -- drawing
 			local y = self.caret_pos.py
 			local h = self.caret_pos.h
 
-			if h < self.MinimumHeight then
-				h = self.MinimumHeight
-			end
+			if h < self.MinimumHeight then h = self.MinimumHeight end
 
 			render2d.SetTexture()
-			render2d.SetColor(self.CaretColor.r, self.CaretColor.g, self.CaretColor.b, self:IsCaretVisible() and self.CaretColor.a or 0)
+			render2d.SetColor(
+				self.CaretColor.r,
+				self.CaretColor.g,
+				self.CaretColor.b,
+				self:IsCaretVisible() and self.CaretColor.a or 0
+			)
 			render2d.DrawRect(x, y, 1, h)
 		end
 	end
@@ -3219,23 +3015,24 @@ end
 
 META:Register()
 
-if RELOAD then do return end
+if RELOAD then
+	do
+		return
+	end
+
 	--runfile("lua/examples/2d/markup.lua")
-
 	local markup = ... or gfx.CreateMarkup()
-
 	markup:AddString("hello world\nnewline!")
-
 	markup:Invalidate()
 
 	function goluwa.PreDrawGUI()
 		local x = gfx.GetMousePosition()
-		render2d.PushMatrix(50,50)
-			markup:Update()
-			markup:Draw()
-			markup:SetMaxWidth(x)
-			render2d.SetColor(1,1,1,1)
-			gfx.DrawLine(x, 0, x, 1000)
+		render2d.PushMatrix(50, 50)
+		markup:Update()
+		markup:Draw()
+		markup:SetMaxWidth(x)
+		render2d.SetColor(1, 1, 1, 1)
+		gfx.DrawLine(x, 0, x, 1000)
 		render2d.PopMatrix()
 	end
 end

@@ -1,5 +1,4 @@
 --https://github.com/TReed0803/QtOpenGL/blob/master/resources/shaders/lighting/Physical.glsl
-
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_sky(vec3 ray, float depth)
 {
@@ -22,13 +21,11 @@ float handle_roughness(float x)
 {
 	return clamp(pow(x, 2.5), 0.0025, 1.0);
 }]])
-
 render.AddGlobalShaderCode([[
 float handle_metallic(float x)
 {
 	return clamp(x, 0.00025, 1.0);
 }]])
-
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 {
@@ -49,7 +46,6 @@ vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 
 	return color;
 }]])
-
 render.AddGlobalShaderCode([[
 float Pdf(float NoL, float NoV)
 {
@@ -81,8 +77,6 @@ vec3 gbuffer_compute_specular(vec3 l, vec3 v, vec3 n, float attenuation, vec3 li
 {
 	return max(Brdf(get_albedo(get_screen_uv()), light_color*attenuation*4, l,v,-n), vec3(0));
 }]])
-
-
 render.AddGlobalShaderCode([[
 float FSchlick(float VoH)
 {
@@ -94,7 +88,6 @@ float Fresnel(float NoL)
   return FSchlick(NoL);
 }
 ]])
-
 render.AddGlobalShaderCode([[
 float GSmithSchlickBeckmann_(float NoV)
 {
@@ -110,7 +103,6 @@ float Geometry(float NoL, float NoV, float NoH, float VoH)
 {
   return GSmithSchlickBeckmann(NoL, NoV, NoH, VoH);
 }]])
-
 render.AddGlobalShaderCode([[
 float DGgx(float NoH)
 {
@@ -126,8 +118,6 @@ float Distribution(float NoH)
 {
   return DGgx(NoH);
 }]])
-
-
 render.AddGlobalShaderCode([[
 vec3 MakeSample(float Theta, float Phi)
 {
@@ -152,7 +142,6 @@ vec3 CDFSample(vec2 random)
 {
   return DGgxSample(random);
 }]])
-
 render.AddGlobalShaderCode([[
 vec3 BlendDielectric(vec3 Kdiff, vec3 Kspec, vec3 Kbase)
 {
@@ -173,19 +162,18 @@ vec3 BlendMaterial(vec3 Kdiff, vec3 Kspec)
 
 do
 	local PASS = {}
-
 	PASS.Position = 1
 	PASS.Name = "importance_sampling"
-
 	PASS.Source = {}
-
-	table.insert(PASS.Source, {
-		buffer = {
-			--max_size = Vec2() + 512,
-			size_divider = 1,
-			internal_format = "r11f_g11f_b10f",
-		},
-		source = [[
+	table.insert(
+		PASS.Source,
+		{
+			buffer = {
+				--max_size = Vec2() + 512,
+				size_divider = 1,
+				internal_format = "r11f_g11f_b10f",
+			},
+			source = [[
 		#extension GL_ARB_gpu_shader5 : enable
 
 		vec2 _raycast_project(vec3 coord)
@@ -329,16 +317,20 @@ do
 		{
 			out_color = environment();
 		}
-	]]
-	})
-
-	table.insert(PASS.Source, {
-		source = [[
+	]],
+		}
+	)
+	table.insert(
+		PASS.Source,
+		{
+			source = [[
 			out vec3 out_color;
 
 			void main()
 			{
-				vec3 reflection = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
+				vec3 reflection = texture(tex_stage_]] .. (
+					#PASS.Source
+				) .. [[, uv).rgb;
 
 				out_color = reflection;
 				out_color += get_specular(uv);
@@ -347,9 +339,9 @@ do
 
 				out_color += gbuffer_compute_sky(get_camera_dir(uv), get_linearized_depth(uv));
 			}
-		]]
-	})
-
+		]],
+		}
+	)
 	render3d.AddGBufferShader(PASS)
 end
 

@@ -1,15 +1,11 @@
 local img = love.graphics.newImage("http://www.flutedmushroom.com/assets/img/mushroom-64x64.png")
-
 local top_left = love.graphics.newQuad(0, 0, 32, 32, img:getDimensions())
 local bottom_left = love.graphics.newQuad(0, 32, 32, 32, img:getDimensions())
 local top_right = love.graphics.newQuad(32, 0, 32, 32, img:getDimensions())
 local bottom_right = love.graphics.newQuad(32, 32, 32, 32, img:getDimensions())
-
-
-local q = love.graphics.newQuad(0,0, 900, 600, 1024, 1024)
+local q = love.graphics.newQuad(0, 0, 900, 600, 1024, 1024)
 local img2 = love.graphics.newImage("http://image.shutterstock.com/z/stock-vector-lol-87079871.jpg")
-
-local text=[[
+local text = [[
  LINE WRAP TEST! ~~~~~~~~~~
 
  The classic hello world program can be written as follows:
@@ -45,32 +41,23 @@ Lua's treatment of functions as first-class values is shown in the following exa
 	end
 .....................................................
 ]]
-
 love.window.setMode(1280, 720)
-local time_now=love.timer.getTime()
+local time_now = love.timer.getTime()
+
 function goluwa.PreDrawGUI()
 	love.graphics.draw(img, top_left, 32, 32)
-	love.graphics.draw(img, bottom_left, 32, 32*2)
-	love.graphics.draw(img, top_right, 32*2, 32)
-	love.graphics.draw(img, bottom_right, 32*2, 32*2)
-
+	love.graphics.draw(img, bottom_left, 32, 32 * 2)
+	love.graphics.draw(img, top_right, 32 * 2, 32)
+	love.graphics.draw(img, bottom_right, 32 * 2, 32 * 2)
 	love.graphics.setColor(0, 255, 0, 255)
-    love.graphics.print("This is a pretty lame example.", 10, 200)
-    love.graphics.setColor(255, 0, 0, 255)
-    love.graphics.print("This lame example is twice as big.", 10, 250, 0, 2, 2)
-    love.graphics.setColor(0, 0, 255, 255)
-    love.graphics.print("This example is lamely vertical.", 300, 30, math.pi/2)
-
-	love.graphics.draw(img2, q, 0,0, 0, 300/900)
-
+	love.graphics.print("This is a pretty lame example.", 10, 200)
+	love.graphics.setColor(255, 0, 0, 255)
+	love.graphics.print("This lame example is twice as big.", 10, 250, 0, 2, 2)
+	love.graphics.setColor(0, 0, 255, 255)
+	love.graphics.print("This example is lamely vertical.", 300, 30, math.pi / 2)
+	love.graphics.draw(img2, q, 0, 0, 0, 300 / 900)
 	-- v0.8:
 	-- love.graphics.drawq(img, top_left, 50, 50)
 	-- love.graphics.drawq(img, bottom_left, 50, 200)
-
-	love.graphics.printf(
-		string.sub(text,1,(love.timer.getTime()-time_now)*100),
-		(1280/2)-(720/2),50,
-		640
-	)
+	love.graphics.printf(string.sub(text, 1, (love.timer.getTime() - time_now) * 100), (1280 / 2) - (720 / 2), 50, 640)
 end
-

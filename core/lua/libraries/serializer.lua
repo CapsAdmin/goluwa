@@ -1,5 +1,4 @@
 local serializer = _G.serializer or {}
-
 serializer.libraries = {}
 
 function serializer.AddLibrary(id, encode, decode, lib)
@@ -16,32 +15,22 @@ end
 
 function serializer.Encode(lib, ...)
 	lib = lib or "luadata"
-
 	local data = serializer.libraries[lib]
 
-	if not data then
-		error("serializer " .. lib .. " not found", 2)
-	end
+	if not data then error("serializer " .. lib .. " not found", 2) end
 
-	if data.encode then
-		return data.encode(serializer.GetLibrary(lib), ...)
-	end
+	if data.encode then return data.encode(serializer.GetLibrary(lib), ...) end
 
 	error("encoding not supported", 2)
 end
 
 function serializer.Decode(lib, ...)
 	lib = lib or "luadata"
-
 	local data = serializer.libraries[lib]
 
-	if not data then
-		error("serializer " .. lib .. " not found", 2)
-	end
+	if not data then error("serializer " .. lib .. " not found", 2) end
 
-	if data.decode then
-		return data.decode(serializer.GetLibrary(lib), ...)
-	end
+	if data.decode then return data.decode(serializer.GetLibrary(lib), ...) end
 
 	error("decoding not supported", 2)
 end
@@ -53,9 +42,9 @@ do -- vfs extension
 
 	function serializer.ReadFile(lib, path, ...)
 		local str, err = vfs.Read(path)
-		if str then
-			return serializer.Decode(lib, str)
-		end
+
+		if str then return serializer.Decode(lib, str) end
+
 		return false, err
 	end
 
@@ -76,9 +65,7 @@ do -- vfs extension
 		if tbl then
 			local val = serializer.ReadFile(lib, path)[key]
 
-			if val == nil then
-				return def
-			end
+			if val == nil then return def end
 
 			return val
 		end
@@ -94,5 +81,4 @@ do -- vfs extension
 end
 
 runfile("lua/libraries/serializers/*", serializer)
-
 return serializer

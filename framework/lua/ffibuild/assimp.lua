@@ -1,10 +1,10 @@
-ffibuild.Build({
-	name = "assimp",
-	url = "https://github.com/assimp/assimp.git",
-	cmd = "cmake CMakeLists.txt && make --jobs 32",
-	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
-
-	c_source = [[
+ffibuild.Build(
+	{
+		name = "assimp",
+		url = "https://github.com/assimp/assimp.git",
+		cmd = "cmake CMakeLists.txt && make --jobs 32",
+		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
+		c_source = [[
 		#include "assimp/types.h"
 		#include "assimp/metadata.h"
 		#include "assimp/ai_assert.h"
@@ -78,20 +78,27 @@ ffibuild.Build({
 		typedef struct aiFile aiFile;
 
 	]],
-	gcc_flags = "-I./include",
-
-	process_header = function(header)
-		header = header:gsub("(%s)AI_", "%1ai")
-
-		local meta_data = ffibuild.GetMetaData(header)
-		meta_data.functions.aiGetImporterDesc = nil
-		return meta_data:BuildMinimalHeader(function(name) return name:find("^ai") end, function(name) return name:find("^ai") end, true, true)
-	end,
-
-	build_lua = function(header, meta_data)
-		local lua = ffibuild.StartLibrary(header)
-		lua = lua .. "library = " .. meta_data:BuildFunctions("^ai(.+)")
-		lua = lua .. "library.e = " .. meta_data:BuildEnums("^ai.-_(%u.+)")
-		return ffibuild.EndLibrary(lua, header)
-	end,
-})
+		gcc_flags = "-I./include",
+		process_header = function(header)
+			header = header:gsub("(%s)AI_", "%1ai")
+			local meta_data = ffibuild.GetMetaData(header)
+			meta_data.functions.aiGetImporterDesc = nil
+			return meta_data:BuildMinimalHeader(
+				function(name)
+					return name:find("^ai")
+				end,
+				function(name)
+					return name:find("^ai")
+				end,
+				true,
+				true
+			)
+		end,
+		build_lua = function(header, meta_data)
+			local lua = ffibuild.StartLibrary(header)
+			lua = lua .. "library = " .. meta_data:BuildFunctions("^ai(.+)")
+			lua = lua .. "library.e = " .. meta_data:BuildEnums("^ai.-_(%u.+)")
+			return ffibuild.EndLibrary(lua, header)
+		end,
+	}
+)

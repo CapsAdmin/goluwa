@@ -4,14 +4,11 @@ end
 
 local META = gine.GetMetaTable("IMesh")
 
-function META:BuildFromTriangles(tbl)
-
-end
+function META:BuildFromTriangles(tbl) end
 
 function META:Destroy()
 	self.__obj:Remove()
 end
 
-function META:Draw()
-	--self.__obj:Draw()
+function META:Draw() --self.__obj:Draw()
 end

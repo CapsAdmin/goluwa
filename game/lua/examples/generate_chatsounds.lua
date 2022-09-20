@@ -1,8 +1,6 @@
 --avoid big loop in big loop
 --translate captions
-
 local game = "csgo"
-
 steam.UnmountAllSourceGames()
 steam.MountSourceGame(game)
 
@@ -44,61 +42,53 @@ thread:SetEnsureFPS(5)
 thread.debug = true
 
 function thread:OnStart()
-
 	local temp_data = {}
 	local appid_lookup = {}
-
 	local sound_characters = {
 		["*"] = "CHAR_STREAM",
-			-- Streams from the disc, get flushed soon after. Use for one-off dialogue files or music.
+		-- Streams from the disc, get flushed soon after. Use for one-off dialogue files or music.
 		["#"] = "CHAR_DRYMIX",
-			-- Bypasses DSP and affected by the user's music volume setting.
+		-- Bypasses DSP and affected by the user's music volume setting.
 		["@"] = "CHAR_OMNI",
-			-- Non-directional; audible everywhere. "Default mono or stereo", whatever that means.
+		-- Non-directional; audible everywhere. "Default mono or stereo", whatever that means.
 		[">"] = "CHAR_DOPPLER",
-			-- Doppler encoded stereo: left for heading towards the listenr and right for heading away.
+		-- Doppler encoded stereo: left for heading towards the listenr and right for heading away.
 		["<"] = "CHAR_DIRECTIONAL",
-			-- Stereo with direction: left channel for front facing, right channel for rear facing. Mixed based on listener's direction.
+		-- Stereo with direction: left channel for front facing, right channel for rear facing. Mixed based on listener's direction.
 		["^"] = "CHAR_DISTVARIANT",
-			-- Distance-variant stereo. Left channel is close, right channel is far. Transition distance is hard-coded; see below.
+		-- Distance-variant stereo. Left channel is close, right channel is far. Transition distance is hard-coded; see below.
 		[")"] = "CHAR_SPATIALSTEREO",
-			-- Spatializes both channels, allowing them to be placed at specific locations within the world; see below.
-			-- Note:Sometimes "(" must be used instead; see below.
+		-- Spatializes both channels, allowing them to be placed at specific locations within the world; see below.
+		-- Note:Sometimes "(" must be used instead; see below.
 		["}"] = "CHAR_FAST_PITCH",
-			-- Forces low quality, non-interpolated pitch shift.
+		-- Forces low quality, non-interpolated pitch shift.
 		["$"] = "CHAR_CRITICAL",
-			-- Memory resident; cache locked.
+		-- Memory resident; cache locked.
 		["!"] = "CHAR_SENTENCE",
-			-- An NPC sentence.
-			-- Bug:
-			-- Only Works in Source 2009 or higher
+		-- An NPC sentence.
+		-- Bug:
+		-- Only Works in Source 2009 or higher
 		["?"] = "CHAR_USERVOX",
-			-- Voice chat data. You shouldn't ever need to use this.
+	-- Voice chat data. You shouldn't ever need to use this.
 	}
-
 	local preprocess = {
 		male = "gender",
 		female = "gender",
 	}
-
 	local realm_patterns = {
 		"sound/player/survivor/voice/(.-)/",
 		"sound/player/vo/(.-)/",
-
 		".+/(al)_[^/]+",
 		".+/(kl)_[^/]+",
 		".+/(br)_[^/]+",
 		".+/(ba)_[^/]+",
 		".+/(eli)_[^/]+",
 		".+/(cit)_[^/]+",
-
 		"sound/vo/([^/]-)_[^/]+",
-
 		"sound/vo/(wheatley)/[^/]+",
 		"sound/vo/(mvm_.-)_[^/]+",
 		"sound/(ui)/[^/]+",
 		"sound/vo/(glados)/[^/]+",
-
 		"sound/npc/(.-)/",
 		"sound/vo/npc/(.-)/",
 		"sound/vo/(.-)/",
@@ -114,10 +104,8 @@ function thread:OnStart()
 		"sound/ambient/levels/(.-)/",
 		"sound/ambient/(.-)/",
 	}
-
 	local realm_translate = {
 		breen = "hl2_breen",
-
 		al = "hl2_alyx",
 		kl = "hl2_kleiner",
 		br = "hl2_breen",
@@ -126,7 +114,6 @@ function thread:OnStart()
 		cit = "hl2_citizen",
 		male01 = "hl2_male",
 		female01 = "hl2_female",
-
 		biker = "l4d_francis",
 		teengirl = "l4d_zoey",
 		gambler = "l4d_nick",
@@ -137,7 +124,6 @@ function thread:OnStart()
 		churchguy = "l4d2_churchguy",
 		virgil = "l4d2_virgil",
 		coach = "l4d2_coach",
-
 		scout = "tf2_scout",
 		soldier = "tf2_soldier",
 		pyro = "tf2_pyro",
@@ -148,10 +134,8 @@ function thread:OnStart()
 		sniper = "tf2_sniper",
 		announcer = "tf2_announcer",
 	}
-
 	local voice_actors = {
 		breen = "robert_culp",
-
 		al = "merle_dandridge",
 		kl = "hal_robins",
 		br = "robert_culp",
@@ -160,7 +144,6 @@ function thread:OnStart()
 		cit = "hl2_citizen",
 		male01 = "adam_baldwin",
 		female01 = "mary_kae_irvin",
-
 		biker = "vince_valenzuela",
 		teengirl = "jen_taylor",
 		gambler = "hugh_dillon",
@@ -168,7 +151,6 @@ function thread:OnStart()
 		manager = "earl_alexander",
 		mechanic = "jesy_mckinney",
 		namvet = "jim_french",
-
 		scout = "nathan_vetterlein",
 		churchguy = "nathan_vetterlein",
 		virgil = "randall_newsome",
@@ -183,9 +165,9 @@ function thread:OnStart()
 	}
 
 	local function realm_from_path(path)
-
-		for k,v in ipairs(realm_patterns) do
+		for k, v in ipairs(realm_patterns) do
 			local realm = path:match(v)
+
 			if realm then
 				realm = realm:lower():gsub("%s+", "_")
 				return (realm_translate[realm] or realm)
@@ -196,7 +178,6 @@ function thread:OnStart()
 	end
 
 	local function clean_sentence(sentence)
-
 		sentence = sentence:gsub("%u%l", " %1")
 		sentence = sentence:lower()
 		sentence = sentence:gsub("_", " ")
@@ -205,7 +186,6 @@ function thread:OnStart()
 		sentence = sentence:gsub("%d", "")
 		sentence = sentence:gsub("%s+", " ")
 		sentence = sentence:trim()
-
 		return sentence
 	end
 
@@ -219,34 +199,52 @@ function thread:OnStart()
 		if pos then
 			file:SetPosition(pos + 4)
 			file:SetPosition(file:ReadLong())
-
 			local content = file:ReadAll()
 			return content:match("PLAINTEXT%s-{%s+(.-)%s-}")
 		end
 	end
 
+	vfs.Search(
+		"sound/",
+		{"mp3", "wav", "ogg"},
+		function(path, userdata)
+			self:Report("searching sound/*")
+			self:Wait()
 
-	vfs.Search("sound/", {"mp3", "wav", "ogg"}, function(path, userdata)
-		self:Report("searching sound/*")
-		self:Wait()
-
-		if userdata and userdata.game then
-			local appid = userdata.filesystem.steamappid
-			temp_data[appid] = temp_data[appid] or {full_paths = {}, soundscripts = {}, captions = {}, relative_paths = {}, phonemes = {}}
-			appid_lookup[appid] = userdata
-
-			local relative = path:match(".-/sound/(.+)"):lower()
-
-			temp_data[appid].full_paths[relative] = path
-		end
-	end, {"/addons/", "/workshop/", "/download/"})
+			if userdata and userdata.game then
+				local appid = userdata.filesystem.steamappid
+				temp_data[appid] = temp_data[appid] or
+					{
+						full_paths = {},
+						soundscripts = {},
+						captions = {},
+						relative_paths = {},
+						phonemes = {},
+					}
+				appid_lookup[appid] = userdata
+				local relative = path:match(".-/sound/(.+)"):lower()
+				temp_data[appid].full_paths[relative] = path
+			end
+		end,
+		{"/addons/", "/workshop/", "/download/"}
+	)
 
 	for appid, data in pairs(temp_data) do
 		logn(appid_lookup[appid].game, ": found ", #data.full_paths, " sounds in sound/*")
 	end
 
-	for _, info in ipairs(vfs.GetFiles({path = "scripts/", filter = "game_sounds_manifest.txt", plain_search = true, verbose = true})) do
-		local userdata =  info.userdata
+	for _, info in ipairs(
+		vfs.GetFiles(
+			{
+				path = "scripts/",
+				filter = "game_sounds_manifest.txt",
+				plain_search = true,
+				verbose = true,
+			}
+		)
+	) do
+		local userdata = info.userdata
+
 		if userdata and userdata.game then
 			local str = assert(vfs.Read(info.full_path))
 			local appid = userdata.filesystem.steamappid
@@ -258,35 +256,38 @@ function thread:OnStart()
 				if manifest and manifest.game_sounds_manifest then
 					for _, files in pairs(manifest.game_sounds_manifest) do
 						files = type(files) == "string" and {files} or files
+
 						for _, path in pairs(files) do
 							self:ReportProgress("reading sound scripts", #files)
 							self:Wait()
-							for _, dir in ipairs(userdata.filesystem.searchpaths) do
 
-								if not dir:endswith("/") then
-									dir = dir .. "/"
-								end
+							for _, dir in ipairs(userdata.filesystem.searchpaths) do
+								if not dir:endswith("/") then dir = dir .. "/" end
 
 								local path = dir .. path
+
 								if vfs.IsFile(path) then
 									local str = assert(vfs.Read(path))
 
 									if str then
 										local tbl, err = utility.VDFToTable(str)
+
 										if tbl then
 											for sound_name, info in pairs(tbl) do
 												if temp_data[appid].soundscripts[sound_name:lower()] then
-													--logn("soundscript ", sound_name, " already added")
+
+												--logn("soundscript ", sound_name, " already added")
 												else
 													--local lol = table.copy(info)
 													if info.rndwave then
 														if not info.rndwave.wave then
-															local k,v = next(info.rndwave)
+															local k, v = next(info.rndwave)
 															logn("strange symbol in rndwave for ", sound_name, " : ", k)
 															info.wave = v
 														else
 															info.wave = info.rndwave.wave
 														end
+
 														info.rndwave = true
 													end
 
@@ -319,14 +320,12 @@ function thread:OnStart()
 													for i, path in ipairs(info.wave) do
 														local original = path
 														local flags, path = path:match("^(%p*)(.+)")
-														if path and path~= "" then
+
+														if path and path ~= "" then
 															path = vfs.FixPathSlashes(path)
-
 															local relative = path:lower()
-
 															temp_data[appid].relative_paths[relative] = temp_data[appid].relative_paths[relative] or {}
 															temp_data[appid].relative_paths[relative][info] = info
-
 															local not_found
 
 															if temp_data[appid].full_paths[relative] then
@@ -338,17 +337,14 @@ function thread:OnStart()
 															end
 
 															info.wave[i] = {path = path, not_found = not_found, relative = relative}
-
-															--[[
+														--[[
 															if flags ~= "" then
 																info.wave[i].flags = {}
 																for i2 = 1, #flags do
 																	info.wave[i].flags[i2] = sound_characters[flags:sub(i2, i2)]
 																end
 															end
-															]]
-
-														else
+															]] else
 															tbl[sound_name] = nil
 															logn(sound_name, " does not contain any paths?")
 														end
@@ -380,24 +376,39 @@ function thread:OnStart()
 					end
 				end
 			end
+
 			logn(appid_lookup[appid].game, ": ", not_found_count, " paths in soundscripts were not found anywhere")
 			logn(appid_lookup[appid].game, ": found ", table.count(temp_data[appid].soundscripts), " soundscripts")
-			logn(appid_lookup[appid].game, ": found ", table.count(temp_data[appid].relative_paths), " relative paths in soundscripts")
+			logn(
+				appid_lookup[appid].game,
+				": found ",
+				table.count(temp_data[appid].relative_paths),
+				" relative paths in soundscripts"
+			)
 		end
 	end
 
-	for _, info in ipairs(vfs.GetFiles({path = "scripts/", filter = "game_sounds_vo_phonemes.txt", plain_search = true, verbose = true})) do
-		local userdata =  info.userdata
+	for _, info in ipairs(
+		vfs.GetFiles(
+			{
+				path = "scripts/",
+				filter = "game_sounds_vo_phonemes.txt",
+				plain_search = true,
+				verbose = true,
+			}
+		)
+	) do
+		local userdata = info.userdata
+
 		if userdata and userdata.game then
 			local appid = userdata.filesystem.steamappid
-
 			logn("reading ", info.full_path)
-
 			local phonemes = vfs.Read(info.full_path)
 
 			if phonemes then
 				local tbl = {}
 				local i = 0
+
 				for chunk in phonemes:gmatch("(%S-%s-%b{})") do
 					local path = vfs.FixPathSlashes(chunk:match("(.-){"):trim()):lower()
 					tbl[path] = clean_sentence(chunk:match("PLAINTEXT%s-{%s+(.-)%s-}"))
@@ -408,6 +419,7 @@ function thread:OnStart()
 						end
 					end
 				end
+
 				phonemes = tbl
 			end
 
@@ -417,7 +429,6 @@ function thread:OnStart()
 
 	local files = vfs.GetFiles({path = "resource/", verbose = true})
 	local max = #files
-
 	local found_count = 0
 
 	for _, info in pairs(files) do
@@ -431,22 +442,23 @@ function thread:OnStart()
 			if path:find("english") and not path:find("/platform/") and path:endswith(".txt") then
 				logn("reading ", path)
 				local str = assert(vfs.Read(path))
-
 				-- stupid hack because some caption files are encoded weirdly which would break lua patterns
 				local tbl = {}
 				local i = 1
+
 				for uchar in str:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
 					if uchar ~= "\0" then
 						tbl[i] = uchar
 						i = i + 1
 					end
 				end
+
 				str = table.concat(tbl, "")
 				str = str:gsub("//.-\n", "")
-
 				local tbl = assert(utility.VDFToTable(str, true))
 
 				if tbl.lang then tbl = tbl.lang end
+
 				if tbl.tokens then tbl = tbl.tokens end
 
 				if table.count(tbl) <= 1 then
@@ -454,9 +466,10 @@ function thread:OnStart()
 					table.print(tbl)
 				end
 
-				for k,v in pairs(tbl) do
+				for k, v in pairs(tbl) do
 					if k:startswith("#") then
 						local path = vfs.FixPathSlashes(k:sub(2))
+
 						if temp_data[appid].full_paths[path] then
 							temp_data[appid].soundscripts[k] = {wave = {{path = temp_data[appid].full_paths[path], relative = path}}}
 						end
@@ -465,14 +478,15 @@ function thread:OnStart()
 					if temp_data[appid].soundscripts[k] then
 						if type(v) == "table" then
 							-- i don't understand this but lets' just select the longest word
-							table.sort(v, function(a, b) return #a > #b end)
+							table.sort(v, function(a, b)
+								return #a > #b
+							end)
+
 							v = v[1]
 						end
 
 						v = tostring(v)
-
 						local original = v
-
 						v = v:gsub("%b<>", "")
 						v = clean_sentence(v)
 
@@ -480,7 +494,7 @@ function thread:OnStart()
 							temp_data[appid].soundscripts[k].caption = v
 							found_count = found_count + 1
 						elseif original:trim() ~= "" then
-							logn(appid_lookup[appid].game, ": caption for ", k ," is empty? original: ", original)
+							logn(appid_lookup[appid].game, ": caption for ", k, " is empty? original: ", original)
 						end
 					else
 						--logn(appid_lookup[appid].game, ": caption ", k, " could not find a soundscript: ", v)
@@ -493,22 +507,24 @@ function thread:OnStart()
 
 	for appid, data in pairs(temp_data) do
 		logn(appid_lookup[appid].game, ": added ", found_count, " captions to soundscripts")
-		logn(appid_lookup[appid].game, ": ", table.count(data.captions), " captions did not have a corresponding soundscript")
+		logn(
+			appid_lookup[appid].game,
+			": ",
+			table.count(data.captions),
+			" captions did not have a corresponding soundscript"
+		)
 	end
 
 	local out = {}
 
 	for appid, data in pairs(temp_data) do
 		out[appid] = {}
-
 		local max = table.count(data.soundscripts)
 
 		for sound_name, info in pairs(data.soundscripts) do
 			self:ReportProgress("building from soundscripts", max)
 			self:Wait()
-
 			local key = info.caption or info.phoneme
-
 			local paths = {}
 
 			for i, v in ipairs(info.wave) do
@@ -521,10 +537,13 @@ function thread:OnStart()
 			if not key then
 				for i = #paths, 1, -1 do
 					local path = paths[i]
+
 					if path:endswith(".wav") then
 						local file = assert(vfs.Open(path))
+
 						if file then
 							local plaintext = get_sound_data(file, true)
+
 							if plaintext then
 								table.remove(paths, i)
 								local key = clean_sentence(plaintext)
@@ -535,6 +554,7 @@ function thread:OnStart()
 									out[appid][key] = {path}
 								end
 							end
+
 							file:Close()
 						end
 					end
@@ -542,9 +562,7 @@ function thread:OnStart()
 			end
 
 			if paths[1] then
-				if not key then
-					key = clean_sentence(info.real_name)
-				end
+				if not key then key = clean_sentence(info.real_name) end
 
 				if out[appid][key] then
 					table.add(out[appid][key], paths)
@@ -552,12 +570,14 @@ function thread:OnStart()
 					out[appid][key] = paths
 				end
 			else
-				--logn(appid_lookup[appid].game, ": soundscript ", sound_name, " contains only invalid paths")
+
+			--logn(appid_lookup[appid].game, ": soundscript ", sound_name, " contains only invalid paths")
 			end
 		end
 
 		for relative_path, full_path in pairs(data.full_paths) do
 			local key = clean_sentence(vfs.RemoveExtensionFromPath(vfs.GetFileNameFromPath(full_path)))
+
 			if out[appid][key] then
 				table.insert(out[appid][key], full_path)
 			else
@@ -566,17 +586,24 @@ function thread:OnStart()
 		end
 
 		local unique = 0
-		for k,v in pairs(out[appid]) do
+
+		for k, v in pairs(out[appid]) do
 			unique = unique + #v
 		end
 
-		logn(appid_lookup[appid].game, ": built ", table.count(out[appid]), " unique chatsounds with ", unique, " paths")
+		logn(
+			appid_lookup[appid].game,
+			": built ",
+			table.count(out[appid]),
+			" unique chatsounds with ",
+			unique,
+			" paths"
+		)
 	end
 
-
 	for appid, data in pairs(out) do
-		self:ReportProgress("building list.lua") self:Wait()
-
+		self:ReportProgress("building list.lua")
+		self:Wait()
 		local temp = {}
 
 		for key, paths in pairs(out[appid]) do
@@ -591,6 +618,7 @@ function thread:OnStart()
 
 		for realm, paths in pairs(temp) do
 			table.insert(list, "realm=" .. realm)
+
 			for path, key in pairs(paths) do
 				local relative = path:match(".-/(sound.+)")
 				table.insert(list, relative .. "=" .. key)
@@ -598,9 +626,7 @@ function thread:OnStart()
 		end
 
 		list = table.concat(list, "\n")
-
 		vfs.Write("data/chatsounds/lists/" .. appid .. ".txt", list)
-
 		list = chatsounds.ListToTable(list)
 		local tree = chatsounds.TableToTree(list)
 		serializer.WriteFile("msgpack", "data/chatsounds/trees/" .. appid .. ".dat", tree)
@@ -618,9 +644,7 @@ function thread:OnStart()
 		self:ReportProgress("building soundscripts.lua", max) self:Wait()
 		serializer.WriteFile("luadata", "data/chatsounds2/" .. appid .. "/soundscripts.lua", data.soundscripts)
 	end
-	]]
-
-	logn("done!")
+	]] logn("done!")
 end
 
 thread:Start()

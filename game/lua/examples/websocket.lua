@@ -7,6 +7,7 @@ if not socket or not socket:IsValid() then
 end
 
 local str = {}
+
 for i = 1, 300000 do
 	str[i] = tostring(i)
 end

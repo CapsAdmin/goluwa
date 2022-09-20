@@ -1,5 +1,5 @@
 local function make_is(name)
-	if name:sub(1,1) == name:sub(1,1):upper() then
+	if name:sub(1, 1) == name:sub(1, 1):upper() then
 		gine.env["is" .. name:lower()] = function(var)
 			return name and type(var) == "table" and var.MetaName == name
 		end
@@ -20,7 +20,9 @@ make_is("function")
 make_is("Panel")
 make_is("Matrix")
 
-function gine.env.isbool(obj) return type(obj) == "boolean" end
+function gine.env.isbool(obj)
+	return type(obj) == "boolean"
+end
 
 gine.env.IsEntity = gine.env.isentity
 
@@ -29,9 +31,8 @@ function gine.env.type(obj)
 
 	if t == "table" then
 		local meta = getmetatable(obj)
-		if meta and meta.MetaName then
-			return meta.MetaName
-		end
+
+		if meta and meta.MetaName then return meta.MetaName end
 	end
 
 	return t
@@ -83,6 +84,7 @@ do
 		Vector = gine.env.TYPE_VECTOR, --  	10
 		IVideoWriter = gine.env.TYPE_VIDEO, --  	33
 	}
+
 	function gine.env.TypeID(val)
 		return tr[gine.env.type(val)] or gine.env.TYPE_INVALID
 	end

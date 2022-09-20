@@ -1,37 +1,26 @@
 local render3d = _G.render3d or {}
-
 -- debug variables
 render3d.noculling = false
 render3d.nomat = false
 render3d.nomodel = false
-
-
 render3d.camera = camera.CreateCamera()
 
 event.AddListener("Draw3D", "render3d", function()
-	if render3d.IsGBufferReady() then
-		render3d.DrawGBuffer()
-	end
+	if render3d.IsGBufferReady() then render3d.DrawGBuffer() end
 end)
 
 event.AddListener("PreDrawGUI", "render3d", function()
 	if render3d.IsGBufferReady() then
 		render.GetScreenFrameBuffer():ClearAll()
 
-		if menu and menu.IsVisible() then
-			render2d.PushHSV(1,0,1)
-		end
+		if menu and menu.IsVisible() then render2d.PushHSV(1, 0, 1) end
 
 		render2d.SetTexture(render3d.GetFinalGBufferTexture())
 		render2d.DrawRect(0, 0, render2d.GetSize())
 
-		if menu and menu.IsVisible() then
-			render2d.PopHSV()
-		end
+		if menu and menu.IsVisible() then render2d.PopHSV() end
 
-		if render3d.debug then
-			render3d.DrawGBufferDebugOverlay()
-		end
+		if render3d.debug then render3d.DrawGBufferDebugOverlay() end
 	end
 end)
 
@@ -61,7 +50,6 @@ function render3d.GenerateTextures()
 	if not render3d.environment_probe_texture then
 		local tex = render.CreateTexture("cube_map")
 		tex:SetMipMapLevels(1)
-
 		render3d.environment_probe_texture = tex
 	end
 

@@ -1,6 +1,5 @@
 local love = ... or _G.love
 local ENV = love._line_env
-
 love.physics = love.physics or {}
 
 function love.physics.setMeter(scale)
@@ -14,11 +13,11 @@ end
 local Shape = {}
 
 function Shape:computeAABB(tx, ty, tr, childIndex)
-	return 0,0,0,0
+	return 0, 0, 0, 0
 end
 
 function Shape:computeMass(density)
-	return 0,0, 0, 0
+	return 0, 0, 0, 0
 end
 
 function Shape:getChildCount()
@@ -43,7 +42,6 @@ end
 
 local function shape_template(name)
 	local meta = line.TypeTemplate(name .. "Shape")
-
 	meta.ShapeType = name:lower()
 
 	for k, v in pairs(Shape) do
@@ -81,11 +79,9 @@ do
 		end
 
 		local self = line.CreateObject("CircleShape")
-
 		self.radius = radius
 		self.x = x
 		self.y = y
-
 		return self
 	end
 end
@@ -100,11 +96,8 @@ do
 	line.RegisterType(EdgeShape)
 
 	function love.physics.newEdgeShape(x1, y1, x2, y2)
-
 		local self = line.CreateObject("EdgeShape")
-
 		self.points = {x1, y1, x2, y2}
-
 		return self
 	end
 end
@@ -119,20 +112,14 @@ do
 	line.RegisterType(PolygonShape)
 
 	function love.physics.newPolygonShape(...)
-
 		local self = line.CreateObject("PolygonShape")
-
 		self.points = {...}
-
 		return self
 	end
 
 	function love.physics.newRectangleShape(...)
-
 		local self = line.CreateObject("PolygonShape")
-
 		self.points = {...}
-
 		return self
 	end
 end

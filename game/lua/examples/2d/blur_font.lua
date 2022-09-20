@@ -20,36 +20,35 @@ local source = [[
 
 	return sum;
 ]]
-
 local radius = 0.5
-
-local font = fonts.CreateFont({
-	path = "Roboto",
-	size = 20,
-	padding = 8,
-	shade = {
-		{source = source, vars = {dir = Vec2(0,1), radius = radius*2}},
-		{source = source, vars = {dir = Vec2(1,0), radius = radius*2}},
-		{source = source, vars = {dir = Vec2(0,1), radius = radius}},
-		{source = source, vars = {dir = Vec2(1,0), radius = radius}},
-	},
-})
+local font = fonts.CreateFont(
+	{
+		path = "Roboto",
+		size = 20,
+		padding = 8,
+		shade = {
+			{source = source, vars = {dir = Vec2(0, 1), radius = radius * 2}},
+			{source = source, vars = {dir = Vec2(1, 0), radius = radius * 2}},
+			{source = source, vars = {dir = Vec2(0, 1), radius = radius}},
+			{source = source, vars = {dir = Vec2(1, 0), radius = radius}},
+		},
+	}
+)
 
 function goluwa.PreDrawGUI()
 	local w, h = render2d.GetSize()
-
-	render2d.SetColor(1,1,1,1)
-
+	render2d.SetColor(1, 1, 1, 1)
 	gfx.SetFont(font)
 	gfx.SetTextPosition(350, 350)
 	gfx.DrawText("outline blur text")
 
-	if font.texture_atlas then
-		font.texture_atlas:DebugDraw()
+	if font.texture_atlas then font.texture_atlas:DebugDraw() end
+
+	do
+		return
 	end
 
-do return end
 	render2d.SetTexture()
-	render2d.SetColor(1,0,0,0.5)
+	render2d.SetColor(1, 0, 0, 0.5)
 	render2d.DrawRect(350, 350, gfx.GetTextSize("outline blur text"))
 end

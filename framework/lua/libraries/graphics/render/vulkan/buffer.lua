@@ -7,15 +7,17 @@ function render.CreateBuffer(usage, data)
 		size = size,
 		usage = usage,
 	})
-
-	local memory = render.AllocateMemory(size, render.device:GetBufferMemoryRequirements(buffer).memoryTypeBits, {"host_visible"})
+	local memory = render.AllocateMemory(
+		size,
+		render.device:GetBufferMemoryRequirements(buffer).memoryTypeBits,
+		{"host_visible"}
+	)
 
 	render.device:MapMemory(memory, 0, size, 0, "float", function(cdata)
 		ffi.copy(cdata, data, size)
 	end)
 
 	render.device:BindBufferMemory(buffer, memory, 0)
-
 	local self = {
 		buffer = buffer,
 		memory = memory,

@@ -1,3 +1,2 @@
-local ctx = require"_openssl.digest"
-
+local ctx = require("_openssl.digest")
 return ctx

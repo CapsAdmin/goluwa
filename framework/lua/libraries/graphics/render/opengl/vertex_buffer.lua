@@ -1,8 +1,6 @@
 local render = ... or _G.render
 local META = prototype.GetRegistered("vertex_buffer")
-
 local gl = require("opengl")
-
 local buffers_supported = gl.GenBuffers
 
 do
@@ -39,7 +37,12 @@ do
 	end
 end
 
-local mapping_flags = bit.bor(gl.e.GL_MAP_WRITE_BIT, gl.e.GL_MAP_READ_BIT, gl.e.GL_MAP_PERSISTENT_BIT, gl.e.GL_MAP_COHERENT_BIT)
+local mapping_flags = bit.bor(
+	gl.e.GL_MAP_WRITE_BIT,
+	gl.e.GL_MAP_READ_BIT,
+	gl.e.GL_MAP_PERSISTENT_BIT,
+	gl.e.GL_MAP_COHERENT_BIT
+)
 local storage_flags = bit.bor(gl.e.GL_DYNAMIC_STORAGE_BIT, mapping_flags)
 
 function render._CreateVertexBuffer(self)
@@ -70,7 +73,12 @@ if buffers_supported then
 				self.last_element_buffer = index_buffer.element_buffer.id
 			end
 
-			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, nil)
+			gl.DrawElements(
+				self.gl_mode,
+				count or index_buffer.Indices:GetLength(),
+				index_buffer.gl_indices_type,
+				nil
+			)
 		end
 	elseif render.IsExtensionSupported("ARB_vertex_attrib_binding") then
 		function META:Draw(index_buffer, count)
@@ -80,15 +88,23 @@ if buffers_supported then
 			end
 
 			index_buffer.element_buffer:Bind()
-
-			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, index_buffer.Indices:GetPointer())
+			gl.DrawElements(
+				self.gl_mode,
+				count or index_buffer.Indices:GetLength(),
+				index_buffer.gl_indices_type,
+				index_buffer.Indices:GetPointer()
+			)
 		end
 	else
 		function META:Draw(index_buffer, count)
 			gl.BindVertexArray(self.vertex_array.id)
 			index_buffer.element_buffer:Bind()
-
-			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, index_buffer.Indices:GetPointer())
+			gl.DrawElements(
+				self.gl_mode,
+				count or index_buffer.Indices:GetLength(),
+				index_buffer.gl_indices_type,
+				index_buffer.Indices:GetPointer()
+			)
 		end
 	end
 
@@ -100,14 +116,24 @@ if buffers_supported then
 					self.vertex_array:AttribBinding(data.location, 0)
 					self.vertex_array:EnableAttrib(data.location)
 				end
+
 				self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
 			else
 				gl.BindBuffer("GL_ARRAY_BUFFER", self.vertex_buffer.id)
+
 				for _, data in ipairs(self.mesh_layout.attributes) do
-					self.vertex_array:AttribPointer2(data.location, data.row_length, data.number_type, 0, data.row_offset, self.mesh_layout.size)
+					self.vertex_array:AttribPointer2(
+						data.location,
+						data.row_length,
+						data.number_type,
+						0,
+						data.row_offset,
+						self.mesh_layout.size
+					)
 					self.vertex_array:EnableAttrib(data.location)
 				end
 			end
+
 			render.last_vertex_array_id = nil
 			self.setup_vao = true
 		end
@@ -115,6 +141,7 @@ if buffers_supported then
 
 	function META:_SetVertices(vertices)
 		if self.vertex_mapped then return end
+
 		setup_vertex_array(self)
 		self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), self.gl_draw_hint)
 	end
@@ -123,47 +150,52 @@ if buffers_supported then
 
 	function META:MapVertexArray(count)
 		self.vertex_mapped = true
-
 		self.Vertices = self.Vertices or Array(self.mesh_layout.ctype, count)
 		self.vertex_buffer:Storage(self.Vertices:GetSize(), nil, storage_flags)
 		local ptr = self.vertex_buffer:MapRange(0, self.Vertices:GetSize(), mapping_flags)
 		ptr = ffi.cast(ffi.typeof("$*", self.mesh_layout.ctype), ptr)
 		self.Vertices.Pointer = ptr
-
 		return self.Vertices
 	end
 else
 	-- this will probably only happen when running goluwa in virtual box with windows as a host
 	-- it's using the windows opengl api (seems to be 1.1)
+	function META:OnRemove() end
 
-	function META:OnRemove()
+	function META:_SetVertices(vertices) end
 
-	end
-
-	function META:_SetVertices(vertices)
-
-	end
-
-	function META:_SetIndices(indices)
-
-	end
+	function META:_SetIndices(indices) end
 
 	function META:Draw(index_buffer, count)
 		local vertices = self:GetVertices()
-
 		gl.Enable("GL_TEXTURE_2D")
 		render2d.GetTexture():Bind(0)
 
 		for _, data in ipairs(self.mesh_layout.attributes) do
 			if data.name == "pos" then
 				gl.EnableClientState("GL_VERTEX_ARRAY")
-				gl.VertexPointer(data.row_length, data.number_type, self.mesh_layout.size, vertices:GetPointer() + data.row_offset)
+				gl.VertexPointer(
+					data.row_length,
+					data.number_type,
+					self.mesh_layout.size,
+					vertices:GetPointer() + data.row_offset
+				)
 			elseif data.name == "color" then
 				gl.EnableClientState("GL_COLOR_ARRAY")
-				gl.ColorPointer(data.row_length, data.number_type, self.mesh_layout.size, vertices:GetPointer() + data.row_offset)
+				gl.ColorPointer(
+					data.row_length,
+					data.number_type,
+					self.mesh_layout.size,
+					vertices:GetPointer() + data.row_offset
+				)
 			elseif data.name == "uv" then
 				gl.EnableClientState("GL_TEXTURE_COORD_ARRAY")
-				gl.TexCoordPointer(data.row_length, data.number_type, self.mesh_layout.size, vertices:GetPointer() + data.row_offset)
+				gl.TexCoordPointer(
+					data.row_length,
+					data.number_type,
+					self.mesh_layout.size,
+					vertices:GetPointer() + data.row_offset
+				)
 			end
 		end
 
@@ -171,8 +203,13 @@ else
 		gl.LoadMatrixf(render2d.camera:GetMatrices().projection:GetFloatPointer())
 		gl.MatrixMode("GL_MODELVIEW")
 		gl.LoadMatrixf((render2d.camera:GetMatrices().view * render2d.camera:GetMatrices().world):GetFloatPointer())
-
-		gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, index_buffer.Indices:GetPointer())
+		gl.DrawElements(
+			self.gl_mode,
+			count or index_buffer.Indices:GetLength(),
+			index_buffer.gl_indices_type,
+			index_buffer.Indices:GetPointer()
+		)
 	end
 end
+
 prototype.Register(META)

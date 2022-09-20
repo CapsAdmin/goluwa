@@ -1,25 +1,26 @@
 local lib = desire("lsqlite3")
 
 if lib then
-	gine.sql_db = gine.sql_db or lib.open(R("data/") .. "gmod_" .. (CLIENT and "cl" or SERVER and "sv") .. ".db")
+	gine.sql_db = gine.sql_db or
+		lib.open(R("data/") .. "gmod_" .. (CLIENT and "cl" or SERVER and "sv") .. ".db")
 end
 
 local function query(str)
-	if not lib then
-		return
-	end	
+	if not lib then return end
 
 	local out = {}
+
 	gine.sql_db:exec(str, function(tbl)
 		local row = {}
-		for k,v in ipairs(tbl) do
+
+		for k, v in ipairs(tbl) do
 			row[v.key] = v.value
 		end
+
 		table.insert(out, row)
 	end)
-	if out[1] then
-		return out
-	end
+
+	if out[1] then return out end
 end
 
 function gine.env.sql.Query(str)

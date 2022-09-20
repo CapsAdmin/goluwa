@@ -11,6 +11,7 @@ do
 
 				if not num[i] then
 					ok = false
+
 					break
 				end
 			end
@@ -20,23 +21,32 @@ do
 
 		if not ok then
 			local test = str:match("(b())")
-			if test then
-				return vector(test:sub(2, -2), ctor)
-			end
+
+			if test then return vector(test:sub(2, -2), ctor) end
 		end
 	end
 
 	commands.ArgumentTypes = {
-		["nil"] = function(str) return str end,
-		self = function(str, me) return me end,
-		vec3 = function(str, me) return vector(str, Vec3) end,
-		ang3 = function(str, me) return vector(str, Ang3) end,
-		vector = function(str, me) return vector(str, Vec3) end,
-		angle = function(str, me) return vector(str, Ang3) end,
+		["nil"] = function(str)
+			return str
+		end,
+		self = function(str, me)
+			return me
+		end,
+		vec3 = function(str, me)
+			return vector(str, Vec3)
+		end,
+		ang3 = function(str, me)
+			return vector(str, Ang3)
+		end,
+		vector = function(str, me)
+			return vector(str, Vec3)
+		end,
+		angle = function(str, me)
+			return vector(str, Ang3)
+		end,
 		boolean = function(arg)
-			if type(arg) == "boolean" then
-				return arg
-			end
+			if type(arg) == "boolean" then return arg end
 
 			arg = arg:lower()
 
@@ -54,19 +64,22 @@ do
 			return tonumber(arg)
 		end,
 		string = function(arg)
-			if #arg > 0 then
-				return arg
-			end
+			if #arg > 0 then return arg end
 		end,
 		string_trim = function(arg)
 			arg = arg:trim()
-			if #arg > 0 then
-				return arg
-			end
+
+			if #arg > 0 then return arg end
 		end,
-		var_arg = function(arg) return arg end,
-		arg_line = function(arg) return arg end,
-		string_rest = function(arg) return arg end,
+		var_arg = function(arg)
+			return arg
+		end,
+		arg_line = function(arg)
+			return arg
+		end,
+		string_rest = function(arg)
+			return arg
+		end,
 	}
 
 	function commands.StringToType(type, ...)
@@ -77,7 +90,6 @@ end
 do -- commands
 	commands.added = commands.added or {}
 	commands.added2 = commands.added2 or {}
-
 	local capture_symbols = {
 		["\""] = "\"",
 		["'"] = "'",
@@ -92,8 +104,7 @@ do -- commands
 
 		local args = {}
 		local capture = {}
-		local escape  = false
-
+		local escape = false
 		local in_capture = false
 
 		for _, char in ipairs(utf8.totable(arg_line)) do
@@ -102,9 +113,7 @@ do -- commands
 				escape = false
 			else
 				if in_capture then
-					if char == in_capture then
-						in_capture = false
-					end
+					if char == in_capture then in_capture = false end
 
 					table.insert(capture, char)
 				else
@@ -114,20 +123,15 @@ do -- commands
 					else
 						table.insert(capture, char)
 
-						if capture_symbols[char] then
-							in_capture = capture_symbols[char]
-						end
+						if capture_symbols[char] then in_capture = capture_symbols[char] end
 
-						if char == "\\" then
-							escape = true
-						end
+						if char == "\\" then escape = true end
 					end
 				end
 			end
 		end
 
 		table.insert(args, table.concat(capture, ""))
-
 		return args
 	end
 
@@ -137,27 +141,27 @@ do -- commands
 		"%/",
 		"",
 	}
-
 	commands.sub_commands = commands.sub_commands or {}
 
 	local function parse_line(line)
 		for _, v in ipairs(start_symbols) do
 			local start, rest = line:match("^(" .. v .. ")(.+)")
-			if start then
 
+			if start then
 				for _, str in ipairs(commands.sub_commands) do
-					local cmd, rest_ = rest:match("^("..str..")%s+(.+)$")
+					local cmd, rest_ = rest:match("^(" .. str .. ")%s+(.+)$")
+
 					if cmd then
 						return v, cmd, rest_
 					else
-						local cmd, rest_ = rest:match("^("..str..")$")
-						if cmd then
-							return v, cmd, rest_
-						end
+						local cmd, rest_ = rest:match("^(" .. str .. ")$")
+
+						if cmd then return v, cmd, rest_ end
 					end
 				end
 
 				local cmd, rest_ = rest:match("^(%S+)%s+(.+)$")
+
 				if not cmd then
 					return v, rest:trim()
 				else
@@ -173,10 +177,9 @@ do -- commands
 		local defaults
 
 		if command:find("=") then
-			aliases, argtypes =  command:match("(.+)=(.+)")
-			if not aliases then
-				aliases = command
-			end
+			aliases, argtypes = command:match("(.+)=(.+)")
+
+			if not aliases then aliases = command end
 		end
 
 		aliases = aliases:split("|")
@@ -221,7 +224,7 @@ do -- commands
 			aliases = aliases,
 			argtypes = argtypes,
 			callback = callback,
-			defaults = defaults
+			defaults = defaults,
 		}
 
 		for _, alias in ipairs(aliases) do
@@ -253,22 +256,29 @@ do -- commands
 	end
 
 	function commands.FindCommand(str)
-		if #str > 50 or str:find("\n", nil, true) then return nil, "could not find command: command is too complex" end
+		if #str > 50 or str:find("\n", nil, true) then
+			return nil, "could not find command: command is too complex"
+		end
 
 		local found = {}
 
 		for _, command in pairs(commands.added2) do
 			for _, alias in ipairs(command.aliases) do
-				if str:lower() == alias:lower() then
-					return command
-				end
-				table.insert(found, {distance = string.levenshtein(str, alias), alias = alias, command = command})
+				if str:lower() == alias:lower() then return command end
+
+				table.insert(
+					found,
+					{distance = string.levenshtein(str, alias), alias = alias, command = command}
+				)
 			end
 		end
 
-		table.sort(found, function(a, b) return a.distance < b.distance end)
+		table.sort(found, function(a, b)
+			return a.distance < b.distance
+		end)
 
-		return nil, "could not find command " .. str .. ". did you mean " .. found[1].alias .. "?"
+		return nil,
+		"could not find command " .. str .. ". did you mean " .. found[1].alias .. "?"
 	end
 
 	function commands.GetCommands()
@@ -279,86 +289,78 @@ do -- commands
 		return commands.FindCommand(alias) ~= nil
 	end
 
- 	function commands.AddHelp(alias, help)
-  		local command, msg = commands.FindCommand(alias)
+	function commands.AddHelp(alias, help)
+		local command, msg = commands.FindCommand(alias)
 
-  		if command then
+		if command then
 			command.help = help
 			return true
 		end
 
 		return nil, msg
-  	end
+	end
 
 	function commands.AddAutoComplete(alias, callback)
-  		local command, msg = commands.FindCommand(alias)
+		local command, msg = commands.FindCommand(alias)
 
-  		if command then
+		if command then
 			command.autocomplete = callback
 			return true
 		end
 
 		return nil, msg
-  	end
+	end
 
 	function commands.GetHelpText(alias)
 		local command, msg = commands.FindCommand(alias)
+
 		if not command then return false, msg end
 
 		local str = command.help
 
-		if str then
-			return str
-		end
+		if str then return str end
 
 		local params = {}
 
 		for i = 1, math.huge do
 			local key = debug.getlocal(command.callback, i)
-			if key then
-				table.insert(params, key)
-			else
-				break
-			end
+
+			if key then table.insert(params, key) else break end
 		end
 
 		str = alias .. " "
 
 		for i = 1, #params do
 			local arg_name = params[i]
+
 			if arg_name ~= "_" then
 				local types = command.argtypes and command.argtypes[i]
 				local default = command.defaults and command.defaults[i]
 
 				if types then
 					str = str .. arg_name .. ""
-
 					str = str .. "<"
+
 					for _, type in pairs(types) do
 						str = str .. type
-						if _ ~= #types then
-							str = str .. " or "
-						end
+
+						if _ ~= #types then str = str .. " or " end
 					end
+
 					str = str .. ">"
 				else
 					str = str .. "*" .. arg_name .. "*"
 				end
 
-				if default then
-					str = str .. " = " .. tostring(default)
-				end
+				if default then str = str .. " = " .. tostring(default) end
 
-				if i ~= #params then
-					str = str .. ", "
-				end
+				if i ~= #params then str = str .. ", " end
 			end
 		end
 
 		local help = alias .. ":\n"
 		help = help .. "\tusage example:\n\t\t" .. str .. "\n"
 		help = help .. "\tlocation:\n\t\t" .. debug.getprettysource(command.callback, true) .. "\n"
-
 		return help
 	end
 
@@ -368,10 +370,9 @@ do -- commands
 
 	function commands.ParseString(str, simple)
 		local symbol, alias, arg_line = parse_line(str)
-
 		local args = parse_args(arg_line)
-
 		local command, err
+
 		if simple then
 			if commands.added2[alias] then
 				command = commands.added2[alias]
@@ -393,9 +394,7 @@ do -- commands
 
 	function commands.RunCommandString(str, simple)
 		local command, alias, arg_line, args = assert(commands.ParseString(str, simple))
-
 		command.arg_line = arg_line
-
 		local ret, reason = event.Call("PreCommandExecute", command, alias, unpack(args))
 
 		if ret == false then return ret, reason or "no reason" end
@@ -414,7 +413,7 @@ do -- commands
 			for i, arg_types in ipairs(command.argtypes) do
 				if command.defaults and args[i] == nil and command.defaults[i] then
 					if command.defaults[i] == "STDIN" then
-						logn(alias, " #", i2, " argument (", temp ,"):")
+						logn(alias, " #", i2, " argument (", temp, "):")
 						args[i] = io.stdin:read("*l")
 					else
 						args[i] = command.defaults[i]
@@ -434,6 +433,7 @@ do -- commands
 
 							if test ~= nil then
 								val = test
+
 								break
 							end
 						end
@@ -441,13 +441,25 @@ do -- commands
 
 					if val == nil and command.defaults and command.defaults[i] and args[i] then
 						val = command.defaults[i]
-						local err = "unable to convert argument " .. (debug.getlocal(command.callback, i) or i) .. " >>|" .. (args[i] or "") .. "|<< to one of these types: " .. table.concat(command.argtypes[i], ", ") .. "\n"
+						local err = "unable to convert argument " .. (
+								debug.getlocal(command.callback, i) or
+								i
+							) .. " >>|" .. (
+								args[i] or
+								""
+							) .. "|<< to one of these types: " .. table.concat(command.argtypes[i], ", ") .. "\n"
 						err = err .. "defaulting to " .. tostring(command.defaults[i])
 						logn(err)
 					end
 
 					if val == nil then
-						local err = "unable to convert argument " .. (debug.getlocal(command.callback, i) or i) .. " >>|" .. (args[i] or "") .. "|<< to one of these types: " .. table.concat(command.argtypes[i], ", ") .. "\n"
+						local err = "unable to convert argument " .. (
+								debug.getlocal(command.callback, i) or
+								i
+							) .. " >>|" .. (
+								args[i] or
+								""
+							) .. "|<< to one of these types: " .. table.concat(command.argtypes[i], ", ") .. "\n"
 						err = err .. commands.GetHelpText(alias) .. "\n"
 						error(err)
 					end
@@ -462,22 +474,24 @@ do -- commands
 
 	function commands.ExecuteCommandString(str)
 		local tr
-		local a, b, c = xpcall(commands.RunCommandString, function(msg)
-			if CLI then
-				tr = msg
-			else
-				tr = debug.traceback() .. "\n\n" .. msg
-			end
-		end, str, simple)
+		local a, b, c = xpcall(
+			commands.RunCommandString,
+			function(msg)
+				if CLI then
+					tr = msg
+				else
+					tr = debug.traceback() .. "\n\n" .. msg
+				end
+			end,
+			str,
+			simple
+		)
 
-		if a == false then
-			return false, b or tr
-		end
+		if a == false then return false, b or tr end
 
 		if b == false then
-			if tr and c then
-				c = c .. tr
-			end
+			if tr and c then c = c .. tr end
+
 			return false, c or "unknown reason"
 		end
 
@@ -495,7 +509,10 @@ do -- commands
 			commands.SetLuaEnvironmentVariable("gl", desire("opengl"))
 			commands.SetLuaEnvironmentVariable("ffi", desire("ffi"))
 			commands.SetLuaEnvironmentVariable("findo", prototype.FindObject)
-			if WINDOW then commands.SetLuaEnvironmentVariable("copy", window.SetClipboard) end
+
+			if WINDOW then
+				commands.SetLuaEnvironmentVariable("copy", window.SetClipboard)
+			end
 
 			local lua = ""
 
@@ -504,12 +521,9 @@ do -- commands
 			end
 
 			lua = lua .. line
-
 			local ok, err = loadstring(lua, env_name or line)
 
-			if err then
-				err = err:match("^.-:%d+:%s+(.+)")
-			end
+			if err then err = err:match("^.-:%d+:%s+(.+)") end
 
 			return assert(ok, err)()
 		end
@@ -519,9 +533,8 @@ do -- commands
 			local ok = table.remove(ret, 1)
 
 			if not ok then
-				if log_error then
-					logn(ret[1]:match(".+:%d+:%s+(.+)"))
-				end
+				if log_error then logn(ret[1]:match(".+:%d+:%s+(.+)")) end
+
 				return false, ret[1]
 			end
 
@@ -530,59 +543,59 @@ do -- commands
 	end
 
 	function commands.RunString(line, skip_lua, skip_split)
-		tasks.CreateTask(
-			function()
-				if not skip_split and line:find("\n") then
-					for line in (line .. "\n"):gmatch("(.-)\n") do
-						commands.RunString(line, skip_lua, skip_split)
-					end
+		tasks.CreateTask(function()
+			if not skip_split and line:find("\n") then
+				for line in (line .. "\n"):gmatch("(.-)\n") do
+					commands.RunString(line, skip_lua, skip_split)
+				end
+
+				return
+			end
+
+			if pvars then
+				local key, val = line:match("^([%w_]+)%s+(.+)")
+
+				if key and val and pvars.Get(key) ~= nil then
+					pvars.SetString(key, val)
+					logn(key, " (", pvars.GetObject(key):GetType(), ") = ", pvars.GetString(key))
 					return
 				end
 
-				if pvars then
-					local key, val = line:match("^([%w_]+)%s+(.+)")
-					if key and val and pvars.Get(key) ~= nil then
-						pvars.SetString(key, val)
-						logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.GetString(key))
-						return
-					end
+				local key = line:match("^([%w_]+)$")
 
-					local key = line:match("^([%w_]+)$")
-					if key and pvars.Get(key) ~= nil then
-						logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.GetString(key))
-						logn(pvars.GetObject(key):GetHelp())
-						return
-					end
-				end
-
-				local ok, msg = commands.ExecuteCommandString(line)
-
-				if not ok and not msg:find("could not find command") then
-					logn(msg)
-
+				if key and pvars.Get(key) ~= nil then
+					logn(key, " (", pvars.GetObject(key):GetType(), ") = ", pvars.GetString(key))
+					logn(pvars.GetObject(key):GetHelp())
 					return
-				end
-
-				if not ok and not skip_lua then
-					ok, msg = commands.ExecuteLuaString(line)
-				end
-
-				if not ok then
-					msg = msg:match("^.-:%d+:%s+(.+)") or msg
-
-					logn(msg)
 				end
 			end
-		)
+
+			local ok, msg = commands.ExecuteCommandString(line)
+
+			if not ok and not msg:find("could not find command") then
+				logn(msg)
+				return
+			end
+
+			if not ok and not skip_lua then
+				ok, msg = commands.ExecuteLuaString(line)
+			end
+
+			if not ok then
+				msg = msg:match("^.-:%d+:%s+(.+)") or msg
+				logn(msg)
+			end
+		end)
 	end
 
 	commands.Add("help|usage=string|nil", function(cmd)
 		if not cmd then
-			for k,v in table.spairs(commands.GetCommands()) do
+			for k, v in table.spairs(commands.GetCommands()) do
 				logn(assert(commands.GetHelpText(k)))
 			end
 		else
 			local help, err = commands.GetHelpText(cmd)
+
 			if help then
 				logn(help)
 			else

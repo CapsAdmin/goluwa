@@ -1,11 +1,8 @@
 console = _G.console or {}
-
 console.panel = console.panel or NULL
 
 function console.Close()
-	if console.panel:IsValid() then
-		console.panel:SetVisible(false)
-	end
+	if console.panel:IsValid() then console.panel:SetVisible(false) end
 
 	window.SetMouseTrapped(true)
 end
@@ -20,26 +17,23 @@ function console.Open()
 	end
 
 	console.font = fonts.CreateFont({path = "fonts/unifont.ttf", size = 12.5})
-
 	local frame = gui.CreatePanel("frame", menu.panel, "console")
 	frame:SetSize(Vec2(render.GetScreenSize().x / 2, render.GetScreenSize().y / 1.25))
 	frame:NoCollide()
-	frame:SetPadding(Rect()+20)
+	frame:SetPadding(Rect() + 20)
 	frame:MoveRight()
 	frame:MoveUp()
 
 	do -- edit line
 		local edit = frame:CreatePanel("text_input")
-
 		edit:SetMargin(Rect() + 3)
 		edit:SetHeight(20)
 		edit:SetHistoryPath("data/console_history.txt")
 
-
 		function edit:OnEscape()
 			self:SetText("")
 			self:Unfocus()
-			--console.Close()
+		--console.Close()
 		end
 
 		function edit:OnFinish(str)
@@ -61,7 +55,6 @@ function console.Open()
 
 	local scroll = frame:CreatePanel("scroll")
 	scroll:SetupLayout("center_simple", "fill")
-
 	local text = scroll:SetPanel(gui.CreatePanel("text"))
 	--text.markup:SetSuperLightMode(true)
 	--text:SetLightMode(true)
@@ -70,9 +63,8 @@ function console.Open()
 	text:AddEvent("ReplPrint")
 	text:AddEvent("ReplClear")
 	--text:AddEvent("LogSection")
-
 	text.OnTextChanged = function()
-		scroll:ScrollToFraction(Vec2(0,1))
+		scroll:ScrollToFraction(Vec2(0, 1))
 	end
 
 	--[[function text:OnLogSection(type, b)
@@ -90,9 +82,7 @@ function console.Open()
 				self.capture = nil
 			end
 		end
-	end]]
-
-	function text:OnReplClear()
+	end]] function text:OnReplClear()
 		self.markup:Clear()
 	end
 
@@ -102,11 +92,9 @@ function console.Open()
 		--	return
 		--end
 		self.markup:AddString(str)
-
-		--self.markup:AddTagStopper()
+	--self.markup:AddTagStopper()
 	end
-
-	--text.markup:AddString(vfs.Read("logs/console_" .. jit.os:lower() .. ".txt"))
+--text.markup:AddString(vfs.Read("logs/console_" .. jit.os:lower() .. ".txt"))
 end
 
 input.Bind("|", "show_chat_console", function()

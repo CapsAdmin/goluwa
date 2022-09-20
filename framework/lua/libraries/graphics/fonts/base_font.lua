@@ -1,11 +1,10 @@
 local META = prototype.CreateTemplate("font", "base")
-
 META:GetSet("Path", "")
 META:GetSet("Padding", 0)
 META:GetSet("Curve", 0)
 META:IsSet("Spacing", 0)
 META:IsSet("Size", 12)
-META:IsSet("Scale", Vec2(1,1))
+META:IsSet("Scale", Vec2(1, 1))
 META:GetSet("Filtering", "linear")
 META:GetSet("ShadingInfo")
 META:GetSet("FallbackFonts")
@@ -37,12 +36,14 @@ function META:Shade(source, vars, blend_mode)
 		for _, tex in ipairs(self.texture_atlas:GetTextures()) do
 			if tex.font_shade_keep then
 				vars.copy = tex.font_shade_keep
-				--tex.font_shade_keep = nil
+			--tex.font_shade_keep = nil
 			end
+
 			tex:Shade(source, vars, blend_mode)
 		end
 	elseif self.ShadingInfo then
 		self:CreateTextureAtlas()
+
 		for _, info in ipairs(self.ShadingInfo) do
 			if info.copy then
 				for _, tex in ipairs(self.texture_atlas:GetTextures()) do
@@ -57,11 +58,7 @@ function META:Shade(source, vars, blend_mode)
 end
 
 function META:Rebuild()
-	if self.ShadingInfo then
-		self:Shade()
-	else
-		self.texture_atlas:Build()
-	end
+	if self.ShadingInfo then self:Shade() else self.texture_atlas:Build() end
 end
 
 function META:LoadGlyph(code)
@@ -72,6 +69,7 @@ function META:LoadGlyph(code)
 	if not buffer and self.FallbackFonts then
 		for _, font in ipairs(self.FallbackFonts) do
 			buffer, char = font:GetGlyphData(code)
+
 			if buffer then break end
 		end
 	end
@@ -83,7 +81,6 @@ function META:LoadGlyph(code)
 			buffer = buffer,
 			flip_y = true,
 		})
-
 		self.chars[code] = char
 	else
 		self.chars[code] = false
@@ -115,26 +112,23 @@ function META:DrawString(str, x, y, w)
 	self.string_cache[str]:Draw(x, y, w)
 
 	if fonts.debug_font_size then
-		render2d.SetColor(1,0,0,0.25)
+		render2d.SetColor(1, 0, 0, 0.25)
 		render2d.SetTexture()
 		render2d.DrawRect(x, y, gfx.GetTextSize(str))
 	end
 end
 
-function META:DrawStringDynamic(str, x,y,w)
+function META:DrawStringDynamic(str, x, y, w)
 	local max_width = 0
 	local X, Y = 0, 0
 	local i = 1
 	local last_tex
-
-	render2d.PushMatrix(x,y)
-
+	render2d.PushMatrix(x, y)
 	self.strtblcache = self.strtblcache or {}
 	self.strtblcache[str] = self.strtblcache[str] or str:utotable()
 
 	for str_i, char in ipairs(self.strtblcache[str]) do
 		local data = self:GetChar(char)
-
 		local spacing = self.Spacing
 
 		if char == "\n" then
@@ -159,14 +153,12 @@ function META:DrawStringDynamic(str, x,y,w)
 			end
 
 			render2d.SetTexture(self.texture_atlas:GetPageTexture(char))
-
 			local draw_i = self.ReverseDraw and (-i + count + 1) or i
 
 			if self.Curve ~= 0 then
-				local offset = math.sin(((str_i-1)/count)*math.pi+math.pi/2)
+				local offset = math.sin(((str_i - 1) / count) * math.pi + math.pi / 2)
 				Y = Y + (offset * -self.Curve)
-
-				self:DrawPolyChar(poly, draw_i, X, Y, char, -offset*self.Curve/50)
+				self:DrawPolyChar(poly, draw_i, X, Y, char, -offset * self.Curve / 50)
 			else
 				self:DrawPolyChar(poly, draw_i, X + data.bitmap_left, Y, char)
 			end
@@ -181,34 +173,30 @@ function META:DrawStringDynamic(str, x,y,w)
 		elseif char == " " then
 			X = X + self.Size / 2
 		end
+
 		max_width = math.max(max_width, X)
 	end
 
 	render2d.PopMatrix()
-
-	--render2d.DrawSpriteBatch()
+--render2d.DrawSpriteBatch()
 end
 
 function META:DrawPolyChar(poly, i, x, y, char, r)
 	local ch = self.chars[char]
 
 	if ch then
-		local x_,y_, w,h, sx,sy = self.texture_atlas:GetUV(char)
-		render2d.SetRectUV(x_,y_, w,h, sx,sy)
-
+		local x_, y_, w, h, sx, sy = self.texture_atlas:GetUV(char)
+		render2d.SetRectUV(x_, y_, w, h, sx, sy)
 		y = y - ch.bitmap_top + self.Size
-
 		x = x - (self.Padding / 2)
 		y = y - (self.Padding / 2)
-
 		x = x * self.Scale.x
 		y = y * self.Scale.y
-
 		w = w * self.Scale.x
 		h = h * self.Scale.y
 
 		if r then
-			render2d.DrawRect(x, y, w, h, r, nil, nil, -w/2, -h/2)
+			render2d.DrawRect(x, y, w, h, r, nil, nil, -w / 2, -h / 2)
 		else
 			render2d.DrawRect(x, y, w, h)
 		end
@@ -219,22 +207,18 @@ function META:SetPolyChar(poly, i, x, y, char, r)
 	local ch = self.chars[char]
 
 	if ch then
-		local x_,y_, w,h, sx,sy = self.texture_atlas:GetUV(char)
-		poly:SetUV(x_,y_, w,h, sx,sy)
-
+		local x_, y_, w, h, sx, sy = self.texture_atlas:GetUV(char)
+		poly:SetUV(x_, y_, w, h, sx, sy)
 		y = y - ch.bitmap_top + self.Size
-
 		x = x - (self.Padding / 2)
 		y = y - (self.Padding / 2)
-
 		x = x * self.Scale.x
 		y = y * self.Scale.y
-
 		w = w * self.Scale.x
 		h = h * self.Scale.y
 
 		if r then
-			poly:SetRect(i, x, y, w, h, r, nil, nil, -w/2, -h/2)
+			poly:SetRect(i, x, y, w, h, r, nil, nil, -w / 2, -h / 2)
 		else
 			poly:SetRect(i, x, y, w, h)
 		end
@@ -252,9 +236,7 @@ function META:GetChar(char)
 
 	if char == "\n" then
 		if data then
-			if data.h <= 1 then
-				data.h = self.Size
-			end
+			if data.h <= 1 then data.h = self.Size end
 		else
 			data = {h = self.Size}
 		end
@@ -264,13 +246,9 @@ function META:GetChar(char)
 end
 
 function META:CompileString(data)
-
-	if not self.Ready then
-		return fonts.GetFallbackFont():CompileString(data)
-	end
+	if not self.Ready then return fonts.GetFallbackFont():CompileString(data) end
 
 	local vertex_count = 0
-
 	local strings = {}
 
 	for i, str in ipairs(data) do
@@ -285,7 +263,6 @@ function META:CompileString(data)
 	poly.vertex_buffer:SetDrawHint("dynamic")
 	local width_info = {}
 	local out = {}
-
 	local max_width = 0
 	local X, Y = 0, 0
 	local i = 1
@@ -303,7 +280,6 @@ function META:CompileString(data)
 		else
 			for str_i, char in ipairs(strings[i2]) do
 				local data = self:GetChar(char)
-
 				local spacing = self.Spacing
 
 				if char == "\n" then
@@ -326,6 +302,7 @@ function META:CompileString(data)
 						self:Rebuild()
 						self.rebuild = false
 					end
+
 					local texture = self.texture_atlas:GetPageTexture(char)
 
 					if texture ~= last_tex then
@@ -336,10 +313,9 @@ function META:CompileString(data)
 					local draw_i = self.ReverseDraw and (-i + count + 1) or i
 
 					if self.Curve ~= 0 then
-						local offset = math.sin(((str_i-1)/count)*math.pi+math.pi/2)
+						local offset = math.sin(((str_i - 1) / count) * math.pi + math.pi / 2)
 						Y = Y + (offset * -self.Curve)
-
-						self:SetPolyChar(poly, draw_i, X, Y, char, -offset*self.Curve/50)
+						self:SetPolyChar(poly, draw_i, X, Y, char, -offset * self.Curve / 50)
 					else
 						self:SetPolyChar(poly, draw_i, X + data.bitmap_left, Y, char)
 					end
@@ -351,18 +327,17 @@ function META:CompileString(data)
 					end
 
 					width_info[i] = X
-
 					i = i + 1
 				elseif char == " " then
 					X = X + self.Size / 2
 				end
+
 				max_width = math.max(max_width, X)
 			end
 		end
 	end
 
 	local string = {}
-
 	local width_cache = table.weak()
 
 	function string:Draw(x, y, w)
@@ -370,16 +345,19 @@ function META:CompileString(data)
 			for i, x in ipairs(width_info) do
 				if x > w then
 					width_cache[w] = (i - 1) * 6
+
 					break
 				end
 			end
 		end
 
 		render2d.PushMatrix(x, y)
+
 		for _, v in ipairs(out) do
 			render2d.SetTexture(v.texture)
 			v.poly:Draw(width_cache[w])
 		end
+
 		render2d.PopMatrix()
 	end
 
@@ -387,15 +365,11 @@ function META:CompileString(data)
 end
 
 function META:GetTextSize(str)
-	if not self.Ready then
-		return fonts.GetFallbackFont():GetTextSize(str)
-	end
+	if not self.Ready then return fonts.GetFallbackFont():GetTextSize(str) end
 
 	str = tostring(str)
-
 	local X, Y = 0, self.Size
 	local max_x = 0
-
 	local spacing = self.Spacing
 
 	for i, char in ipairs(utf8.totable(str)) do
@@ -407,6 +381,7 @@ function META:GetTextSize(str)
 			X = 0
 		elseif char == "\t" then
 			data = self:GetChar(" ")
+
 			if data then
 				if self.Monospace then
 					X = X + spacing * 4
@@ -438,11 +413,11 @@ function META:WrapString(str, max_width, max_word_length)
 	local tbl_i = 1
 	local start_pos = 1
 	local end_pos = 1
-
 	local str_tbl = utf8.totable(str)
 
 	for i = 1, #str_tbl do
 		end_pos = end_pos + 1
+
 		if self:GetTextSize(str:usub(start_pos, end_pos)) > max_width then
 			local n = str_tbl[end_pos]
 
@@ -460,14 +435,13 @@ function META:WrapString(str, max_width, max_word_length)
 			start_pos = end_pos + 1
 		end
 	end
+
 	tbl[tbl_i] = str:usub(start_pos, end_pos)
 	tbl_i = tbl_i + 1
-	return table.concat(tbl,"\n")
+	return table.concat(tbl, "\n")
 end
 
-function META:OnLoad()
-
-end
+function META:OnLoad() end
 
 META:Register()
 
@@ -475,6 +449,7 @@ if RELOAD then
 	for _, v in pairs(fonts.registered_fonts) do
 		fonts.RegisterFont(v)
 	end
+
 	for _, v in pairs(prototype.GetCreated()) do
 		if v.Type == "font" then
 			v.string_cache = {}

@@ -3,7 +3,6 @@ local PLUGIN = {
 	description = "copy code to be pasted in discord",
 	author = "CapsAdmin",
 }
-
 local id = ID("discord.copy")
 
 function PLUGIN:onMenuEditor(menu, editor, event)
@@ -12,7 +11,6 @@ function PLUGIN:onMenuEditor(menu, editor, event)
 
 	editor:Connect(id, wx.wxEVT_COMMAND_MENU_SELECTED, function()
 		local code = editor:GetSelectedText()
-
 		ide:CopyToClipboard("```lua\n" .. code .. "\n```")
 	end)
 end

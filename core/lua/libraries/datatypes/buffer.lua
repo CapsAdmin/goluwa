@@ -1,6 +1,5 @@
 -- some of this was taken from (mainly reading and writing decimal numbers)
 -- http://wowkits.googlecode.com/svn-history/r406/trunk/AddOns/AVR/ByteStream.lua
-
 local META = prototype.CreateTemplate("generic_buffer")
 
 function utility.CreateBuffer(val)
@@ -75,9 +74,7 @@ do -- generic
 	do -- push pop position
 		function META:PushPosition(pos)
 			self.stack = self.stack or {}
-
 			table.insert(self.stack, self:GetPosition())
-
 			self:SetPosition(pos)
 		end
 
@@ -101,6 +98,7 @@ do -- generic
 		for i, b in ipairs(buffer.buffer) do
 			table.insert(self.buffer, i, b)
 		end
+
 		return self
 	end
 end

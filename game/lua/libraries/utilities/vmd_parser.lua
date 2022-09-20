@@ -3,7 +3,6 @@ local utility = _G.utility or ...
 function utility.ParseVMD(file)
 	local iconv = require("iconv")
 	local out = {}
-
 	out.version = file:ReadString(30, true)
 
 	if out.version == "Vocaloid Motion Data 0002" then
@@ -21,19 +20,15 @@ function utility.ParseVMD(file)
 		local pos = file:ReadVec3()
 		local rot = file:ReadQuat()
 		local params = file:ReadBytes(64)
-
 		local temp = {}
-		for i = 1, #params do
-			temp[i-1] = params:sub(i, i):byte()
-		end
-		params = temp
 
+		for i = 1, #params do
+			temp[i - 1] = params:sub(i, i):byte()
+		end
+
+		params = temp
 		out.frames[frame] = out.frames[frame] or {}
-		out.frames[frame][name] = out.frames[frame][name] or {
-			pos = pos,
-			rot = rot,
-			params = params
-		}
+		out.frames[frame][name] = out.frames[frame][name] or {pos = pos, rot = rot, params = params}
 
 		break
 	end
@@ -52,5 +47,7 @@ function utility.ParseVMD(file)
 end
 
 if RELOAD then
-	table.print(utility.ParseVMD(vfs.Open("E:/SteamLibrary/steamapps/common/GarrysMod/garrysmod/data/body_vmd.dat")))
+	table.print(
+		utility.ParseVMD(vfs.Open("E:/SteamLibrary/steamapps/common/GarrysMod/garrysmod/data/body_vmd.dat"))
+	)
 end

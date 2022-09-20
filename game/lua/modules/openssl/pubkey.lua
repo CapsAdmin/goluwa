@@ -1,2 +1,2 @@
 -- for backwards compatibility
-return require "openssl.pkey"
+return require("openssl.pkey")

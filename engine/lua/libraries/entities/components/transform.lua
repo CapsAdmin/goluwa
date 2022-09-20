@@ -1,35 +1,29 @@
 local META = prototype.CreateTemplate()
-
 META.Name = "transform"
-
 META:GetSet("TRMatrix", Matrix44())
 META:GetSet("ScaleMatrix", Matrix44())
-
 META:StartStorable()
-	META:GetSet("Position", Vec3(0, 0, 0), {callback = "InvalidateTRMatrix"})
-	META:GetSet("Rotation", Quat(0, 0, 0, 1), {callback = "InvalidateTRMatrix"})
-
-	META:GetSet("Scale", Vec3(1, 1, 1), {callback = "InvalidateScaleMatrix"})
-	--META:GetSet("Shear", Vec3(0, 0, 0), {callback = "InvalidateScaleMatrix"})
-	META:GetSet("Size", 1, {callback = "InvalidateScaleMatrix"})
-
-	META:GetSet("SkipRebuild", false)
+META:GetSet("Position", Vec3(0, 0, 0), {callback = "InvalidateTRMatrix"})
+META:GetSet("Rotation", Quat(0, 0, 0, 1), {callback = "InvalidateTRMatrix"})
+META:GetSet("Scale", Vec3(1, 1, 1), {callback = "InvalidateScaleMatrix"})
+--META:GetSet("Shear", Vec3(0, 0, 0), {callback = "InvalidateScaleMatrix"})
+META:GetSet("Size", 1, {callback = "InvalidateScaleMatrix"})
+META:GetSet("SkipRebuild", false)
 META:EndStorable()
-
 META:GetSet("OverridePosition", nil, {callback = "InvalidateTRMatrix"})
 META:GetSet("OverrideRotation", nil, {callback = "InvalidateTRMatrix"})
-META:GetSet("AABB", AABB(-1,-1,-1, 1,1,1), {callback = "InvalidateTRMatrix"})
-
+META:GetSet("AABB", AABB(-1, -1, -1, 1, 1, 1), {callback = "InvalidateTRMatrix"})
 META.Network = {
-	Position = {"vec3", 1/30, "unreliable"},
-	Rotation = {"quat", 1/30, "unreliable"},
-	Scale = {"vec3", 1/15},
-	Size = {"float", 1/15},
+	Position = {"vec3", 1 / 30, "unreliable"},
+	Rotation = {"quat", 1 / 30, "unreliable"},
+	Scale = {"vec3", 1 / 15},
+	Size = {"float", 1 / 15},
 }
 
 function META:Initialize()
 	self.temp_scale = Vec3(1, 1, 1)
 	self.visible_matrix_cache = {}
+
 	for i = 1, 8 do
 		self.visible_matrix_cache[i] = Matrix44()
 	end
@@ -81,7 +75,6 @@ function META:GetCameraDistance()
 	local x = self.TRMatrix.m30 - -render3d.camera.Position.y
 	local y = self.TRMatrix.m31 - -render3d.camera.Position.x
 	local z = self.TRMatrix.m32 - -render3d.camera.Position.z
-
 	return x * x + y * y + z * z
 end
 
@@ -92,7 +85,6 @@ end
 
 function META:GetMatrix()
 	self:RebuildMatrix()
-
 	return self.FinalMatrix
 end
 
@@ -112,12 +104,14 @@ function META:InvalidateScaleMatrix()
 	if not self.rebuild_tr_matrix then
 		for _, v in ipairs(self.Entity:GetChildrenList()) do
 			local v = v.Components[META.Name]
+
 			if v then
 				v.rebuild_scale_matrix = true
 				v.rebuild_tr_matrix = true
 			end
 		end
 	end
+
 	self.rebuild_scale_matrix = true
 	self.rebuild_tr_matrix = true
 end
@@ -130,27 +124,31 @@ function META:InvalidateTRMatrix()
 			end
 		end
 	end
+
 	self.rebuild_tr_matrix = true
 end
 
 function META:RebuildMatrix()
-	if self.rebuild_scale_matrix and (self.temp_scale.x ~= 1 or self.temp_scale.y ~= 1 or self.temp_scale.z ~= 1) then
+	if
+		self.rebuild_scale_matrix and
+		(
+			self.temp_scale.x ~= 1 or
+			self.temp_scale.y ~= 1 or
+			self.temp_scale.z ~= 1
+		)
+	then
 		self.ScaleMatrix:Identity()
 		self.ScaleMatrix:Scale(self.temp_scale.y, self.temp_scale.x, self.temp_scale.z)
-		--self.ScaleMatrix:Shear(self.Shear)
+	--self.ScaleMatrix:Shear(self.Shear)
 	end
 
 	if self.rebuild_tr_matrix and not self.SkipRebuild then
 		local pos = self.Position
 		local rot = self.Rotation
 
-		if self.OverrideRotation then
-			rot = self.OverrideRotation
-		end
+		if self.OverrideRotation then rot = self.OverrideRotation end
 
-		if self.OverridePosition then
-			pos = self.OverridePosition
-		end
+		if self.OverridePosition then pos = self.OverridePosition end
 
 		self.TRMatrix:Identity()
 		self.TRMatrix:SetTranslation(-pos.y, -pos.x, -pos.z)
@@ -162,9 +160,8 @@ function META:RebuildMatrix()
 			if not parent_transform then
 				for _, ent in ipairs(self.Entity:GetParentList()) do
 					parent_transform = ent:GetComponent("transform")
-					if parent_transform then
-						break
-					end
+
+					if parent_transform then break end
 				end
 			end
 
@@ -176,20 +173,16 @@ function META:RebuildMatrix()
 
 	if self.rebuild_tr_matrix or self.rebuild_scale_matrix then
 		local aabb = self:GetAABB():Copy()
-		local x,y,z = self.TRMatrix:GetTranslation()
-
+		local x, y, z = self.TRMatrix:GetTranslation()
 		aabb:SetMax(aabb:GetMax() * self.temp_scale * 3)
 		aabb:SetMin(aabb:GetMin() * self.temp_scale * 3) -- todo: proper rotation
-
 		aabb.min_x = aabb.min_x + x
 		aabb.min_y = aabb.min_y + y
 		aabb.min_z = aabb.min_z + z
-
 		aabb.max_x = aabb.max_x + x
 		aabb.max_y = aabb.max_y + y
 		aabb.max_z = aabb.max_z + z
 		self.translated_aabb = aabb
-
 		self.bounding_sphere = aabb:GetMin():Distance(aabb:GetMax())
 
 		if self.temp_scale.x ~= 1 or self.temp_scale.y ~= 1 or self.temp_scale.z ~= 1 then
@@ -205,17 +198,12 @@ end
 
 function META:IsPointsVisible(points, view)
 	view = view or render.GetProjectionViewMatrix()
-
 	local matrix = self:GetMatrix()
 
 	for _, pos in ipairs(points) do
 		local x, y, z = view:GetMultiplied(matrix, Matrix44():SetTranslation(pos.x, pos.y, pos.z)):GetClipCoordinates()
 
-		if
-			(x > -1 and x < 1) and
-			(y > -1 and y < 1) and
-			(z > -1 and z < 1)
-		then
+		if (x > -1 and x < 1) and (y > -1 and y < 1) and (z > -1 and z < 1) then
 			return true
 		end
 	end

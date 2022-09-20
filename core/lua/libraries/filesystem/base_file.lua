@@ -1,9 +1,6 @@
 local vfs = (...) or _G.vfs
-
 local CONTEXT = {}
-
 CONTEXT.Name = "base"
-
 prototype.GetSet(CONTEXT, "Mode", "read")
 
 function CONTEXT:__tostring2()
@@ -21,6 +18,7 @@ do
 	function CONTEXT:CacheCall(func_name, path_info)
 		if system then
 			local frame_number = system.GetFrameNumber()
+
 			if frame_number ~= last_framenumber then
 				vfs.ClearCallCache()
 				last_framenumber = frame_number
@@ -37,7 +35,6 @@ do
 		-- might have been cleared inbetween
 		cache[func_name] = cache[func_name] or {}
 		cache[func_name][self.Name] = cache[func_name][self.Name] or {}
-
 		return cache[func_name][self.Name][path_info.full_path]
 	end
 
@@ -71,9 +68,8 @@ end
 
 function CONTEXT:ReadByte()
 	local str = self:ReadBytes(1)
-	if str then
-		return str:byte()
-	end
+
+	if str then return str:byte() end
 end
 
 function CONTEXT:WriteByte(byte)
@@ -141,5 +137,4 @@ function CONTEXT:IsArchive(path_info)
 end
 
 runfile("lua/libraries/prototype/buffer_template.lua", CONTEXT)
-
 prototype.Register(CONTEXT, "file_system", CONTEXT.Name)

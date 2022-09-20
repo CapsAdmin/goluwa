@@ -9,7 +9,6 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 
 	return res;
 }]])
-
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_specular(vec3 l, vec3 v, vec3 n, float attenuation, vec3 light_color)
 {
@@ -18,19 +17,18 @@ vec3 gbuffer_compute_specular(vec3 l, vec3 v, vec3 n, float attenuation, vec3 li
 
 do
 	local PASS = {}
-
 	PASS.Position = 1
 	PASS.Name = "importance_sampling"
-
 	PASS.Source = {}
-
-	table.insert(PASS.Source, {
-		buffer = {
-			--max_size = Vec2() + 512,
-			size_divider = 1,
-			internal_format = "r11f_g11f_b10f",
-		},
-		source = [[
+	table.insert(
+		PASS.Source,
+		{
+			buffer = {
+				--max_size = Vec2() + 512,
+				size_divider = 1,
+				internal_format = "r11f_g11f_b10f",
+			},
+			source = [[
 
 		float brdf(vec3 l, vec3 v, vec3 n)
 		{
@@ -83,23 +81,27 @@ do
 				out_color = samples;
 			}
 		}
-	]]
-	})
-
-	table.insert(PASS.Source, {
-		source = [[
+	]],
+		}
+	)
+	table.insert(
+		PASS.Source,
+		{
+			source = [[
 			out vec3 out_color;
 
 			void main()
 			{
-				vec3 reflection = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
+				vec3 reflection = texture(tex_stage_]] .. (
+					#PASS.Source
+				) .. [[, uv).rgb;
 
 				out_color = reflection;
 				out_color += gbuffer_compute_sky(-get_camera_dir(uv).yzx, get_linearized_depth(uv));
 			}
-		]]
-	})
-
+		]],
+		}
+	)
 	render3d.AddGBufferShader(PASS)
 end
 

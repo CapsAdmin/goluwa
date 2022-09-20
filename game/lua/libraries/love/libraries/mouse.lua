@@ -1,10 +1,8 @@
 local love = ... or _G.love
 local ENV = love._line_env
-
 love.mouse = love.mouse or {}
 
-function love.mouse.setPosition(x, y)
-	--window.SetMousePosition(Vec2(x, y))
+function love.mouse.setPosition(x, y) --window.SetMousePosition(Vec2(x, y))
 end
 
 function love.mouse.getPosition()
@@ -19,12 +17,9 @@ function love.mouse.getY()
 	return window.GetMousePosition().y
 end
 
-function love.mouse.setRelativeMode(b)
-
-end
+function love.mouse.setRelativeMode(b) end
 
 love.mouse.setGrabbed = love.mouse.setRelativeMode
-
 local Cursor = line.TypeTemplate("Cursor")
 line.RegisterType(Cursor)
 
@@ -35,16 +30,13 @@ end
 
 function love.mouse.getCursor()
 	local obj = line.CreateObject("Cursor")
-
 	obj.getType = function()
 		return window.GetCursor()
 	end
-
 	return obj
 end
 
-function love.mouse.setCursor()
-	--window.GetCursor()
+function love.mouse.setCursor() --window.GetCursor()
 end
 
 function love.mouse.getSystemCursor()
@@ -76,7 +68,6 @@ local mouse_keymap = {
 	mwheel_up = "wu",
 	mwheel_down = "wd",
 }
-
 local mouse_keymap_10 = {
 	button_1 = 1,
 	button_2 = 2,
@@ -84,19 +75,21 @@ local mouse_keymap_10 = {
 	button_4 = 4,
 	button_5 = 5,
 }
-
 local mouse_keymap_reverse = {}
-for k,v in pairs(mouse_keymap) do
+
+for k, v in pairs(mouse_keymap) do
 	mouse_keymap_reverse[v] = k
 end
 
 local mouse_keymap_10_reverse = {}
-for k,v in pairs(mouse_keymap_10) do
+
+for k, v in pairs(mouse_keymap_10) do
 	mouse_keymap_10_reverse[v] = k
 end
 
 function love.mouse.isDown(key)
-	return input.IsMouseDown(mouse_keymap_10_reverse[key]) or input.IsMouseDown(mouse_keymap_reverse[key])
+	return input.IsMouseDown(mouse_keymap_10_reverse[key]) or
+		input.IsMouseDown(mouse_keymap_reverse[key])
 end
 
 event.AddListener("LoveNewIndex", "line_mouse", function(love, key, val)

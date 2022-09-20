@@ -4,69 +4,89 @@ do
 	local BTYPE_NO_COMPRESSION = 0
 	local BTYPE_FIXED_HUFFMAN = 1
 	local BTYPE_DYNAMIC_HUFFMAN = 2
-
 	local tdecode_len_base
+
 	do
-		local t = {[257]=3}
+		local t = {[257] = 3}
 		local skip = 1
-		for i=258,285,4 do
-			for j=i,i+3 do t[j] = t[j-1] + skip end
+
+		for i = 258, 285, 4 do
+			for j = i, i + 3 do
+				t[j] = t[j - 1] + skip
+			end
+
 			if i ~= 258 then skip = skip * 2 end
 		end
+
 		t[285] = 258
 		tdecode_len_base = t
 	end
 
 	local tdecode_len_nextrabits
+
 	do
 		local t = {}
-		for i=257,285 do
+
+		for i = 257, 285 do
 			local j = math.max(i - 261, 0)
 			t[i] = bit.rshift(j, 2)
 		end
+
 		t[285] = 0
 		tdecode_len_nextrabits = t
 	end
 
 	local tdecode_dist_base
+
 	do
-		local t = {[0]=1}
+		local t = {[0] = 1}
 		local skip = 1
-		for i=1,29,2 do
-			for j=i,i+1 do t[j] = t[j-1] + skip end
+
+		for i = 1, 29, 2 do
+			for j = i, i + 1 do
+				t[j] = t[j - 1] + skip
+			end
+
 			if i ~= 1 then skip = skip * 2 end
 		end
+
 		tdecode_dist_base = t
 	end
 
 	local tdecode_dist_nextrabits
+
 	do
 		local t = {}
-		for i=0,29 do
+
+		for i = 0, 29 do
 			local j = math.max(i - 2, 0)
 			t[i] = bit.rshift(j, 1)
 		end
+
 		tdecode_dist_nextrabits = t
 	end
 
-	local function sort_huffman(a,b)
+	local function sort_huffman(a, b)
 		return a.nbits == b.nbits and a.val < b.val or a.nbits < b.nbits
 	end
 
 	local function gen_huffman_table(init)
 		local t = {}
-		for i=1, #init-2, 2 do
-			local firstval, nbits, nextval = init[i], init[i+1], init[i+2]
-			for val = firstval, nextval-1 do
+
+		for i = 1, #init - 2, 2 do
+			local firstval, nbits, nextval = init[i], init[i + 1], init[i + 2]
+
+			for val = firstval, nextval - 1 do
 				table.insert(t, {val = val, nbits = nbits})
 			end
 		end
+
 		table.sort(t, sort_huffman)
 		return t
 	end
 
-	local huffman_dist_table = gen_huffman_table({0,5, 32,nil})
-	local huffman_list_table = gen_huffman_table({0,8, 144,9, 256,7, 280,8, 288,nil})
+	local huffman_dist_table = gen_huffman_table({0, 5, 32, nil})
+	local huffman_list_table = gen_huffman_table({0, 8, 144, 9, 256, 7, 280, 8, 288, nil})
 	local codelen_vals = {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15}
 
 	local function read_bit_stream(look, bs)
@@ -74,27 +94,24 @@ do
 		for _ = 1, 16 do
 			code = code * 2 + bs:ReadBits(1)
 			local val = look[code]
-			if val then
-				return val
-			end
+
+			if val then return val end
 		end
 	end
 
 	local function HuffmanTable(t)
 		local look = {}
-
 		-- assign codes
-		local code = 1	-- leading 1 marker
+		local code = 1 -- leading 1 marker
 		local nbits = 0
 
-		for _,s in ipairs(t) do
+		for _, s in ipairs(t) do
 			if s.nbits ~= nbits then
-				code = code * 2^(s.nbits - nbits)
+				code = code * 2 ^ (s.nbits - nbits)
 				nbits = s.nbits
 			end
 
 			look[code] = s.val
-
 			code = code + 1
 		end
 
@@ -109,16 +126,18 @@ do
 
 		for _ = 1, 256 do
 			if val >= ncodes then break end
+
 			local codelen = read_bit_stream(codelentable, bs)
 			--FIX:check nil?
 			local nrepeat
+
 			if codelen <= 15 then
 				nrepeat = 1
 				nbits = codelen
-				--debug('w', nbits)
+			--debug('w', nbits)
 			elseif codelen == 16 then
 				nrepeat = 3 + bs:ReadBits(2)
-				-- nbits unchanged
+			-- nbits unchanged
 			elseif codelen == 17 then
 				nrepeat = 3 + bs:ReadBits(3)
 				nbits = 0
@@ -132,6 +151,7 @@ do
 					init[i2] = {nbits = nbits, val = val}
 					i2 = i2 + 1
 				end
+
 				val = val + 1
 			end
 
@@ -139,7 +159,6 @@ do
 		end
 
 		table.sort(init, sort_huffman)
-
 		return HuffmanTable(init)
 	end
 
@@ -148,12 +167,11 @@ do
 		outstate.string_buffer[outstate.byte_pos] = byte
 		outstate.byte_pos = outstate.byte_pos + 1
 		outstate.window[window_pos] = byte
-		outstate.window_pos = window_pos % 32768 + 1	-- 32K
+		outstate.window_pos = window_pos % 32768 + 1 -- 32K
 	end
 
 	function deflate(bs, string_buffer)
 		bs:RestartReadBits()
-
 		local outstate = {}
 		outstate.byte_pos = 0
 		outstate.string_buffer = string_buffer
@@ -175,24 +193,25 @@ do
 			elseif btype == BTYPE_FIXED_HUFFMAN or btype == BTYPE_DYNAMIC_HUFFMAN then
 				local littable
 				local disttable
+
 				if btype == BTYPE_DYNAMIC_HUFFMAN then
-					local hlit = bs:ReadBits(5)	-- # of literal/length codes - 257
+					local hlit = bs:ReadBits(5) -- # of literal/length codes - 257
 					local hdist = bs:ReadBits(5) -- # of distance codes - 1
 					local hclen = bs:ReadBits(4) -- # of code length codes - 4
-
-
 					local codelen_init = {}
 					local i2 = 1
+
 					for i = 1, hclen + 4 do
 						local nbits = bs:ReadBits(3)
+
 						if nbits ~= 0 then
 							local val = codelen_vals[i]
 							codelen_init[i2] = {val = val, nbits = nbits}
 							i2 = i2 + 1
 						end
 					end
-					table.sort(codelen_init, sort_huffman)
 
+					table.sort(codelen_init, sort_huffman)
 					local codelentable = HuffmanTable(codelen_init)
 					littable = decode(bs, hlit + 257, codelentable)
 					disttable = decode(bs, hdist + 1, codelentable)
@@ -203,6 +222,7 @@ do
 
 				for _ = 1, math.huge do
 					local val = read_bit_stream(littable, bs)
+
 					if val < 256 then -- literal
 						output(outstate, val)
 					elseif val == 256 then -- end of block
@@ -214,7 +234,7 @@ do
 						local dist = tdecode_dist_base[dist_val] + dist_extrabits
 
 						for _ = 1, tdecode_len_base[val] + extrabits do
-							local pos = (outstate.window_pos - 1 - dist) % 32768 + 1	-- 32K
+							local pos = (outstate.window_pos - 1 - dist) % 32768 + 1 -- 32K
 							output(outstate, outstate.window[pos])
 						end
 					end
@@ -223,30 +243,24 @@ do
 				error("unrecognized compression type")
 			end
 
-			if bfinal ~= 0 then
-				break
-			end
+			if bfinal ~= 0 then break end
 		end
 	end
-
 end
-
 
 utility.PushTimeWarning()
 local zip = vfs.Open("/home/caps/Downloads/goluwa-master-49d7bf9ea891a216eeb82821058a85b5b5673858.zip")
 zip:LoadToMemory()
 utility.PopTimeWarning("read file and load to memory", 0)
-
 local archive = {files = {}, files2 = {}}
 local ffi = require("ffi")
-
 utility.PushTimeWarning()
-S"DEFLATE"
+S("DEFLATE")
+
 while true do
 	local sig = zip:ReadString(4)
 
 	if sig == "\x50\x4b\x03\x04" then -- local file headers
-
 		local data = zip:ReadStructure([[
 			uint16_t version;
 			uint16_t flags;
@@ -259,7 +273,6 @@ while true do
 			uint16_t filename_length;
 			uint16_t extra_field_length;
 		]])
-
 		data.file_name = zip:ReadString(data.filename_length)
 		data.extra_field_data = zip:ReadString(data.extra_field_length)
 
@@ -283,7 +296,9 @@ while true do
 
 		table.insert(archive.files, data)
 	else
-		do break end -- not needed
+		do
+			break
+		end -- not needed
 		if sig == "\x50\x4b\x01\x02" then -- central directory (not needed)
 			local data = zip:ReadStructure([[
 				uint16_t version;
@@ -303,11 +318,9 @@ while true do
 				uint32_t external_attribute;
 				uint32_t offset_of_local_header;
 			]])
-
 			data.file_name = zip:ReadString(data.filename_length)
 			data.extra_field_data = zip:ReadString(data.extra_field_length)
 			data.file_comment = zip:ReadString(data.file_comment_length)
-
 			table.insert(archive.files2, data)
 		elseif sig == "\x50\x4b\x05\x06" then -- end of central directory (not needed)
 			local data = zip:ReadStructure([[
@@ -320,28 +333,28 @@ while true do
 				uint32_t offset_of_cd_wrt_starting_disk;
 				uint16_t comment_length;
 			]])
-
 			data.comment = zip:ReadBytes(data.comment_length)
 			archive.central_directory = data
-
 			assert(zip:GetSize() == zip:GetPosition(), "unexpected end of zip archive")
 		end
 	end
 end
-S"DEFLATE"
+
+S("DEFLATE")
 utility.PopTimeWarning("parsing zip archive", 0)
 print("validating archive")
 local total_time = 0
+
 for _, data in ipairs(archive.files) do
-	if data.deflate_time then
-		total_time = total_time + data.deflate_time
-	end
+	if data.deflate_time then total_time = total_time + data.deflate_time end
+
 	if data.file_content then
 		if crypto.CRC32(data.file_content) ~= tostring(data.crc) then
 			table.print(data)
-			error("crc ("..crypto.CRC32(data.file_content)..") does not match "..data.crc.."!")
+			error("crc (" .. crypto.CRC32(data.file_content) .. ") does not match " .. data.crc .. "!")
 		end
 	end
 end
+
 print("archive is okay")
 print("spent " .. total_time .. " seconds on deflate")

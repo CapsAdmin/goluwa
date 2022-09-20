@@ -6,6 +6,7 @@ local env_vars = {
 for key, default in pairs(env_vars) do
 	if _G[key] == nil then
 		local val = os.getenv("GOLUWA_" .. key)
+
 		if val == "0" then
 			_G[key] = false
 		elseif val == "1" then
@@ -17,9 +18,7 @@ for key, default in pairs(env_vars) do
 end
 
 for k in pairs(env_vars) do
-	if _G[k] == nil then
-		_G[k] = false
-	end
+	if _G[k] == nil then _G[k] = false end
 end
 
 CREATED_ENV = false

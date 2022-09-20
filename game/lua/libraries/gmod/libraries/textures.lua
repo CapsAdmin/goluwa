@@ -4,16 +4,15 @@ do
 	function gine.env.CreateMaterial(name, shader, tbl)
 		shader = shader:lower()
 
-		if gine.created_materials[name] then
-			return gine.created_materials[name]
-		end
+		if gine.created_materials[name] then return gine.created_materials[name] end
 
 		local mat = gine.CreateMaterial(shader)
 		mat.name = name
 
-		for k,v in pairs(tbl) do
+		for k, v in pairs(tbl) do
 			k = k:lower():sub(2)
 			local t = type(v)
+
 			if t == "string" then
 				mat:SetString(k, v)
 			elseif t == "number" then
@@ -24,9 +23,7 @@ do
 		end
 
 		local self = gine.WrapObject(mat, "IMaterial")
-
 		gine.created_materials[name] = self
-
 		return self
 	end
 
@@ -37,7 +34,6 @@ do
 
 		local mat = gine.CreateMaterial()
 		mat.name = path
-
 		local self = gine.WrapObject(mat, "IMaterial")
 
 		if not path:lower():endswith(".vtf") and path:find(".+%.") then
@@ -54,24 +50,33 @@ do
 
 			if vmt_path then
 				resource.skip_providers = true
-				steam.LoadVMT(vmt_path, function(key, val)
-					if type(val) == "boolean" then
-						val = val and "1" or "0"
-					elseif type(val) == "number" then
-						val = tostring(val)
-					elseif typex(val) == "vec3" then
-						val = ("[%f %f %f]"):format(val:Unpack())
-					elseif typex(val) == "color" then
-						val = ("[%f %f %f %f]"):format(val:Unpack())
+
+				steam.LoadVMT(
+					vmt_path,
+					function(key, val)
+						if type(val) == "boolean" then
+							val = val and "1" or "0"
+						elseif type(val) == "number" then
+							val = tostring(val)
+						elseif typex(val) == "vec3" then
+							val = ("[%f %f %f]"):format(val:Unpack())
+						elseif typex(val) == "color" then
+							val = ("[%f %f %f %f]"):format(val:Unpack())
+						end
+
+						self:SetString("$" .. key, val)
+					end,
+					nil,
+					function(name)
+						mat:SetShader(name:lower())
 					end
-					self:SetString("$" .. key, val)
-				end, nil, function(name) mat:SetShader(name:lower()) end)
+				)
+
 				resource.skip_providers = false
 			end
 		end
 
 		gine.created_materials[path:lower()] = self
-
 		return self
 	end
 
@@ -80,9 +85,7 @@ do
 	function META:GetColor(x, y)
 		local tex = self:GetTexture("$basetexture")
 
-		if tex then
-			return tex:GetColor(x, y)
-		end
+		if tex then return tex:GetColor(x, y) end
 
 		return gine.env.Color(0, 0, 0, 0)
 	end
@@ -98,9 +101,7 @@ do
 	function META:Width()
 		local tex = self:GetTexture("$basetexture")
 
-		if tex then
-			return tex:Width()
-		end
+		if tex then return tex:Width() end
 
 		return 0
 	end
@@ -108,9 +109,7 @@ do
 	function META:Height()
 		local tex = self:GetTexture("$basetexture")
 
-		if tex then
-			return tex:Height()
-		end
+		if tex then return tex:Height() end
 
 		return 0
 	end
@@ -119,9 +118,7 @@ do
 		return table.copy(self.__obj.vars)
 	end
 
-	function META:Recompute()
-
-	end
+	function META:Recompute() end
 
 	function META:SetString(key, val)
 		key = key:lower():sub(2)
@@ -162,9 +159,8 @@ do
 	function META:GetTexture(key)
 		key = key:lower():sub(2)
 		local val = self.__obj:Get(key)
-		if typex(val) == "texture" then
-			return gine.WrapObject(val, "ITexture")
-		end
+
+		if typex(val) == "texture" then return gine.WrapObject(val, "ITexture") end
 
 		return gine.WrapObject(render.GetErrorTexture(), "ITexture")
 	end
@@ -180,9 +176,8 @@ do
 	function META:GetVector(key)
 		key = key:lower():sub(2)
 		local vec = self.__obj:Get(key:sub(2))
-		if vec then
-			return gine.env.Vector(vec:Unpack())
-		end
+
+		if vec then return gine.env.Vector(vec:Unpack()) end
 	end
 
 	function META:IsError()
@@ -203,12 +198,10 @@ do
 
 	function META:GetColor(x, y)
 		local s = self.__obj:GetSize()
-
 		x = (x / s.x) * math.pow2round(s.x)
 		y = (y / s.y) * math.pow2round(s.y)
-
-		local r,g,b,a = self.__obj:GetPixelColor(x, y):Unpack()
-		return gine.env.Color(r*255, g*255, b*255, a*255)
+		local r, g, b, a = self.__obj:GetPixelColor(x, y):Unpack()
+		return gine.env.Color(r * 255, g * 255, b * 255, a * 255)
 	end
 
 	function META:GetName()
@@ -221,7 +214,6 @@ do
 end
 
 if CLIENT then
-
 	do
 		local surface = gine.env.surface
 		local idmap = {}
@@ -229,7 +221,6 @@ if CLIENT then
 
 		function surface.GetTextureID(path)
 			local tex
-
 			resource.skip_providers = true
 
 			if vfs.IsFile("materials/" .. path) then
@@ -241,12 +232,9 @@ if CLIENT then
 			end
 
 			tex = render.CreateTextureFromPath("materials/" .. path .. ".vtf")
-
 			resource.skip_providers = nil
-
 			idmap[id] = tex
 			id = id + 1
-
 			return id
 		end
 
@@ -261,8 +249,8 @@ if CLIENT then
 
 	function gine.env.render.SetMaterial(mat)
 		if not mat then return end
-		mat = mat.__obj
 
+		mat = mat.__obj
 		render2d.SetTexture(mat.vars.basetexture)
 
 		if mat.vars.alphatest == 1 then
@@ -280,6 +268,7 @@ if CLIENT then
 
 	function gine.env.render.MaterialOverride(mat)
 		if mat == 0 then mat = nil end
+
 		gine.env.render.SetMaterial(mat)
 	end
 

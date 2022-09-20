@@ -1,5 +1,4 @@
 local render = ... or _G
-
 render.texture_decoders = render.texture_decoders or {}
 
 function render.AddTextureDecoder(id, callback)

@@ -4,7 +4,6 @@ if not bullet then return end
 
 local ffi = require("ffi")
 local physics = physics or {}
-
 physics.bullet = bullet
 physics.bodies = physics.bodies or {}
 
@@ -18,7 +17,6 @@ end
 
 function physics.BodyToLua(ptr)
 	local udata = ffi.cast("uint32_t *", physics.bullet.RigidBodyGetUserData(ptr))
-
 	return physics.body_lookup[udata[0]]
 end
 
@@ -34,11 +32,10 @@ function physics.Initialize()
 	if LINUX then return end
 
 	if not RELOAD then
-		for k,v in pairs(physics.bodies) do
-			if v:IsValid() then
-				v:Remove()
-			end
+		for k, v in pairs(physics.bodies) do
+			if v:IsValid() then v:Remove() end
 		end
+
 		physics.bullet.Initialize()
 		physics.bodies = {}
 		physics.body_lookup = utility.CreateWeakTable()
@@ -46,6 +43,7 @@ function physics.Initialize()
 
 	do
 		local out = ffi.new("bullet_collision_value[1]")
+
 		event.AddListener("Update", "bullet", function(dt)
 			physics.bullet.StepSimulation(dt, physics.sub_steps, physics.fixed_time_step)
 
@@ -53,16 +51,14 @@ function physics.Initialize()
 				local a = physics.BodyToLua(out[0].a)
 				local b = physics.BodyToLua(out[0].b)
 
-				if a and b then
-					event.Call("PhysicsCollide", a.ent, b.ent)
-				end
+				if a and b then event.Call("PhysicsCollide", a.ent, b.ent) end
 			end
 		end)
 	end
 
 	physics.SetGravity(Vec3(0, 0, -9.8))
 	physics.sub_steps = 1
-	physics.fixed_time_step = 1/120
+	physics.fixed_time_step = 1 / 120
 	physics.init = true
 end
 
@@ -92,19 +88,16 @@ do
 				hit_normal = Vec3(),
 				body = NULL,
 			}
-
-			ffi.copy(tbl.hit_pos, out[0].hit_pos, ffi.sizeof("float")*3)
-			ffi.copy(tbl.hit_normal, out[0].hit_normal, ffi.sizeof("float")*3)
+			ffi.copy(tbl.hit_pos, out[0].hit_pos, ffi.sizeof("float") * 3)
+			ffi.copy(tbl.hit_normal, out[0].hit_normal, ffi.sizeof("float") * 3)
 
 			if out[0].body ~= nil then
 				local body = physics.BodyToLua(out[0].body)
-				if body then
-					tbl.body = body.ent
-				end
+
+				if body then tbl.body = body.ent end
 			end
 
 			return tbl
-
 		end
 	end
 end
@@ -123,18 +116,14 @@ do
 end
 
 do -- physcs models
-
 	local assimp = desire("libassimp")
-
 	physics.model_cache = {}
-
 	local cb = utility.CreateCallbackThing(physics.model_cache)
 
 	function physics.LoadModel(path, callback, on_fail)
 		if cb:check(path, callback, {on_fail = on_fail}) then return true end
 
 		steam.MountGamesFromPath(path)
-
 		local data = cb:get(path)
 
 		if data then
@@ -150,14 +139,20 @@ do -- physcs models
 
 			function thread:OnStart()
 				if steam.LoadMap and path:endswith(".bsp") then
-
 					-- :(
-					if GRAPHICS and render.model_loader_cb and render.model_loader_cb:get(path) and render.model_loader_cb:get(path).callback then
+					if
+						GRAPHICS and
+						render.model_loader_cb and
+						render.model_loader_cb:get(path) and
+						render.model_loader_cb:get(path).callback
+					then
 						tasks.Report("waiting for render mesh to finish loading")
+
 						repeat
-							tasks.Wait()
+							tasks.Wait()						
 						until not render.model_loader_cb:get(path) or not render.model_loader_cb:get(path).callback
 					end
+
 					-- :(
 					cb:stop(path, steam.LoadMap(full_path).physics_meshes)
 				elseif assimp then
@@ -167,12 +162,11 @@ do -- physcs models
 						return nil, "no vertices found in " .. path
 					end
 
-					local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices  * 3)
+					local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices * 3)
 					local triangles = ffi.new("unsigned int[?]", scene.mMeshes[0].mNumFaces * 3)
-
 					ffi.copy(vertices, scene.mMeshes[0].mVertices, ffi.sizeof(vertices))
-
 					local i = 0
+
 					for j = 0, scene.mMeshes[0].mNumFaces - 1 do
 						for k = 0, scene.mMeshes[0].mFaces[j].mNumIndices - 1 do
 							triangles[i] = scene.mMeshes[0].mFaces[j].mIndices[k]
@@ -192,9 +186,7 @@ do -- physcs models
 							stride = ffi.sizeof("float") * 3,
 						},
 					}
-
 					cb:stop(path, {mesh})
-
 					assimp.ReleaseImport(scene)
 				else
 					cb:callextra(path, "on_fail", "unknown format " .. path)

@@ -1,3 +1,2 @@
-local bignum = require"_openssl.bignum"
-
+local bignum = require("_openssl.bignum")
 return bignum

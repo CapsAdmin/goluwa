@@ -1,8 +1,6 @@
 local PASS = {}
-
 PASS.Position, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 PASS.Default = false
-
 PASS.Source = [[
 	out vec3 out_color;
 
@@ -77,5 +75,4 @@ PASS.Source = [[
 		out_color = FxaaPixelShader(posPos, tex_mixer);
 	}
 ]]
-
 render3d.AddGBufferShader(PASS)

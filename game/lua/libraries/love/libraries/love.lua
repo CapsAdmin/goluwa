@@ -1,13 +1,8 @@
 local love = ... or _G.love
 local line = line -- line_update and line_draw
+function love.load() end
 
-function love.load()
-
-end
-
-function love.conf(t)
-
-end
+function love.conf(t) end
 
 function love.getVersion()
 	return 0, 9, 1, "goluwa"
@@ -30,15 +25,11 @@ function love.line_draw(dt)
 
 	render2d.PushMatrix()
 	render2d.SetTexture()
-
 	love.graphics.setShader()
-
 	love.graphics.clear()
 	love.graphics.setColor(love.graphics.getColor())
 	love.graphics.setFont(love.graphics.getFont())
-
 	line.pcall(love, love.draw, dt)
-
 	render2d.PopMatrix()
 
 	if love._line_env.error_message and not love._line_env.no_error then
@@ -51,13 +42,10 @@ function love.errhand(msg)
 	msg = tostring(msg)
 	love.graphics.setBackgroundColor(89, 157, 220)
 	love.graphics.setColor(255, 255, 255, 255)
-
 	local trace = debug.traceback()
-
 	local err = {}
-
 	table.insert(err, "Error\n")
-	table.insert(err, msg.."\n\n")
+	table.insert(err, msg .. "\n\n")
 
 	for l in string.gmatch(trace, "(.-)\n") do
 		if not string.match(l, "boot.lua") then
@@ -67,10 +55,8 @@ function love.errhand(msg)
 	end
 
 	local p = table.concat(err, "\n")
-
 	p = string.gsub(p, "\t", "")
 	p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
-
 	love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
 end
 
@@ -88,15 +74,11 @@ event.AddListener("LoveNewIndex", "line_love", function(love, key, val)
 	elseif key == "draw" then
 		if val then
 			event.AddListener("PreDrawGUI", "line", function(dt)
-				if menu and menu.IsVisible() then
-					render2d.PushHSV(1,0,1)
-				end
+				if menu and menu.IsVisible() then render2d.PushHSV(1, 0, 1) end
 
 				line.CallEvent("line_draw", dt)
 
-				if menu and menu.IsVisible() then
-					render2d.PopHSV()
-				end
+				if menu and menu.IsVisible() then render2d.PopHSV() end
 			end)
 		else
 			event.RemoveListener("PreDrawGUI", "line")
@@ -104,7 +86,7 @@ event.AddListener("LoveNewIndex", "line_love", function(love, key, val)
 	elseif key == "resize" then
 		if val then
 			event.AddListener("WindowFramebufferResized", "line", function(_, size)
-				line.CallEvent("resize",size.x, size.y)
+				line.CallEvent("resize", size.x, size.y)
 			end)
 		else
 			event.RemoveListener("WindowFramebufferResized", "line")

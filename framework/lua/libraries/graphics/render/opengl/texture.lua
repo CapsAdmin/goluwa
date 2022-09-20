@@ -1,15 +1,14 @@
 local render = ... or _G.render
 local META = prototype.GetRegistered("texture")
-
 local ffi = require("ffi")
 local gl = require("opengl")
-
 local TOENUM = function(str)
 	return "GL_" .. str:upper()
 end
 
 function META:SetMipMapLevels(val)
 	self.MipMapLevels = val
+
 	if val < 1 then
 		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_LEVEL", self:GetSuggestedMipMapLevels())
 	else
@@ -19,14 +18,12 @@ end
 
 function META:GetMipSize(mip_map_level)
 	mip_map_level = mip_map_level or 1
-
 	local x = ffi.new("GLfloat[1]")
 	local y = ffi.new("GLfloat[1]")
 	local z = ffi.new("GLfloat[1]")
 	self.gl_tex:GetLevelParameterfv(mip_map_level - 1, "GL_TEXTURE_WIDTH", x)
 	self.gl_tex:GetLevelParameterfv(mip_map_level - 1, "GL_TEXTURE_HEIGHT", y)
 	self.gl_tex:GetLevelParameterfv(mip_map_level - 1, "GL_TEXTURE_DEPTH", z)
-
 	return Vec3(x[0], y[0], z[0])
 end
 
@@ -34,10 +31,12 @@ function META:SetWrapS(val)
 	self.WrapS = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_WRAP_S", gl.e[TOENUM(val)])
 end
+
 function META:SetWrapT(val)
 	self.WrapT = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_WRAP_T", gl.e[TOENUM(val)])
 end
+
 function META:SetWrapR(val)
 	self.WrapR = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_WRAP_R", gl.e[TOENUM(val)])
@@ -47,6 +46,7 @@ function META:SetBaseLevel(val)
 	self.BaseLevel = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_BASE_LEVEL", val)
 end
+
 function META:SetMaxLevel(val)
 	self.MaxLevel = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_MAX_LEVEL", val)
@@ -54,16 +54,27 @@ end
 
 function META:SetMagFilter(val)
 	self.MagFilter = val
-	if val == "nearest" and render.IsExtensionSupported("EXT_texture_filter_anisotropic") then
+
+	if
+		val == "nearest" and
+		render.IsExtensionSupported("EXT_texture_filter_anisotropic")
+	then
 		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", 1)
 	end
+
 	self.gl_tex:SetParameteri("GL_TEXTURE_MAG_FILTER", gl.e[TOENUM(val)])
 end
+
 function META:SetMinFilter(val)
 	self.MinFilter = val
-	if val == "nearest" and render.IsExtensionSupported("EXT_texture_filter_anisotropic") then
+
+	if
+		val == "nearest" and
+		render.IsExtensionSupported("EXT_texture_filter_anisotropic")
+	then
 		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", 1)
 	end
+
 	self.gl_tex:SetParameteri("GL_TEXTURE_MIN_FILTER", gl.e[TOENUM(val)])
 end
 
@@ -73,7 +84,6 @@ end
 
 function META:SetupStorage()
 	local internal_format = TOENUM(self.InternalFormat)
-
 	local mip_map_levels = self.MipMapLevels
 
 	if mip_map_levels < 1 then
@@ -121,20 +131,9 @@ function META:SetupStorage()
 	then
 		if render.IsExtensionSupported("ARB_texture_storage") then
 			if self.Multisample > 0 then
-				self.gl_tex:Storage2DMultisample(
-					self.Multisample,
-					internal_format,
-					self.Size.x,
-					self.Size.y,
-					0
-				)
+				self.gl_tex:Storage2DMultisample(self.Multisample, internal_format, self.Size.x, self.Size.y, 0)
 			else
-				self.gl_tex:Storage2D(
-					mip_map_levels,
-					internal_format,
-					self.Size.x,
-					self.Size.y
-				)
+				self.gl_tex:Storage2D(mip_map_levels, internal_format, self.Size.x, self.Size.y)
 			end
 		else
 			local format = render.GetTextureFormatInfo(self.InternalFormat)
@@ -152,11 +151,7 @@ function META:SetupStorage()
 		end
 	elseif self.StorageType == "1d" or self.StorageType == "1d_array" then
 		if render.IsExtensionSupported("ARB_texture_storage") then
-			self.gl_tex:Storage1D(
-				levels,
-				TOENUM(self.InternalFormat),
-				self.Size.x
-			)
+			self.gl_tex:Storage1D(levels, TOENUM(self.InternalFormat), self.Size.x)
 		else
 			local format = render.GetTextureFormatInfo(self.InternalFormat)
 			self.gl_tex:Image1D(
@@ -192,25 +187,27 @@ function META:SetBindless(b)
 end
 
 function META:GetBindless()
-	return self.gl_bindless_handle and gl.IsTextureHandleResidentARB(self.gl_bindless_handle) == 1
+	return self.gl_bindless_handle and
+		gl.IsTextureHandleResidentARB(self.gl_bindless_handle) == 1
 end
 
 function META:MakeError(reason)
-	if render.GetErrorTexture() then self.gl_tex = render.GetErrorTexture().gl_tex end -- :(
+	if render.GetErrorTexture() then
+		self.gl_tex = render.GetErrorTexture().gl_tex
+	end -- :(
 	self.error_reason = reason
 end
 
 function META:_Upload(data, y)
+	if data.internal_format then self:SetInternalFormat(data.internal_format) end
 
-	if data.internal_format then
-		self:SetInternalFormat(data.internal_format)
-	end
+	if not self.storage_setup then self:SetupStorage() end
 
-	if not self.storage_setup then
-		self:SetupStorage()
-	end
-
-	if self.StorageType == "3d" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then
+	if
+		self.StorageType == "3d" or
+		self.StorageType == "cube_map" or
+		self.StorageType == "2d_array"
+	then
 		data.x = data.x or 0
 		y = y or 0
 		data.z = data.z or 0
@@ -243,7 +240,11 @@ function META:_Upload(data, y)
 				data.buffer
 			)
 		end
-	elseif self.StorageType == "2d" or self.StorageType == "1d_array" or self.StorageType == "rectangle" then
+	elseif
+		self.StorageType == "2d" or
+		self.StorageType == "1d_array" or
+		self.StorageType == "rectangle"
+	then
 		data.x = data.x or 0
 		y = y or 0
 
@@ -304,16 +305,24 @@ end
 
 function META:GenerateMipMap()
 	if self.StorageType == "2d_multisample" then return end
+
 	self.gl_tex:GenerateMipmap()
 	return self
 end
 
 function META:_Download(mip_map_level, buffer, size, format)
-	self.gl_tex:GetImage(mip_map_level - 1, TOENUM(format.preferred_upload_format), gl.e[TOENUM(format.number_type.friendly)], size, buffer)
+	self.gl_tex:GetImage(
+		mip_map_level - 1,
+		TOENUM(format.preferred_upload_format),
+		gl.e[TOENUM(format.number_type.friendly)],
+		size,
+		buffer
+	)
 end
 
 function META:Clear(mip_map_level)
 	mip_map_level = mip_map_level or 1
+
 	if render.IsExtensionSupported("ARB_clear_texture") then
 		gl.ClearTexImage(self.gl_tex.id, mip_map_level - 1, "GL_RGBA", "GL_UNSIGNED_BYTE", nil)
 	else
@@ -360,14 +369,12 @@ function META:Bind(location)
 end
 
 function render._CreateTexture(self, type)
-
 	self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
 
 	if self.StorageType:upper() ~= "2D_MULTISAMPLE" then
 		self:SetWrapS("repeat")
 		self:SetWrapT("repeat")
 		self:SetWrapR("repeat")
-
 		self:SetMinFilter("linear_mipmap_linear")
 		self:SetMagFilter("linear")
 	end

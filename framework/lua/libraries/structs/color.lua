@@ -1,6 +1,5 @@
 local structs = (...) or _G.structs
 -- not very efficent
-
 local META = prototype.CreateTemplate("Color")
 
 function ColorBytes(r, g, b, a)
@@ -8,12 +7,11 @@ function ColorBytes(r, g, b, a)
 	g = g or 0
 	b = b or 0
 	a = a or 255
-
-	return Color(r/255, g/255, b/255, a/255)
+	return Color(r / 255, g / 255, b / 255, a / 255)
 end
 
 function ColorHex(hex, a)
-	local r,g,b = hex:match("#?(..)(..)(..)")
+	local r, g, b = hex:match("#?(..)(..)(..)")
 	r = tonumber("0x" .. (r or 0))
 	g = tonumber("0x" .. (g or 0))
 	b = tonumber("0x" .. (b or 0))
@@ -169,46 +167,46 @@ do
 		white = "#ffffff",
 		whitesmoke = "#f5f5f5",
 		yellow = "#ffff00",
-		yellowgreen = "#9acd32"
+		yellowgreen = "#9acd32",
 	}
 
 	function ColorName(name)
-		if name:startswith("#") then
-			return ColorHex(name)
-		end
+		if name:startswith("#") then return ColorHex(name) end
+
 		return ColorHex(names[name:lower()] or names.black)
 	end
 
 	function ColorToName(color)
 		local vec3color = Vec3(color.r, color.g, color.b)
 		local found = {}
+
 		for name, hex in pairs(names) do
 			local c = ColorHex(hex)
 			table.insert(found, {distance = Vec3(c.r, c.g, c.b):Distance(vec3color), name = name})
 		end
-		table.sort(found, function(a, b) return a.distance < b.distance end)
+
+		table.sort(found, function(a, b)
+			return a.distance < b.distance
+		end)
+
 		return found[1].name
 	end
 end
 
-
 -- http://code.google.com/p/sm-ssc/source/browse/Themes/_fallback/Scripts/02+Colors.lua?spec=svnca631130221f6ed8b9065685186fb696660bc79a&name=ca63113022&r=ca631130221f6ed8b9065685186fb696660bc79a
-
 function ColorHSV(h, s, v, a)
-	h = (h%1 * 360) / 60
+	h = (h % 1 * 360) / 60
 	s = s or 1
 	v = v or 1
 	a = a or 1
 
-	if s == 0 then
-		return Color(v, v, v, a)
-	end
+	if s == 0 then return Color(v, v, v, a) end
 
 	local i = math.floor(h)
 	local f = h - i
-	local p = v * (1-s)
-	local q = v * (1-s*f)
-	local t = v * (1-s*(1-f))
+	local p = v * (1 - s)
+	local q = v * (1 - s * f)
+	local t = v * (1 - s * (1 - f))
 
 	if i == 0 then
 		return Color(v, t, p, a)
@@ -228,20 +226,22 @@ end
 META.NumberType = "double"
 META.Args = {"r", "g", "b", "a"}
 META.ProtectedFields = {a = true}
-
 structs.AddAllOperators(META)
 
 function META:Unpack()
 	return self.r, self.g, self.b, self.a
 end
+
 function META:Lighter(factor)
 	factor = factor or .5
-	factor = factor+1
-	return Color( self.r*factor, self.g*factor, self.b*factor, self.a )
+	factor = factor + 1
+	return Color(self.r * factor, self.g * factor, self.b * factor, self.a)
 end
+
 function META:Darker(factor)
-	return self:Lighter( ( 1 - ( factor or .5 ) )-1 )
+	return self:Lighter((1 - (factor or .5)) - 1)
 end
+
 function META:Get255()
 	return Color(self.r * 255, self.g * 255, self.b * 255, self.a * 255)
 end
@@ -252,13 +252,12 @@ function META:SetAlpha(a)
 end
 
 function META:SetHue(h)
-	local _h,s,l = self:GetHSV()
-	_h = (_h + h)%1
+	local _h, s, l = self:GetHSV()
+	_h = (_h + h) % 1
 	local new = ColorHSV(_h, s, l, self.a)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
-
 	return self
 end
 
@@ -267,26 +266,23 @@ function META:SetComplementary()
 end
 
 function META:GetNeighbors(angle)
-   angle = angle or 30
-   return self:SetHue(angle), self:SetHue(360 - angle)
+	angle = angle or 30
+	return self:SetHue(angle), self:SetHue(360 - angle)
 end
 
 function META:GetNeighbors()
-   return self:GetNeighbors(120)
+	return self:GetNeighbors(120)
 end
 
 function META:GetSplitComplementary(angle)
-   return self:GetNeighbors(180 - (angle or 30))
+	return self:GetNeighbors(180 - (angle or 30))
 end
 
 function META.Lerp(a, mult, b)
-
 	a.r = (b.r - a.r) * mult + a.r
 	a.g = (b.g - a.g) * mult + a.g
 	a.b = (b.b - a.b) * mult + a.b
-
 	a.a = (b.a - a.a) * mult + a.a
-
 	return a
 end
 
@@ -298,7 +294,6 @@ function META:SetSaturation(s)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
-
 	return self
 end
 
@@ -308,7 +303,6 @@ function META:SetLightness(l)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
-
 	return self
 end
 
@@ -316,43 +310,41 @@ function META:GetTints(count)
 	local tbl = {}
 
 	for i = 1, count do
-		local _,_,v = self:GetHSV()
+		local _, _, v = self:GetHSV()
 		local copy = self:Copy()
-		copy:SetLightness(v + ( 1 - v) / count * i)
+		copy:SetLightness(v + (1 - v) / count * i)
 		table.insert(tbl, copy)
 	end
 
-   return tbl
+	return tbl
 end
 
 function META:GetShades(count)
 	local tbl = {}
 
 	for i = 1, count do
-		local _,_,v = self:GetHSV()
+		local _, _, v = self:GetHSV()
 		local copy = self:Copy()
 		copy:SetLightness(v - (v) / count * i)
 		table.insert(tbl, copy)
 	end
 
-   return tbl
+	return tbl
 end
 
 function META:GetHex()
-	return bit.bor(bit.lshift(self.r*255, 16), bit.lshift(self.g*255, 8), self.b*255)
+	return bit.bor(bit.lshift(self.r * 255, 16), bit.lshift(self.g * 255, 8), self.b * 255)
 end
 
 function META:SetTint(num)
-	local _,_,v = self:GetHSV()
+	local _, _, v = self:GetHSV()
 	self:SetLightness(v + (1 - v) * num)
-
 	return self
 end
 
 function META:SetShade(num)
-	local _,_,v = self:GetHSV()
+	local _, _, v = self:GetHSV()
 	self:SetLightness(v - v * num)
-
 	return self
 end
 
@@ -360,15 +352,12 @@ function META:GetHSV()
 	local r = self.r
 	local g = self.g
 	local b = self.b
-
 	local h
 	local s
 	local v
-
-	local min = math.min( r, g, b )
-	local max = math.max( r, g, b )
+	local min = math.min(r, g, b)
+	local max = math.max(r, g, b)
 	v = max
-
 	local delta = max - min
 
 	-- xxx: how do we deal with complete black?
@@ -387,20 +376,25 @@ function META:GetHSV()
 	end
 
 	if r == max then
-		h = ( g - b ) / delta     -- yellow/magenta
+		h = (g - b) / delta -- yellow/magenta
 	elseif g == max then
-		h = 2 + ( b - r ) / delta -- cyan/yellow
+		h = 2 + (b - r) / delta -- cyan/yellow
 	else
-		h = 4 + ( r - g ) / delta -- magenta/cyan
+		h = 4 + (r - g) / delta -- magenta/cyan
 	end
 
-	if h < 0 then
-		h = h + 1
-	end
+	if h < 0 then h = h + 1 end
 
 	return h, s, v
 end
 
 structs.Register(META)
 
-serializer.GetLibrary("luadata").SetModifier("color", function(var) return ("Color(%f, %f, %f, %f)"):format(var:Unpack()) end, structs.Color, "Color")
+serializer.GetLibrary("luadata").SetModifier(
+	"color",
+	function(var)
+		return ("Color(%f, %f, %f, %f)"):format(var:Unpack())
+	end,
+	structs.Color,
+	"Color"
+)

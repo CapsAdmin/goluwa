@@ -1,8 +1,6 @@
 local render = ... or _G.render
 local META = prototype.GetRegistered("index_buffer")
-
 local gl = require("opengl")
-
 local buffers_supported = gl.GenBuffers
 
 do
@@ -41,9 +39,7 @@ function render._CreateIndexBuffer(self)
 end
 
 function META:OnRemove()
-	if self.element_buffer then
-		self.element_buffer:Delete()
-	end
+	if self.element_buffer then self.element_buffer:Delete() end
 end
 
 if buffers_supported then
@@ -53,9 +49,7 @@ if buffers_supported then
 else
 	-- this will probably only happen when running goluwa in virtual box with windows as a host
 	-- it's using the windows opengl api (seems to be 1.1)
-
-	function META:_SetIndices(indices)
-
-	end
+	function META:_SetIndices(indices) end
 end
+
 prototype.Register(META)

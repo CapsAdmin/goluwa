@@ -5,20 +5,30 @@ function vfs.MonitorFile(file_path, callback)
 	local first = true
 
 	if last then
-		event.Timer(file_path, 1, 0, function()
-			local time = vfs.GetLastModified(file_path)
-			if time then
-				if first then first = nil return end
-				if last ~= time then
-					llog("%s changed!", file_path)
-					last = time
-					return callback(file_path)
+		event.Timer(
+			file_path,
+			1,
+			0,
+			function()
+				local time = vfs.GetLastModified(file_path)
+
+				if time then
+					if first then
+						first = nil
+						return
+					end
+
+					if last ~= time then
+						llog("%s changed!", file_path)
+						last = time
+						return callback(file_path)
+					end
+				else
+					llog("%s was removed", file_path)
+					event.RemoveTimer(file_path)
 				end
-			else
-				llog("%s was removed", file_path)
-				event.RemoveTimer(file_path)
 			end
-		end)
+		)
 	else
 		llog("%s was not found", file_path)
 	end
@@ -34,4 +44,3 @@ function vfs.MonitorFileInclude(source, target)
 		end)
 	end)
 end
-

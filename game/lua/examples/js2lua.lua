@@ -6,11 +6,8 @@ var i = 0,
         y = 4,
         maxLength = Math.max.apply(null, lineLengths);
 ]]
-
 local chars = script:utotable()
-
 local bracket_level = 0
-
 local scope = false
 local scopes = {
 	["if"] = true,
@@ -25,32 +22,27 @@ local in_commment = false
 local in_typeof = false
 local assignment = false
 local in_function = false
-
 local if_statement = false
 local if_statement_bracket_level = false
-
 local for_statement = false
 local for_statement_bracket_level = false
 local in_loop = false
-
 local array_level = 0
 local in_array = false
-
 local last_word
 
 local function replace(chars, i, str, with)
 	for i2 = 1, #str do
 		chars[i - i2] = ""
 	end
-	chars[i-1] = with
+
+	chars[i - 1] = with
 end
 
 for i, char in ipairs(chars) do
 	local t = char:getchartype()
 
-	if char == [["]] or char == [[']] then
-		in_string = char
-	end
+	if char == [["]] or char == [[']] then in_string = char end
 
 	if in_single_line_commment and char == "\n" then
 		in_single_line_commment = false
@@ -62,12 +54,10 @@ for i, char in ipairs(chars) do
 
 	if in_multi_line_commment and chars[i - 1] == "*" and char == "/" then
 		in_multi_line_commment = false
-
 		chars[i - 1] = ""
 		chars[i] = "--]====]"
 	elseif chars[i - 1] == "/" and char == "*" then
 		in_multi_line_commment = true
-
 		chars[i - 1] = ""
 		chars[i] = "--[====["
 	end
@@ -78,13 +68,13 @@ for i, char in ipairs(chars) do
 		elseif symbol ~= "" then
 			if symbol == "?" then
 				assignment = false
-				chars[i-1] = " and "
+				chars[i - 1] = " and "
 			elseif symbol == ":" then
-				chars[i-1] = " or "
+				chars[i - 1] = " or "
 			end
 
 			if symbol == "===" then
-				chars[i-1] = ""
+				chars[i - 1] = ""
 			elseif symbol == "=" then
 				assignment = true
 			elseif symbol == "&&" then
@@ -98,6 +88,7 @@ for i, char in ipairs(chars) do
 			elseif symbol == "-=" then
 				replace(chars, i, symbol, " = " .. last_word .. " - ")
 			end
+
 			last_symbol = symbol
 			symbol = ""
 		end
@@ -105,9 +96,8 @@ for i, char in ipairs(chars) do
 		if char == "]" and in_array then
 			array_level = array_level - 1
 			chars[i] = "}"
-			if array_level == 0 then
-				in_array = false
-			end
+
+			if array_level == 0 then in_array = false end
 		elseif char == "[" and (last_symbol == "," or last_word == "return" or assignment) then
 			chars[i] = "{"
 			in_array = true
@@ -117,9 +107,7 @@ for i, char in ipairs(chars) do
 		if t == "letters" then
 			word = word .. char
 		elseif word ~= "" then
-			if scopes[word] then
-				scope = bracket_level
-			end
+			if scopes[word] then scope = bracket_level end
 
 			if in_typeof then
 				chars[i] = ")"
@@ -164,9 +152,7 @@ for i, char in ipairs(chars) do
 			if for_statement_bracket_level == 0 then
 				for_statement_bracket_level = false
 				for_statement = false
-
 				chars[i] = " end while __itr_chk(j) do"
-
 				in_loop = true
 			end
 
@@ -193,59 +179,48 @@ for i, char in ipairs(chars) do
 			if if_statement_bracket_level == 0 then
 				if_statement_bracket_level = false
 				if_statement = false
-
 				chars[i] = " then"
 			end
 		end
 
-		if in_function then
-
-		end
+		if in_function then  end
 
 		if char == "{" then
-			if scope == bracket_level then
-				chars[i] = ""
-			end
+			if scope == bracket_level then chars[i] = "" end
+
 			bracket_level = bracket_level + 1
 		end
 
 		if char == "}" then
 			bracket_level = bracket_level - 1
+
 			if scope and not assignment then
 				if in_loop then
 					chars[i] = "__itr() end end"
 					in_loop = false
 				else
 					chars[i] = "end"
-					if bracket_level == 0 then
-						scope = false
-					end
+
+					if bracket_level == 0 then scope = false end
 				end
 			end
 		end
 
-		if assignment and char == "," then
-			chars[i] = ";local "
-		end
+		if assignment and char == "," then chars[i] = ";local " end
 
 		if char == ";" then
 			assignment = false
-			if not for_statement  then
-				chars[i] = ""
-			end
+
+			if not for_statement then chars[i] = "" end
 		end
 	end
 
-	if in_string == char then
-		in_string = false
-	end
+	if in_string == char then in_string = false end
 end
 
 local out = table.concat(chars, "")
-
 out = out:gsub("end%s*else", "else")
 out = out:gsub("end%s*else%s*if", "elseif")
 out = out:gsub("else%s*if", "elseif")
-
 print(out)
 print(loadstring(out))

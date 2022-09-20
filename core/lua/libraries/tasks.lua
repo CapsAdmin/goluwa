@@ -1,7 +1,5 @@
 local tasks = _G.tasks or {}
-
 tasks.max = 4
-
 tasks.coroutine_lookup = tasks.coroutine_lookup or table.weak()
 tasks.created = tasks.created or table.weak()
 tasks.enabled = false
@@ -15,6 +13,7 @@ function tasks.WaitForTask(name, callback)
 		callback()
 		return
 	end
+
 	event.AddListener("TaskFinished", "wait_for_task_" .. name, function(task)
 		if task:GetName() == name then
 			callback()
@@ -24,12 +23,10 @@ function tasks.WaitForTask(name, callback)
 end
 
 local META = prototype.CreateTemplate("task")
-
 META:GetSet("Frequency", 0)
 META:GetSet("IterationsPerTick", 1)
 META:GetSet("EnsureFPS", 30)
 META:IsSet("Running", false)
-
 META.wait = 0
 
 function META:__call(...)
@@ -37,11 +34,11 @@ function META:__call(...)
 end
 
 function META:Start(now, ...)
-
 	self.progress = {}
 
 	if not tasks.IsEnabled() then
 		local ok, err = system.pcall(self.OnStart, self, ...)
+
 		if not ok then
 			if self.OnError then
 				self:OnError(err)
@@ -51,6 +48,7 @@ function META:Start(now, ...)
 		end
 
 		local ok, err = system.pcall(self.OnFinish, self)
+
 		if not ok then
 			if self.OnError then
 				self:OnError(err)
@@ -71,17 +69,13 @@ function META:Start(now, ...)
 
 	self.Running = true
 	self.run_me = nil
-
 	local co = coroutine.create(function(...)
 		return select(2, system.pcall(self.OnStart, ...))
 	end)
-
 	tasks.coroutine_lookup[co] = self
 	self.co = co
-
 	local start = function()
 		if not self:IsValid() then return false end -- removed
-
 		local time = system.GetElapsedTime()
 
 		if self.debug then
@@ -92,9 +86,8 @@ function META:Start(now, ...)
 							logf("%s %s progress: %s\n", self, k, self:GetProgress(k))
 							v.last_print = time + 1
 						end
-						if v.i == v.max then
-							self.progress[k] = nil
-						end
+
+						if v.i == v.max then self.progress[k] = nil end
 					end
 				end
 			end
@@ -138,31 +131,27 @@ function META:Start(now, ...)
 	elseif self.Frequency == 0 then
 		event.Thinker(start, true, 0, self.IterationsPerTick)
 	else
-		event.Thinker(start, true, 1/self.Frequency, self.IterationsPerTick)
+		event.Thinker(start, true, 1 / self.Frequency, self.IterationsPerTick)
 	end
 end
 
 function META:Wait(sec)
 	if sec then self.wait = system.GetElapsedTime() + sec end
-	if tasks.IsEnabled() then
-		coroutine.yield()
-	end
+
+	if tasks.IsEnabled() then coroutine.yield() end
 end
 
 function META:OnStart()
 	return false, "run function not defined"
 end
 
-function META:OnFinish()
+function META:OnFinish() end
 
-end
-
-function META:OnUpdate()
-
-end
+function META:OnUpdate() end
 
 function META:Report(what)
 	if not self.debug then return end
+
 	if not self.last_report or self.last_report < system.GetElapsedTime() then
 		logf("%s report: %s\n", self, what)
 		self.last_report = system.GetElapsedTime() + 1
@@ -171,6 +160,7 @@ end
 
 function META:ReportProgress(what, max)
 	if not self.debug then return end
+
 	self.progress[what] = self.progress[what] or {}
 	self.progress[what].i = (self.progress[what].i or 0) + 1
 	self.progress[what].max = max or 100
@@ -178,7 +168,9 @@ end
 
 function META:GetProgress(what)
 	if self.progress[what] then
-		return ("%.2f%%"):format(math.round((self.progress[what].i / self.progress[what].max) * 100, 3))
+		return (
+			"%.2f%%"
+		):format(math.round((self.progress[what].i / self.progress[what].max) * 100, 3))
 	end
 
 	return "0%"
@@ -194,8 +186,13 @@ META:Register()
 function tasks.CreateTask(on_start, on_finish, now)
 	local self = META:CreateObject()
 
-	if on_start then self.OnStart = function(_, ...) return on_start(...) end end
-	if on_finish then self.OnFinish = function(_, ...) return on_finish(...) end end
+	if on_start then self.OnStart = function(_, ...)
+		return on_start(...)
+	end end
+
+	if on_finish then self.OnFinish = function(_, ...)
+		return on_finish(...)
+	end end
 
 	if on_start then self:Start(now) end
 
@@ -215,26 +212,26 @@ end
 
 function tasks.Wait(time)
 	if not tasks.IsEnabled() then return end
+
 	local thread = tasks.coroutine_lookup[coroutine.running()]
-	if thread then
-		thread:Wait(time)
-	end
+
+	if thread then thread:Wait(time) end
 end
 
 function tasks.ReportProgress(what, max)
 	if not tasks.IsEnabled() then return end
+
 	local thread = tasks.coroutine_lookup[coroutine.running()]
-	if thread then
-		thread:ReportProgress(what, max)
-	end
+
+	if thread then thread:ReportProgress(what, max) end
 end
 
 function tasks.Report(what)
 	if not tasks.IsEnabled() then return end
+
 	local thread = tasks.coroutine_lookup[coroutine.running()]
-	if thread then
-		thread:Report(what)
-	end
+
+	if thread then thread:Report(what) end
 end
 
 function tasks.IsBusy()
@@ -263,17 +260,13 @@ function tasks.Update()
 	end
 
 	for thread in pairs(tasks.created) do
-		if thread:IsRunning() then
-			i = i + 1
-		end
+		if thread:IsRunning() then i = i + 1 end
 
 		if i >= tasks.max then return end
 	end
 
 	for thread in pairs(tasks.created) do
-		if thread.run_me then
-			thread:Start(true)
-		end
+		if thread.run_me then thread:Start(true) end
 	end
 end
 
@@ -284,21 +277,22 @@ do
 		tasks.wrapped_functions[lib] = tasks.wrapped_functions[lib] or {}
 		tasks.wrapped_functions[lib][func] = tasks.wrapped_functions[lib][func] or lib[func]
 		local old = tasks.wrapped_functions[lib][func]
-
 		lib[func] = function(arg, ...)
 			if tasks.GetActiveTask() then
 				local data
 				local err
 
-				old(arg):Then(function(...) data = {...} end):Catch(function(val) err = val end)
+				old(arg):Then(function(...)
+					data = {...}
+				end):Catch(function(val)
+					err = val
+				end)
 
 				while not data and not err do
 					tasks.Wait()
 				end
 
-				if data then
-					return unpack(data)
-				end
+				if data then return unpack(data) end
 
 				return nil, err
 			end
@@ -308,7 +302,6 @@ do
 	end
 end
 
-
 if sockets then -- not sure where this belongs
 	tasks.WrapCallback(http, "Download")
 
@@ -316,11 +309,15 @@ if sockets then -- not sure where this belongs
 		if not info.callback and tasks.GetActiveTask() then
 			local data
 			local err
-
-			info.callback = function(val) data = val end
-			info.error_callback = function(val) err = val end
-			info.timedout_callback = function(val) err = val end
-
+			info.callback = function(val)
+				data = val
+			end
+			info.error_callback = function(val)
+				err = val
+			end
+			info.timedout_callback = function(val)
+				err = val
+			end
 			sockets.Request(info)
 
 			while not data and not err do
@@ -330,7 +327,6 @@ if sockets then -- not sure where this belongs
 			return data, err
 		end
 	end)
-
 end
 
 return tasks

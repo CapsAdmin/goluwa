@@ -1,6 +1,5 @@
 local love = ... or _G.love
 local ENV = love._line_env
-
 love.keyboard = love.keyboard or {}
 
 function love.keyboard.getKeyRepeat()
@@ -39,10 +38,9 @@ local keyboard_map = {
 	num_lock = "numlock",
 	enter = "return",
 }
-
 local reverse_keyboard_map = {}
 
-for k,v in pairs(keyboard_map) do
+for k, v in pairs(keyboard_map) do
 	reverse_keyboard_map[v] = k
 end
 
@@ -50,9 +48,7 @@ function love.keyboard.isDown(key)
 	return input.IsKeyDown(reverse_keyboard_map[key] or key)
 end
 
-function love.keyboard.setTextInput(b)
-
-end
+function love.keyboard.setTextInput(b) end
 
 event.AddListener("LoveNewIndex", "line_keyboard", function(love, key, val)
 	if key == "keypressed" or key == "keyreleased" or key == "textinput" then
@@ -71,7 +67,6 @@ event.AddListener("LoveNewIndex", "line_keyboard", function(love, key, val)
 
 			event.AddListener("CharInput", "line", function(char)
 				char_hack = char
-
 				line.CallEvent("textinput", char)
 			end)
 		else

@@ -1,11 +1,11 @@
-ffibuild.Build({
-	name = "SDL2",
-	url = "https://github.com/spurious/SDL-mirror.git", -- --host=x86_64-w64-mingw32
-	cmd = "./autogen.sh && mkdir build && cd build && ../configure --disable-video-wayland && make --jobs 32 && cd ../",
-	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
-	strip_undefined_symbols = true,
-
-	c_source = [[
+ffibuild.Build(
+	{
+		name = "SDL2",
+		url = "https://github.com/spurious/SDL-mirror.git", -- --host=x86_64-w64-mingw32
+		cmd = "./autogen.sh && mkdir build && cd build && ../configure --disable-video-wayland && make --jobs 32 && cd ../",
+		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
+		strip_undefined_symbols = true,
+		c_source = [[
 		typedef enum  {
 			SDL_INIT_TIMER = 0x00000001,
 			SDL_INIT_AUDIO = 0x00000010,
@@ -32,40 +32,36 @@ ffibuild.Build({
 		#include "SDL_vulkan.h"
 ss
 	]],
-	gcc_flags = "-I./include",
-	filter_library = function(path)
-        if path:endswith("libSDL2") then
-            return true
-        end
-    end,
-	process_header = function(header)
-		vfs.Write("rofl.h", header)
-		local meta_data = ffibuild.GetMetaData(header)
-
-		meta_data.functions.SDL_main = nil
-		meta_data.structs["struct SDL_WindowShapeMode"] = nil
-
-		return meta_data:BuildMinimalHeader(function(name)
-			return name:find("^SDL_")
-		end, function(name)
-			return name:find("^SDL_") or name:find("^KMOD_")
-		end, true, true)
-	end,
-
-	build_lua = function(header, meta_data)
-		header = header:gsub("struct VkSurfaceKHR_T {};\n", "")
-		header = header:gsub("struct VkInstance_T {};\n", "")
-
-		header = header:gsub("struct VkInstance_T", "void")
-		header = header:gsub("struct VkSurfaceKHR_T", "void")
-
-		local lua = ffibuild.StartLibrary(header, "safe_clib_index")
-        lua = lua .. "CLIB = SAFE_INDEX(CLIB)"
-
-		lua = lua .. "library = " .. meta_data:BuildFunctions("^SDL_(.+)")
-		lua = lua .. "library.e = " .. meta_data:BuildEnums("^SDL_(.+)", {"./include/SDL_hints.h"}, "SDL_")
-
-		lua = lua .. [[
+		gcc_flags = "-I./include",
+		filter_library = function(path)
+			if path:endswith("libSDL2") then return true end
+		end,
+		process_header = function(header)
+			vfs.Write("rofl.h", header)
+			local meta_data = ffibuild.GetMetaData(header)
+			meta_data.functions.SDL_main = nil
+			meta_data.structs["struct SDL_WindowShapeMode"] = nil
+			return meta_data:BuildMinimalHeader(
+				function(name)
+					return name:find("^SDL_")
+				end,
+				function(name)
+					return name:find("^SDL_") or name:find("^KMOD_")
+				end,
+				true,
+				true
+			)
+		end,
+		build_lua = function(header, meta_data)
+			header = header:gsub("struct VkSurfaceKHR_T {};\n", "")
+			header = header:gsub("struct VkInstance_T {};\n", "")
+			header = header:gsub("struct VkInstance_T", "void")
+			header = header:gsub("struct VkSurfaceKHR_T", "void")
+			local lua = ffibuild.StartLibrary(header, "safe_clib_index")
+			lua = lua .. "CLIB = SAFE_INDEX(CLIB)"
+			lua = lua .. "library = " .. meta_data:BuildFunctions("^SDL_(.+)")
+			lua = lua .. "library.e = " .. meta_data:BuildEnums("^SDL_(.+)", {"./include/SDL_hints.h"}, "SDL_")
+			lua = lua .. [[
 		function library.CreateVulkanSurface(window, instance)
 			local box = ffi.new("struct VkSurfaceKHR_T * [1]")
 
@@ -103,7 +99,7 @@ ss
 			return out
 		end
 		]]
-
-		return ffibuild.EndLibrary(lua)
-	end,
-})
+			return ffibuild.EndLibrary(lua)
+		end,
+	}
+)

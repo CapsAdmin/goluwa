@@ -1,14 +1,12 @@
 local data = {
 	name = "glass_eel_shader",
-
 	-- these are declared as uniform on all shaders
 	shared = {
 		variables = {
 			time = 0,
-			mouse = Vec2(0,0),
+			mouse = Vec2(0, 0),
 		},
 	},
-
 	vertex = {
 		variables = {
 			pwm_matrix = "mat4",
@@ -18,9 +16,8 @@ local data = {
 			{uv = "vec2"},
 		},
 		-- if main is not defined it will wrap void main() { *line here* } around the line
-		source = "gl_Position = pwm_matrix * vec4(pos, 0, 1);"
+		source = "gl_Position = pwm_matrix * vec4(pos, 0, 1);",
 	},
-
 	fragment = {
 		variables = {
 			resolution = "vec2",
@@ -152,32 +149,32 @@ local data = {
 				col*=min(1.,time); //fade in
 				frag_color = vec4(col,1.0);
 			}
-		]]
-	}
+		]],
+	},
 }
-
 local tex = render.CreateTextureFromPath("textures/debug/brain.jpg")
-
 local shader = render.CreateShader(data)
-
 -- this creates mesh from the attributes field
-local mesh = render.CreateVertexBuffer(shader:GetMeshLayout(), {
-	{pos = {0, 1, 0}, uv = {0, 0}},
-	{pos = {0, 0, 0}, uv = {0, 1}},
-	{pos = {1, 1, 0}, uv = {1, 0}},
-	{pos = {1, 0, 0}, uv = {1, 1}},
-	{pos = {1, 1, 0}, uv = {1, 0}},
-	{pos = {0, 0, 0}, uv = {0, 1}},
-})
+local mesh = render.CreateVertexBuffer(
+	shader:GetMeshLayout(),
+	{
+		{pos = {0, 1, 0}, uv = {0, 0}},
+		{pos = {0, 0, 0}, uv = {0, 1}},
+		{pos = {1, 1, 0}, uv = {1, 0}},
+		{pos = {1, 0, 0}, uv = {1, 1}},
+		{pos = {1, 1, 0}, uv = {1, 0}},
+		{pos = {0, 0, 0}, uv = {0, 1}},
+	}
+)
+
 function goluwa.PreDrawGUI()
 	shader.pwm_matrix = render2d.camera:GetMatrices().projection_view_world
-
 	local w, h = render2d.GetSize()
 	render2d.PushMatrix(0, 0, w, h)
-		shader.time = system.GetElapsedTime()
-		shader.tex = tex
-		shader.resolution = Vec2(render2d.GetSize())
-		shader.mouse = window.GetMousePosition()
-		mesh:Draw()
+	shader.time = system.GetElapsedTime()
+	shader.tex = tex
+	shader.resolution = Vec2(render2d.GetSize())
+	shader.mouse = window.GetMousePosition()
+	mesh:Draw()
 	render2d.PopMatrix()
 end

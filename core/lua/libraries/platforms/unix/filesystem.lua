@@ -1,7 +1,5 @@
 local fs = _G.fs or {}
-
 local ffi = require("ffi")
-
 ffi.cdef([[
 	typedef unsigned long ssize_t;
 	char *strerror(int);
@@ -45,20 +43,18 @@ ffi.cdef([[
 
 	static const uint32_t IN_MODIFY = 0x00000002;
 ]])
-
-local O_RDONLY    = 0x0000    -- open for reading only
-local O_WRONLY    = 0x0001    -- open for writing only
-local O_RDWR      = 0x0002    -- open for reading and writing
-local O_NONBLOCK  = 0x0004    -- no delay
-local O_APPEND    = 0x0008    -- set append mode
-local O_SHLOCK    = 0x0010    -- open with shared file lock
-local O_EXLOCK    = 0x0020    -- open with exclusive file lock
-local O_ASYNC     = 0x0040    -- signal pgrp when data ready
-local O_NOFOLLOW  = 0x0100    -- don't follow symlinks
-local O_CREAT     = 0x0200    -- create if nonexistant
-local O_TRUNC     = 0x0400    -- truncate to zero length
-local O_EXCL      = 0x0800    -- error if already exists
-
+local O_RDONLY = 0x0000 -- open for reading only
+local O_WRONLY = 0x0001 -- open for writing only
+local O_RDWR = 0x0002 -- open for reading and writing
+local O_NONBLOCK = 0x0004 -- no delay
+local O_APPEND = 0x0008 -- set append mode
+local O_SHLOCK = 0x0010 -- open with shared file lock
+local O_EXLOCK = 0x0020 -- open with exclusive file lock
+local O_ASYNC = 0x0040 -- signal pgrp when data ready
+local O_NOFOLLOW = 0x0100 -- don't follow symlinks
+local O_CREAT = 0x0200 -- create if nonexistant
+local O_TRUNC = 0x0400 -- truncate to zero length
+local O_EXCL = 0x0800 -- error if already exists
 local function last_error(num)
 	num = num or ffi.errno()
 	local err = ffi.string(ffi.C.strerror(num))
@@ -193,11 +189,9 @@ if jit.os == "OSX" then
 	stat_func_link = ffi.C.lstat64
 else
 	local arch = jit.arch
-
 	stat_func = function(path, buff)
 		return ffi.C.syscall(arch == "x64" and 4 or 195, path, buff)
 	end
-
 	stat_func_link = function(path, buff)
 		return ffi.C.syscall(arch == "x64" and 6 or 196, path, buff)
 	end
@@ -212,18 +206,17 @@ function fs.setcustomattribute(path, data)
 	if ffi.C.setxattr(path, "goluwa_attributes", data, #data, 0x2) ~= 0 then
 		return nil, last_error()
 	end
+
 	return true
 end
 
 function fs.getcustomattribute(path)
 	local size = ffi.C.getxattr(path, "goluwa_attributes", nil, 0)
-	if size == -1 then
-		return nil, last_error()
-	end
+
+	if size == -1 then return nil, last_error() end
 
 	local buffer = ffi.string("char[?]", size)
 	ffi.C.getxattr(path, "goluwa_attributes", buffer, size)
-
 	return ffi.string(buffer)
 end
 
@@ -253,7 +246,6 @@ if jit.os ~= "OSX" then
 		oneshot = 0x80000000, -- only send event once
 	}
 	local IN_NONBLOCK = 2048
-
 	local fd = ffi.C.inotify_init1(IN_NONBLOCK)
 	local max_length = 8192
 	local length = ffi.sizeof("struct inotify_event")
@@ -263,22 +255,24 @@ if jit.os ~= "OSX" then
 	function fs.watch(path, mask)
 		local wd = ffi.C.inotify_add_watch(fd, path, mask and utility.TableToFlags(mask, flags) or 4095)
 		queue[wd] = {}
-
 		local self = {}
+
 		function self:Read()
 			local len = ffi.C.read(fd, buffer, length)
+
 			if len >= length then
 				local res = ffi.cast("struct inotify_event*", buffer)
-				table.insert(queue[res.wd], {
-					cookie = res.cookie,
-					name = ffi.string(res.name, res.len),
-					flags = utility.FlagsToTable(res.mask, flags),
-				})
+				table.insert(
+					queue[res.wd],
+					{
+						cookie = res.cookie,
+						name = ffi.string(res.name, res.len),
+						flags = utility.FlagsToTable(res.mask, flags),
+					}
+				)
 			end
 
-			if queue[wd][1] then
-				return table.remove(queue[wd])
-			end
+			if queue[wd][1] then return table.remove(queue[wd]) end
 		end
 
 		function self:Remove()
@@ -293,14 +287,12 @@ end
 do
 	do
 		local dot = string.byte(".")
+
 		local function is_dots(ptr)
 			if ptr[0] == dot then
-				if ptr[1] == dot and ptr[2] == 0 then
-					return true
-				end
-				if ptr[1] == 0 then
-					return true
-				end
+				if ptr[1] == dot and ptr[2] == 0 then return true end
+
+				if ptr[1] == 0 then return true end
 			end
 
 			return false
@@ -313,14 +305,12 @@ do
 
 		function fs.get_files(path)
 			local out = {}
-
 			local ptr = opendir(path or "")
 
-			if ptr == nil then
-				return nil, last_error()
-			end
+			if ptr == nil then return nil, last_error() end
 
 			local i = 1
+
 			while true do
 				local dir_info = readdir(ptr)
 
@@ -333,7 +323,6 @@ do
 			end
 
 			closedir(ptr)
-
 			return out
 		end
 
@@ -358,6 +347,7 @@ do
 
 					if dir_info.d_type == 4 then
 						local name = name .. "/"
+
 						if not can_traverse or can_traverse(name) ~= false then
 							walk(name, tbl, errors, can_traverse)
 						end
@@ -369,21 +359,20 @@ do
 			end
 
 			closedir(ptr)
-
 			return tbl
 		end
 
 		function fs.get_files_recursive(path, can_traverse)
-			if not path:sub(-1) ~= "/" then
-				path = path .. "/"
-			end
+			if not path:sub(-1) ~= "/" then path = path .. "/" end
 
 			local out = {}
 			local errors = {}
 			out[0] = 1
+
 			if not walk(path, out, errors, can_traverse) then
 				return nil, errors[1].error
 			end
+
 			out[0] = nil
 			return out, errors[1] and errors or nil
 		end
@@ -393,7 +382,6 @@ do
 
 	function fs.get_attributes(path, link)
 		local buff = statbox()
-
 		local ret = link and stat_func_link(path, buff) or stat_func(path, buff)
 
 		if ret == 0 then
@@ -404,7 +392,7 @@ do
 				type = bit.band(buff[0].st_mode, DIRECTORY) ~= 0 and "directory" or "file",
 				size = tonumber(buff[0].st_size),
 				mode = buff[0].st_mode,
-				links = buff[0].st_nlink
+				links = buff[0].st_nlink,
 			}
 		end
 
@@ -417,9 +405,7 @@ do
 		function fs.get_size(path, link)
 			local ret = link and stat_func_link(path, buff) or stat_func(path, buff)
 
-			if ret ~= 0 then
-				return nil, last_error()
-			end
+			if ret ~= 0 then return nil, last_error() end
 
 			return tonumber(buff[0].st_size)
 		end
@@ -441,16 +427,17 @@ do
 		ssize_t splice(int fd_in, long long *off_in, int fd_out, long long *off_out, size_t lenunsigned, int flags );
 		int pipe(int pipefd[2]);
 	]])
-
 	local p = ffi.new("int[2]")
 
 	function fs.copy(from, to, permissions)
 		local in_ = fs.open(from, "r")
+
 		if in_ == nil then
 			return nil, "error opening " .. from .. " for reading: " .. last_error()
 		end
 
 		local out_ = fs.open(to, "w")
+
 		if out_ == nil then
 			fs.close(in_)
 			return nil, "error opening " .. to .. " for writing: " .. last_error()
@@ -458,11 +445,8 @@ do
 
 		in_ = ffi.C.fileno(in_)
 		out_ = ffi.C.fileno(out_)
-
 		local size = fs.get_size(from)
-
 		ffi.C.pipe(p)
-
 		local ok, err
 		local ret
 
@@ -471,6 +455,7 @@ do
 
 			if ret == -1 then
 				ok, err = nil, last_error()
+
 				break
 			end
 
@@ -482,20 +467,17 @@ do
 				else
 					ok = true
 				end
+
 				break
 			end
 		end
 
-		if permissions then
-			ffi.C.fchmod(in_, fs.get_attributes(from).mode)
-		end
+		if permissions then ffi.C.fchmod(in_, fs.get_attributes(from).mode) end
 
 		ffi.C.close(p[0])
 		ffi.C.close(p[1])
-
 		ffi.C.close(out_)
 		ffi.C.close(in_)
-
 		return ok, err
 	end
 
@@ -509,36 +491,29 @@ do
 			return nil, last_error()
 		end
 
-
 		return true
 	end
 
 	function fs.create_directory(path)
-		if ffi.C.mkdir(path, 448) ~= 0 then
-			return nil, last_error()
-		end
+		if ffi.C.mkdir(path, 448) ~= 0 then return nil, last_error() end
 
 		return true
 	end
 
 	function fs.remove_file(path)
-		if ffi.C.remove(path) ~= 0 then
-			return nil, last_error()
-		end
+		if ffi.C.remove(path) ~= 0 then return nil, last_error() end
+
 		return true
 	end
 
 	function fs.remove_directory(path)
-		if ffi.C.rmdir(path) ~= 0 then
-			return nil, last_error()
-		end
+		if ffi.C.rmdir(path) ~= 0 then return nil, last_error() end
+
 		return true
 	end
 
 	function fs.set_current_directory(path)
-		if ffi.C.chdir(path) ~= 0 then
-			return nil, last_error()
-		end
+		if ffi.C.chdir(path) ~= 0 then return nil, last_error() end
 
 		return true
 	end

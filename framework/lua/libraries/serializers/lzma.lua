@@ -1,72 +1,63 @@
 local serializer = ... or _G.serializer
 local ffi = require("ffi")
 
-serializer.AddLibrary("lzma", nil, function(archive, str)
-	local a = archive.ReadNew()
+serializer.AddLibrary(
+	"lzma",
+	nil,
+	function(archive, str)
+		local a = archive.ReadNew()
+		archive.ReadSupportCompressionLzma(a)
+		archive.ReadSupportFilterLzma(a)
+		archive.ReadSupportFormatRaw(a)
 
-	archive.ReadSupportCompressionLzma(a)
-	archive.ReadSupportFilterLzma(a)
-	archive.ReadSupportFormatRaw(a)
+		if archive.ReadOpenMemory(a, str, #str) ~= archive.e.OK then
+			local err = archive.ErrorString(a)
 
-	if archive.ReadOpenMemory(a, str, #str) ~= archive.e.OK then
-		local err = archive.ErrorString(a)
+			if err ~= nil then err = ffi.string(err) end
 
-		if err ~= nil then
-			err = ffi.string(err)
+			archive.ReadFree(a)
+			return nil, err
 		end
 
-		archive.ReadFree(a)
+		local entry = archive.EntryNew()
 
-		return nil, err
-	end
+		if archive.ReadNextHeader2(a, entry) ~= archive.e.OK then
+			local err = archive.ErrorString(a)
 
-	local entry = archive.EntryNew()
+			if err ~= nil then err = ffi.string(err) end
 
-	if archive.ReadNextHeader2(a, entry) ~= archive.e.OK then
-		local err = archive.ErrorString(a)
-
-		if err ~= nil then
-			err = ffi.string(err)
+			archive.EntryFree(entry)
+			archive.ReadFree(a)
+			return nil, err
 		end
 
-		archive.EntryFree(entry)
-		archive.ReadFree(a)
+		local path = ffi.string(archive.EntryPathname(entry))
 
-		return nil, err
-	end
+		if path ~= "data" then
+			archive.EntryFree(entry)
+			archive.ReadFree(a)
+			return nil, "not an archive"
+		end
 
-	local path = ffi.string(archive.EntryPathname(entry))
+		if archive.EntrySizeIsSet(entry) == 0 then
+			local size = 4194304
+			local chunks = {}
 
-	if path ~= "data" then
-		archive.EntryFree(entry)
-		archive.ReadFree(a)
+			for i = 1, math.huge do
+				local data = ffi.new("uint8_t[?]", size)
+				local bytes_read = archive.ReadData(a, data, size)
+				table.insert(chunks, ffi.string(data, bytes_read))
 
-		return nil, "not an archive"
-	end
-
-	if archive.EntrySizeIsSet(entry) == 0 then
-		local size = 4194304
-
-		local chunks = {}
-
-		for i = 1, math.huge do
-			local data = ffi.new("uint8_t[?]", size)
-			local bytes_read = archive.ReadData(a, data, size)
-
-			table.insert(chunks, ffi.string(data, bytes_read))
-
-			if bytes_read ~= size then
-				break
+				if bytes_read ~= size then break end
 			end
+
+			return table.concat(chunks, "")
+		else
+			local size = archive.EntrySize(entry)
+			local data = ffi.new("uint8_t[?]", size)
+			size = archive.ReadData(a, data, size)
+			return ffi.string(data, size)
 		end
-
-		return table.concat(chunks, "")
-	else
-		local size = archive.EntrySize(entry)
-		local data = ffi.new("uint8_t[?]", size)
-
-		size = archive.ReadData(a, data, size)
-
-		return ffi.string(data, size)
-	end
-end, desire("libarchive"))
+	end,
+	desire("libarchive")
+)

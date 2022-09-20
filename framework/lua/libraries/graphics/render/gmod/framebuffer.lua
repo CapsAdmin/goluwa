@@ -37,15 +37,14 @@ function META:SetTexture(pos, tex, mode, uid, face)
 	if typex(tex) == "texture" then
 		self.internal_format = format[tex:GetInternalFormat()] or format.rgba8
 	end
+
 	self.depth_mode = depth_mode
 	self.rt = nil
 	self.textures[pos] = tex
 end
 
 function META:GetRenderTarget()
-	if self.screen_rt then
-		return nil
-	end
+	if self.screen_rt then return nil end
 
 	if not self.rt then
 		self.rt = gmod.GetRenderTargetEx(
@@ -58,56 +57,45 @@ function META:GetRenderTarget()
 			gmod.CREATERENDERTARGETFLAGS_AUTOMIPMAP,
 			self.internal_format or format.rgba8
 		)
-
 		local tex = self.textures[1]
-
 		tex:SetITexture(self.rt)
-
 		self:SetSize(Vec2(self.width, self.height))
 	end
 
 	return self.rt
 end
 
-function META:ClearAll(r,g,b,a, d,s)
+function META:ClearAll(r, g, b, a, d, s)
 	r = r or 0
 	g = g or 0
 	b = b or 0
 	a = a or 0
 	local old = gmod.render.GetRenderTarget()
 	gmod.render.SetRenderTarget(self:GetRenderTarget())
-
 	gmod.render.ClearDepth(d)
 	gmod.render.ClearStencilBufferRectangle(0, 0, self.width, self.height, s or 0)
-	gmod.render.Clear(r*255, g*255, b*255, a*255)
-
+	gmod.render.Clear(r * 255, g * 255, b * 255, a * 255)
 	gmod.render.SetRenderTarget(old)
 end
 
-function META:ClearColor(r,g,b,a)
+function META:ClearColor(r, g, b, a)
 	local old = gmod.render.GetRenderTarget()
 	gmod.render.SetRenderTarget(self:GetRenderTarget())
-
-	gmod.render.Clear(r*255, g*255, b*255, a*255)
-
+	gmod.render.Clear(r * 255, g * 255, b * 255, a * 255)
 	gmod.render.SetRenderTarget(old)
 end
 
 function META:ClearDepth(d)
 	local old = gmod.render.GetRenderTarget()
 	gmod.render.SetRenderTarget(self:GetRenderTarget())
-
 	gmod.render.ClearDepth(d)
-
 	gmod.render.SetRenderTarget(old)
 end
 
 function META:ClearStencil(s)
 	local old = gmod.render.GetRenderTarget()
 	gmod.render.SetRenderTarget(self:GetRenderTarget())
-
 	gmod.render.ClearStencilBufferRectangle(0, 0, self.width, self.height, s)
-
 	gmod.render.SetRenderTarget(old)
 end
 
@@ -124,4 +112,3 @@ end
 function META:_Bind()
 	gmod.render.SetRenderTarget(self:GetRenderTarget())
 end
-

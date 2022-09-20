@@ -1,7 +1,5 @@
 local render3d = ... or _G.render3d
-
 local _debug = false
-
 local header = [[
 	string id[4]; // Model format ID, such as "IDST" (0x49 0x44 0x53 0x54)
 	int version; // Format version number, such as 48 (0x30,0x00,0x00,0x00)
@@ -200,13 +198,16 @@ local function find_file(path, ...)
 
 	for _, ext in ipairs(extensions) do
 		ok, err = vfs.Open(path .. ext)
+
 		if ok then return ok end
 	end
 
 	for _, ext in ipairs(extensions) do
 		local path = vfs.FindMixedCasePath(path .. ext)
+
 		if path then
 			ok, err = vfs.Open(path)
+
 			if ok then return ok end
 		end
 	end
@@ -215,9 +216,7 @@ local function find_file(path, ...)
 		for _, v in pairs(vfs.Find(path:match("(.+/)"), true)) do
 			if v:match(".+/(.+)%."):lower() == path:match(".+/(.+)"):lower() then
 				for _, ext in ipairs(extensions) do
-					if v:endswith(ext) then
-						return assert(vfs.Open(v))
-					end
+					if v:endswith(ext) then return assert(vfs.Open(v)) end
 				end
 			end
 		end
@@ -228,13 +227,11 @@ end
 
 local function load_mdl(path)
 	local buffer = find_file(path, ".mdl")
-
 	local header = buffer:ReadStructure(header)
 	header.name = "models/" .. header.name:removepadding():gsub("\\", "/")
 
 	local function parse(name, callback)
 		local out = {}
-
 		local count = header[name .. "_count"]
 		local offset = header[name .. "_offset"]
 
@@ -248,11 +245,10 @@ local function load_mdl(path)
 			for i = 1, count do
 				local data = {}
 
-				if callback(data, i) ~= false then
-					out[i] = data
-				end
+				if callback(data, i) ~= false then out[i] = data end
 
 				if _debug then tasks.ReportProgress("reading " .. name, count) end
+
 				tasks.Wait()
 			end
 
@@ -261,7 +257,6 @@ local function load_mdl(path)
 
 		--header[name .. "_count"] = nil
 		--header[name .. "_offset"] = nil
-
 		header[name] = out
 
 		if _debug then profiler.StopTimer() end
@@ -278,29 +273,34 @@ local function load_mdl(path)
 
 	do
 		buffer:PushPosition(header.material_offset)
-			header.materials = {}
-			local offset = buffer:ReadInt()
-			if offset > -1 then
-				buffer:PushPosition(header.material_offset + offset)
-					for i = 1, header.material_count do
-						local mat = vfs.FixPathSlashes(buffer:ReadString())
-						if mat ~= "" and not mat:endswith("/") then
-							header.materials[i] = mat
-						end
-					end
-				buffer:PopPosition()
+		header.materials = {}
+		local offset = buffer:ReadInt()
+
+		if offset > -1 then
+			buffer:PushPosition(header.material_offset + offset)
+
+			for i = 1, header.material_count do
+				local mat = vfs.FixPathSlashes(buffer:ReadString())
+
+				if mat ~= "" and not mat:endswith("/") then
+					header.materials[i] = mat
+				end
 			end
+
+			buffer:PopPosition()
+		end
+
 		buffer:PopPosition()
 
 		parse("texturedir", function(data, i)
 			local offset = buffer:ReadLong()
 			buffer:PushPosition(offset)
-				data.path = "materials/" .. vfs.FixPathSlashes(buffer:ReadString())
+			data.path = "materials/" .. vfs.FixPathSlashes(buffer:ReadString())
 			buffer:PopPosition()
 		end)
 	end
 
---[[
+	--[[
 
 	local bone_names
 	local render2d_prop_names
@@ -445,16 +445,12 @@ local function load_mdl(path)
 				logf("\t%s (count: %s|offset: %s)\n", name, header[name.."_count"], header[name.."_offset"])
 			end
 		end
-	end]]
-
-	return header
+	end]] return header
 end
 
 local function load_vtx(path)
 	local MAX_NUM_BONES_PER_VERT = 3
-
 	local buffer = find_file(path, ".dx90.vtx", ".dx80.vtx", ".sw.vtx")
-
 	local vtx = buffer:ReadStructure([[
 		long version;
 		long vertex_cache_size;
@@ -465,62 +461,51 @@ local function load_vtx(path)
 		long lod_count;
 		long material_replacement_list_offset;
 	]])
-
 	vtx.body_part_count = buffer:ReadLong()
 	vtx.body_part_offset = buffer:ReadLong()
-
 	buffer:PushPosition(vtx.body_part_offset)
 	vtx.body_parts = {}
 
 	for i = 1, vtx.body_part_count do
 		local stream_pos = buffer:GetPosition()
-
 		local body_part = {}
 		body_part.model_count = buffer:ReadLong()
 		body_part.model_offset = buffer:ReadLong()
 		vtx.body_parts[i] = body_part
-
 		buffer:PushPosition(stream_pos + body_part.model_offset)
 		body_part.models = {}
 
 		for i = 1, body_part.model_count do
 			local stream_pos = buffer:GetPosition()
-
 			local model = {}
 			model.lod_count = buffer:ReadLong()
 			model.lod_offset = buffer:ReadLong()
 			body_part.models[i] = model
-
 			buffer:PushPosition(stream_pos + model.lod_offset)
 			model.model_lods = {}
 
 			for i = 1, model.lod_count do
 				local stream_pos = buffer:GetPosition()
-
 				local lod_model = {}
 				lod_model.mesh_count = buffer:ReadLong()
 				lod_model.mesh_offset = buffer:ReadLong()
-				lod_model.switchPoint = buffer:Advance(4)--buffer:ReadFloat()
+				lod_model.switchPoint = buffer:Advance(4) --buffer:ReadFloat()
 				model.model_lods[i] = lod_model
-
 				buffer:PushPosition(stream_pos + lod_model.mesh_offset)
 				lod_model.meshes = {}
 
 				for i = 1, lod_model.mesh_count do
 					local stream_pos = buffer:GetPosition()
-
 					local mesh = {}
 					mesh.strip_group_count = buffer:ReadLong()
 					mesh.strip_group_offset = buffer:ReadLong()
 					mesh.flags = buffer:ReadByte()
 					lod_model.meshes[i] = mesh
-
 					buffer:PushPosition(stream_pos + mesh.strip_group_offset)
 					mesh.strip_groups = {}
 
 					for i = 1, mesh.strip_group_count do
 						local stream_pos = buffer:GetPosition()
-
 						local strip_group = {}
 						strip_group.vertices_count = buffer:ReadLong()
 						strip_group.vertices_offset = buffer:ReadLong()
@@ -530,54 +515,48 @@ local function load_vtx(path)
 						strip_group.strip_offset = buffer:ReadLong()
 						strip_group.flags = buffer:ReadByte()
 						mesh.strip_groups[i] = strip_group
-
 						local vertices = {}
 						buffer:PushPosition(stream_pos + strip_group.vertices_offset)
-						for i = 1, strip_group.vertices_count do
-							local vertex = {}--{bone_weight_indices = {}, boneId = {}}
 
+						for i = 1, strip_group.vertices_count do
+							local vertex = {} --{bone_weight_indices = {}, boneId = {}}
 							buffer:Advance(MAX_NUM_BONES_PER_VERT + 1)
 							--[[
 							for i = 1, MAX_NUM_BONES_PER_VERT do
 								vertex.bone_weight_indices[i] = buffer:ReadByte()
 							end
 							vertex.bone_count = buffer:ReadByte()
-							]]
-							vertex.mesh_vertex_index = buffer:ReadShort()
-
+							]] vertex.mesh_vertex_index = buffer:ReadShort()
 							buffer:Advance(MAX_NUM_BONES_PER_VERT)
 							--[[
 							for i = 1, MAX_NUM_BONES_PER_VERT do
 								vertex.boneId[i] = buffer:ReadByte()
-							end]]
-							vertices[i] = vertex
+							end]] vertices[i] = vertex
 						end
-						buffer:PopPosition()
 
+						buffer:PopPosition()
 						local indices = {}
 						buffer:PushPosition(stream_pos + strip_group.indices_offset)
+
 						for i = 1, strip_group.indices_count do
 							indices[i] = buffer:ReadShort() + 1
 						end
-						buffer:PopPosition()
 
+						buffer:PopPosition()
 						local strips = {}
 						buffer:PushPosition(stream_pos + strip_group.strip_offset)
+
 						for i = 1, strip_group.strip_count do
 							local stream_pos = buffer:GetPosition()
-
 							local strip = {}
-
 							strip.indices_count = buffer:ReadLong()
 							strip.index_model_index = buffer:Advance(4) -- buffer:ReadLong()
 							strip.vertices_count = buffer:ReadLong()
-
-							buffer:Advance(4+2+1+8)
-
+							buffer:Advance(4 + 2 + 1 + 8)
 							--strip.vertex_model_index = buffer:ReadLong()
 							--strip.bone_count = buffer:ReadShort()
 							--strip.flags = buffer:ReadByte()
---[[
+							--[[
 							strip.bone_state_change_count = buffer:ReadLong()
 							strip.bone_state_change_offset = buffer:ReadLong()
 
@@ -590,54 +569,60 @@ local function load_vtx(path)
 							end
 							buffer:PopPosition()
 							strip.bone_state_changes = bone_state_changes
-]]
-
-							strip.indices = indices
+]] strip.indices = indices
 							strip.vertices = vertices
-
 							strips[i] = strip
 						end
-						buffer:PopPosition()
 
+						buffer:PopPosition()
 						strip_group.strips = strips
 
-						if _debug then tasks.ReportProgress("reading body parts", vtx.body_part_count * body_part.model_count * model.lod_count * lod_model.mesh_count * mesh.strip_group_count) end
+						if _debug then
+							tasks.ReportProgress(
+								"reading body parts",
+								vtx.body_part_count * body_part.model_count * model.lod_count * lod_model.mesh_count * mesh.strip_group_count
+							)
+						end
+
 						tasks.Wait()
 					end
+
 					buffer:PopPosition()
 				end
+
 				buffer:PopPosition()
 			end
+
 			buffer:PopPosition()
 		end
+
 		buffer:PopPosition()
 	end
-	buffer:PopPosition()
 
+	buffer:PopPosition()
 	return vtx
 end
 
 local function load_vvd(path)
 	local MAX_NUM_LODS = 8
 	local MAX_NUM_BONES_PER_VERT = 3
-
 	local buffer = find_file(path, ".vvd")
-
 	local vvd = {lod_vertices_count = {}}
-
 	vvd.id = buffer:ReadBytes(4)
 	vvd.version = buffer:ReadLong()
 	vvd.checksum = buffer:ReadLong()
 	vvd.lod_count = buffer:ReadLong()
+
 	for i = 1, MAX_NUM_LODS do
 		vvd.lod_vertices_count[i] = buffer:ReadLong()
 	end
+
 	vvd.fixup_count = buffer:ReadLong()
 	vvd.fixup_offset = buffer:ReadLong()
 	vvd.vertices_offset = buffer:ReadLong()
 	vvd.tangentDataOffset = buffer:ReadLong()
-
 	vvd.vertices = {}
+
 	local function read_vertex(i)
 		--[[
 		local boneWeight = {weight = {}, bone = {}}
@@ -649,29 +634,24 @@ local function load_vvd(path)
 			boneWeight.bone[x] = buffer:ReadByte()
 		end
 		boneWeight.bone_count = buffer:ReadByte()
-		]]
-
-		buffer:Advance((4*MAX_NUM_BONES_PER_VERT) + MAX_NUM_BONES_PER_VERT + 1)
-
+		]] buffer:Advance((4 * MAX_NUM_BONES_PER_VERT) + MAX_NUM_BONES_PER_VERT + 1)
 		local vertex = {}
-
-		local x,y,z = buffer:ReadFloat(), buffer:ReadFloat(), buffer:ReadFloat()
+		local x, y, z = buffer:ReadFloat(), buffer:ReadFloat(), buffer:ReadFloat()
 		vertex.pos = Vec3(y * -steam.source2meters, x * -steam.source2meters, z * -steam.source2meters)
-
-		local x,y,z = buffer:ReadFloat(), buffer:ReadFloat(), buffer:ReadFloat()
+		local x, y, z = buffer:ReadFloat(), buffer:ReadFloat(), buffer:ReadFloat()
 		vertex.normal = Vec3(-y, -x, -z)
-
 		vertex.uv = buffer:ReadVec2()
-
 		vvd.vertices[i] = vertex
 
 		if _debug then tasks.ReportProgress("reading vertices", vertices_count) end
+
 		tasks.Wait()
 	end
 
 	if vvd.lod_count > 0 and vvd.fixup_count == 0 then
 		local vertices_count = vvd.lod_vertices_count[1]
 		buffer:SetPosition(vvd.vertices_offset)
+
 		for i = 1, vertices_count do
 			read_vertex(i)
 		end
@@ -681,15 +661,13 @@ local function load_vvd(path)
 
 	if vvd.fixup_count > 0 and vvd.fixup_offset ~= 0 then
 		buffer:SetPosition(vvd.fixup_offset)
-
 		vvd.theFixups = {}
+
 		for i = 1, vvd.fixup_count do
 			local fixup = {}
-
 			fixup.lod_index = buffer:ReadLong() + 1
 			fixup.vertex_index = buffer:ReadLong() + 1
 			fixup.vertices_count = buffer:ReadLong()
-
 			vvd.theFixups[i] = fixup
 		end
 
@@ -699,13 +677,23 @@ local function load_vvd(path)
 			for lod_index = 1, vvd.lod_count do
 				vvd.fixed_vertices_by_lod[lod_index] = {}
 				local i2 = 1
+
 				for _, fixup in ipairs(vvd.theFixups) do
 					if fixup.lod_index >= lod_index then
 						for i = 1, fixup.vertices_count do
 							local vertex_i = fixup.vertex_index + (i - 1)
-							buffer:SetPosition(vvd.vertices_offset + (((4*MAX_NUM_BONES_PER_VERT) + MAX_NUM_BONES_PER_VERT + 1) + 12 + 12 + 8) * (vertex_i - 1))
+							buffer:SetPosition(
+								vvd.vertices_offset + (
+										(
+											(
+												4 * MAX_NUM_BONES_PER_VERT
+											) + MAX_NUM_BONES_PER_VERT + 1
+										) + 12 + 12 + 8
+									) * (
+										vertex_i - 1
+									)
+							)
 							read_vertex(vertex_i)
-
 							vvd.fixed_vertices_by_lod[lod_index][i2] = vvd.vertices[fixup.vertex_index + (i - 1)]
 							i2 = i2 + 1
 						end
@@ -717,50 +705,47 @@ local function load_vvd(path)
 			end
 		end
 	end
+
 	if _debug then profiler.StopTimer() end
 
 	return vvd
 end
 
-
 render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 	local models = {}
 
-	if full_path:endswith(".mdl") then
-		full_path = full_path:sub(1,-#".mdl"-1)
-	end
+	if full_path:endswith(".mdl") then full_path = full_path:sub(1, -#".mdl" - 1) end
 
 	--utility.PushTimeWarning()
-
 	local mdl = load_mdl(full_path)
 	local vvd = load_vvd(full_path)
 	local vtx = load_vtx(full_path)
 
---	utility.PopTimeWarning("model read", 0)
-
+	--	utility.PopTimeWarning("model read", 0)
 	--utility.PushTimeWarning()
-
 	if _debug then tasks.Report("generating mesh") end
+
 	for _, body_part in ipairs(vtx.body_parts) do
 		for _, model_ in ipairs(body_part.models) do
 			for lod_index, lod_model in ipairs(model_.model_lods) do
 				if lod_model.meshes and lod_model.meshes[1] then
-
 					local mesh = gfx.CreatePolygon3D()
 					local vertices = vvd.fixed_vertices_by_lod[lod_index] or vvd.vertices
-
 					local copy = {}
-					for i,v in ipairs(vertices) do
+
+					for i, v in ipairs(vertices) do
 						copy[i] = {pos = v.pos:Copy(), normal = v.normal:Copy(), uv = v.uv:Copy()}
 					end
-					mesh:SetVertices(copy)
 
+					mesh:SetVertices(copy)
 					local WHAT2 = 0
 
 					for model_i, mesh_data in ipairs(lod_model.meshes) do
-						if _debug then tasks.ReportProgress("generating mesh", #vtx.body_parts * #model_.model_lods * #lod_model.meshes) end
-						tasks.Wait()
+						if _debug then
+							tasks.ReportProgress("generating mesh", #vtx.body_parts * #model_.model_lods * #lod_model.meshes)
+						end
 
+						tasks.Wait()
 						local WHAT = 0
 						local indices = {}
 						local index_i = 1
@@ -777,9 +762,7 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 						end
 
 						WHAT2 = WHAT
-
 						mesh:SetName(full_path)
-
 						local material
 						local path = mdl.materials[model_i]
 
@@ -789,8 +772,10 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 							else
 								for _, dir in ipairs(mdl.texturedir) do
 									local new_path = vfs.FindMixedCasePath(dir.path .. path .. ".vmt")
+
 									if new_path then
 										path = new_path
+
 										break
 									end
 								end
@@ -805,10 +790,8 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 
 					mesh:BuildBoundingBox()
 					mesh:BuildTangents()
-
 					mesh:Upload()
 					mesh_callback(mesh)
-
 					table.insert(models, mesh)
 				end
 
@@ -818,25 +801,19 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 	end
 
 	--utility.PopTimeWarning("model generation", 0)
-
 	return models
 end)
 
 if RELOAD then
 	render3d.model_cache = {}
 	render3d.model_loader_cb = utility.CreateCallbackThing(render3d.model_cache)
-
 	steam.MountSourceGame("hl2")
 	steam.MountSourceGame("csgo")
-
 	utility.PushTimeWarning()
-
 	local ent = utility.RemoveOldObject(entities.CreateEntity("visual"), "test")
-
 	local mdl = "models/props_wasteland/exterior_fence001b.mdl"
 	local mdl = "models/props_interiors/sinkkitchen01a.mdl"
 	local mdl = "models/inventory_items/trophy_majors.mdl"
-
 	ent:SetModelPath(mdl)
 	ent:SetPosition(render3d.camera:GetPosition() + render3d.camera:GetAngles():GetForward() * 3)
 	utility.PopTimeWarning("mdl", 0)

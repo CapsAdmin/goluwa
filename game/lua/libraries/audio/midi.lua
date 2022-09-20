@@ -1,5 +1,4 @@
 local audio = _G.audio or ...
-
 local ffi = require("ffi")
 
 do
@@ -12,7 +11,6 @@ do
 
 	function audio.MidiToTable(path)
 		local file = vfs.Open(path)
-
 		local midi = file:ReadStructure([[
 			string header_id[4] = MThd;
 			swap unsigned long header_size = 6;
@@ -21,9 +19,7 @@ do
 			swap unsigned short track_count;
 			swap unsigned short time_division;
 		]])
-
 		midi.tracks = {}
-
 		local last_event_type
 
 		for i = 1, midi.track_count do
@@ -31,17 +27,13 @@ do
 				string track_id[4] = MTrk;
 				swap unsigned long track_size;
 			]])
-
 			info.track_size = file:GetPosition() + info.track_size
-
 			local track = {}
 			track.events = {}
-
 			local time = ffi.new("uint64_t", 0)
 
 			for _ = 1, 1000000 do
 				local event = {}
-
 				time = time + file:ReadVarInt()
 				local event_type = file:ReadByte()
 
@@ -68,26 +60,33 @@ do
 							track.cueoint = file:ReadBytes(length)
 						elseif sub_type == 0x20 then
 							event.subtype = "midi_channel_prefix"
+
 							if length ~= 1 then
 								error("Expected length for midi_channel_prefix event is 1, got " .. length)
 							end
-							event.channel = file:ReadByte();
+
+							event.channel = file:ReadByte()
+							
 						elseif sub_type == 0x2f then
 							--event.subtype = "end_of_track"
 							if length ~= 0 then
 								error("Expected length for end_of_track event is 0, got " .. length)
 							end
+
 							break
 						elseif sub_type == 0x51 then
 							track.set_tempo = bit.lshift(file:ReadByte(), 16) + bit.lshift(file:ReadByte(), 8) + file:ReadByte()
+
 							if length ~= 3 then
 								error("Expected length for set_tempo event is 3, got " .. length)
 							end
 						elseif sub_type == 0x54 then
 							track.smpte_offset = {}
+
 							if length ~= 5 then
 								error("Expected length for smpte_offset event is 5, got " .. length)
 							end
+
 							local hour_byte = file:ReadByte()
 							track.smpte_offset.frame_rate = frame_rate_flags[bit.band(hour_byte, 0x60)]
 							track.smpte_offset.hour = bit.band(hour_byte, 0x1f)
@@ -97,18 +96,22 @@ do
 							track.smpte_offset.subframe = file:ReadByte()
 						elseif sub_type == 0x58 then
 							track.time_signature = {}
+
 							if length ~= 4 then
 								error("Expected length for timeSignature event is 4, got " .. length)
 							end
+
 							track.time_signature.numerator = file:ReadByte()
 							track.time_signature.denominator = file:ReadByte() ^ 2
 							track.time_signature.metronome = file:ReadByte()
 							track.time_signature.thirty_seconds = file:ReadByte()
 						elseif sub_type == 0x59 then
 							track.key_signature = {}
+
 							if length ~= 2 then
 								error("Expected length for keySignature event is 2, got " .. length)
 							end
+
 							track.key_signature.key = file:ReadByte(true)
 							track.key_signature.scale = file:ReadByte()
 						elseif sub_type == 0x7f then
@@ -139,10 +142,8 @@ do
 					end
 
 					track.channel = bit.band(event_type, 0x0f)
-
 					local event = {}
 					event.time = time
-
 					local event_type = bit.rshift(event_type, 4)
 
 					if event_type == 0x08 then
@@ -152,6 +153,7 @@ do
 					elseif event_type == 0x09 then
 						event.note_number = param1
 						event.velocity = file:ReadByte()
+
 						if event.velocity == 0 then
 							event.subtype = "note_off"
 						else
@@ -170,7 +172,8 @@ do
 						event.program_number = param1
 					elseif event_type == 0x0d then
 						event.subtype = "channel_aftertouch"
-						event.amount = param1;
+						event.amount = param1
+						
 					elseif event_type == 0x0e then
 						event.subtype = "pitch_bend"
 						event.value = param1 + bit.lshift(file:ReadByte(), 7)
@@ -181,9 +184,7 @@ do
 					table.insert(track.events, event)
 				end
 
-				if file:GetPosition() >= info.track_size then
-					break
-				end
+				if file:GetPosition() >= info.track_size then break end
 			end
 
 			midi.tracks[i] = track
@@ -217,13 +218,11 @@ do
 
 	function audio.SF2ToTable(path)
 		local sf2 = vfs.Open(path)
-
 		sf2:ReadStructure([[
 			string magic[4] = RIFF;
 			unsigned int size;
 			string magic2[4] = sfbk;
 		]])
-
 		local out = {}
 
 		-- list
@@ -233,9 +232,7 @@ do
 				unsigned int size;
 				char type[4];
 			]])
-
 			local the_end = sf2:GetPosition() + header.size - 4
-
 			local chunk = {}
 
 			for _ = 1, 1024 do
@@ -243,7 +240,6 @@ do
 
 				local id = sf2:ReadBytes(4)
 				local size = sf2:ReadLong()
-
 				local the_end = sf2:GetPosition() + size
 
 				if id == "ifil" then
@@ -261,7 +257,7 @@ do
 				elseif id == "ICOP" then
 					chunk.copyright = sf2:ReadString(size, true)
 				elseif id == "smpl" then
-					chunk.data =  ffi.cast("uint8_t *", sf2:ReadBytes(size))
+					chunk.data = ffi.cast("uint8_t *", sf2:ReadBytes(size))
 					chunk.size = size
 				elseif id == "phdr" then
 					local list = {}
@@ -275,7 +271,7 @@ do
 						info.library = sf2:ReadLong()
 						info.genre = sf2:ReadLong()
 						info.morphology_genre = sf2:ReadLong()
-						table.insert(list, info)
+						table.insert(list, info)					
 					until sf2:GetPosition() >= the_end
 
 					chunk.phdr = list
@@ -286,7 +282,7 @@ do
 						local info = {}
 						info.gen_index = sf2:ReadShort()
 						info.mod_index = sf2:ReadShort()
-						table.insert(list, info)
+						table.insert(list, info)					
 					until sf2:GetPosition() >= the_end
 
 					chunk.pbag = list
@@ -305,15 +301,12 @@ do
 
 					repeat
 						local info = {}
-
 						info.mod_src_oper = mod_bits_to_table(sf2:ReadShort())
-
 						info.mod_dest_oper = sf2:ReadShort()
 						info.mod_amount = sf2:ReadShort()
 						info.mod_amt_src_oper = mod_bits_to_table(sf2:ReadShort())
-
 						info.mod_trans_oper = sf2:ReadShort()
-						table.insert(list, info)
+						table.insert(list, info)					
 					until sf2:GetPosition() >= the_end
 
 					chunk.imod = list
@@ -325,7 +318,6 @@ do
 					repeat
 						local gen = {}
 						local gen_operator = sf2:ReadShort()
-
 						gen.operator = gen_operator
 
 						if gen_operator == 43 or gen_operator == 44 then
@@ -335,7 +327,7 @@ do
 							gen.amount = sf2:ReadShort()
 						end
 
-						table.insert(list, gen)
+						table.insert(list, gen)					
 					until sf2:GetPosition() >= the_end
 
 					chunk.igen = list
@@ -346,11 +338,10 @@ do
 						local info = {}
 						info.instrument_name = sf2:ReadString(20, true)
 						info.instrument_bag_index = sf2:ReadShort()
-						table.insert(list, info)
+						table.insert(list, info)					
 					until sf2:GetPosition() >= the_end
 
 					chunk.inst = list
-
 				elseif id == "ibag" then
 					local list = {}
 
@@ -358,28 +349,26 @@ do
 						local info = {}
 						info.GenNdx = sf2:ReadShort()
 						info.ModNdx = sf2:ReadShort()
-						table.insert(list, info)
+						table.insert(list, info)					
 					until sf2:GetPosition() >= the_end
 
-				   chunk.ibag = list
+					chunk.ibag = list
 				elseif id == "shdr" then
 					local list = {}
+
 					repeat
 						local info = {}
 						info.sample_name = sf2:ReadString(20, true)
-
 						info.start = sf2:ReadUnsignedLong()
 						info.stop = sf2:ReadUnsignedLong()
-
 						info.start_loop = sf2:ReadLong()
 						info.stop_loop = sf2:ReadLong()
-
 						info.sample_rate = sf2:ReadLong()
 						info.original_pitch = sf2:ReadByte()
 						info.pitch_correction = sf2:ReadByte()
 						info.sample_link = sf2:ReadShort()
 						info.sample_type = sf2:ReadShort()
-						table.insert(list, info)
+						table.insert(list, info)					
 					until sf2:GetPosition() >= the_end
 
 					chunk.shdr = list

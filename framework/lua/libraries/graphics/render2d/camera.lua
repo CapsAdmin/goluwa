@@ -1,5 +1,4 @@
 local render2d = ... or _G.render2d
-
 render2d.camera = camera.CreateCamera()
 render2d.camera:Set3D(false)
 render2d._camera = render2d.camera
@@ -14,6 +13,7 @@ end
 
 do
 	local ceil = math.ceil
+
 	function render2d.Translate(x, y, z)
 		render2d.camera:TranslateWorld(ceil(x), ceil(y), z or 0)
 	end
@@ -39,11 +39,13 @@ function render2d.LoadIdentity()
 	render2d.camera:LoadIdentityWorld()
 end
 
-function render2d.PushMatrix(x,y, w,h, a, dont_multiply)
+function render2d.PushMatrix(x, y, w, h, a, dont_multiply)
 	render2d.camera:PushWorld(nil, dont_multiply)
 
 	if x and y then render2d.Translate(x, y) end
+
 	if w and h then render2d.Scale(w, h) end
+
 	if a then render2d.Rotate(a) end
 end
 

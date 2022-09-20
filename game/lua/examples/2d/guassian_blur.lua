@@ -1,19 +1,19 @@
 local w = 512
 local h = 512
-
-local shader = render.CreateShader({
-	name = "guassian_blur",
-	fragment = {
-		variables = {
-			image = render.GetWhiteTexture(),
-			resolution = Vec2(w, h),
-			direction = Vec2(0, 0),
-			stage = 0,
-		},
-		mesh_layout = {
-			{uv = "vec2"},
-		},
-		source = [[
+local shader = render.CreateShader(
+	{
+		name = "guassian_blur",
+		fragment = {
+			variables = {
+				image = render.GetWhiteTexture(),
+				resolution = Vec2(w, h),
+				direction = Vec2(0, 0),
+				stage = 0,
+			},
+			mesh_layout = {
+				{uv = "vec2"},
+			},
+			source = [[
 			out vec4 out_color;
 
 			vec4 blur5() {
@@ -67,21 +67,19 @@ local shader = render.CreateShader({
 				out_color.a = 1;
 			}
 		]],
+		},
 	}
-})
-
+)
 local tex = render.CreateTextureFromPath("https://raw.githubusercontent.com/mikolalysenko/baboon-image/master/baboon.png")
 tex:SetMinFilter("linear")
 tex:SetMagFilter("linear")
 tex:SetWrapS("repeat")
-
 local fboA = render.CreateFrameBuffer(Vec2(512, 512))
 fboA:GetTexture(1):SetMipMapLevels(1)
 fboA:GetTexture(1):SetMinFilter("linear")
 fboA:GetTexture(1):SetMagFilter("linear")
 fboA:GetTexture(1):SetWrapS("repeat")
 fboA:WriteThese("1")
-
 local fboB = render.CreateFrameBuffer(Vec2(512, 512))
 fboB:GetTexture(1):SetMipMapLevels(1)
 fboB:GetTexture(1):SetMinFilter("linear")
@@ -90,16 +88,13 @@ fboB:GetTexture(1):SetWrapS("repeat")
 fboB:WriteThese("1")
 
 function goluwa.PostDrawGUI()
-
 	local writeBuffer = fboA
 	local readBuffer = fboB
-
 	local iterations = 8
 	local anim = (math.sin(os.clock()) * 0.5 + 0.5)
 
 	for i = 0, iterations - 1 do
 		local radius = (iterations - i - 1) * anim
-
 		writeBuffer:Begin()
 		writeBuffer:ClearColor(0, 0, 0, 1)
 
@@ -112,28 +107,22 @@ function goluwa.PostDrawGUI()
 		shader.flip = true
 		shader.direction = i % 2 == 0 and Vec2(radius, 0) or Vec2(0, radius)
 		shader:Bind()
-
-		render2d.PushMatrix(0,0,w,h)
-			render2d.rectangle:Draw(render2d.rectangle_indices)
+		render2d.PushMatrix(0, 0, w, h)
+		render2d.rectangle:Draw(render2d.rectangle_indices)
 		render2d.PopMatrix()
-
 		writeBuffer:End()
-
 		local t = writeBuffer
 		writeBuffer = readBuffer
 		readBuffer = t
 	end
 
-
 	writeBuffer:Begin()
 	writeBuffer:ClearColor(0, 0, 0, 1)
-		shader:Bind()
-
-		render2d.PushMatrix()
-		render2d.Scale(w, h)
-			render2d.rectangle:Draw(render2d.rectangle_indices)
-		render2d.PopMatrix()
+	shader:Bind()
+	render2d.PushMatrix()
+	render2d.Scale(w, h)
+	render2d.rectangle:Draw(render2d.rectangle_indices)
+	render2d.PopMatrix()
 	writeBuffer:End()
-
-	gfx.DrawRect(0,0,w,h,writeBuffer:GetTexture(1))
+	gfx.DrawRect(0, 0, w, h, writeBuffer:GetTexture(1))
 end

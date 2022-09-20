@@ -1,4 +1,8 @@
-local ffi = require("ffi");local CLIB = assert(ffi.load("SDL2"));ffi.cdef([[typedef enum SDL_TextureAccess{SDL_TEXTUREACCESS_STATIC=0,SDL_TEXTUREACCESS_STREAMING=1,SDL_TEXTUREACCESS_TARGET=2};
+local ffi = require("ffi")
+
+local CLIB = assert(ffi.load("SDL2"))
+
+ffi.cdef([[typedef enum SDL_TextureAccess{SDL_TEXTUREACCESS_STATIC=0,SDL_TEXTUREACCESS_STREAMING=1,SDL_TEXTUREACCESS_TARGET=2};
 typedef enum SDL_BlendMode{SDL_BLENDMODE_NONE=0,SDL_BLENDMODE_BLEND=1,SDL_BLENDMODE_ADD=2,SDL_BLENDMODE_MOD=4,SDL_BLENDMODE_MUL=8,SDL_BLENDMODE_INVALID=2147483647};
 typedef enum SDL_PixelType{SDL_PIXELTYPE_UNKNOWN=0,SDL_PIXELTYPE_INDEX1=1,SDL_PIXELTYPE_INDEX4=2,SDL_PIXELTYPE_INDEX8=3,SDL_PIXELTYPE_PACKED8=4,SDL_PIXELTYPE_PACKED16=5,SDL_PIXELTYPE_PACKED32=6,SDL_PIXELTYPE_ARRAYU8=7,SDL_PIXELTYPE_ARRAYU16=8,SDL_PIXELTYPE_ARRAYU32=9,SDL_PIXELTYPE_ARRAYF16=10,SDL_PIXELTYPE_ARRAYF32=11};
 typedef enum SDL_PackedLayout{SDL_PACKEDLAYOUT_NONE=0,SDL_PACKEDLAYOUT_332=1,SDL_PACKEDLAYOUT_4444=2,SDL_PACKEDLAYOUT_1555=3,SDL_PACKEDLAYOUT_5551=4,SDL_PACKEDLAYOUT_565=5,SDL_PACKEDLAYOUT_8888=6,SDL_PACKEDLAYOUT_2101010=7,SDL_PACKEDLAYOUT_1010102=8};
@@ -872,22 +876,29 @@ signed int(SDL_GetKeyFromScancode)(enum SDL_Scancode);
 ]])
 local library = {}
 
-
 --====helper safe_clib_index====
-		function SAFE_INDEX(clib)
-			return setmetatable({}, {__index = function(_, k)
-				local ok, val = pcall(function() return clib[k] end)
+function SAFE_INDEX(clib)
+	return setmetatable(
+		{},
+		{
+			__index = function(_, k)
+				local ok, val = pcall(function()
+					return clib[k]
+				end)
+
 				if ok then
 					return val
 				elseif clib_index then
 					return clib_index(k)
 				end
-			end})
-		end
-	
---====helper safe_clib_index====
+			end,
+		}
+	)
+end
 
-CLIB = SAFE_INDEX(CLIB)library = {
+--====helper safe_clib_index====
+CLIB = SAFE_INDEX(CLIB)
+library = {
 	atan2 = CLIB.SDL_atan2,
 	lroundf = CLIB.SDL_lroundf,
 	JoystickGetProductVersion = CLIB.SDL_JoystickGetProductVersion,
@@ -2458,41 +2469,44 @@ library.e = {
 	HINT_ALLOW_ALT_TAB_WHILE_GRABBED = "SDL_ALLOW_ALT_TAB_WHILE_GRABBED",
 	HINT_PREFERRED_LOCALES = "SDL_PREFERRED_LOCALES",
 }
-		function library.CreateVulkanSurface(window, instance)
-			local box = ffi.new("struct VkSurfaceKHR_T * [1]")
 
-			if library.Vulkan_CreateSurface(window, instance, ffi.cast("void**", box)) == nil then
-				return nil, ffi.string(library.GetError())
-			end
+function library.CreateVulkanSurface(window, instance)
+	local box = ffi.new("struct VkSurfaceKHR_T * [1]")
 
-			return box[0]
+	if library.Vulkan_CreateSurface(window, instance, ffi.cast("void**", box)) == nil then
+		return nil, ffi.string(library.GetError())
+	end
+
+	return box[0]
+end
+
+function library.GetRequiredInstanceExtensions(wnd, extra)
+	local count = ffi.new("uint32_t[1]")
+
+	if library.Vulkan_GetInstanceExtensions(wnd, count, nil) == 0 then
+		return nil, ffi.string(library.GetError())
+	end
+
+	local array = ffi.new("const char *[?]", count[0])
+
+	if library.Vulkan_GetInstanceExtensions(wnd, count, array) == 0 then
+		return nil, ffi.string(library.GetError())
+	end
+
+	local out = {}
+
+	for i = 0, count[0] - 1 do
+		table.insert(out, ffi.string(array[i]))
+	end
+
+	if extra then
+		for i, v in ipairs(extra) do
+			table.insert(out, v)
 		end
+	end
 
-		function library.GetRequiredInstanceExtensions(wnd, extra)
-			local count = ffi.new("uint32_t[1]")
+	return out
+end
 
-			if library.Vulkan_GetInstanceExtensions(wnd, count, nil) == 0 then
-				return nil, ffi.string(library.GetError())
-			end
-
-			local array = ffi.new("const char *[?]", count[0])
-
-			if library.Vulkan_GetInstanceExtensions(wnd, count, array) == 0 then
-				return nil, ffi.string(library.GetError())
-			end
-
-			local out = {}
-			for i = 0, count[0] - 1 do
-				table.insert(out, ffi.string(array[i]))
-			end
-
-			if extra then
-				for i,v in ipairs(extra) do
-					table.insert(out, v)
-				end
-			end
-
-			return out
-		end
-		library.clib = CLIB
+library.clib = CLIB
 return library

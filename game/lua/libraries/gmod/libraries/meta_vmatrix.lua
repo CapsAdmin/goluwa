@@ -1,5 +1,4 @@
 local gine = ... or _G.gine
-
 local META = gine.GetMetaTable("VMatrix")
 
 function gine.env.Matrix(tbl)
@@ -13,17 +12,14 @@ function gine.env.Matrix(tbl)
 		self.ptr.m01 = tbl[1][2]
 		self.ptr.m02 = tbl[1][3]
 		self.ptr.m03 = tbl[1][4]
-
 		self.ptr.m10 = tbl[2][1]
 		self.ptr.m11 = tbl[2][2]
 		self.ptr.m12 = tbl[2][3]
 		self.ptr.m13 = tbl[2][4]
-
 		self.ptr.m20 = tbl[3][1]
 		self.ptr.m21 = tbl[3][2]
 		self.ptr.m22 = tbl[3][3]
 		self.ptr.m23 = tbl[3][4]
-
 		self.ptr.m30 = tbl[4][1]
 		self.ptr.m31 = tbl[4][2]
 		self.ptr.m32 = tbl[4][3]
@@ -46,25 +42,23 @@ do
 	end
 
 	function META:GetField(r, c)
-		if tr[r] and tr[r][c] then
-			return self.ptr[tr[r][c]]
-		end
+		if tr[r] and tr[r][c] then return self.ptr[tr[r][c]] end
 	end
 
 	function META:SetField(r, c, v)
-		if tr[r] and tr[r][c] then
-			self.ptr[tr[r][c]] = v
-		end
+		if tr[r] and tr[r][c] then self.ptr[tr[r][c]] = v end
 	end
 
 	function META:ToTable()
 		local tbl = {}
+
 		for x = 1, 4 do
 			for y = 1, 4 do
 				tbl[x] = tbl[x] or {}
 				tbl[x][y] = self:GetField(x, y)
 			end
 		end
+
 		return tbl
 	end
 end
@@ -96,7 +90,7 @@ function META:Rotate(ang)
 end
 
 function META:GetScale()
-	return gine.env.Vector(self.ptr.m00, self.ptr.m11, self.ptr.m22)-- / self.ptr.m33
+	return gine.env.Vector(self.ptr.m00, self.ptr.m11, self.ptr.m22) -- / self.ptr.m33
 end
 
 function META:Translate(v)
@@ -108,7 +102,7 @@ function META:SetTranslation(v)
 end
 
 function META:GetTranslation()
-	return gine.env.Vector(self.ptr.m03, self.ptr.m13, self.ptr.m23)-- / self.ptr.m33
+	return gine.env.Vector(self.ptr.m03, self.ptr.m13, self.ptr.m23) -- / self.ptr.m33
 end
 
 function META:ScaleTranslation(scale)

@@ -1,5 +1,4 @@
-function gine.env.gameevent.Listen()
-	-- this is always on
+function gine.env.gameevent.Listen() -- this is always on
 end
 
 local hud_element_list = {
@@ -55,51 +54,66 @@ local hud_element_list = {
 	"CHudPosture",
 	"CHUDQuickInfo",
 }
-
 gine.hud_elements = {}
 
 function gine.ToggleHUDElement(what, b)
 	--llog("hud element: %s = %s", what, b)
 	if what == "CHudChat" and chathud then
-		if b then
-			chathud.Show()
-		else
-			chathud.Hide()
-		end
+		if b then chathud.Show() else chathud.Hide() end
 	end
 end
 
-for k,v in ipairs(hud_element_list) do
+for k, v in ipairs(hud_element_list) do
 	gine.hud_elements[v] = true
 end
 
 gine.AddEvent("Update", function()
 	if CLIENT then
-		local tbl = gine.env.gamemode.Call("CalcView", gine.env.LocalPlayer(), gine.env.EyePos(), gine.env.EyeAngles(), math.deg(render3d.camera:GetFOV()), render3d.camera:GetNearZ(), render3d.camera:GetFarZ())
+		local tbl = gine.env.gamemode.Call(
+			"CalcView",
+			gine.env.LocalPlayer(),
+			gine.env.EyePos(),
+			gine.env.EyeAngles(),
+			math.deg(render3d.camera:GetFOV()),
+			render3d.camera:GetNearZ(),
+			render3d.camera:GetFarZ()
+		)
+
 		if tbl then
 			if tbl.origin then render3d.camera:SetPosition(tbl.origin.v) end
+
 			if tbl.angles then render3d.camera:SetAngles(tbl.angles.v) end
+
 			if tbl.fov then render3d.camera:SetFOV(tbl.fov) end
+
 			if tbl.znear then render3d.camera:SetNearZ(tbl.znear) end
+
 			if tbl.zfar then render3d.camera:SetFarZ(tbl.zfar) end
-			--if tbl.drawviewer then  end
+		--if tbl.drawviewer then  end
 		end
 
 		--gine.env.gamemode.Call("CalcViewModelView", )
 		local frac = gine.env.gamemode.Call("AdjustMouseSensitivity", 0, 90, 90)
-		--gine.env.gamemode.Call("CalcMainActivity", )
-		--gine.env.gamemode.Call("TranslateActivity", )
-		--gine.env.gamemode.Call("UpdateAnimation", )
+	--gine.env.gamemode.Call("CalcMainActivity", )
+	--gine.env.gamemode.Call("TranslateActivity", )
+	--gine.env.gamemode.Call("UpdateAnimation", )
 	end
 
 	gine.env.gamemode.Call("Tick")
 	gine.env.gamemode.Call("Think")
 end)
+
 gine.AddEvent("PreGBufferModelPass", function()
 	gine.env.gamemode.Call("PreRender")
 end)
+
 gine.AddEvent("DrawScene", function()
-	gine.env.gamemode.Call("RenderScene", gine.env.EyePos(), gine.env.EyeAngles(), math.deg(render3d.camera:GetFOV()))
+	gine.env.gamemode.Call(
+		"RenderScene",
+		gine.env.EyePos(),
+		gine.env.EyeAngles(),
+		math.deg(render3d.camera:GetFOV())
+	)
 	gine.env.gamemode.Call("DrawMonitors")
 	gine.env.gamemode.Call("PreDrawSkyBox")
 	gine.env.gamemode.Call("SetupSkyboxFog")
@@ -118,6 +132,7 @@ gine.AddEvent("DrawScene", function()
 	--gine.env.gamemode.Call("DrawPhysgunBeam", player)
 	gine.env.gamemode.Call("PostDrawTranslucentRenderables", false, false)
 end)
+
 gine.AddEvent("PostGBufferModelPass", function()
 	gine.env.gamemode.Call("GetMotionBlurValues", 0, 0, 0, 0)
 	--gine.env.gamemode.Call("PreDrawViewModel")
@@ -129,6 +144,7 @@ end)
 gine.AddEvent("GBufferPostPostProcess", function()
 	gine.env.gamemode.Call("PostDrawEffects")
 end)
+
 gine.AddEvent("GBufferPrePostProcess", function()
 	gine.env.gamemode.Call("RenderScreenspaceEffects")
 	gine.env.gamemode.Call("PostRender")
@@ -138,7 +154,7 @@ gine.AddEvent("PreDrawGUI", function()
 	gine.env.gamemode.Call("PreDrawHUD")
 	gine.env.gamemode.Call("HUDPaintBackground")
 
-	for k,v in ipairs(hud_element_list) do
+	for k, v in ipairs(hud_element_list) do
 		if gine.env.gamemode.Call("HUDShouldDraw", v) == false then
 			if gine.hud_elements[v] then
 				gine.ToggleHUDElement(v, false)
@@ -165,7 +181,5 @@ gine.AddEvent("PostDrawGUI", function()
 end)
 
 gine.AddEvent("ChatOpen", function()
-	if gine.env.gamemode.Call("StartChat", false) == true then
-		return false
-	end
+	if gine.env.gamemode.Call("StartChat", false) == true then return false end
 end)

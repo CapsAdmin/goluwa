@@ -7,11 +7,17 @@ function goluwa.PreDrawGUI()
 
 	for i = 1, count do
 		poly:SetColor(math.random(), math.random(), math.random(), math.random())
-		poly:SetRect(i, (math.sin(time+i)*128)+256, (math.cos(time+i)*128)+256, 64, 64,math.sin(time+i))
+		poly:SetRect(
+			i,
+			(math.sin(time + i) * 128) + 256,
+			(math.cos(time + i) * 128) + 256,
+			64,
+			64,
+			math.sin(time + i)
+		)
 	end
 
-	render2d.SetColor(1,1,1,1)
+	render2d.SetColor(1, 1, 1, 1)
 	render2d.SetTexture(tex)
-
 	poly:Draw()
 end

@@ -23,25 +23,29 @@ function render._Initialize()
 	--llog("opengl version: %s", render.GetVersion())
 	--llog("glsl version: %s", render.GetShadingLanguageVersion())
 	--llog("vendor: %s", render.GetVendor().vendor)
-
-	if render.GetVersion():find("OpenGL ES") then
-		OPENGL_ES = true
-	end
+	if render.GetVersion():find("OpenGL ES") then OPENGL_ES = true end
 
 	local vendor = render.GetInfo().vendor:lower()
+
 	if vendor:find("nvidia") then NVIDIA = true end
+
 	if vendor:find("ati") then ATI = true end
+
 	if vendor:find("amd") then AMD = true end
-	if vendor:find("mesa") or vendor:find("open source technology center") or render.GetVersion():lower():find("mesa") then MESA = true end
+
+	if
+		vendor:find("mesa") or
+		vendor:find("open source technology center") or
+		render.GetVersion():lower():find("mesa")
+	then
+		MESA = true
+	end
+
 	if vendor:find("intel") then INTEL = true end
 
-	if DEBUG_OPENGL and not EXTERNAL_DEBUGGER then
-		render.SetDebug(true)
-	end
+	if DEBUG_OPENGL and not EXTERNAL_DEBUGGER then render.SetDebug(true) end
 
-	if SRGB then
-		gl.Enable("GL_FRAMEBUFFER_SRGB")
-	end
+	if SRGB then gl.Enable("GL_FRAMEBUFFER_SRGB") end
 
 	gl.Enable("GL_TEXTURE_CUBE_MAP_SEAMLESS")
 	gl.Enable("GL_MULTISAMPLE")
@@ -54,34 +58,32 @@ function render._Initialize()
 	end
 end
 
-function render.Shutdown()
-
-end
+function render.Shutdown() end
 
 function render.GetVersion()
 	local str = gl.GetString("GL_VERSION")
-	if str == nil then  return "?" end
+
+	if str == nil then return "?" end
+
 	return ffi.string(str)
 end
 
 function render.GetShadingLanguageVersion()
 	local str = gl.GetString("GL_SHADING_LANGUAGE_VERSION")
-	if str == nil then  return "?" end
+
+	if str == nil then return "?" end
+
 	return ffi.string(str)
 end
 
 function render.GetInfo()
 	local tbl = {}
-
 	local str = gl.GetString("GL_VENDOR")
 	tbl.vendor = str ~= nil and ffi.string(str) or "?"
-
 	local str = gl.GetString("GL_VERSION")
 	tbl.version = str ~= nil and ffi.string(str) or "?"
-
 	local str = gl.GetString("GL_RENDERER")
 	tbl.renderer = str ~= nil and ffi.string(str) or "?"
-
 	return tbl
 end
 
@@ -89,15 +91,18 @@ function render.GetAllExtensions()
 	local out = {}
 	local num = ffi.new("GLint[1]")
 	gl.GetIntegerv("GL_NUM_EXTENSIONS", num)
+
 	for i = 0, num[0] - 1 do
 		out[i + 1] = ffi.string(gl.GetStringi("GL_EXTENSIONS", i))
 	end
+
 	return out
 end
 
 do
 	local enabled = false
-	function render._SetScissor(x,y,w,h, sw,sh)
+
+	function render._SetScissor(x, y, w, h, sw, sh)
 		if not x then
 			if enabled == true then
 				gl.Disable("GL_SCISSOR_TEST")
@@ -108,12 +113,13 @@ do
 				gl.Enable("GL_SCISSOR_TEST")
 				enabled = true
 			end
+
 			gl.Scissor(x, sh - (y + h), w, h)
 		end
 	end
 end
 
-function render._SetViewport(x,y,w,h)
+function render._SetViewport(x, y, w, h)
 	gl.Viewport(x, y, w, h)
 end
 
@@ -134,7 +140,6 @@ do
 		constant_alpha = gl.e.GL_CONSTANT_ALPHA,
 		one_minus_constant_alpha = gl.e.GL_ONE_MINUS_CONSTANT_ALPHA,
 		src_alpha_saturate = gl.e.GL_SRC_ALPHA_SATURATE,
-
 		add = gl.e.GL_FUNC_ADD,
 		sub = gl.e.GL_FUNC_SUBTRACT,
 		reverse_sub = gl.e.GL_FUNC_REVERSE_SUBTRACT,
@@ -156,6 +161,7 @@ do
 
 		function render._SetBlendMode(src_color, dst_color, func_color)
 			BlendFunc(enums[src_color], enums[dst_color])
+
 			if BlendEquation then BlendEquation(enums[func_color]) end
 		end
 	end
@@ -163,7 +169,6 @@ end
 
 do
 	local CullFace = utility.GenerateCheckLastFunction(gl.CullFace, 1)
-
 	local enabled = false
 
 	function render._SetCullMode(mode)
@@ -199,6 +204,7 @@ do
 				gl.Enable("GL_DEPTH_TEST")
 				last_enable = b
 			end
+
 			if last_func ~= "GL_LESS" then
 				gl.DepthFunc("GL_LESS")
 				last_func = "GL_LESS"
@@ -208,13 +214,13 @@ do
 				gl.Disable("GL_DEPTH_TEST")
 				last_enable = b
 			end
+
 			if last_func ~= "GL_ALWAYS" then
 				gl.DepthFunc("GL_ALWAYS")
 				last_func = "GL_ALWAYS"
 			end
 		end
 	end
-
 end
 
 if render.IsExtensionSupported("ARB_texture_barrier") then
@@ -232,7 +238,6 @@ do
 		transform_feedback_primitives_written = gl.e.GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN,
 		time_passed = gl.e.GL_TIME_ELAPSED,
 	}
-
 	local META = {}
 	META.__index = META
 
@@ -254,8 +259,10 @@ do
 
 	do
 		local temp = ffi.new("GLuint[1]")
+
 		function META:GetResult()
 			gl.GetQueryObjectuiv(self.id, "GL_QUERY_RESULT_AVAILABLE", temp)
+
 			if temp[0] == 1 then
 				gl.GetQueryObjectuiv(self.id, "GL_QUERY_RESULT", temp)
 				return temp[0]
@@ -264,11 +271,10 @@ do
 	end
 
 	function META:Delete()
-		gl.DeleteQueries(1, ffi.new('GLuint[1]', self.id))
+		gl.DeleteQueries(1, ffi.new("GLuint[1]", self.id))
 	end
 
-	local ctype = ffi.typeof('struct { int id; uint16_t type; uint8_t ready; }')
-
+	local ctype = ffi.typeof("struct { int id; uint16_t type; uint8_t ready; }")
 	ffi.metatype(ctype, META)
 
 	function render.CreateQuery(type)
@@ -276,15 +282,13 @@ do
 		gl.GenQueries(1, temp)
 		local self = ffi.new(ctype)
 		self.id = temp[0]
-
 		self.type = translate[type]
-
 		return self
 	end
 end
 
-function render.SetColorMask(r,g,b,a)
-	gl.ColorMask(r,g,b,a)
+function render.SetColorMask(r, g, b, a)
+	gl.ColorMask(r, g, b, a)
 end
 
 function render.SetDepthMask(d)
@@ -308,7 +312,6 @@ do -- stencil
 		function render.GetStencil()
 			return enabled
 		end
-
 	end
 
 	do
@@ -331,7 +334,6 @@ do -- stencil
 		function render.StencilFunction(func, ref, mask)
 			gl.StencilFunc(translate[func], ref, mask or 0xFF)
 		end
-
 	end
 
 	do

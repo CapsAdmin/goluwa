@@ -1,7 +1,5 @@
 local gfx = (...) or _G.gfx
-
 local META = prototype.CreateTemplate("particle_2d")
-
 META:GetSet("Speed", 1)
 META:GetSet("Rate", 0.1)
 META:GetSet("EmitCount", 1)
@@ -16,15 +14,12 @@ META:GetSet("ScreenRect", Rect())
 
 function gfx.CreateParticleEmitter(max)
 	max = max or 1000
-
 	local self = META:CreateObject()
-
 	self.max = max
 	self.particles = {}
 	self.last_emit = 0
 	self.next_think = 0
 	self.poly = gfx.CreatePolygon2D(max * 6)
-
 	return self
 end
 
@@ -48,29 +43,27 @@ function META:Update(dt)
 	end
 
 	local remove_these = {}
-
-	local center = Vec3(0,0,0)
-
+	local center = Vec3(0, 0, 0)
 	dt = dt * self.Speed
-
 	local cull = not self.ScreenRect:IsZero()
 
 	for i, p in ipairs(self.particles) do
-
 		if p.life_end < time or (not p.Jitter and p.life_mult < 0.001) then
 			table_insert(remove_these, i)
 		else
-
 			if self.CenterAttractionForce ~= 0 and self.attraction_center then
-				p.Velocity.x = p.Velocity.x + (self.attraction_center.x - p.Position.x) * self.CenterAttractionForce
-				p.Velocity.y = p.Velocity.y + (self.attraction_center.y - p.Position.y) * self.CenterAttractionForce
+				p.Velocity.x = p.Velocity.x + (
+						self.attraction_center.x - p.Position.x
+					) * self.CenterAttractionForce
+				p.Velocity.y = p.Velocity.y + (
+						self.attraction_center.y - p.Position.y
+					) * self.CenterAttractionForce
 			end
 
 			if self.PosAttractionForce ~= 0 then
 				p.Velocity.x = p.Velocity.x + (self.Position.x - p.Position.x) * self.PosAttractionForce
 				p.Velocity.y = p.Velocity.y + (self.Position.y - p.Position.y) * self.PosAttractionForce
 			end
-
 
 			-- velocity
 			if p.Velocity.x ~= 0 then
@@ -85,9 +78,7 @@ function META:Update(dt)
 
 			p.life_mult = (p.life_end - time) / p.LifeTime
 
-			if self.CenterAttractionForce ~= 0 then
-				center = center + p.Position
-			end
+			if self.CenterAttractionForce ~= 0 then center = center + p.Position end
 
 			if cull then
 				if
@@ -100,10 +91,9 @@ function META:Update(dt)
 				end
 			end
 		end
-
 	end
-	self.attraction_center = center / #self.particles
 
+	self.attraction_center = center / #self.particles
 	table.multiremove(self.particles, remove_these)
 end
 
@@ -116,7 +106,7 @@ function META:Draw()
 		render2d.SetTexture()
 	end
 
-	render2d.SetColor(1,1,1,1)
+	render2d.SetColor(1, 1, 1, 1)
 
 	for i, p in ipairs(self.particles) do
 		local size = math_lerp(p.life_mult, p.EndSize, p.StartSize)
@@ -134,23 +124,16 @@ function META:Draw()
 		local h = size * p.Size.y
 		local a = 0
 
-
 		if not (length_x == 0 and length_y == 0) and self.Mode2D then
 			a = math_deg(p.Velocity:GetAngles().y)
 
-			if length_x ~= 0 then
-				w = w * length_x
-			end
+			if length_x ~= 0 then w = w * length_x end
 
-			if length_y ~= 0 then
-				h = h * length_y
-			end
+			if length_y ~= 0 then h = h * length_y end
 		end
 
-		local ox, oy = w*0.5, h*0.5
-
+		local ox, oy = w * 0.5, h * 0.5
 		self.poly:SetColor(p.Color.r, p.Color.g, p.Color.b, p.Color.a * alpha)
-
 		local x, y = p.Position.x, p.Position.y
 
 		if self.MoveResolution ~= 0 then
@@ -158,16 +141,7 @@ function META:Draw()
 			y = math_ceil(y * self.MoveResolution) / self.MoveResolution
 		end
 
-		self.poly:SetRect(
-			i,
-			x,
-			y,
-			w,
-			h,
-			p.Angle + a,
-			ox, oy
-		)
-
+		self.poly:SetRect(i, x, y, w, h, p.Angle + a, ox, oy)
 	end
 
 	self.poly:Draw()
@@ -181,27 +155,21 @@ local create_particle
 
 do
 	local META = prototype.CreateTemplate("particle")
-
-	META:GetSet("Position", Vec3(0,0,0))
-	META:GetSet("Velocity", Vec3(0,0,0))
+	META:GetSet("Position", Vec3(0, 0, 0))
+	META:GetSet("Velocity", Vec3(0, 0, 0))
 	META:GetSet("Drag", 0.98)
-	META:GetSet("Size", Vec2(1,1))
+	META:GetSet("Size", Vec2(1, 1))
 	META:GetSet("Angle", 0)
-
 	META:GetSet("StartJitter", 0)
 	META:GetSet("EndJitter", 0)
-
 	META:GetSet("StartSize", 10)
 	META:GetSet("EndSize", 0)
-
 	META:GetSet("StartLength", Vec2(0, 0))
 	META:GetSet("EndLength", Vec2(0, 0))
-
 	META:GetSet("StartAlpha", 1)
 	META:GetSet("EndAlpha", 0)
-
 	META:GetSet("LifeTime", 1)
-	META:GetSet("Color", Color(1,1,1,1))
+	META:GetSet("Color", Color(1, 1, 1, 1))
 
 	function META:SetLifeTime(n)
 		self.LifeTime = n
@@ -209,9 +177,7 @@ do
 	end
 
 	META:Register()
-
 	META.__index = META
-
 	create_particle = function()
 		return setmetatable({Position = Vec2()}, META) -- META:CreateObject()
 	end
@@ -221,17 +187,12 @@ function META:AddParticle()
 	local p = create_particle()
 	p.Position.x = self.Position.x
 	p.Position.y = self.Position.y
-
 	p.life_mult = 1
-
 	p:SetLifeTime(1)
 
-	if #self.particles >= self.max then
-		table_remove(self.particles, 1)
-	end
+	if #self.particles >= self.max then table_remove(self.particles, 1) end
 
 	table_insert(self.particles, p)
-
 	return p
 end
 
@@ -239,9 +200,7 @@ function META:Emit()
 	for _ = 1, self.EmitCount do
 		local p = self:AddParticle()
 
-		if self.OnEmit then
-			self:OnEmit(p)
-		end
+		if self.OnEmit then self:OnEmit(p) end
 	end
 end
 

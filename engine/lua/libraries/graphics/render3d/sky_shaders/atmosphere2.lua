@@ -130,6 +130,4 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 	), vec3(0))+stars;
 }]])
 
-if RELOAD then
-	render3d.Initialize()
-end
+if RELOAD then render3d.Initialize() end

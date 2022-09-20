@@ -7,6 +7,4 @@
 -- ARM64 instructions are always little-endian. So just forward to the
 -- common ARM64 disassembler module. All the interesting stuff is there.
 ------------------------------------------------------------------------------
-
-return require((string.match(..., ".*%.") or "").."dis_arm64")
-
+return require((string.match(..., ".*%.") or "") .. "dis_arm64")

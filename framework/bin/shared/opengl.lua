@@ -1,6 +1,5 @@
 local ffi = require("ffi")
 local gl = {}
-
 ffi.cdef([[
 typedef unsigned int GLenum;
 typedef unsigned char GLboolean;
@@ -5663,10 +5662,10 @@ typedef enum GL_LUA_ENUMS {
 	GL_FRAGMENT_LIGHT4_SGIX = 33808
 } GL_LUA_ENUMS;
 ]])
-
-
 local functions = {
-	glTexImage3DMultisample = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glTexImage3DMultisample = {
+		"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)",
+	},
 	glTexEnvf = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
 	glGetVariantBooleanvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLboolean *)"},
 	glSamplerParameterIuivOES = {"void (*)(GLuint, GL_LUA_ENUMS, const GLuint *)"},
@@ -5680,13 +5679,19 @@ local functions = {
 	glWindowPos2d = {"void (*)(GLdouble, GLdouble)"},
 	glPushName = {"void (*)(GLuint)"},
 	glPointParameterfvSGIS = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
-	glTexSubImage2D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
-	glCopyTexSubImage3DOES = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glTexSubImage2D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
+	glCopyTexSubImage3DOES = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)",
+	},
 	glGetFixedvOES = {"void (*)(GL_LUA_ENUMS, GLfixed *)"},
 	glVideoCaptureStreamParameterdvNV = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, const GLdouble *)"},
 	glStencilClearTagEXT = {"void (*)(GLsizei, GLuint)"},
 	glLightxv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
-	glMatrixFrustumEXT = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glMatrixFrustumEXT = {
+		"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble)",
+	},
 	glTranslated = {"void (*)(GLdouble, GLdouble, GLdouble)"},
 	glGetVertexArrayIntegervEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
 	glDisableVertexAttribArrayARB = {"void (*)(GLuint)"},
@@ -5697,7 +5702,9 @@ local functions = {
 	glPopMatrix = {"void (*)()"},
 	glGetFixedv = {"void (*)(GL_LUA_ENUMS, GLfixed *)"},
 	glGetProgramPipelineiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
-	glGetPerfCounterInfoINTEL = {"void (*)(GLuint, GLuint, GLuint, GLchar *, GLuint, GLchar *, GLuint *, GLuint *, GLuint *, GLuint *, GLuint64 *)"},
+	glGetPerfCounterInfoINTEL = {
+		"void (*)(GLuint, GLuint, GLuint, GLchar *, GLuint, GLchar *, GLuint *, GLuint *, GLuint *, GLuint *, GLuint64 *)",
+	},
 	glColor4hvNV = {"void (*)(const GLhalfNV *)"},
 	glDrawArraysInstanced = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei)"},
 	glClipPlanexOES = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
@@ -5712,7 +5719,9 @@ local functions = {
 	glCopyTextureLevelsAPPLE = {"void (*)(GLuint, GLuint, GLint, GLsizei)"},
 	glDeleteProgramsARB = {"void (*)(GLsizei, const GLuint *)"},
 	glClientActiveTexture = {"void (*)(GL_LUA_ENUMS)"},
-	glColorTableSGI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glColorTableSGI = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glVertex3sv = {"void (*)(const GLshort *)"},
 	glTexCoordP1uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
 	glBufferStorage = {"void (*)(GL_LUA_ENUMS, GLsizeiptr, const void *, GLbitfield)"},
@@ -5725,7 +5734,9 @@ local functions = {
 	glMultiTexCoord4hNV = {"void (*)(GL_LUA_ENUMS, GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV)"},
 	glSecondaryColorP3uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
 	glFogfv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
-	glGetActiveAttribARB = {"void (*)(GLhandleARB, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLcharARB *)"},
+	glGetActiveAttribARB = {
+		"void (*)(GLhandleARB, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLcharARB *)",
+	},
 	glVertexAttribDivisorANGLE = {"void (*)(GLuint, GLuint)"},
 	glEnd = {"void (*)()"},
 	glPointParameteri = {"void (*)(GL_LUA_ENUMS, GLint)"},
@@ -5748,7 +5759,9 @@ local functions = {
 	glObjectPtrLabelKHR = {"void (*)(const void *, GLsizei, const GLchar *)"},
 	glPathParameteriNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint)"},
 	glProgramUniformMatrix4x2fv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
-	glTextureImage3DMultisampleNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glTextureImage3DMultisampleNV = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, GLsizei, GLsizei, GLboolean)",
+	},
 	glMatrixLoadfEXT = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
 	glRasterPos3fv = {"void (*)(const GLfloat *)"},
 	glConvolutionParameterxOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
@@ -5776,14 +5789,18 @@ local functions = {
 	glNormal3s = {"void (*)(GLshort, GLshort, GLshort)"},
 	glGetCompressedTextureImage = {"void (*)(GLuint, GLint, GLsizei, void *)"},
 	glTexParameterx = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
-	glPathGlyphRangeNV = {"void (*)(GLuint, GL_LUA_ENUMS, const void *, GLbitfield, GLuint, GLsizei, GL_LUA_ENUMS, GLuint, GLfloat)"},
+	glPathGlyphRangeNV = {
+		"void (*)(GLuint, GL_LUA_ENUMS, const void *, GLbitfield, GLuint, GLsizei, GL_LUA_ENUMS, GLuint, GLfloat)",
+	},
 	glGetMapParameterfvNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
 	glGenProgramsARB = {"void (*)(GLsizei, GLuint *)"},
 	glShaderBinary = {"void (*)(GLsizei, const GLuint *, GL_LUA_ENUMS, const void *, GLsizei)"},
 	glNormalFormatNV = {"void (*)(GL_LUA_ENUMS, GLsizei)"},
 	glGetPerfMonitorCounterInfoAMD = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, void *)"},
 	glProgramUniformMatrix2fv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
-	glCopyImageSubDataNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)"},
+	glCopyImageSubDataNV = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)",
+	},
 	glNamedFramebufferTextureFaceEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint, GL_LUA_ENUMS)"},
 	glFrustumxOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed, GLfixed, GLfixed)"},
 	glEnableIndexedEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
@@ -5797,7 +5814,9 @@ local functions = {
 	glGetIntegerui64i_vNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint64EXT *)"},
 	glRecti = {"void (*)(GLint, GLint, GLint, GLint)"},
 	glCombinerParameterfNV = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
-	glClearNamedBufferSubData = {"void (*)(GLuint, GL_LUA_ENUMS, GLintptr, GLsizeiptr, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glClearNamedBufferSubData = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLintptr, GLsizeiptr, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glBufferData = {"void (*)(GL_LUA_ENUMS, GLsizeiptr, const void *, GL_LUA_ENUMS)"},
 	glVertexStream1dATI = {"void (*)(GL_LUA_ENUMS, GLdouble)"},
 	glBindVertexShaderEXT = {"void (*)(GLuint)"},
@@ -5808,7 +5827,9 @@ local functions = {
 	glDepthRangedNV = {"void (*)(GLdouble, GLdouble)"},
 	glTexParameterIivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
 	glIndexPointerListIBM = {"void (*)(GL_LUA_ENUMS, GLint, const void **, GLint)"},
-	glTexImage1D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexImage1D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glGetPathMetricRangeNV = {"void (*)(GLbitfield, GLuint, GLsizei, GLsizei, GLfloat *)"},
 	glInstrumentsBufferSGIX = {"void (*)(GLsizei, GLint *)"},
 	glGetNamedProgramLocalParameterIuivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLuint *)"},
@@ -5825,7 +5846,9 @@ local functions = {
 	glGenVertexArrays = {"void (*)(GLsizei, GLuint *)", true},
 	glMapBufferOES = {"void *(*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
 	glLightModelfv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
-	glGetActiveUniformARB = {"void (*)(GLhandleARB, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLcharARB *)"},
+	glGetActiveUniformARB = {
+		"void (*)(GLhandleARB, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLcharARB *)",
+	},
 	glSampleMaski = {"void (*)(GLuint, GLbitfield)"},
 	glTexCoord2hNV = {"void (*)(GLhalfNV, GLhalfNV)"},
 	glProgramEnvParameterI4iNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLint, GLint, GLint, GLint)"},
@@ -5854,7 +5877,9 @@ local functions = {
 	glFogCoordPointer = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
 	glFramebufferTexture3D = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)"},
 	glBlendEquationSeparateEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
-	glDrawElementsInstancedBaseVertexBaseInstanceEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint, GLuint)"},
+	glDrawElementsInstancedBaseVertexBaseInstanceEXT = {
+		"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint, GLuint)",
+	},
 	glCreateShaderProgramv = {"GLuint (*)(GL_LUA_ENUMS, GLsizei, const GLchar *const*)"},
 	glIsVariantEnabledEXT = {"GLboolean (*)(GLuint, GL_LUA_ENUMS)"},
 	glMultiDrawArraysIndirectEXT = {"void (*)(GL_LUA_ENUMS, const void *, GLsizei, GLsizei)"},
@@ -5862,7 +5887,9 @@ local functions = {
 	glBindProgramNV = {"void (*)(GL_LUA_ENUMS, GLuint)"},
 	glGetImageHandleARB = {"GLuint64 (*)(GLuint, GLint, GLboolean, GLint, GL_LUA_ENUMS)"},
 	glColor4iv = {"void (*)(const GLint *)"},
-	glTextureStorage3DMultisampleEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glTextureStorage3DMultisampleEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)",
+	},
 	glDiscardFramebufferEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLenum *)"},
 	glProgramUniformHandleui64vARB = {"void (*)(GLuint, GLint, GLsizei, const GLuint64 *)"},
 	glGetNamedRenderbufferParameterivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
@@ -5871,7 +5898,9 @@ local functions = {
 	glGetSamplerParameterIivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
 	glIsProgramARB = {"GLboolean (*)(GLuint)"},
 	glBlendColorxOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
-	glCopyTextureSubImage3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glCopyTextureSubImage3DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)",
+	},
 	glGetVertexAttribArrayObjectfvATI = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
 	glMultiTexCoord3fv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
 	glBlendFuncSeparateOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
@@ -5879,14 +5908,18 @@ local functions = {
 	glGetCombinerOutputParameterfvNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
 	glGetTextureParameterfv = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
 	glGetUniformuiv = {"void (*)(GLuint, GLint, GLuint *)"},
-	glProgramNamedParameter4dNV = {"void (*)(GLuint, GLsizei, const GLubyte *, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glProgramNamedParameter4dNV = {
+		"void (*)(GLuint, GLsizei, const GLubyte *, GLdouble, GLdouble, GLdouble, GLdouble)",
+	},
 	glEndConditionalRenderNV = {"void (*)()"},
 	glDeleteTexturesEXT = {"void (*)(GLsizei, const GLuint *)"},
 	glMap1d = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLint, GLint, const GLdouble *)"},
 	glGetPointervKHR = {"void (*)(GL_LUA_ENUMS, void **)"},
 	glClientActiveTextureARB = {"void (*)(GL_LUA_ENUMS)"},
 	glNamedRenderbufferStorageMultisample = {"void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
-	glSeparableFilter2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, const void *)"},
+	glSeparableFilter2DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, const void *)",
+	},
 	glDepthBoundsdNV = {"void (*)(GLdouble, GLdouble)"},
 	glVertexAttribIFormatNV = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei)"},
 	glDrawTransformFeedbackInstanced = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei)"},
@@ -5897,10 +5930,14 @@ local functions = {
 	glEvalCoord2xvOES = {"void (*)(const GLfixed *)"},
 	glVertexAttribI1ui = {"void (*)(GLuint, GLuint)"},
 	glGetCompressedTexImage = {"void (*)(GL_LUA_ENUMS, GLint, void *)"},
-	glProgramNamedParameter4fNV = {"void (*)(GLuint, GLsizei, const GLubyte *, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glProgramNamedParameter4fNV = {
+		"void (*)(GLuint, GLsizei, const GLubyte *, GLfloat, GLfloat, GLfloat, GLfloat)",
+	},
 	glIsRenderbufferEXT = {"GLboolean (*)(GLuint)"},
 	glProvokingVertexEXT = {"void (*)(GL_LUA_ENUMS)"},
-	glDrawTextureNV = {"void (*)(GLuint, GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glDrawTextureNV = {
+		"void (*)(GLuint, GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)",
+	},
 	glElementPointerAPPLE = {"void (*)(GL_LUA_ENUMS, const void *)"},
 	glGetHistogramParameterxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
 	glResolveDepthValuesNV = {"void (*)()"},
@@ -5917,7 +5954,9 @@ local functions = {
 	glDrawTexiOES = {"void (*)(GLint, GLint, GLint, GLint, GLint)"},
 	glColorPointerListIBM = {"void (*)(GLint, GL_LUA_ENUMS, GLint, const void **, GLint)"},
 	glGetNamedBufferParameteri64v = {"void (*)(GLuint, GL_LUA_ENUMS, GLint64 *)"},
-	glGetnSeparableFilter = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *, GLsizei, void *, void *)"},
+	glGetnSeparableFilter = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *, GLsizei, void *, void *)",
+	},
 	glGetRenderbufferParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
 	glGetTexBumpParameterivATI = {"void (*)(GL_LUA_ENUMS, GLint *)"},
 	glIsTexture = {"GLboolean (*)(GLuint)"},
@@ -5928,7 +5967,9 @@ local functions = {
 	glVertexAttribs1svNV = {"void (*)(GLuint, GLsizei, const GLshort *)"},
 	glDeleteRenderbuffers = {"void (*)(GLsizei, const GLuint *)"},
 	glProgramEnvParameterI4ivNV = {"void (*)(GL_LUA_ENUMS, GLuint, const GLint *)"},
-	glCompressedTexSubImage2D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedTexSubImage2D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glPolygonOffset = {"void (*)(GLfloat, GLfloat)"},
 	glNamedProgramLocalParameters4fvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLfloat *)"},
 	glMultiTexCoord2f = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat)"},
@@ -5949,7 +5990,9 @@ local functions = {
 	glBufferDataARB = {"void (*)(GL_LUA_ENUMS, GLsizeiptrARB, const void *, GL_LUA_ENUMS)"},
 	glWindowPos2sv = {"void (*)(const GLshort *)"},
 	glMatrixMult3x2fNV = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
-	glCoverFillPathInstancedNV = {"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glCoverFillPathInstancedNV = {
+		"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)",
+	},
 	glCreateShader = {"GLuint (*)(GL_LUA_ENUMS)"},
 	glWindowPos3iv = {"void (*)(const GLint *)"},
 	glGetPixelMapxv = {"void (*)(GL_LUA_ENUMS, GLint, GLfixed *)"},
@@ -5965,7 +6008,9 @@ local functions = {
 	glProgramLocalParametersI4uivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLuint *)"},
 	glFogi = {"void (*)(GL_LUA_ENUMS, GLint)"},
 	glTexGenfOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
-	glReplacementCodeuiColor4fNormal3fVertex3fSUN = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glReplacementCodeuiColor4fNormal3fVertex3fSUN = {
+		"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)",
+	},
 	glMultiDrawElementArrayAPPLE = {"void (*)(GL_LUA_ENUMS, const GLint *, const GLsizei *, GLsizei)"},
 	glGetnUniformiv = {"void (*)(GLuint, GLint, GLsizei, GLint *)"},
 	glLightModelxvOES = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
@@ -5977,7 +6022,9 @@ local functions = {
 	glMaterialxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
 	glPixelMapusv = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLushort *)"},
 	glGetImageHandleNV = {"GLuint64 (*)(GLuint, GLint, GLboolean, GLint, GL_LUA_ENUMS)"},
-	glTexPageCommitmentARB = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glTexPageCommitmentARB = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLboolean)",
+	},
 	glIndexxOES = {"void (*)(GLfixed)"},
 	glGetTexEnvfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
 	glClearStencil = {"void (*)(GLint)"},
@@ -5988,7 +6035,9 @@ local functions = {
 	glObjectLabel = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)"},
 	glNormalStream3svATI = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
 	glDeleteQueriesARB = {"void (*)(GLsizei, const GLuint *)"},
-	glClearTexSubImage = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glClearTexSubImage = {
+		"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glDeleteNamedStringARB = {"void (*)(GLint, const GLchar *)"},
 	glGetProgramResourceLocation = {"GLint (*)(GLuint, GL_LUA_ENUMS, const GLchar *)"},
 	glNormal3bv = {"void (*)(const GLbyte *)"},
@@ -6001,7 +6050,9 @@ local functions = {
 	glProgramUniform4ui64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLuint64EXT *)"},
 	glPolygonStipple = {"void (*)(const GLubyte *)"},
 	glScissorIndexedvNV = {"void (*)(GLuint, const GLint *)"},
-	glDebugMessageControlKHR = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)"},
+	glDebugMessageControlKHR = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)",
+	},
 	glMultiTexCoord1dvARB = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
 	glProgramBinaryOES = {"void (*)(GLuint, GL_LUA_ENUMS, const void *, GLint)"},
 	glReplacementCodeuiColor4ubVertex3fvSUN = {"void (*)(const GLuint *, const GLubyte *, const GLfloat *)"},
@@ -6043,7 +6094,9 @@ local functions = {
 	glVertexAttribL4d = {"void (*)(GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
 	glUniform4f = {"void (*)(GLint, GLfloat, GLfloat, GLfloat, GLfloat)"},
 	glGetPerfMonitorGroupStringAMD = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
-	glCopyImageSubData = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)"},
+	glCopyImageSubData = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)",
+	},
 	glFrustumfOES = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
 	glVertexPointervINTEL = {"void (*)(GLint, GL_LUA_ENUMS, const void **)"},
 	glSharpenTexFuncSGIS = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLfloat *)"},
@@ -6054,15 +6107,21 @@ local functions = {
 	glProgramUniform2ui = {"void (*)(GLuint, GLint, GLuint, GLuint)"},
 	glCoverageOperationNV = {"void (*)(GL_LUA_ENUMS)"},
 	glDeleteLists = {"void (*)(GLuint, GLsizei)"},
-	glCompressedTextureSubImage2D = {"void (*)(GLuint, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedTextureSubImage2D = {
+		"void (*)(GLuint, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glProgramLocalParameter4fvARB = {"void (*)(GL_LUA_ENUMS, GLuint, const GLfloat *)"},
 	glIndexi = {"void (*)(GLint)"},
 	glVertexArrayVertexAttribIFormatEXT = {"void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLuint)"},
 	glBeginConditionalRenderNV = {"void (*)(GLuint, GL_LUA_ENUMS)"},
 	glGetPathTexGenivNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
-	glTexCoord4fVertex4fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glTexCoord4fVertex4fSUN = {
+		"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)",
+	},
 	glEvalCoord2dv = {"void (*)(const GLdouble *)"},
-	glSeparableFilter2D = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, const void *)"},
+	glSeparableFilter2D = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, const void *)",
+	},
 	glLoadPaletteFromModelViewMatrixOES = {"void (*)()"},
 	glActiveProgramEXT = {"void (*)(GLuint)"},
 	glIsShader = {"GLboolean (*)(GLuint)"},
@@ -6095,7 +6154,9 @@ local functions = {
 	glUniform3i = {"void (*)(GLint, GLint, GLint, GLint)"},
 	glIsTextureHandleResidentNV = {"GLboolean (*)(GLuint64)"},
 	glRasterPos4f = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
-	glCompressedTexImage3D = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glCompressedTexImage3D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)",
+	},
 	glNormalPointerEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, const void *)"},
 	glColor4fv = {"void (*)(const GLfloat *)"},
 	glMultiTexCoord2i = {"void (*)(GL_LUA_ENUMS, GLint, GLint)"},
@@ -6142,7 +6203,9 @@ local functions = {
 	glBlendBarrierKHR = {"void (*)()"},
 	glVertex2iv = {"void (*)(const GLint *)"},
 	glGetTexGendv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLdouble *)"},
-	glMultiDrawElementsBaseVertexEXT = {"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, const GLint *)"},
+	glMultiDrawElementsBaseVertexEXT = {
+		"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, const GLint *)",
+	},
 	glNamedBufferStorageEXT = {"void (*)(GLuint, GLsizeiptr, const void *, GLbitfield)"},
 	glLineWidthxOES = {"void (*)(GLfixed)"},
 	glGetFragDataIndex = {"GLint (*)(GLuint, const GLchar *)"},
@@ -6153,7 +6216,9 @@ local functions = {
 	glDepthRangef = {"void (*)(GLfloat, GLfloat)"},
 	glGlobalAlphaFactorusSUN = {"void (*)(GLushort)"},
 	glBinormal3sEXT = {"void (*)(GLshort, GLshort, GLshort)"},
-	glPresentFrameKeyedNV = {"void (*)(GLuint, GLuint64EXT, GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLuint, GL_LUA_ENUMS, GLuint, GLuint)"},
+	glPresentFrameKeyedNV = {
+		"void (*)(GLuint, GLuint64EXT, GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLuint, GL_LUA_ENUMS, GLuint, GLuint)",
+	},
 	glMatrixLoad3x2fNV = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
 	glFlushStaticDataIBM = {"void (*)(GL_LUA_ENUMS)"},
 	glGenSamplers = {"void (*)(GLsizei, GLuint *)", true},
@@ -6172,14 +6237,18 @@ local functions = {
 	glNamedFramebufferDrawBuffers = {"void (*)(GLuint, GLsizei, const GLenum *)"},
 	glUniformHandleui64vARB = {"void (*)(GLint, GLsizei, const GLuint64 *)"},
 	glGetTextureParameterIuivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint *)"},
-	glDebugMessageInsertKHR = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, const GLchar *)"},
+	glDebugMessageInsertKHR = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, const GLchar *)",
+	},
 	glDrawRangeElementsEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *)"},
 	glDeleteNamesAMD = {"void (*)(GL_LUA_ENUMS, GLuint, const GLuint *)"},
 	glColorP4uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
 	glClipPlanef = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
 	glNormalPointervINTEL = {"void (*)(GL_LUA_ENUMS, const void **)"},
 	glIsNamedStringARB = {"GLboolean (*)(GLint, const GLchar *)"},
-	glConvolutionFilter2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glConvolutionFilter2DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glAreProgramsResidentNV = {"GLboolean (*)(GLsizei, const GLuint *, GLboolean *)"},
 	glProgramUniformMatrix4x2dv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
 	glGenBuffersARB = {"void (*)(GLsizei, GLuint *)"},
@@ -6192,7 +6261,9 @@ local functions = {
 	glGetBufferParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
 	glDeleteFramebuffersEXT = {"void (*)(GLsizei, const GLuint *)"},
 	glNamedFramebufferTexture = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint)"},
-	glTexCoord2fColor3fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glTexCoord2fColor3fVertex3fSUN = {
+		"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)",
+	},
 	glClampColorARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
 	glGlobalAlphaFactoruiSUN = {"void (*)(GLuint)"},
 	glBlendEquationiOES = {"void (*)(GLuint, GL_LUA_ENUMS)"},
@@ -6223,7 +6294,9 @@ local functions = {
 	glCreateVertexArrays = {"void (*)(GLsizei, GLuint *)"},
 	glPathDashArrayNV = {"void (*)(GLuint, GLsizei, const GLfloat *)"},
 	glGetActiveUniformsiv = {"void (*)(GLuint, GLsizei, const GLuint *, GL_LUA_ENUMS, GLint *)"},
-	glBlitNamedFramebuffer = {"void (*)(GLuint, GLuint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)"},
+	glBlitNamedFramebuffer = {
+		"void (*)(GLuint, GLuint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)",
+	},
 	glNamedProgramLocalParameterI4uiEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint)"},
 	glPushDebugGroupKHR = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)"},
 	glElementPointerATI = {"void (*)(GL_LUA_ENUMS, const void *)"},
@@ -6237,11 +6310,15 @@ local functions = {
 	glMatrixLoaddEXT = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
 	glGlobalAlphaFactordSUN = {"void (*)(GLdouble)"},
 	glNormal3fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
-	glDebugMessageInsert = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, const GLchar *)"},
+	glDebugMessageInsert = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, const GLchar *)",
+	},
 	glDisableiEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
 	glGetVideouivNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
 	glColor4i = {"void (*)(GLint, GLint, GLint, GLint)"},
-	glClearBufferSubData = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLintptr, GLsizeiptr, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glClearBufferSubData = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLintptr, GLsizeiptr, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glGetUniformBlockIndex = {"GLuint (*)(GLuint, const GLchar *)"},
 	glUniform1f = {"void (*)(GLint, GLfloat)"},
 	glPassThrough = {"void (*)(GLfloat)"},
@@ -6250,7 +6327,9 @@ local functions = {
 	glVertexAttribL1i64vNV = {"void (*)(GLuint, const GLint64EXT *)"},
 	glLightModelx = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
 	glQueryObjectParameteruiAMD = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint)"},
-	glMultiDrawElementsIndirectBindlessCountNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei, GLsizei, GLint)"},
+	glMultiDrawElementsIndirectBindlessCountNV = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei, GLsizei, GLint)",
+	},
 	glUniform1dv = {"void (*)(GLint, GLsizei, const GLdouble *)"},
 	glUniform3ui64vNV = {"void (*)(GLint, GLsizei, const GLuint64EXT *)"},
 	glVertexFormatNV = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei)"},
@@ -6263,7 +6342,9 @@ local functions = {
 	glSecondaryColor3sv = {"void (*)(const GLshort *)"},
 	glVertex3hNV = {"void (*)(GLhalfNV, GLhalfNV, GLhalfNV)"},
 	glUniform2uivEXT = {"void (*)(GLint, GLsizei, const GLuint *)"},
-	glCompressedTexImage3DOES = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glCompressedTexImage3DOES = {
+		"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)",
+	},
 	glQueryCounter = {"void (*)(GLuint, GL_LUA_ENUMS)"},
 	glSecondaryColor3iv = {"void (*)(const GLint *)"},
 	glPathParameterfNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat)"},
@@ -6281,12 +6362,16 @@ local functions = {
 	glPointParameteriNV = {"void (*)(GL_LUA_ENUMS, GLint)"},
 	glUnmapBufferARB = {"GLboolean (*)(GL_LUA_ENUMS)"},
 	glSecondaryColor3uiEXT = {"void (*)(GLuint, GLuint, GLuint)"},
-	glReadnPixelsKHR = {"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glReadnPixelsKHR = {
+		"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)",
+	},
 	glGetnTexImageARB = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
 	glUniform1uiv = {"void (*)(GLint, GLsizei, const GLuint *)"},
 	glColor4ubVertex2fvSUN = {"void (*)(const GLubyte *, const GLfloat *)"},
 	glGetProgramParameterdvNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLdouble *)"},
-	glMapControlPointsNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLint, GLboolean, const void *)"},
+	glMapControlPointsNV = {
+		"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLint, GLboolean, const void *)",
+	},
 	glColorMaski = {"void (*)(GLuint, GLboolean, GLboolean, GLboolean, GLboolean)"},
 	glTexCoord1f = {"void (*)(GLfloat)"},
 	glGetProgramEnvParameterIivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLint *)"},
@@ -6305,7 +6390,9 @@ local functions = {
 	glGetProgramNamedParameterdvNV = {"void (*)(GLuint, GLsizei, const GLubyte *, GLdouble *)"},
 	glCreateTextures = {"void (*)(GL_LUA_ENUMS, GLsizei, GLuint *)"},
 	glGetTexEnvxv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
-	glMultiTexImage1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glMultiTexImage1DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glUniform4iv = {"void (*)(GLint, GLsizei, const GLint *)"},
 	glStencilOpSeparateATI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
 	glIsEnabledIndexedEXT = {"GLboolean (*)(GL_LUA_ENUMS, GLuint)"},
@@ -6318,10 +6405,14 @@ local functions = {
 	glGetProgramInfoLog = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
 	glWindowPos2fARB = {"void (*)(GLfloat, GLfloat)"},
 	glSecondaryColor3sEXT = {"void (*)(GLshort, GLshort, GLshort)"},
-	glColorFragmentOp2ATI = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glColorFragmentOp2ATI = {
+		"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)",
+	},
 	glRotatex = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
 	glProgramEnvParameter4dARB = {"void (*)(GL_LUA_ENUMS, GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
-	glTextureSubImage1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTextureSubImage1DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glLoadTransposeMatrixd = {"void (*)(const GLdouble *)"},
 	glGetConvolutionParameterfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
 	glBindProgramPipeline = {"void (*)(GLuint)"},
@@ -6335,7 +6426,9 @@ local functions = {
 	glVertexAttrib1dv = {"void (*)(GLuint, const GLdouble *)"},
 	glPixelTransformParameterfEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
 	glTexCoord1fv = {"void (*)(const GLfloat *)"},
-	glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN = {
+		"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)",
+	},
 	glPointParameterfvARB = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
 	glPathTexGenNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, const GLfloat *)"},
 	glVertexAttrib4bv = {"void (*)(GLuint, const GLbyte *)"},
@@ -6352,7 +6445,9 @@ local functions = {
 	glGenRenderbuffersOES = {"void (*)(GLsizei, GLuint *)"},
 	glReplacementCodeuiColor3fVertex3fSUN = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
 	glGetAttribLocation = {"GLint (*)(GLuint, const GLchar *)"},
-	glGetMultiTexImageEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glGetMultiTexImageEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)",
+	},
 	glGetImageTransformParameterfvHP = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
 	glProgramUniform3ui = {"void (*)(GLuint, GLint, GLuint, GLuint, GLuint)"},
 	glGetActiveSubroutineName = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, GLsizei *, GLchar *)"},
@@ -6376,7 +6471,9 @@ local functions = {
 	glEnableVertexArrayAttribEXT = {"void (*)(GLuint, GLuint)"},
 	glGetVertexArrayPointeri_vEXT = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, void **)"},
 	glTexStorage2DMultisample = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean)"},
-	glCompressedTextureImage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glCompressedTextureImage2DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)",
+	},
 	glMaterialiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
 	glClearDepthdNV = {"void (*)(GLdouble)"},
 	glUniform1uiEXT = {"void (*)(GLint, GLuint)"},
@@ -6384,13 +6481,19 @@ local functions = {
 	glGetnUniformivARB = {"void (*)(GLuint, GLint, GLsizei, GLint *)"},
 	glColor3usv = {"void (*)(const GLushort *)"},
 	glDisableVertexArrayAttrib = {"void (*)(GLuint, GLuint)"},
-	glGetPathSpacingNV = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLfloat, GLfloat, GL_LUA_ENUMS, GLfloat *)"},
+	glGetPathSpacingNV = {
+		"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLfloat, GLfloat, GL_LUA_ENUMS, GLfloat *)",
+	},
 	glSampleMaskEXT = {"void (*)(GLclampf, GLboolean)"},
-	glMap2xOES = {"void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLint, GLint, GLfixed, GLfixed, GLint, GLint, GLfixed)"},
+	glMap2xOES = {
+		"void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLint, GLint, GLfixed, GLfixed, GLint, GLint, GLfixed)",
+	},
 	glDrawElementArrayAPPLE = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei)"},
 	glUnmapTexture2DINTEL = {"void (*)(GLuint, GLint)"},
 	glEndFragmentShaderATI = {"void (*)()"},
-	glConvolutionFilter1D = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glConvolutionFilter1D = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glGetShaderInfoLog = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
 	glAsyncMarkerSGIX = {"void (*)(GLuint)"},
 	glGetVertexAttribivNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
@@ -6400,7 +6503,9 @@ local functions = {
 	glGetTexParameterIivOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
 	glClear = {"void (*)(GLbitfield)"},
 	glPathCoordsNV = {"void (*)(GLuint, GLsizei, GL_LUA_ENUMS, const void *)"},
-	glMultiTexSubImage3DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glMultiTexSubImage3DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glBlendFuncSeparateIndexedAMD = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
 	glGetTextureParameterIivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
 	glSecondaryColor3iEXT = {"void (*)(GLint, GLint, GLint)"},
@@ -6429,9 +6534,13 @@ local functions = {
 	glWindowPos3d = {"void (*)(GLdouble, GLdouble, GLdouble)"},
 	glTexCoord2fNormal3fVertex3fvSUN = {"void (*)(const GLfloat *, const GLfloat *, const GLfloat *)"},
 	glIsQueryEXT = {"GLboolean (*)(GLuint)"},
-	glPathCommandsNV = {"void (*)(GLuint, GLsizei, const GLubyte *, GLsizei, GL_LUA_ENUMS, const void *)"},
+	glPathCommandsNV = {
+		"void (*)(GLuint, GLsizei, const GLubyte *, GLsizei, GL_LUA_ENUMS, const void *)",
+	},
 	glUniformHandleui64ARB = {"void (*)(GLint, GLuint64)"},
-	glGetDebugMessageLog = {"GLuint (*)(GLuint, GLsizei, GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)"},
+	glGetDebugMessageLog = {
+		"GLuint (*)(GLuint, GLsizei, GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)",
+	},
 	glTexCoordP2uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
 	glMapObjectBufferATI = {"void *(*)(GLuint)"},
 	glGetSharpenTexFuncSGIS = {"void (*)(GL_LUA_ENUMS, GLfloat *)"},
@@ -6472,7 +6581,9 @@ local functions = {
 	glStencilThenCoverStrokePathNV = {"void (*)(GLuint, GLint, GLuint, GL_LUA_ENUMS)"},
 	glGetTextureLevelParameteriv = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLint *)"},
 	glColorP3ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
-	glStencilStrokePathInstancedNV = {"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLint, GLuint, GL_LUA_ENUMS, const GLfloat *)"},
+	glStencilStrokePathInstancedNV = {
+		"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLint, GLuint, GL_LUA_ENUMS, const GLfloat *)",
+	},
 	glColorP4ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
 	glConvolutionParameterf = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
 	glMultiDrawArrays = {"void (*)(GL_LUA_ENUMS, const GLint *, const GLsizei *, GLsizei)"},
@@ -6483,7 +6594,9 @@ local functions = {
 	glDrawArraysInstancedNV = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei)"},
 	glShaderOp3EXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)"},
 	glBlendFuncSeparatei = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
-	glCompressedTexSubImage3DOES = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedTexSubImage3DOES = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glCullFace = {"void (*)(GL_LUA_ENUMS)"},
 	glMultiTexCoord3hNV = {"void (*)(GL_LUA_ENUMS, GLhalfNV, GLhalfNV, GLhalfNV)"},
 	glGetActiveUniformBlockiv = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint *)"},
@@ -6521,7 +6634,9 @@ local functions = {
 	glEvalCoord1d = {"void (*)(GLdouble)"},
 	glGetFogFuncSGIS = {"void (*)(GLfloat *)"},
 	glFogCoordfEXT = {"void (*)(GLfloat)"},
-	glPresentFrameDualFillNV = {"void (*)(GLuint, GLuint64EXT, GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint)"},
+	glPresentFrameDualFillNV = {
+		"void (*)(GLuint, GLuint64EXT, GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint)",
+	},
 	glGetMapAttribParameterfvNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLfloat *)"},
 	glTranslatex = {"void (*)(GLfixed, GLfixed, GLfixed)"},
 	glShaderSource = {"void (*)(GLuint, GLsizei, const GLchar *const*, const GLint *)"},
@@ -6557,7 +6672,9 @@ local functions = {
 	glVertex4iv = {"void (*)(const GLint *)"},
 	glGetVideoCaptureStreamdvNV = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLdouble *)"},
 	glTexCoord2dv = {"void (*)(const GLdouble *)"},
-	glMultiDrawElementsBaseVertexOES = {"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, const GLint *)"},
+	glMultiDrawElementsBaseVertexOES = {
+		"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, const GLint *)",
+	},
 	glUnmapBuffer = {"GLboolean (*)(GL_LUA_ENUMS)"},
 	glColor4dv = {"void (*)(const GLdouble *)"},
 	glDeleteFramebuffers = {"void (*)(GLsizei, const GLuint *)"},
@@ -6565,7 +6682,9 @@ local functions = {
 	glUniform4uiv = {"void (*)(GLint, GLsizei, const GLuint *)"},
 	glMultiTexBufferEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
 	glGetPerfMonitorGroupsAMD = {"void (*)(GLint *, GLsizei, GLuint *)"},
-	glTexImage3DMultisampleCoverageNV = {"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glTexImage3DMultisampleCoverageNV = {
+		"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLsizei, GLboolean)",
+	},
 	glBeginPerfMonitorAMD = {"void (*)(GLuint)"},
 	glLoadTransposeMatrixfARB = {"void (*)(const GLfloat *)"},
 	glGenerateMipmapEXT = {"void (*)(GL_LUA_ENUMS)"},
@@ -6590,7 +6709,9 @@ local functions = {
 	glLightModelf = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
 	glVertexArrayElementBuffer = {"void (*)(GLuint, GLuint)"},
 	glVertexStream1sATI = {"void (*)(GL_LUA_ENUMS, GLshort)"},
-	glGetPathMetricsNV = {"void (*)(GLbitfield, GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLsizei, GLfloat *)"},
+	glGetPathMetricsNV = {
+		"void (*)(GLbitfield, GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLsizei, GLfloat *)",
+	},
 	glProgramUniformMatrix2x3dv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
 	glSecondaryColor3fEXT = {"void (*)(GLfloat, GLfloat, GLfloat)"},
 	glUniformMatrix3x2fv = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
@@ -6602,13 +6723,17 @@ local functions = {
 	glMultiTexCoord2hvNV = {"void (*)(GL_LUA_ENUMS, const GLhalfNV *)"},
 	glVertexAttribL3i64vNV = {"void (*)(GLuint, const GLint64EXT *)"},
 	glDeleteBuffersARB = {"void (*)(GLsizei, const GLuint *)"},
-	glBitmap = {"void (*)(GLsizei, GLsizei, GLfloat, GLfloat, GLfloat, GLfloat, const GLubyte *)"},
+	glBitmap = {
+		"void (*)(GLsizei, GLsizei, GLfloat, GLfloat, GLfloat, GLfloat, const GLubyte *)",
+	},
 	glCopyPathNV = {"void (*)(GLuint, GLuint)"},
 	glCoverageModulationNV = {"void (*)(GL_LUA_ENUMS)"},
 	glMultiTexCoord3s = {"void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort)"},
 	glGetPathLengthNV = {"GLfloat (*)(GLuint, GLsizei, GLsizei)"},
 	glColorTableParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
-	glWriteMaskEXT = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glWriteMaskEXT = {
+		"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)",
+	},
 	glWindowPos4svMESA = {"void (*)(const GLshort *)"},
 	glWindowPos4sMESA = {"void (*)(GLshort, GLshort, GLshort, GLshort)"},
 	glWindowPos4ivMESA = {"void (*)(const GLint *)"},
@@ -6629,7 +6754,9 @@ local functions = {
 	glProvokingVertex = {"void (*)(GL_LUA_ENUMS)"},
 	glWindowPos3s = {"void (*)(GLshort, GLshort, GLshort)"},
 	glWindowPos3ivMESA = {"void (*)(const GLint *)"},
-	glCompressedMultiTexSubImage2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedMultiTexSubImage2DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glDeleteVertexShaderEXT = {"void (*)(GLuint)"},
 	glTexGenfvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
 	glPollInstrumentsSGIX = {"GLint (*)(GLint *)"},
@@ -6682,14 +6809,18 @@ local functions = {
 	glGetTexEnviv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
 	glNamedProgramLocalParameter4dvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, const GLdouble *)"},
 	glCreateSamplers = {"void (*)(GLsizei, GLuint *)"},
-	glMultiModeDrawElementsIBM = {"void (*)(const GLenum *, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, GLint)"},
+	glMultiModeDrawElementsIBM = {
+		"void (*)(const GLenum *, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, GLint)",
+	},
 	glNamedFramebufferParameteriEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint)"},
 	glWindowPos2dv = {"void (*)(const GLdouble *)"},
 	glGetBufferParameterivARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
 	glClientWaitSyncAPPLE = {"GLenum (*)(GLsync, GLbitfield, GLuint64)"},
 	glDeleteVertexArraysOES = {"void (*)(GLsizei, const GLuint *)"},
 	glColor4fNormal3fVertex3fvSUN = {"void (*)(const GLfloat *, const GLfloat *, const GLfloat *)"},
-	glCopyTexImage2D = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)"},
+	glCopyTexImage2D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)",
+	},
 	glMultiTexCoord4fv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
 	glConvolutionParameterfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
 	glActiveVaryingNV = {"void (*)(GLuint, const GLchar *)"},
@@ -6727,7 +6858,9 @@ local functions = {
 	glViewportArrayvNV = {"void (*)(GLuint, GLsizei, const GLfloat *)"},
 	glVertexAttrib4uivARB = {"void (*)(GLuint, const GLuint *)"},
 	glEdgeFlagPointerEXT = {"void (*)(GLsizei, GLsizei, const GLboolean *)"},
-	glColorTable = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glColorTable = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glDeleteVertexArraysAPPLE = {"void (*)(GLsizei, const GLuint *)"},
 	glMapParameterivNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
 	glEnableClientStateiEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
@@ -6817,7 +6950,9 @@ local functions = {
 	glVertexAttribs4hvNV = {"void (*)(GLuint, GLsizei, const GLhalfNV *)"},
 	glVertexAttribs4fvNV = {"void (*)(GLuint, GLsizei, const GLfloat *)"},
 	glClearAccum = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
-	glColorSubTableEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glColorSubTableEXT = {
+		"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glVertexAttribs4dvNV = {"void (*)(GLuint, GLsizei, const GLdouble *)"},
 	glVertexP4uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
 	glVertexAttribs3hvNV = {"void (*)(GLuint, GLsizei, const GLhalfNV *)"},
@@ -6854,7 +6989,9 @@ local functions = {
 	glVertexAttribLPointer = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
 	glVertexAttribLFormatNV = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei)"},
 	glVertexAttribLFormat = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLuint)"},
-	glPathMemoryGlyphIndexArrayNV = {"GLenum (*)(GLuint, GL_LUA_ENUMS, GLsizeiptr, const void *, GLsizei, GLuint, GLsizei, GLuint, GLfloat)"},
+	glPathMemoryGlyphIndexArrayNV = {
+		"GLenum (*)(GLuint, GL_LUA_ENUMS, GLsizeiptr, const void *, GLsizei, GLuint, GLsizei, GLuint, GLfloat)",
+	},
 	glVertexAttribL4ui64vNV = {"void (*)(GLuint, const GLuint64EXT *)"},
 	glVertexAttribL4ui64NV = {"void (*)(GLuint, GLuint64EXT, GLuint64EXT, GLuint64EXT, GLuint64EXT)"},
 	glVertexAttribL4i64vNV = {"void (*)(GLuint, const GLint64EXT *)"},
@@ -6864,7 +7001,9 @@ local functions = {
 	glVertexAttribL4i64NV = {"void (*)(GLuint, GLint64EXT, GLint64EXT, GLint64EXT, GLint64EXT)"},
 	glVertexAttribL4dvEXT = {"void (*)(GLuint, const GLdouble *)"},
 	glGetPerfQueryInfoINTEL = {"void (*)(GLuint, GLuint, GLchar *, GLuint *, GLuint *, GLuint *, GLuint *)"},
-	glCopyImageSubDataEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)"},
+	glCopyImageSubDataEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)",
+	},
 	glVertexAttribL4dEXT = {"void (*)(GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
 	glVertexAttribI1uivEXT = {"void (*)(GLuint, const GLuint *)"},
 	glVertexAttribL3ui64vNV = {"void (*)(GLuint, const GLuint64EXT *)"},
@@ -6893,7 +7032,9 @@ local functions = {
 	glGetnPixelMapuiv = {"void (*)(GL_LUA_ENUMS, GLsizei, GLuint *)"},
 	glUniform3f = {"void (*)(GLint, GLfloat, GLfloat, GLfloat)"},
 	glLoadMatrixd = {"void (*)(const GLdouble *)"},
-	glCompressedTexSubImage2DARB = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedTexSubImage2DARB = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glVertexAttribDivisorEXT = {"void (*)(GLuint, GLuint)"},
 	glGenAsyncMarkersSGIX = {"GLuint (*)(GLsizei)"},
 	glVertexAttribL1d = {"void (*)(GLuint, GLdouble)"},
@@ -6902,12 +7043,16 @@ local functions = {
 	glPathCoverDepthFuncNV = {"void (*)(GL_LUA_ENUMS)"},
 	glVertexAttribIFormat = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLuint)"},
 	glGetNamedBufferSubDataEXT = {"void (*)(GLuint, GLintptr, GLsizeiptr, void *)"},
-	glReadnPixelsARB = {"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glReadnPixelsARB = {
+		"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)",
+	},
 	glVertexAttribI4usvEXT = {"void (*)(GLuint, const GLushort *)"},
 	glVertexAttribI4usv = {"void (*)(GLuint, const GLushort *)"},
 	glUpdateObjectBufferATI = {"void (*)(GLuint, GLuint, GLsizei, const void *, GL_LUA_ENUMS)"},
 	glVertexAttribI4uivEXT = {"void (*)(GLuint, const GLuint *)"},
-	glDebugMessageControlARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)"},
+	glDebugMessageControlARB = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)",
+	},
 	glRectxOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
 	glGetCombinerOutputParameterivNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
 	glVertexAttribI4uiv = {"void (*)(GLuint, const GLuint *)"},
@@ -6961,7 +7106,9 @@ local functions = {
 	glGetIntegerui64vNV = {"void (*)(GL_LUA_ENUMS, GLuint64EXT *)"},
 	glOrthoxOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed, GLfixed, GLfixed)"},
 	glEnableDriverControlQCOM = {"void (*)(GLuint)"},
-	glMatrixOrthoEXT = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glMatrixOrthoEXT = {
+		"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble)",
+	},
 	glVertexAttribDivisorNV = {"void (*)(GLuint, GLuint)"},
 	glVertexAttribL1dEXT = {"void (*)(GLuint, GLdouble)"},
 	glVertexAttribDivisorARB = {"void (*)(GLuint, GLuint)"},
@@ -6971,7 +7118,9 @@ local functions = {
 	glFramebufferSampleLocationsfvNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLfloat *)"},
 	glProgramUniformMatrix4dv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
 	glVertexAttrib4usvARB = {"void (*)(GLuint, const GLushort *)"},
-	glGetnMinmax = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glGetnMinmax = {
+		"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)",
+	},
 	glUseProgramStagesEXT = {"void (*)(GLuint, GLbitfield, GLuint)"},
 	glViewportArrayv = {"void (*)(GLuint, GLsizei, const GLfloat *)"},
 	glColorFormatNV = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei)"},
@@ -6996,10 +7145,14 @@ local functions = {
 	glVertexAttrib4ivARB = {"void (*)(GLuint, const GLint *)"},
 	glVertexAttrib3fv = {"void (*)(GLuint, const GLfloat *)"},
 	glGetBufferPointervARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, void **)"},
-	glMultiDrawElementsEXT = {"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei)"},
+	glMultiDrawElementsEXT = {
+		"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei)",
+	},
 	glMultiTexCoord2ivARB = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
 	glVertexAttrib4hvNV = {"void (*)(GLuint, const GLhalfNV *)"},
-	glCompressedTexSubImage3DARB = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedTexSubImage3DARB = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glVertexAttrib4fvNV = {"void (*)(GLuint, const GLfloat *)"},
 	glBindTexture = {"void (*)(GL_LUA_ENUMS, GLuint)"},
 	glVertexAttrib4fvARB = {"void (*)(GLuint, const GLfloat *)"},
@@ -7042,8 +7195,12 @@ local functions = {
 	glVertexAttrib4NivARB = {"void (*)(GLuint, const GLint *)"},
 	glCoverageMaskNV = {"void (*)(GLboolean)"},
 	glVertexAttrib4Niv = {"void (*)(GLuint, const GLint *)"},
-	glDrawRangeElementsBaseVertex = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *, GLint)"},
-	glBlitFramebufferEXT = {"void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)"},
+	glDrawRangeElementsBaseVertex = {
+		"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *, GLint)",
+	},
+	glBlitFramebufferEXT = {
+		"void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)",
+	},
 	glVertexAttrib3svNV = {"void (*)(GLuint, const GLshort *)"},
 	glVertexAttrib3svARB = {"void (*)(GLuint, const GLshort *)"},
 	glVertexAttrib3sNV = {"void (*)(GLuint, GLshort, GLshort, GLshort)"},
@@ -7061,7 +7218,9 @@ local functions = {
 	glMakeTextureHandleResidentNV = {"void (*)(GLuint64)"},
 	glVertexAttrib3fvNV = {"void (*)(GLuint, const GLfloat *)"},
 	glTexBufferARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
-	glMapVertexAttrib2dAPPLE = {"void (*)(GLuint, GLuint, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)"},
+	glMapVertexAttrib2dAPPLE = {
+		"void (*)(GLuint, GLuint, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)",
+	},
 	glIsFramebufferEXT = {"GLboolean (*)(GLuint)"},
 	glVertexAttrib3fvARB = {"void (*)(GLuint, const GLfloat *)"},
 	glMemoryBarrier = {"void (*)(GLbitfield)"},
@@ -7076,12 +7235,18 @@ local functions = {
 	glNewList = {"void (*)(GLuint, GL_LUA_ENUMS)"},
 	glVertexAttrib2svNV = {"void (*)(GLuint, const GLshort *)"},
 	glGetColorTableParameterfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
-	glTextureView = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)"},
+	glTextureView = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)",
+	},
 	glGetTexParameterIivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
-	glDebugMessageControl = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)"},
+	glDebugMessageControl = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)",
+	},
 	glVertexAttrib2svARB = {"void (*)(GLuint, const GLshort *)"},
 	glVertexAttrib2sv = {"void (*)(GLuint, const GLshort *)"},
-	glTexImage4DSGIS = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexImage4DSGIS = {
+		"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glGetCombinerStageParameterfvNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
 	glVertexAttrib2sNV = {"void (*)(GLuint, GLshort, GLshort)"},
 	glReplacementCodeuiTexCoord2fVertex3fSUN = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
@@ -7093,13 +7258,17 @@ local functions = {
 	glVertexAttrib2hNV = {"void (*)(GLuint, GLhalfNV, GLhalfNV)"},
 	glVertexAttrib2fvNV = {"void (*)(GLuint, const GLfloat *)"},
 	glVertexAttrib2fvARB = {"void (*)(GLuint, const GLfloat *)"},
-	glTextureSubImage1D = {"void (*)(GLuint, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTextureSubImage1D = {
+		"void (*)(GLuint, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glEnableVertexArrayEXT = {"void (*)(GLuint, GL_LUA_ENUMS)"},
 	glVertexAttrib2fv = {"void (*)(GLuint, const GLfloat *)"},
 	glVertexAttrib2fNV = {"void (*)(GLuint, GLfloat, GLfloat)"},
 	glVertexAttrib2fARB = {"void (*)(GLuint, GLfloat, GLfloat)"},
 	glVertexAttrib2f = {"void (*)(GLuint, GLfloat, GLfloat)"},
-	glCopyTexSubImage3DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glCopyTexSubImage3DEXT = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)",
+	},
 	glVertexAttrib2dvNV = {"void (*)(GLuint, const GLdouble *)"},
 	glReadInstrumentsSGIX = {"void (*)(GLint)"},
 	glVertexAttrib2dvARB = {"void (*)(GLuint, const GLdouble *)"},
@@ -7110,7 +7279,9 @@ local functions = {
 	glVertex3s = {"void (*)(GLshort, GLshort, GLshort)"},
 	glVertexAttrib2d = {"void (*)(GLuint, GLdouble, GLdouble)"},
 	glVertexAttrib1svNV = {"void (*)(GLuint, const GLshort *)"},
-	glStencilThenCoverStrokePathInstancedNV = {"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glStencilThenCoverStrokePathInstancedNV = {
+		"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)",
+	},
 	glProgramUniform1ui = {"void (*)(GLuint, GLint, GLuint)"},
 	glAlphaFunc = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
 	glBindAttribLocation = {"void (*)(GLuint, GLuint, const GLchar *)"},
@@ -7119,7 +7290,9 @@ local functions = {
 	glGetNamedBufferParameterui64vNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint64EXT *)"},
 	glCurrentPaletteMatrixARB = {"void (*)(GLint)"},
 	glVertexAttrib1sv = {"void (*)(GLuint, const GLshort *)"},
-	glTexImage3D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexImage3D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glGetMinmaxParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
 	glBlendEquationEXT = {"void (*)(GL_LUA_ENUMS)"},
 	glVertexAttrib1hvNV = {"void (*)(GLuint, const GLhalfNV *)"},
@@ -7135,11 +7308,15 @@ local functions = {
 	glVertexArrayVertexOffsetEXT = {"void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)"},
 	glGetTexLevelParameterfv = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLfloat *)"},
 	glRotatef = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
-	glVertexArrayVertexBuffers = {"void (*)(GLuint, GLuint, GLsizei, const GLuint *, const GLintptr *, const GLsizei *)"},
+	glVertexArrayVertexBuffers = {
+		"void (*)(GLuint, GLuint, GLsizei, const GLuint *, const GLintptr *, const GLsizei *)",
+	},
 	glGetActiveAttrib = {"void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLchar *)"},
 	glVertexArrayVertexBuffer = {"void (*)(GLuint, GLuint, GLuint, GLintptr, GLsizei)"},
 	glGetUniformBufferSizeEXT = {"GLint (*)(GLuint, GLint)"},
-	glVertexArrayVertexAttribOffsetEXT = {"void (*)(GLuint, GLuint, GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLsizei, GLintptr)"},
+	glVertexArrayVertexAttribOffsetEXT = {
+		"void (*)(GLuint, GLuint, GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLsizei, GLintptr)",
+	},
 	glDeleteAsyncMarkersSGIX = {"void (*)(GLuint, GLsizei)"},
 	glVertexArrayVertexAttribLOffsetEXT = {"void (*)(GLuint, GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)"},
 	glVertexArrayVertexAttribLFormatEXT = {"void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLuint)"},
@@ -7218,7 +7395,9 @@ local functions = {
 	glMatrixTranslatedEXT = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble)"},
 	glBlendFunc = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
 	glVariantfvEXT = {"void (*)(GLuint, const GLfloat *)"},
-	glCompressedTexSubImage3D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedTexSubImage3D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glNamedBufferDataEXT = {"void (*)(GLuint, GLsizeiptr, const void *, GL_LUA_ENUMS)"},
 	glVariantdvEXT = {"void (*)(GLuint, const GLdouble *)"},
 	glVariantbvEXT = {"void (*)(GLuint, const GLbyte *)"},
@@ -7299,7 +7478,9 @@ local functions = {
 	glIsNameAMD = {"GLboolean (*)(GL_LUA_ENUMS, GLuint)"},
 	glGetnConvolutionFilterARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
 	glUniform4ui = {"void (*)(GLint, GLuint, GLuint, GLuint, GLuint)"},
-	glCopyTextureImage1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint)"},
+	glCopyTextureImage1DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint)",
+	},
 	glTexImage2DMultisampleCoverageNV = {"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLboolean)"},
 	glUniform4ivARB = {"void (*)(GLint, GLsizei, const GLint *)"},
 	glGetMaterialfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
@@ -7308,7 +7489,9 @@ local functions = {
 	glDisableClientState = {"void (*)(GL_LUA_ENUMS)"},
 	glUniform4i64vNV = {"void (*)(GLint, GLsizei, const GLint64EXT *)"},
 	glUniform4i64NV = {"void (*)(GLint, GLint64EXT, GLint64EXT, GLint64EXT, GLint64EXT)"},
-	glCopyMultiTexImage1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint)"},
+	glCopyMultiTexImage1DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint)",
+	},
 	glUniform4fvARB = {"void (*)(GLint, GLsizei, const GLfloat *)"},
 	glClampColor = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
 	glUniform4fv = {"void (*)(GLint, GLsizei, const GLfloat *)"},
@@ -7337,8 +7520,12 @@ local functions = {
 	glGetBufferSubData = {"void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr, void *)"},
 	glEndQuery = {"void (*)(GL_LUA_ENUMS)"},
 	glUniform3fvARB = {"void (*)(GLint, GLsizei, const GLfloat *)"},
-	glPathSubCommandsNV = {"void (*)(GLuint, GLsizei, GLsizei, GLsizei, const GLubyte *, GLsizei, GL_LUA_ENUMS, const void *)"},
-	glTextureImage2DMultisampleCoverageNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLboolean)"},
+	glPathSubCommandsNV = {
+		"void (*)(GLuint, GLsizei, GLsizei, GLsizei, const GLubyte *, GLsizei, GL_LUA_ENUMS, const void *)",
+	},
+	glTextureImage2DMultisampleCoverageNV = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLboolean)",
+	},
 	glReadBufferIndexedEXT = {"void (*)(GL_LUA_ENUMS, GLint)"},
 	glGetFramebufferAttachmentParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
 	glUniform3fv = {"void (*)(GLint, GLsizei, const GLfloat *)"},
@@ -7347,7 +7534,9 @@ local functions = {
 	glScissorIndexedv = {"void (*)(GLuint, const GLint *)"},
 	glGetArrayObjectfvATI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
 	glUniform1d = {"void (*)(GLint, GLdouble)"},
-	glTexSubImage1D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexSubImage1D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glGetnUniformfvKHR = {"void (*)(GLuint, GLint, GLsizei, GLfloat *)"},
 	glUniform2uiEXT = {"void (*)(GLint, GLuint, GLuint)"},
 	glUniform2ui64vNV = {"void (*)(GLint, GLsizei, const GLuint64EXT *)"},
@@ -7397,21 +7586,37 @@ local functions = {
 	glVertexAttribArrayObjectATI = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLsizei, GLuint, GLuint)"},
 	glPatchParameterfv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
 	glProgramUniformMatrix2x4fvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
-	glTextureSubImage3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
-	glTextureSubImage3D = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
-	glTextureSubImage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTextureSubImage3DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
+	glTextureSubImage3D = {
+		"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
+	glTextureSubImage2DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glFrustumf = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
-	glPathGlyphIndexArrayNV = {"GLenum (*)(GLuint, GL_LUA_ENUMS, const void *, GLbitfield, GLuint, GLsizei, GLuint, GLfloat)"},
-	glTextureSubImage2D = {"void (*)(GLuint, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glPathGlyphIndexArrayNV = {
+		"GLenum (*)(GLuint, GL_LUA_ENUMS, const void *, GLbitfield, GLuint, GLsizei, GLuint, GLfloat)",
+	},
+	glTextureSubImage2D = {
+		"void (*)(GLuint, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glIglooInterfaceSGIX = {"void (*)(GL_LUA_ENUMS, const void *)"},
-	glTextureStorageSparseAMD = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLsizei, GLbitfield)"},
+	glTextureStorageSparseAMD = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLsizei, GLbitfield)",
+	},
 	glTextureStorage3DMultisample = {"void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)"},
-	glTextureStorage3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei)"},
+	glTextureStorage3DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei)",
+	},
 	glTextureStorage3D = {"void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei)"},
 	glCombinerParameteriNV = {"void (*)(GL_LUA_ENUMS, GLint)"},
 	glGetInternalformatSampleivNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLint *)"},
 	glSecondaryColor3ubEXT = {"void (*)(GLubyte, GLubyte, GLubyte)"},
-	glTextureStorage2DMultisampleEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean)"},
+	glTextureStorage2DMultisampleEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean)",
+	},
 	glTextureStorage2DMultisample = {"void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean)"},
 	glTextureStorage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
 	glTexEnvi = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
@@ -7430,14 +7635,24 @@ local functions = {
 	glMakeImageHandleNonResidentARB = {"void (*)(GLuint64)"},
 	glFramebufferTextureEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
 	glProgramUniform3iEXT = {"void (*)(GLuint, GLint, GLint, GLint, GLint)"},
-	glTexturePageCommitmentEXT = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glTexturePageCommitmentEXT = {
+		"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLboolean)",
+	},
 	glTexCoord2fColor4fNormal3fVertex3fvSUN = {"void (*)(const GLfloat *, const GLfloat *, const GLfloat *, const GLfloat *)"},
-	glTextureImage3DMultisampleCoverageNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glTextureImage3DMultisampleCoverageNV = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLsizei, GLboolean)",
+	},
 	glCreateShaderObjectARB = {"GLhandleARB (*)(GL_LUA_ENUMS)"},
 	glSamplerParameteriv = {"void (*)(GLuint, GL_LUA_ENUMS, const GLint *)"},
-	glTextureImage3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
-	glTextureImage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
-	glTextureImage1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTextureImage3DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
+	glTextureImage2DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
+	glTextureImage1DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glDrawBuffersIndexedEXT = {"void (*)(GLint, const GLenum *, const GLint *)"},
 	glTextureBufferRangeEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLintptr, GLsizeiptr)"},
 	glIsBufferARB = {"GLboolean (*)(GLuint)"},
@@ -7448,18 +7663,36 @@ local functions = {
 	glEvalCoord1fv = {"void (*)(const GLfloat *)"},
 	glLoadIdentity = {"void (*)()"},
 	glTextureBarrierNV = {"void (*)()"},
-	glTexSubImage4DSGIS = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexSubImage4DSGIS = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glCopyPixels = {"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS)"},
 	glColor4ubVertex3fSUN = {"void (*)(GLubyte, GLubyte, GLubyte, GLubyte, GLfloat, GLfloat, GLfloat)"},
-	glTexSubImage3DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
-	glTexSubImage3D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
-	glTexSubImage2DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
-	glTexSubImage1DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexSubImage3DEXT = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
+	glTexSubImage3D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
+	glTexSubImage2DEXT = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
+	glTexSubImage1DEXT = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glUniform2uiv = {"void (*)(GLint, GLsizei, const GLuint *)"},
-	glTexStorageSparseAMD = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLsizei, GLbitfield)"},
-	glCombinerOutputNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLboolean, GLboolean, GLboolean)"},
-	glTexStorage3DMultisampleOES = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)"},
-	glTexStorage3DMultisample = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glTexStorageSparseAMD = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLsizei, GLbitfield)",
+	},
+	glCombinerOutputNV = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLboolean, GLboolean, GLboolean)",
+	},
+	glTexStorage3DMultisampleOES = {
+		"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)",
+	},
+	glTexStorage3DMultisample = {
+		"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)",
+	},
 	glTexStorage3DEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei)"},
 	glTexStorage3D = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei)"},
 	glTexStorage2DEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
@@ -7481,12 +7714,18 @@ local functions = {
 	glGetMapdv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLdouble *)"},
 	glVertexAttrib4fNV = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat)"},
 	glFlushMappedBufferRange = {"void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr)"},
-	glTexImage3DOES = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexImage3DOES = {
+		"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glMatrixPushEXT = {"void (*)(GL_LUA_ENUMS)"},
-	glTexImage3DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexImage3DEXT = {
+		"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glTexImage2DMultisample = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean)"},
 	glMultiDrawElementsIndirectBindlessNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei, GLint)"},
-	glTexImage2D = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexImage2D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glTexGenxvOES = {"voi|	d (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
 	glIndexfv = {"void (*)(const GLfloat *)"},
 	glExtGetBuffersQCOM = {"void (*)(GLuint *, GLint, GLint *)"},
@@ -7509,7 +7748,9 @@ local functions = {
 	glTexParameterIuivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)"},
 	glTexEnvfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
 	glTexCoordPointervINTEL = {"void (*)(GLint, GL_LUA_ENUMS, const void **)"},
-	glCompressedTexImage2DARB = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glCompressedTexImage2DARB = {
+		"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)",
+	},
 	glMapNamedBufferRange = {"void *(*)(GLuint, GLintptr, GLsizeiptr, GLbitfield)"},
 	glExecuteProgramNV = {"void (*)(GL_LUA_ENUMS, GLuint, const GLfloat *)"},
 	glTexCoordPointer = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
@@ -7566,7 +7807,9 @@ local functions = {
 	glPauseTransformFeedback = {"void (*)()"},
 	glDrawElementsBaseVertexOES = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLint)"},
 	glTexCoord3bvOES = {"void (*)(const GLbyte *)"},
-	glDeformationMap3dSGIX = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)"},
+	glDeformationMap3dSGIX = {
+		"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)",
+	},
 	glTexCoord3bOES = {"void (*)(GLbyte, GLbyte, GLbyte)"},
 	glSecondaryColor3i = {"void (*)(GLint, GLint, GLint)"},
 	glTexCoord2xvOES = {"void (*)(const GLfixed *)"},
@@ -7579,7 +7822,9 @@ local functions = {
 	glTexCoord2fVertex3fvSUN = {"void (*)(const GLfloat *, const GLfloat *)"},
 	glTexCoord2fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
 	glInvalidateTexImage = {"void (*)(GLuint, GLint)"},
-	glTexCoord2fNormal3fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glTexCoord2fNormal3fVertex3fSUN = {
+		"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)",
+	},
 	glGetVariantArrayObjectfvATI = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
 	glGetColorTableParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
 	glTextureLightEXT = {"void (*)(GL_LUA_ENUMS)"},
@@ -7587,7 +7832,9 @@ local functions = {
 	glFramebufferTexture2D = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
 	glMaterialxOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
 	glTexCoord2fColor3fVertex3fvSUN = {"void (*)(const GLfloat *, const GLfloat *, const GLfloat *)"},
-	glBlitFramebufferANGLE = {"void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)"},
+	glBlitFramebufferANGLE = {
+		"void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)",
+	},
 	glTexCoord2f = {"void (*)(GLfloat, GLfloat)"},
 	glTexCoord2bvOES = {"void (*)(const GLbyte *)"},
 	glTexCoord2bOES = {"void (*)(GLbyte, GLbyte)"},
@@ -7626,11 +7873,15 @@ local functions = {
 	glTexParameterIuiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)"},
 	glTangent3bvEXT = {"void (*)(const GLbyte *)"},
 	glTangent3bEXT = {"void (*)(GLbyte, GLbyte, GLbyte)"},
-	glNamedProgramLocalParameter4dEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glNamedProgramLocalParameter4dEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLdouble, GLdouble, GLdouble, GLdouble)",
+	},
 	glIsProgramNV = {"GLboolean (*)(GLuint)"},
 	glSyncTextureINTEL = {"void (*)(GLuint)"},
 	glSamplerParameterf = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat)"},
-	glCopyTextureImage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)"},
+	glCopyTextureImage2DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)",
+	},
 	glStringMarkerGREMEDY = {"void (*)(GLsizei, const void *)"},
 	glGetTextureImage = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
 	glColor4usv = {"void (*)(const GLushort *)"},
@@ -7648,7 +7899,9 @@ local functions = {
 	glGetClipPlanex = {"void (*)(GL_LUA_ENUMS, GLfixed *)"},
 	glProgramUniform3i64NV = {"void (*)(GLuint, GLint, GLint64EXT, GLint64EXT, GLint64EXT)"},
 	glGetVariantArrayObjectivATI = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
-	glStencilFillPathInstancedNV = {"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, const GLfloat *)"},
+	glStencilFillPathInstancedNV = {
+		"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, const GLfloat *)",
+	},
 	glStartInstrumentsSGIX = {"void (*)()"},
 	glCoverFillPathNV = {"void (*)(GLuint, GL_LUA_ENUMS)"},
 	glDisableIndexedEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
@@ -7658,7 +7911,9 @@ local functions = {
 	glClipPlanefIMG = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
 	glShaderStorageBlockBinding = {"void (*)(GLuint, GLuint, GLuint)"},
 	glOrthof = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
-	glCompressedTextureSubImage3D = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedTextureSubImage3D = {
+		"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glShaderOp1EXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint)"},
 	glShadeModel = {"void (*)(GL_LUA_ENUMS)"},
 	glSetMultisamplefvAMD = {"void (*)(GL_LUA_ENUMS, GLuint, const GLfloat *)"},
@@ -7666,7 +7921,9 @@ local functions = {
 	glScissorIndexed = {"void (*)(GLuint, GLint, GLint, GLsizei, GLsizei)"},
 	glDrawTexfvOES = {"void (*)(const GLfloat *)"},
 	glSetInvariantEXT = {"void (*)(GLuint, GL_LUA_ENUMS, const void *)"},
-	glColorTableEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glColorTableEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glSetFenceAPPLE = {"void (*)(GLuint)"},
 	glGenerateMipmap = {"void (*)(GL_LUA_ENUMS)"},
 	glGetMapAttribParameterivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)"},
@@ -7687,7 +7944,9 @@ local functions = {
 	glPatchParameteriOES = {"void (*)(GL_LUA_ENUMS, GLint)"},
 	glSecondaryColor3hvNV = {"void (*)(const GLhalfNV *)"},
 	glSecondaryColor3fvEXT = {"void (*)(const GLfloat *)"},
-	glDrawRangeElementsBaseVertexEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *, GLint)"},
+	glDrawRangeElementsBaseVertexEXT = {
+		"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *, GLint)",
+	},
 	glSecondaryColor3dvEXT = {"void (*)(const GLdouble *)"},
 	glSecondaryColor3dv = {"void (*)(const GLdouble *)"},
 	glClientWaitSync = {"GLenum (*)(GLsync, GLbitfield, GLuint64)"},
@@ -7704,7 +7963,9 @@ local functions = {
 	glSamplerParameteri = {"void (*)(GLuint, GL_LUA_ENUMS, GLint)"},
 	glGetSamplerParameterIuivOES = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
 	glSamplerParameterIivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, const GLint *)"},
-	glDeformationMap3fSGIX = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)"},
+	glDeformationMap3fSGIX = {
+		"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)",
+	},
 	glGetTexParameterxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
 	glNamedBufferSubDataEXT = {"void (*)(GLuint, GLintptr, GLsizeiptr, const void *)"},
 	glDeleteShader = {"void (*)(GLuint)"},
@@ -7740,10 +8001,14 @@ local functions = {
 	glReplacementCodeuiTexCoord2fVertex3fvSUN = {"void (*)(const GLuint *, const GLfloat *, const GLfloat *)"},
 	glFragmentLightivSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
 	glNormal3f = {"void (*)(GLfloat, GLfloat, GLfloat)"},
-	glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN = {
+		"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)",
+	},
 	glReplacementCodeuiNormal3fVertex3fvSUN = {"void (*)(const GLuint *, const GLfloat *, const GLfloat *)"},
 	glReplacementCodeuiNormal3fVertex3fSUN = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
-	glReplacementCodeuiColor4ubVertex3fSUN = {"void (*)(GLuint, GLubyte, GLubyte, GLubyte, GLubyte, GLfloat, GLfloat, GLfloat)"},
+	glReplacementCodeuiColor4ubVertex3fSUN = {
+		"void (*)(GLuint, GLubyte, GLubyte, GLubyte, GLubyte, GLfloat, GLfloat, GLfloat)",
+	},
 	glReplacementCodeuiColor4fNormal3fVertex3fvSUN = {"void (*)(const GLuint *, const GLfloat *, const GLfloat *, const GLfloat *)"},
 	glReplacementCodeubvSUN = {"void (*)(const GLubyte *)"},
 	glRectf = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
@@ -7751,9 +8016,13 @@ local functions = {
 	glMultiTexCoord2d = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble)"},
 	glEvalCoord1xvOES = {"void (*)(const GLfixed *)"},
 	glFinishAsyncSGIX = {"GLint (*)(GLuint *)"},
-	glCompressedTexSubImage1D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedTexSubImage1D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glRenderbufferStorageOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei)"},
-	glColor4fNormal3fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glColor4fNormal3fVertex3fSUN = {
+		"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)",
+	},
 	glRenderbufferStorageMultisampleNV = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
 	glMultiTexCoord4dv = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
 	glGetQueryBufferObjectui64v = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLintptr)"},
@@ -7773,7 +8042,9 @@ local functions = {
 	glProgramBufferParametersIuivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, const GLuint *)"},
 	glBlendColorEXT = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
 	glProgramUniformui64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLuint64EXT *)"},
-	glReadnPixels = {"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glReadnPixels = {
+		"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)",
+	},
 	glGetObjectParameterivAPPLE = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)"},
 	glRasterPos3iv = {"void (*)(const GLint *)"},
 	glGenPathsNV = {"GLuint (*)(GLsizei)"},
@@ -7829,8 +8100,12 @@ local functions = {
 	glTexStorage1DEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei)"},
 	glProgramUniform2ivEXT = {"void (*)(GLuint, GLint, GLsizei, const GLint *)"},
 	glMatrixLoadTranspose3x3fNV = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
-	glCompressedMultiTexSubImage1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
-	glExtGetTexSubImageQCOM = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glCompressedMultiTexSubImage1DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
+	glExtGetTexSubImageQCOM = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)",
+	},
 	glGetCompressedTexImageARB = {"void (*)(GL_LUA_ENUMS, GLint, void *)"},
 	glPushMatrix = {"void (*)()"},
 	glEdgeFlagPointer = {"void (*)(GLsizei, const void *)"},
@@ -7845,7 +8120,9 @@ local functions = {
 	glFinish = {"void (*)()"},
 	glCopyTextureSubImage2D = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
 	glMapGrid1xOES = {"void (*)(GLint, GLfixed, GLfixed)"},
-	glClearNamedBufferSubDataEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizeiptr, GLsizeiptr, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glClearNamedBufferSubDataEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLsizeiptr, GLsizeiptr, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glVertexAttrib3fNV = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat)"},
 	glImageTransformParameterivHP = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
 	glMinSampleShadingARB = {"void (*)(GLfloat)"},
@@ -7867,7 +8144,9 @@ local functions = {
 	glHistogramEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLboolean)"},
 	glBinormal3bvEXT = {"void (*)(const GLbyte *)"},
 	glFramebufferDrawBuffersEXT = {"void (*)(GLuint, GLsizei, const GLenum *)"},
-	glGetMapControlPointsNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean, void *)"},
+	glGetMapControlPointsNV = {
+		"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean, void *)",
+	},
 	glFragmentLightModeliSGIX = {"void (*)(GL_LUA_ENUMS, GLint)"},
 	glVertexAttrib1f = {"void (*)(GLuint, GLfloat)"},
 	glGetMultiTexParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
@@ -7882,14 +8161,18 @@ local functions = {
 	glDeleteRenderbuffersEXT = {"void (*)(GLsizei, const GLuint *)"},
 	glFramebufferTextureLayer = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)"},
 	glGetUniformdv = {"void (*)(GLuint, GLint, GLdouble *)"},
-	glCompressedTexSubImage1DARB = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedTexSubImage1DARB = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glConvolutionParameteri = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
 	glDrawTexxvOES = {"void (*)(const GLfixed *)"},
 	glPixelTransferf = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
 	glLoadTransposeMatrixxOES = {"void (*)(const GLfixed *)"},
 	glProgramUniform1dEXT = {"void (*)(GLuint, GLint, GLdouble)"},
 	glGetMapxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
-	glCompressedTexImage1D = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)"},
+	glCompressedTexImage1D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)",
+	},
 	glMakeNamedBufferNonResidentNV = {"void (*)(GLuint)"},
 	glFramebufferTextureFaceEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GL_LUA_ENUMS)"},
 	glGetProgramEnvParameterIuivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint *)"},
@@ -7903,8 +8186,12 @@ local functions = {
 	glListParameterfvSGIX = {"void (*)(GLuint, GL_LUA_ENUMS, const GLfloat *)"},
 	glGetNamedBufferParameterivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
 	glGetConvolutionParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
-	glVertexArrayMultiTexCoordOffsetEXT = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)"},
-	glCoverStrokePathInstancedNV = {"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glVertexArrayMultiTexCoordOffsetEXT = {
+		"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)",
+	},
+	glCoverStrokePathInstancedNV = {
+		"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)",
+	},
 	glFogCoorddEXT = {"void (*)(GLdouble)"},
 	glClearDepthx = {"void (*)(GLfixed)"},
 	glIsImageHandleResidentARB = {"GLboolean (*)(GLuint64)"},
@@ -7912,10 +8199,14 @@ local functions = {
 	glGetSamplerParameterIivOES = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
 	glTextureRangeAPPLE = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
 	glExtGetRenderbuffersQCOM = {"void (*)(GLuint *, GLint, GLint *)"},
-	glCompressedTextureSubImage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedTextureSubImage2DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glRenderbufferStorageEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei)"},
 	glDrawElementsInstancedBaseVertexOES = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint)"},
-	glDrawRangeElementsBaseVertexOES = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *, GLint)"},
+	glDrawRangeElementsBaseVertexOES = {
+		"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *, GLint)",
+	},
 	glEndQueryIndexed = {"void (*)(GL_LUA_ENUMS, GLuint)"},
 	glPixelTransferi = {"void (*)(GL_LUA_ENUMS, GLint)"},
 	glNormal3iv = {"void (*)(const GLint *)"},
@@ -7937,7 +8228,9 @@ local functions = {
 	glBinormal3dEXT = {"void (*)(GLdouble, GLdouble, GLdouble)"},
 	glExtGetFramebuffersQCOM = {"void (*)(GLuint *, GLint, GLint *)"},
 	glCopyTextureSubImage1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei)"},
-	glDebugMessageInsertARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, const GLchar *)"},
+	glDebugMessageInsertARB = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, const GLchar *)",
+	},
 	glGetTextureImageEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
 	glUniformMatrix3dv = {"void (*)(GLint, GLsizei, GLboolean, const GLdouble *)"},
 	glGetLightiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
@@ -7950,8 +8243,12 @@ local functions = {
 	glGetMaterialiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
 	glColorMaskiOES = {"void (*)(GLuint, GLboolean, GLboolean, GLboolean, GLboolean)"},
 	glDrawTexsOES = {"void (*)(GLshort, GLshort, GLshort, GLshort, GLshort)"},
-	glMultiTexSubImage1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
-	glPrimitiveBoundingBoxOES = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glMultiTexSubImage1DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
+	glPrimitiveBoundingBoxOES = {
+		"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)",
+	},
 	glGetPointervEXT = {"void (*)(GL_LUA_ENUMS, void **)"},
 	glProgramUniform3dvEXT = {"void (*)(GLuint, GLint, GLsizei, const GLdouble *)"},
 	glMatrixMultdEXT = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
@@ -7981,7 +8278,9 @@ local functions = {
 	glFramebufferTexture2DMultisampleIMG = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLsizei)"},
 	glPrimitiveRestartIndexNV = {"void (*)(GLuint)"},
 	glGetTrackMatrixivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)"},
-	glGetDebugMessageLogKHR = {"GLuint (*)(GLuint, GLsizei, GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)"},
+	glGetDebugMessageLogKHR = {
+		"GLuint (*)(GLuint, GLsizei, GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)",
+	},
 	glGetVertexAttribIiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
 	glVertex4d = {"void (*)(GLdouble, GLdouble, GLdouble, GLdouble)"},
 	glBindFragmentShaderATI = {"void (*)(GLuint)"},
@@ -8002,7 +8301,9 @@ local functions = {
 	glGenPerfMonitorsAMD = {"void (*)(GLsizei, GLuint *)"},
 	glFramebufferParameteri = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
 	glPixelMapfv = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLfloat *)"},
-	glBitmapxOES = {"void (*)(GLsizei, GLsizei, GLfixed, GLfixed, GLfixed, GLfixed, const GLubyte *)"},
+	glBitmapxOES = {
+		"void (*)(GLsizei, GLsizei, GLfixed, GLfixed, GLfixed, GLfixed, const GLubyte *)",
+	},
 	glMultiTexCoord3ivARB = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
 	glMultiTexCoord3iv = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
 	glBindFramebuffer = {"void (*)(GL_LUA_ENUMS, GLuint)"},
@@ -8033,7 +8334,9 @@ local functions = {
 	glFragmentLightfSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
 	glEnableVertexAttribAPPLE = {"void (*)(GLuint, GL_LUA_ENUMS)"},
 	glEvalCoord2fv = {"void (*)(const GLfloat *)"},
-	glMultiTexSubImage2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glMultiTexSubImage2DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glCopyTextureSubImage3D = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
 	glBegin = {"void (*)(GL_LUA_ENUMS)"},
 	glSecondaryColor3s = {"void (*)(GLshort, GLshort, GLshort)"},
@@ -8047,16 +8350,22 @@ local functions = {
 	glMaterialx = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
 	glGetnPolygonStippleARB = {"void (*)(GLsizei, GLubyte *)"},
 	glColor4ubVertex3fvSUN = {"void (*)(const GLubyte *, const GLfloat *)"},
-	glCompressedTextureImage1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)"},
+	glCompressedTextureImage1DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)",
+	},
 	glMultiTexCoord1fvARB = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
 	glClipPlanefOES = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
 	glMultiTexCoord1bvOES = {"void (*)(GL_LUA_ENUMS, const GLbyte *)"},
 	glGetDriverControlStringQCOM = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
-	glCombinerInputNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glCombinerInputNV = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)",
+	},
 	glReplacementCodePointerSUN = {"void (*)(GL_LUA_ENUMS, GLsizei, const void **)"},
 	glGetColorTableSGI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
 	glVertexAttrib3dv = {"void (*)(GLuint, const GLdouble *)"},
-	glMultiDrawElements = {"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei)"},
+	glMultiDrawElements = {
+		"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei)",
+	},
 	glSamplePatternSGIS = {"void (*)(GL_LUA_ENUMS)"},
 	glBeginTransformFeedbackNV = {"void (*)(GL_LUA_ENUMS)"},
 	glGetPerfQueryDataINTEL = {"void (*)(GLuint, GLuint, GLsizei, GLvoid *, GLuint *)"},
@@ -8067,11 +8376,15 @@ local functions = {
 	glBindFramebufferOES = {"void (*)(GL_LUA_ENUMS, GLuint)"},
 	glGetMaterialxOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
 	glGetBufferParameteri64v = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint64 *)"},
-	glCompressedTextureSubImage3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedTextureSubImage3DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glEndVertexShaderEXT = {"void (*)()"},
 	glBinormal3dvEXT = {"void (*)(const GLdouble *)"},
 	glGenerateMipmapOES = {"void (*)(GL_LUA_ENUMS)"},
-	glCompressedTextureImage3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glCompressedTextureImage3DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)",
+	},
 	glCallList = {"void (*)(GLuint)"},
 	glGetnTexImage = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
 	glMatrixMode = {"void (*)(GL_LUA_ENUMS)"},
@@ -8080,7 +8393,9 @@ local functions = {
 	glMatrixLoadIdentityEXT = {"void (*)(GL_LUA_ENUMS)"},
 	glInterleavedArrays = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
 	glCullParameterdvEXT = {"void (*)(GL_LUA_ENUMS, GLdouble *)"},
-	glCompressedTexImage1DARB = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)"},
+	glCompressedTexImage1DARB = {
+		"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)",
+	},
 	glGetProgramivNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
 	glGetVariantPointervEXT = {"void (*)(GLuint, GL_LUA_ENUMS, void **)"},
 	glNormal3hNV = {"void (*)(GLhalfNV, GLhalfNV, GLhalfNV)"},
@@ -8088,7 +8403,9 @@ local functions = {
 	glFragmentColorMaterialSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
 	glEndPerfMonitorAMD = {"void (*)(GLuint)"},
 	glPointParameterfv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
-	glInvalidateSubFramebuffer = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLenum *, GLint, GLint, GLsizei, GLsizei)"},
+	glInvalidateSubFramebuffer = {
+		"void (*)(GL_LUA_ENUMS, GLsizei, const GLenum *, GLint, GLint, GLsizei, GLsizei)",
+	},
 	glGetVertexAttribLui64vNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint64EXT *)"},
 	glBinormal3svEXT = {"void (*)(const GLshort *)"},
 	glBlendEquationSeparateiARB = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
@@ -8098,9 +8415,13 @@ local functions = {
 	glMap1xOES = {"void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLint, GLint, GLfixed)"},
 	glMultiTexCoord4x = {"void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLfixed, GLfixed)"},
 	glMultiTexCoord2sv = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
-	glGetnSeparableFilterARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *, GLsizei, void *, void *)"},
+	glGetnSeparableFilterARB = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *, GLsizei, void *, void *)",
+	},
 	glNamedRenderbufferStorageEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLsizei)"},
-	glCompressedTexImage2D = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glCompressedTexImage2D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)",
+	},
 	glSelectPerfMonitorCountersAMD = {"void (*)(GLuint, GLboolean, GLuint, GLint, GLuint *)"},
 	glVertexAttribL3dv = {"void (*)(GLuint, const GLdouble *)"},
 	glUseProgramObjectARB = {"void (*)(GLhandleARB)"},
@@ -8115,7 +8436,9 @@ local functions = {
 	glDrawRangeElements = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *)"},
 	glNamedFramebufferDrawBuffer = {"void (*)(GLuint, GL_LUA_ENUMS)"},
 	glVertexAttrib1s = {"void (*)(GLuint, GLshort)"},
-	glCompressedMultiTexImage3DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glCompressedMultiTexImage3DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)",
+	},
 	glBindBufferBaseNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint)"},
 	glGetPathColorGenfvNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
 	glColor4hNV = {"void (*)(GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV)"},
@@ -8125,7 +8448,9 @@ local functions = {
 	glPopClientAttrib = {"void (*)()"},
 	glMultTransposeMatrixd = {"void (*)(const GLdouble *)"},
 	glEnableiNV = {"void (*)(GL_LUA_ENUMS, GLuint)"},
-	glCompressedMultiTexSubImage3DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedMultiTexSubImage3DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glGetPathCoordsNV = {"void (*)(GLuint, GLfloat *)"},
 	glIsTextureHandleResidentARB = {"GLboolean (*)(GLuint64)"},
 	glGenBuffers = {"void (*)(GLsizei, GLuint *)", true},
@@ -8136,13 +8461,17 @@ local functions = {
 	glUniform4i = {"void (*)(GLint, GLint, GLint, GLint, GLint)"},
 	glGetActiveAtomicCounterBufferiv = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint *)"},
 	glVertexAttribL4dv = {"void (*)(GLuint, const GLdouble *)"},
-	glBindBuffersRange = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLuint *, const GLintptr *, const GLsizeiptr *)"},
+	glBindBuffersRange = {
+		"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLuint *, const GLintptr *, const GLsizeiptr *)",
+	},
 	glProgramUniformMatrix4x3fvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
 	glVertexAttribL1dv = {"void (*)(GLuint, const GLdouble *)"},
 	glBufferParameteriAPPLE = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
 	glVertexAttrib1dvNV = {"void (*)(GLuint, const GLdouble *)"},
 	glObjectPurgeableAPPLE = {"GLenum (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS)"},
-	glAlphaFragmentOp2ATI = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glAlphaFragmentOp2ATI = {
+		"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)",
+	},
 	glIsFenceNV = {"GLboolean (*)(GLuint)"},
 	glFramebufferTexture2DOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
 	glGetQueryBufferObjectiv = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLintptr)"},
@@ -8167,27 +8496,37 @@ local functions = {
 	glBindRenderbuffer = {"void (*)(GL_LUA_ENUMS, GLuint)"},
 	glBindVideoCaptureStreamTextureNV = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
 	glGetProgramLocalParameterdvARB = {"void (*)(GL_LUA_ENUMS, GLuint, GLdouble *)"},
-	glColorSubTable = {"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glColorSubTable = {
+		"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glDetailTexFuncSGIS = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLfloat *)"},
 	glTexFilterFuncSGIS = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLfloat *)"},
 	glBlendColor = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
 	glCopyMultiTexSubImage1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei)"},
 	glNormal3sv = {"void (*)(const GLshort *)"},
-	glCopyTexImage2DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)"},
+	glCopyTexImage2DEXT = {
+		"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)",
+	},
 	glFlushMappedBufferRangeEXT = {"void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr)"},
 	glPassTexCoordATI = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS)"},
 	glIndexFuncEXT = {"void (*)(GL_LUA_ENUMS, GLclampf)"},
 	glBeginVertexShaderEXT = {"void (*)()"},
 	glGetFragmentMaterialivSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
-	glGetDebugMessageLogAMD = {"GLuint (*)(GLuint, GLsizei, GLenum *, GLuint *, GLuint *, GLsizei *, GLchar *)"},
+	glGetDebugMessageLogAMD = {
+		"GLuint (*)(GLuint, GLsizei, GLenum *, GLuint *, GLuint *, GLsizei *, GLchar *)",
+	},
 	glListParameterfSGIX = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat)"},
 	glEndTransformFeedback = {"void (*)()"},
 	glCopyColorTableSGI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei)"},
 	glDrawArraysInstancedBaseInstance = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei, GLuint)"},
-	glCopyTextureSubImage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glCopyTextureSubImage2DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)",
+	},
 	glGetPathDashArrayNV = {"void (*)(GLuint, GLfloat *)"},
 	glGetnUniformuivKHR = {"void (*)(GLuint, GLint, GLsizei, GLuint *)"},
-	glCopyMultiTexSubImage3DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glCopyMultiTexSubImage3DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)",
+	},
 	glGetnColorTableARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
 	glGetProgramEnvParameterdvARB = {"void (*)(GL_LUA_ENUMS, GLuint, GLdouble *)"},
 	glGetIntegerv = {"void (*)(GL_LUA_ENUMS, GLint *)"},
@@ -8207,7 +8546,9 @@ local functions = {
 	glVertexAttrib4ubv = {"void (*)(GLuint, const GLubyte *)"},
 	glDrawElementsInstancedANGLE = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei)"},
 	glGetActiveVaryingNV = {"void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLsizei *, GLenum *, GLchar *)"},
-	glSwizzleEXT = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glSwizzleEXT = {
+		"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)",
+	},
 	glNamedFramebufferTextureLayer = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint, GLint)"},
 	glRasterPos2xOES = {"void (*)(GLfixed, GLfixed)"},
 	glRenderbufferStorageMultisampleANGLE = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
@@ -8225,7 +8566,9 @@ local functions = {
 	glDeleteProgramsNV = {"void (*)(GLsizei, const GLuint *)"},
 	glStencilThenCoverFillPathNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS)"},
 	glDrawElementsInstancedNV = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei)"},
-	glTexSubImage3DOES = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexSubImage3DOES = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glFramebufferTexture1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
 	glGetVertexAttribdvNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)"},
 	glGetVertexAttribLdvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)"},
@@ -8252,7 +8595,9 @@ local functions = {
 	glGetProgramPipelineInfoLog = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
 	glGetProgramPipelineInfoLogEXT = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
 	glWindowPos2dMESA = {"void (*)(GLdouble, GLdouble)"},
-	glGetProgramResourcefvNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLenum *, GLsizei, GLsizei *, GLfloat *)"},
+	glGetProgramResourcefvNV = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLenum *, GLsizei, GLsizei *, GLfloat *)",
+	},
 	glPopAttrib = {"void (*)()"},
 	glMultiTexEnviEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
 	glGetVertexAttribdvARB = {"void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)"},
@@ -8261,7 +8606,9 @@ local functions = {
 	glGetTexParameterIiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
 	glBindFragDataLocation = {"void (*)(GLuint, GLuint, const GLchar *)"},
 	glGetColorTableParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
-	glGetCompressedTextureSubImage = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLsizei, void *)"},
+	glGetCompressedTextureSubImage = {
+		"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLsizei, void *)",
+	},
 	glDepthFunc = {"void (*)(GL_LUA_ENUMS)"},
 	glGetProgramEnvParameterfvARB = {"void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)"},
 	glAlphaFuncx = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
@@ -8273,7 +8620,9 @@ local functions = {
 	glColorPointer = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
 	glGetQueryObjectivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
 	glColor4bv = {"void (*)(const GLbyte *)"},
-	glCompressedMultiTexImage2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glCompressedMultiTexImage2DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)",
+	},
 	glGetQueryObjectuivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
 	glGetProgramResourceIndex = {"GLuint (*)(GLuint, GL_LUA_ENUMS, const GLchar *)"},
 	glGetMinmax = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
@@ -8318,7 +8667,9 @@ local functions = {
 	glFlushMappedNamedBufferRange = {"void (*)(GLuint, GLintptr, GLsizeiptr)"},
 	glGetnUniformdvARB = {"void (*)(GLuint, GLint, GLsizei, GLdouble *)"},
 	glGetUniformuivEXT = {"void (*)(GLuint, GLint, GLuint *)"},
-	glTexCoord2fColor4ubVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLubyte, GLubyte, GLubyte, GLubyte, GLfloat, GLfloat, GLfloat)"},
+	glTexCoord2fColor4ubVertex3fSUN = {
+		"void (*)(GLfloat, GLfloat, GLubyte, GLubyte, GLubyte, GLubyte, GLfloat, GLfloat, GLfloat)",
+	},
 	glIndexPointer = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
 	glEndTransformFeedbackNV = {"void (*)()"},
 	glIsAsyncMarkerSGIX = {"GLboolean (*)(GLuint)"},
@@ -8347,13 +8698,17 @@ local functions = {
 	glGetnMapdvARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLdouble *)"},
 	glGetnMapfvARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLfloat *)"},
 	glNormalStream3fATI = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat)"},
-	glGetProgramResourceiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLenum *, GLsizei, GLsizei *, GLint *)"},
+	glGetProgramResourceiv = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLenum *, GLsizei, GLsizei *, GLint *)",
+	},
 	glRasterPos4xOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
 	glFogf = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
 	glGetnPixelMapuivARB = {"void (*)(GL_LUA_ENUMS, GLsizei, GLuint *)"},
 	glBindVertexBuffers = {"void (*)(GLuint, GLsizei, const GLuint *, const GLintptr *, const GLsizei *)"},
 	glGetQueryIndexediv = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)"},
-	glGetnMinmaxARB = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glGetnMinmaxARB = {
+		"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)",
+	},
 	glGetConvolutionFilter = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
 	glGetUniformivARB = {"void (*)(GLhandleARB, GLint, GLint *)"},
 	glColor4s = {"void (*)(GLshort, GLshort, GLshort, GLshort)"},
@@ -8373,7 +8728,9 @@ local functions = {
 	glBindVertexArrayAPPLE = {"void (*)(GLuint)"},
 	glFragmentLightModelivSGIX = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
 	glIndexPointerEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, const void *)"},
-	glCopyMultiTexSubImage2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glCopyMultiTexSubImage2DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)",
+	},
 	glGetPerfMonitorCountersAMD = {"void (*)(GLuint, GLint *, GLint *, GLsizei, GLuint *)"},
 	glGetMinmaxEXT = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
 	glDebugMessageEnableAMD = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)"},
@@ -8395,7 +8752,9 @@ local functions = {
 	glInitNames = {"void (*)()"},
 	glBindBufferBaseEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint)"},
 	glTransformFeedbackBufferBase = {"void (*)(GLuint, GLuint, GLuint)"},
-	glMultiDrawElementsBaseVertex = {"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, const GLint *)"},
+	glMultiDrawElementsBaseVertex = {
+		"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, const GLint *)",
+	},
 	glGetNamedProgramLocalParameterIivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint *)"},
 	glProgramUniform4iv = {"void (*)(GLuint, GLint, GLsizei, const GLint *)"},
 	glIsPointInStrokePathNV = {"GLboolean (*)(GLuint, GLfloat, GLfloat)"},
@@ -8403,22 +8762,32 @@ local functions = {
 	glProgramEnvParameter4dvARB = {"void (*)(GL_LUA_ENUMS, GLuint, const GLdouble *)"},
 	glTexGeniv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
 	glBindTextureUnit = {"void (*)(GLuint, GLuint)"},
-	glMultiDrawRangeElementArrayAPPLE = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, const GLint *, const GLsizei *, GLsizei)"},
+	glMultiDrawRangeElementArrayAPPLE = {
+		"void (*)(GL_LUA_ENUMS, GLuint, GLuint, const GLint *, const GLsizei *, GLsizei)",
+	},
 	glNormalP3uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
-	glCopyTexSubImage3D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glCopyTexSubImage3D = {
+		"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)",
+	},
 	glIsRenderbuffer = {"GLboolean (*)(GLuint)"},
 	glCopyBufferSubData = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLintptr, GLintptr, GLsizeiptr)"},
-	glReadnPixelsEXT = {"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glReadnPixelsEXT = {
+		"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)",
+	},
 	glNormalP3ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
 	glRasterPos2xvOES = {"void (*)(const GLfixed *)"},
 	glLightModeli = {"void (*)(GL_LUA_ENUMS, GLint)"},
 	glPixelTexGenParameterfSGIS = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
-	glCopyImageSubDataOES = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)"},
+	glCopyImageSubDataOES = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)",
+	},
 	glEndOcclusionQueryNV = {"void (*)()"},
 	glColor3fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
 	glIsVertexArrayOES = {"GLboolean (*)(GLuint)"},
 	glBindVertexArrayOES = {"void (*)(GLuint)"},
-	glBlitFramebuffer = {"void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)"},
+	glBlitFramebuffer = {
+		"void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)",
+	},
 	glCreatePerfQueryINTEL = {"void (*)(GLuint, GLuint *)"},
 	glMultiTexCoord4sARB = {"void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort, GLshort)"},
 	glTangentPointerEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
@@ -8430,12 +8799,16 @@ local functions = {
 	glRectxvOES = {"void (*)(const GLfixed *, const GLfixed *)"},
 	glResetMinmax = {"void (*)(GL_LUA_ENUMS)"},
 	glMultiTexCoordPointerEXT = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
-	glGetDebugMessageLogARB = {"GLuint (*)(GLuint, GLsizei, GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)"},
+	glGetDebugMessageLogARB = {
+		"GLuint (*)(GLuint, GLsizei, GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)",
+	},
 	glDeleteProgramPipelinesEXT = {"void (*)(GLsizei, const GLuint *)"},
 	glGetDoublev = {"void (*)(GL_LUA_ENUMS, GLdouble *)"},
 	glMultiTexCoord2fARB = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat)"},
 	glLoadMatrixf = {"void (*)(const GLfloat *)"},
-	glBlitFramebufferNV = {"void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)"},
+	glBlitFramebufferNV = {
+		"void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)",
+	},
 	glNormal3xvOES = {"void (*)(const GLfixed *)"},
 	glMakeImageHandleNonResidentNV = {"void (*)(GLuint64)"},
 	glMakeImageHandleResidentARB = {"void (*)(GLuint64, GL_LUA_ENUMS)"},
@@ -8445,7 +8818,9 @@ local functions = {
 	glDepthRangeArrayfvNV = {"void (*)(GLuint, GLsizei, const GLfloat *)"},
 	glPathGlyphIndexRangeNV = {"GLenum (*)(GL_LUA_ENUMS, const void *, GLbitfield, GLuint, GLfloat, GLuint)"},
 	glDisablei = {"void (*)(GL_LUA_ENUMS, GLuint)"},
-	glGetnHistogramARB = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glGetnHistogramARB = {
+		"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)",
+	},
 	glGetShaderSourceARB = {"void (*)(GLhandleARB, GLsizei, GLsizei *, GLcharARB *)"},
 	glBindMaterialParameterEXT = {"GLuint (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
 	glGetUniformui64vNV = {"void (*)(GLuint, GLint, GLuint64EXT *)"},
@@ -8453,9 +8828,13 @@ local functions = {
 	glEnable = {"void (*)(GL_LUA_ENUMS)"},
 	glVertexPointerListIBM = {"void (*)(GLint, GL_LUA_ENUMS, GLint, const void **, GLint)"},
 	glMaterialxv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
-	glMapVertexAttrib2fAPPLE = {"void (*)(GLuint, GLuint, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)"},
+	glMapVertexAttrib2fAPPLE = {
+		"void (*)(GLuint, GLuint, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)",
+	},
 	glRasterPos2fv = {"void (*)(const GLfloat *)"},
-	glClearBufferData = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glClearBufferData = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glColorP3uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
 	glDrawArraysInstancedANGLE = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei)"},
 	glProgramUniform3uiv = {"void (*)(GLuint, GLint, GLsizei, const GLuint *)"},
@@ -8464,7 +8843,9 @@ local functions = {
 	glGenTransformFeedbacks = {"void (*)(GLsizei, GLuint *)", true},
 	glSetLocalConstantEXT = {"void (*)(GLuint, GL_LUA_ENUMS, const void *)"},
 	glGetMaterialxv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
-	glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN = {"void (*)(const GLuint *, const GLfloat *, const GLfloat *, const GLfloat *, const GLfloat *)"},
+	glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN = {
+		"void (*)(const GLuint *, const GLfloat *, const GLfloat *, const GLfloat *, const GLfloat *)",
+	},
 	glUniformMatrix2dv = {"void (*)(GLint, GLsizei, GLboolean, const GLdouble *)"},
 	glVertex2hNV = {"void (*)(GLhalfNV, GLhalfNV)"},
 	glGetMultiTexEnvivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
@@ -8478,7 +8859,9 @@ local functions = {
 	glGetVertexAttribivARB = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
 	glExtGetShadersQCOM = {"void (*)(GLuint *, GLint, GLint *)"},
 	glMakeTextureHandleNonResidentNV = {"void (*)(GLuint64)"},
-	glConvolutionFilter1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glConvolutionFilter1DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glMultiDrawArraysEXT = {"void (*)(GL_LUA_ENUMS, const GLint *, const GLsizei *, GLsizei)"},
 	glUniform2fv = {"void (*)(GLint, GLsizei, const GLfloat *)"},
 	glPathFogGenNV = {"void (*)(GL_LUA_ENUMS)"},
@@ -8487,7 +8870,9 @@ local functions = {
 	glTexEnviv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
 	glGetListParameterivSGIX = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
 	glGenFencesNV = {"void (*)(GLsizei, GLuint *)"},
-	glPrimitiveBoundingBoxEXT = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glPrimitiveBoundingBoxEXT = {
+		"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)",
+	},
 	glFragmentMaterialfvSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
 	glMultiTexCoord1iv = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
 	glGetColorTableParameterfvSGI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
@@ -8506,7 +8891,9 @@ local functions = {
 	glMultiTexCoord2dvARB = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
 	glMultiTexCoord2fv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
 	glTextureParameterfv = {"void (*)(GLuint, GL_LUA_ENUMS, const GLfloat *)"},
-	glTextureViewOES = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)"},
+	glTextureViewOES = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)",
+	},
 	glMultiTexCoord2iARB = {"void (*)(GL_LUA_ENUMS, GLint, GLint)"},
 	glVertexAttrib4iv = {"void (*)(GLuint, const GLint *)"},
 	glMultiTexCoord2sARB = {"void (*)(GL_LUA_ENUMS, GLshort, GLshort)"},
@@ -8545,18 +8932,26 @@ local functions = {
 	glMultiTexCoord4ivARB = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
 	glLightf = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
 	glGetVideoivNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
-	glTexCoord4fColor4fNormal3fVertex4fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glTexCoord4fColor4fNormal3fVertex4fSUN = {
+		"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)",
+	},
 	glMultiTexCoord4svARB = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
-	glTexCoord2fColor4fNormal3fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glTexCoord2fColor4fNormal3fVertex3fSUN = {
+		"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)",
+	},
 	glColor4xvOES = {"void (*)(const GLfixed *)"},
 	glLoadTransposeMatrixf = {"void (*)(const GLfloat *)"},
 	glRenderbufferStorage = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei)"},
 	glCoverStrokePathNV = {"void (*)(GLuint, GL_LUA_ENUMS)"},
-	glCopyMultiTexImage2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)"},
+	glCopyMultiTexImage2DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)",
+	},
 	glMultiTexGendvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLdouble *)"},
 	glMultiTexGenfEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
 	glTexCoord3d = {"void (*)(GLdouble, GLdouble, GLdouble)"},
-	glMultiTexImage3DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glMultiTexImage3DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glMultiTexParameterIuivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)"},
 	glNormal3xOES = {"void (*)(GLfixed, GLfixed, GLfixed)"},
 	glAreTexturesResident = {"GLboolean (*)(GLsizei, const GLuint *, GLboolean *)"},
@@ -8571,22 +8966,34 @@ local functions = {
 	glFragmentMaterialivSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
 	glNormalStream3iATI = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint)"},
 	glVertex4bvOES = {"void (*)(const GLbyte *)"},
-	glCompressedMultiTexImage1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)"},
-	glColorFragmentOp3ATI = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glCompressedMultiTexImage1DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)",
+	},
+	glColorFragmentOp3ATI = {
+		"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)",
+	},
 	glEvalCoord2xOES = {"void (*)(GLfixed, GLfixed)"},
-	glAlphaFragmentOp3ATI = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glAlphaFragmentOp3ATI = {
+		"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)",
+	},
 	glRasterPos3s = {"void (*)(GLshort, GLshort, GLshort)"},
 	glNamedFramebufferTexture2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
 	glProgramLocalParameter4dvARB = {"void (*)(GL_LUA_ENUMS, GLuint, const GLdouble *)"},
 	glCurrentPaletteMatrixOES = {"void (*)(GLuint)"},
-	glGetTextureSubImage = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glGetTextureSubImage = {
+		"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)",
+	},
 	glTagSampleBufferSGIX = {"void (*)()"},
 	glNamedProgramLocalParameter4fvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, const GLfloat *)"},
 	glNamedProgramLocalParameterI4ivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, const GLint *)"},
-	glCompressedTexImage3DARB = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glCompressedTexImage3DARB = {
+		"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)",
+	},
 	glGenerateMultiTexMipmapEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
 	glImportSyncEXT = {"GLsync (*)(GL_LUA_ENUMS, GLintptr, GLbitfield)"},
-	glMap2f = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)"},
+	glMap2f = {
+		"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)",
+	},
 	glMultiTexCoord3sv = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
 	glGetMultiTexParameterIuivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint *)"},
 	glBindSampler = {"void (*)(GLuint, GLuint)"},
@@ -8596,7 +9003,9 @@ local functions = {
 	glWaitSync = {"void (*)(GLsync, GLbitfield, GLuint64)"},
 	glGetPerfMonitorCounterDataAMD = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLuint *, GLint *)"},
 	glFlushRasterSGIX = {"void (*)()"},
-	glCompressedTextureSubImage1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCompressedTextureSubImage1DEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)",
+	},
 	glGetVertexAttribdv = {"void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)"},
 	glNormalPointerListIBM = {"void (*)(GL_LUA_ENUMS, GLint, const void **, GLint)"},
 	glMultiDrawArraysIndirectBindlessCountNV = {"void (*)(GL_LUA_ENUMS, const void *, GLsizei, GLsizei, GLsizei, GLint)"},
@@ -8611,12 +9020,16 @@ local functions = {
 	glMultiTexCoord1hNV = {"void (*)(GL_LUA_ENUMS, GLhalfNV)"},
 	glListParameterivSGIX = {"void (*)(GLuint, GL_LUA_ENUMS, const GLint *)"},
 	glLoadTransposeMatrixdARB = {"void (*)(const GLdouble *)"},
-	glMultiTexImage2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glMultiTexImage2DEXT = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glEdgeFlagPointerListIBM = {"void (*)(GLint, const GLboolean **, GLint)"},
 	glPathColorGenNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
 	glGetnMapiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLint *)"},
 	glProgramUniform1d = {"void (*)(GLuint, GLint, GLdouble)"},
-	glPathGlyphsNV = {"void (*)(GLuint, GL_LUA_ENUMS, const void *, GLbitfield, GLsizei, GL_LUA_ENUMS, const void *, GL_LUA_ENUMS, GLuint, GLfloat)"},
+	glPathGlyphsNV = {
+		"void (*)(GLuint, GL_LUA_ENUMS, const void *, GLbitfield, GLsizei, GL_LUA_ENUMS, const void *, GL_LUA_ENUMS, GLuint, GLfloat)",
+	},
 	glClearColorIuiEXT = {"void (*)(GLuint, GLuint, GLuint, GLuint)"},
 	glIsVertexArrayAPPLE = {"GLboolean (*)(GLuint)"},
 	glPathParameterfvNV = {"void (*)(GLuint, GL_LUA_ENUMS, const GLfloat *)"},
@@ -8624,7 +9037,9 @@ local functions = {
 	glMultiTexCoordP4ui = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
 	glDrawBuffersATI = {"void (*)(GLsizei, const GLenum *)"},
 	glPixelStorei = {"void (*)(GL_LUA_ENUMS, GLint)"},
-	glPointAlongPathNV = {"GLboolean (*)(GLuint, GLsizei, GLsizei, GLfloat, GLfloat *, GLfloat *, GLfloat *, GLfloat *)"},
+	glPointAlongPathNV = {
+		"GLboolean (*)(GLuint, GLsizei, GLsizei, GLfloat, GLfloat *, GLfloat *, GLfloat *, GLfloat *)",
+	},
 	glPixelTexGenParameterfvSGIS = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
 	glMapGrid1f = {"void (*)(GLint, GLfloat, GLfloat)"},
 	glIndexiv = {"void (*)(const GLint *)"},
@@ -8635,7 +9050,9 @@ local functions = {
 	glFogx = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
 	glMultiTexCoord4dARB = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble)"},
 	glMultiTexCoord2xvOES = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
-	glStencilThenCoverFillPathInstancedNV = {"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glStencilThenCoverFillPathInstancedNV = {
+		"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)",
+	},
 	glVertex4fv = {"void (*)(const GLfloat *)"},
 	glPointSizePointerOES = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
 	glVertex3fv = {"void (*)(const GLfloat *)"},
@@ -8649,10 +9066,14 @@ local functions = {
 	glNormal3hvNV = {"void (*)(const GLhalfNV *)"},
 	glDeleteFencesNV = {"void (*)(GLsizei, const GLuint *)"},
 	glVertex2fv = {"void (*)(const GLfloat *)"},
-	glConvolutionFilter2D = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glConvolutionFilter2D = {
+		"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)",
+	},
 	glProgramEnvParametersI4ivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLint *)"},
 	glNamedFramebufferTexture3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)"},
-	glDrawElementsInstancedBaseVertexBaseInstance = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint, GLuint)"},
+	glDrawElementsInstancedBaseVertexBaseInstance = {
+		"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint, GLuint)",
+	},
 	glProgramLocalParameters4fvEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLfloat *)"},
 	glProgramLocalParametersI4ivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLint *)"},
 	glGetnMapfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLfloat *)"},
@@ -8661,7 +9082,9 @@ local functions = {
 	glBindSamplers = {"void (*)(GLuint, GLsizei, const GLuint *)"},
 	glColor3hvNV = {"void (*)(const GLhalfNV *)"},
 	glFreeObjectBufferATI = {"void (*)(GLuint)"},
-	glMap2d = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)"},
+	glMap2d = {
+		"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)",
+	},
 	glPointParameterx = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
 	glGetTexGenfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
 	glMapGrid2xOES = {"void (*)(GLint, GLfixed, GLfixed, GLfixed, GLfixed)"},
@@ -8689,7 +9112,9 @@ local functions = {
 	glSecondaryColor3ui = {"void (*)(GLuint, GLuint, GLuint)"},
 	glProgramUniform3i64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLint64EXT *)"},
 	glTextureParameterIiv = {"void (*)(GLuint, GL_LUA_ENUMS, const GLint *)"},
-	glGetnHistogram = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glGetnHistogram = {
+		"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)",
+	},
 	glProgramUniform3ui64NV = {"void (*)(GLuint, GLint, GLuint64EXT, GLuint64EXT, GLuint64EXT)"},
 	glProgramUniform3ui64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLuint64EXT *)"},
 	glProgramUniform3uiEXT = {"void (*)(GLuint, GLint, GLuint, GLuint, GLuint)"},
@@ -8706,7 +9131,9 @@ local functions = {
 	glProgramUniformMatrix2x3fvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
 	glProgramParameter4dNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
 	glProgramUniformMatrix2x4fv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
-	glTextureViewEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)"},
+	glTextureViewEXT = {
+		"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)",
+	},
 	glMultiDrawElementsIndirectAMD = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei)"},
 	glProgramUniformMatrix3fvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
 	glGetQueryBufferObjectuiv = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLintptr)"},
@@ -8727,87 +9154,97 @@ local functions = {
 	wglSwapIntervalEXT = {"void (*)(GLint)"},
 	glTextureBarrier = {"void (*)()"},
 }
-
 local GL_GETERROR = false
 local LOG_CALLS = false
 local log_file
-if LOG_CALLS then
-	log_file = io.open("gl_calls", "wb")
-end
 
-setmetatable(gl, {
-	__index = function(self, name)
-		if rawget(self, "GetProcAddress") and (functions["gl" .. name] or (name:sub(0, 3) == "Gen" and functions["gl" .. name .. "s"])) then
-			local info = functions["gl" .. name] or functions["gl" .. name .. "s"]
-			local ptr = gl.GetProcAddress("gl" .. name)
-			if ptr == nil then
-				ptr = gl.GetProcAddress("gl" .. name .. "s")
-			end
-			if ptr ~= nil then
-				local ok, func = pcall(ffi.cast, info[1], ptr)
-				if ok then
+if LOG_CALLS then log_file = io.open("gl_calls", "wb") end
 
-					if LOG_CALLS then
-						local old = func
-						func = function(...)
-							log_file:write("gl", name, "(")
-							local args = {...}
-							for i, v in ipairs(args) do
-								log_file:write(tostring(v))
-								if i ~= #args then
-									log_file:write(", ")
+setmetatable(
+	gl,
+	{
+		__index = function(self, name)
+			if
+				rawget(self, "GetProcAddress") and
+				(
+					functions["gl" .. name] or
+					(
+						name:sub(0, 3) == "Gen" and
+						functions["gl" .. name .. "s"]
+					)
+				)
+			then
+				local info = functions["gl" .. name] or functions["gl" .. name .. "s"]
+				local ptr = gl.GetProcAddress("gl" .. name)
+
+				if ptr == nil then ptr = gl.GetProcAddress("gl" .. name .. "s") end
+
+				if ptr ~= nil then
+					local ok, func = pcall(ffi.cast, info[1], ptr)
+
+					if ok then
+						if LOG_CALLS then
+							local old = func
+							func = function(...)
+								log_file:write("gl", name, "(")
+								local args = {...}
+
+								for i, v in ipairs(args) do
+									log_file:write(tostring(v))
+
+									if i ~= #args then log_file:write(", ") end
 								end
+
+								log_file:write(") = ")
+								local val = old(...)
+								log_file:write(tostring(val))
+								log_file:write("\n")
+								return val
 							end
-							log_file:write(") = ")
-							local val = old(...)
-							log_file:write(tostring(val))
-							log_file:write("\n")
-							return val
 						end
-					end
 
-					if GL_GETERROR and name ~= "GetError" then
-						local old = func
-						func = function(...)
-							local val = old(...)
+						if GL_GETERROR and name ~= "GetError" then
+							local old = func
+							func = function(...)
+								local val = old(...)
+								local err = gl.GetError()
 
-							local err = gl.GetError()
+								if err ~= 0 then
+									print("gl" .. name .. "(", ...)
+									print("): " .. tostring(err))
+								end
 
-							if err ~= 0 then
-								print("gl" .. name .. "(", ...)
-								print("): " .. tostring(err))
+								return val
 							end
-
-							return val
 						end
-					end
 
-					if info[2] then
-						gl[name] = function()
-							local id = ffi.new('GLint[1]')
-							func(1, id)
-							return id[0]
+						if info[2] then
+							gl[name] = function()
+								local id = ffi.new("GLint[1]")
+								func(1, id)
+								return id[0]
+							end
+							return gl[name]
+						else
+							gl[name] = func
 						end
+
 						return gl[name]
-					else
-						gl[name] = func
 					end
-					return gl[name]
+
+					if not ok then print(func) end
 				end
-				if not ok then print(func) end
 			end
-		end
-	end,
-})
+		end,
+	}
+)
 
 function gl.Initialize(get_proc_address)
 	if type(get_proc_address) == "function" then
 		gl.GetProcAddress = get_proc_address
 	end
-	
-	if not gl.TextureBarrier then
-		gl.TextureBarrier = gl.TextureBarrierNV
-	end
+
+	if not gl.TextureBarrier then gl.TextureBarrier = gl.TextureBarrierNV end
 
 	local function __tostring(self)
 		return ("gl_%s[%i]"):format(self.Type, self.id)
@@ -8817,57 +9254,73 @@ function gl.Initialize(get_proc_address)
 		do
 			local META = {}
 			META.__index = META
-
 			META.Type = "vertex_array_dsa"
 			META.__tostring = __tostring
 
 			function META:ElementBuffer(buffer)
 				return gl.VertexArrayElementBuffer(self.id, buffer)
 			end
+
 			function META:DisableAttrib(index)
 				return gl.DisableVertexArrayAttrib(self.id, index)
 			end
+
 			function META:AttribFormat(attribindex, size, type, normalized, relativeoffset)
 				return gl.VertexArrayAttribFormat(self.id, attribindex, size, type, normalized, relativeoffset)
 			end
+
 			function META:AttribLFormat(attribindex, size, type, relativeoffset)
 				return gl.VertexArrayAttribLFormat(self.id, attribindex, size, type, relativeoffset)
 			end
+
 			function META:AttribPointer2(attribindex, size, type, normalized, stride, relativeoffset)
-				gl.BindVertexArray(self.id) return gl.VertexAttribPointer(attribindex, size, type, normalized, relativeoffset, ffi.cast("void*", stride))
+				gl.BindVertexArray(self.id)
+				return gl.VertexAttribPointer(attribindex, size, type, normalized, relativeoffset, ffi.cast("void*", stride))
 			end
+
 			function META:GetIndexediv(index, pname, param)
 				return gl.GetVertexArrayIndexediv(self.id, index, pname, param)
 			end
+
 			function META:AttribIFormat(attribindex, size, type, relativeoffset)
 				return gl.VertexArrayAttribIFormat(self.id, attribindex, size, type, relativeoffset)
 			end
+
 			function META:AttribBinding(attribindex, bindingindex)
 				return gl.VertexArrayAttribBinding(self.id, attribindex, bindingindex)
 			end
+
 			function META:VertexBuffers(first, count, buffers, offsets, strides)
 				return gl.VertexArrayVertexBuffers(self.id, first, count, buffers, offsets, strides)
 			end
+
 			function META:BindingDivisor(bindingindex, divisor)
 				return gl.VertexArrayBindingDivisor(self.id, bindingindex, divisor)
 			end
+
 			function META:EnableAttrib(index)
 				return gl.EnableVertexArrayAttrib(self.id, index)
 			end
+
 			function META:Getiv(pname, param)
 				return gl.GetVertexArrayiv(self.id, pname, param)
 			end
+
 			function META:GetIndexed64iv(index, pname, param)
 				return gl.GetVertexArrayIndexed64iv(self.id, index, pname, param)
 			end
+
 			function META:VertexBuffer(bindingindex, buffer, offset, stride)
 				return gl.VertexArrayVertexBuffer(self.id, bindingindex, buffer, offset, stride)
 			end
-			local ctype = ffi.typeof('struct { int id; }')
+
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteVertexArrays(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteVertexArrays(1, ffi.new("GLuint[1]", self.id))
 			end
+
 			function gl.CreateVertexArray()
 				local temp = ffi.new("GLuint[1]")
 				gl.CreateVertexArrays(1, temp)
@@ -8876,73 +9329,106 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
+
 		do
 			local META = {}
 			META.__index = META
-
 			META.Type = "vertex_array_no_dsa"
 			META.__tostring = __tostring
-
 			local bind
+
 			do
 				local last
+
 				function bind(self)
-					if self ~= last then
-						gl.BindVertexArray(self.id)
-					end
+					if self ~= last then gl.BindVertexArray(self.id) end
+
 					last = self
 				end
 			end
+
 			function META:ElementBuffer(buffer)
-				bind(self) return gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", buffer)
+				bind(self)
+				return gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", buffer)
 			end
+
 			function META:DisableAttrib(index)
-				bind(self) return gl.DisableVertexAttrib(index)
+				bind(self)
+				return gl.DisableVertexAttrib(index)
 			end
+
 			function META:AttribFormat(attribindex, size, type, normalized, relativeoffset)
-				bind(self) return gl.VertexAttribFormat(attribindex, size, type, normalized, relativeoffset)
+				bind(self)
+				return gl.VertexAttribFormat(attribindex, size, type, normalized, relativeoffset)
 			end
+
 			function META:AttribLFormat(attribindex, size, type, relativeoffset)
-				bind(self) return gl.VertexAttribLFormat(attribindex, size, type, relativeoffset)
+				bind(self)
+				return gl.VertexAttribLFormat(attribindex, size, type, relativeoffset)
 			end
+
 			function META:AttribPointer(attribindex, size, type, normalized, relativeoffset, pointer)
-				bind(self) return gl.VertexAttribPointer(attribindex, size, type, relativeoffset, pointer)
+				bind(self)
+				return gl.VertexAttribPointer(attribindex, size, type, relativeoffset, pointer)
 			end
+
 			function META:AttribPointer2(attribindex, size, type, normalized, stride, relativeoffset)
-				bind(self) return gl.VertexAttribPointer(attribindex, size, type, normalized, relativeoffset, ffi.cast("void*", stride))
+				bind(self)
+				return gl.VertexAttribPointer(attribindex, size, type, normalized, relativeoffset, ffi.cast("void*", stride))
 			end
+
 			function META:GetIndexediv(index, pname, param)
-				bind(self) return gl.GetVertexIndexediv(index, pname, param)
+				bind(self)
+				return gl.GetVertexIndexediv(index, pname, param)
 			end
+
 			function META:AttribIFormat(attribindex, size, type, relativeoffset)
-				bind(self) return gl.VertexAttribIFormat(attribindex, size, type, relativeoffset)
+				bind(self)
+				return gl.VertexAttribIFormat(attribindex, size, type, relativeoffset)
 			end
+
 			function META:AttribBinding(attribindex, bindingindex)
-				bind(self) return gl.VertexAttribBinding(attribindex, bindingindex)
+				bind(self)
+				return gl.VertexAttribBinding(attribindex, bindingindex)
 			end
+
 			function META:VertexBuffers(first, count, buffers, offsets, strides)
-				bind(self) return gl.VertexVertexBuffers(first, count, buffers, offsets, strides)
+				bind(self)
+				return gl.VertexVertexBuffers(first, count, buffers, offsets, strides)
 			end
+
 			function META:BindingDivisor(bindingindex, divisor)
-				bind(self) return gl.VertexBindingDivisor(bindingindex, divisor)
+				bind(self)
+				return gl.VertexBindingDivisor(bindingindex, divisor)
 			end
+
 			function META:EnableAttrib(index)
-				bind(self) return gl.EnableVertexAttribArray(index)
+				bind(self)
+				return gl.EnableVertexAttribArray(index)
 			end
+
 			function META:Getiv(pname, param)
-				bind(self) return gl.GetVertexiv(pname, param)
+				bind(self)
+				return gl.GetVertexiv(pname, param)
 			end
+
 			function META:GetIndexed64iv(index, pname, param)
-				bind(self) return gl.GetVertexIndexed64iv(index, pname, param)
+				bind(self)
+				return gl.GetVertexIndexed64iv(index, pname, param)
 			end
+
 			function META:VertexBuffer(bindingindex, buffer, offset, stride)
-				bind(self) return gl.BindVertexBuffer(bindingindex, buffer, offset, stride)
+				bind(self)
+				return gl.BindVertexBuffer(bindingindex, buffer, offset, stride)
 			end
-			local ctype = ffi.typeof('struct { int id; }')
+
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteVertexArrays(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteVertexArrays(1, ffi.new("GLuint[1]", self.id))
 			end
+
 			function gl.CreateVertexArrayNODSA()
 				local self = setmetatable({}, META)
 				self.id = gl.GenVertexArray()
@@ -8954,118 +9440,178 @@ function gl.Initialize(get_proc_address)
 			gl.CreateVertexArray = gl.CreateVertexArrayNODSA
 		end
 	end
+
 	do -- Framebuffer
 		do
 			local META = {}
 			META.__index = META
-
 			META.Type = "framebuffer_dsa"
 			META.__tostring = __tostring
 
 			function META:Bind(target)
 				return gl.BindFramebuffer(target, self.id)
 			end
+
 			function META:ReadBuffer(src)
 				return gl.NamedFramebufferReadBuffer(self.id, src)
 			end
+
 			function META:DrawBuffers(n, bufs)
 				return gl.NamedFramebufferDrawBuffers(self.id, n, bufs)
 			end
+
 			function META:GetAttachmentParameteriv(attachment, pname, params)
 				return gl.GetNamedFramebufferAttachmentParameteriv(self.id, attachment, pname, params)
 			end
+
 			function META:Clearfi(buffer, depth, stencil)
 				return gl.ClearNamedFramebufferfi(self.id, buffer, depth, stencil)
 			end
+
 			function META:Clearuiv(buffer, drawbuffer, value)
 				return gl.ClearNamedFramebufferuiv(self.id, buffer, drawbuffer, value)
 			end
+
 			function META:Texture3D(attachment, textarget, texture, level, zoffset)
 				return gl.NamedFramebufferTexture3DEXT(self.id, attachment, textarget, texture, level, zoffset)
 			end
+
 			function META:CheckStatus(target)
 				return gl.CheckNamedFramebufferStatus(self.id, target)
 			end
-			function META:Blit(drawFramebuffer, srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
-				return gl.BlitNamedFramebuffer(self.id, drawFramebuffer, srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
+
+			function META:Blit(
+				drawFramebuffer,
+				srcX0,
+				srcY0,
+				srcX1,
+				srcY1,
+				dstX0,
+				dstY0,
+				dstX1,
+				dstY1,
+				mask,
+				filter
+			)
+				return gl.BlitNamedFramebuffer(
+					self.id,
+					drawFramebuffer,
+					srcX0,
+					srcY0,
+					srcX1,
+					srcY1,
+					dstX0,
+					dstY0,
+					dstX1,
+					dstY1,
+					mask,
+					filter
+				)
 			end
+
 			function META:Clearfv(buffer, drawbuffer, value)
 				return gl.ClearNamedFramebufferfv(self.id, buffer, drawbuffer, value)
 			end
+
 			function META:CheckStatusEXT(target)
 				return gl.CheckNamedFramebufferStatusEXT(self.id, target)
 			end
+
 			function META:RenderbufferEXT(attachment, renderbuffertarget, renderbuffer)
 				return gl.NamedFramebufferRenderbufferEXT(self.id, attachment, renderbuffertarget, renderbuffer)
 			end
+
 			function META:TextureLayer(attachment, texture, level, layer)
 				return gl.NamedFramebufferTextureLayer(self.id, attachment, texture, level, layer)
 			end
+
 			function META:SetParameteri(pname, param)
 				return gl.NamedFramebufferParameteri(self.id, pname, param)
 			end
+
 			function META:Texture2D(attachment, textarget, texture, level)
 				return gl.NamedFramebufferTexture2D(self.id, attachment, textarget, texture, level)
 			end
+
 			function META:DrawBuffersEXT(n, bufs)
 				return gl.FramebufferDrawBuffersEXT(self.id, n, bufs)
 			end
+
 			function META:Texture(attachment, texture, level)
 				return gl.NamedFramebufferTexture(self.id, attachment, texture, level)
 			end
+
 			function META:GetParameterivEXT(pname, params)
 				return gl.GetFramebufferParameterivEXT(self.id, pname, params)
 			end
+
 			function META:ParameteriEXT(pname, param)
 				return gl.NamedFramebufferParameteriEXT(self.id, pname, param)
 			end
+
 			function META:GetAttachmentParameterivEXT(attachment, pname, params)
 				return gl.GetNamedFramebufferAttachmentParameterivEXT(self.id, attachment, pname, params)
 			end
+
 			function META:ReadBufferEXT(mode)
 				return gl.FramebufferReadBufferEXT(self.id, mode)
 			end
+
 			function META:TextureFace(attachment, texture, level, face)
 				return gl.NamedFramebufferTextureFaceEXT(self.id, attachment, texture, level, face)
 			end
+
 			function META:TextureLayerEXT(attachment, texture, level, layer)
 				return gl.NamedFramebufferTextureLayerEXT(self.id, attachment, texture, level, layer)
 			end
+
 			function META:Renderbuffer(attachment, renderbuffer)
 				return gl.NamedFramebufferRenderbuffer(self.id, attachment, "GL_RENDERBUFFER", renderbuffer)
 			end
+
 			function META:CreateFramebuffers(framebuffers)
 				return gl.CreateFramebuffers(self.id, framebuffers)
 			end
+
 			function META:Cleariv(buffer, drawbuffer, value)
 				return gl.ClearNamedFramebufferiv(self.id, buffer, drawbuffer, value)
 			end
+
 			function META:InvalidateData(numAttachments, attachments)
 				return gl.InvalidateNamedFramebufferData(self.id, numAttachments, attachments)
 			end
+
 			function META:Texture1D(attachment, textarget, texture, level)
 				return gl.NamedFramebufferTexture1DEXT(self.id, attachment, textarget, texture, level)
 			end
+
 			function META:InvalidateSubData(numAttachments, attachments, x, y, width, height)
 				return gl.InvalidateNamedFramebufferSubData(self.id, numAttachments, attachments, x, y, width, height)
 			end
+
 			function META:DrawBuffer(buf)
 				return gl.NamedFramebufferDrawBuffer(self.id, buf)
 			end
+
 			function META:GetParameteriv(pname, param)
 				return gl.GetNamedFramebufferParameteriv(self.id, pname, param)
 			end
+
 			function META:TextureEXT(attachment, texture, level)
 				return gl.NamedFramebufferTextureEXT(self.id, attachment, texture, level)
 			end
+
 			function META:DrawBufferEXT(mode)
 				return gl.FramebufferDrawBufferEXT(self.id, mode)
 			end
-			local ctype = ffi.typeof('struct { int id; }')
+
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteFramebuffers(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteFramebuffers(1, ffi.new("GLuint[1]", self.id))
 			end
+
 			function gl.CreateFramebuffer(id)
 				if id then
 					local self = ffi.new(ctype)
@@ -9084,123 +9630,185 @@ function gl.Initialize(get_proc_address)
 		do
 			local META = {}
 			META.__index = META
-
 			META.Type = "framebuffer_no_dsa"
 			META.__tostring = __tostring
-
 			local bind
+
 			do
 				local last
 				local last_target
+
 				function bind(self, target)
 					if self.id ~= last or target ~= last_target then
 						gl.BindFramebuffer(target, self.id)
 					end
+
 					last = self.id
 					last_target = target
 				end
+
 				local func = gl.BindFramebuffer
+
 				function gl.BindFramebuffer(target, id)
-					if id ~= last or target ~= last_target then
-						func(target, id)
-					end
+					if id ~= last or target ~= last_target then func(target, id) end
+
 					last = id
 					last_target = target
 				end
 			end
+
 			function META:Bind(target)
 				gl.BindFramebuffer(target, self.id)
 			end
+
 			function META:DrawBuffers(n, bufs)
-				bind(self, "GL_FRAMEBUFFER") gl.DrawBuffers(n, bufs)
+				bind(self, "GL_FRAMEBUFFER")
+				gl.DrawBuffers(n, bufs)
 			end
+
 			function META:DrawBuffer(mode)
-				bind(self, "GL_FRAMEBUFFER") gl.DrawBuffer(mode)
+				bind(self, "GL_FRAMEBUFFER")
+				gl.DrawBuffer(mode)
 			end
+
 			function META:ReadBuffer(mode)
-				bind(self, "GL_FRAMEBUFFER") gl.ReadBuffer(mode)
+				bind(self, "GL_FRAMEBUFFER")
+				gl.ReadBuffer(mode)
 			end
+
 			function META:GetAttachmentParameteriv(target, attachment, pname, params)
-				bind(self, target) return gl.GetFramebufferAttachmentParameteriv(target, attachment, pname, params)
+				bind(self, target)
+				return gl.GetFramebufferAttachmentParameteriv(target, attachment, pname, params)
 			end
+
 			function META:Texture3D(target, attachment, textarget, texture, level, zoffset)
-				bind(self, target) return gl.FramebufferTexture3DEXT(target, attachment, textarget, texture, level, zoffset)
+				bind(self, target)
+				return gl.FramebufferTexture3DEXT(target, attachment, textarget, texture, level, zoffset)
 			end
+
 			function META:CheckStatus(target)
-				bind(self, target) return gl.CheckFramebufferStatus(target)
+				bind(self, target)
+				return gl.CheckFramebufferStatus(target)
 			end
+
 			function META:Blit(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
-				bind(self, "GL_FRAMEBUFFER") return gl.BlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
+				bind(self, "GL_FRAMEBUFFER")
+				return gl.BlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
 			end
+
 			function META:CheckStatusEXT(target)
-				bind(self, target) return gl.CheckFramebufferStatusEXT(target)
+				bind(self, target)
+				return gl.CheckFramebufferStatusEXT(target)
 			end
+
 			function META:RenderbufferEXT(target, attachment, renderbuffertarget, renderbuffer)
-				bind(self, target) return gl.FramebufferRenderbufferEXT(target, attachment, renderbuffertarget, renderbuffer)
+				bind(self, target)
+				return gl.FramebufferRenderbufferEXT(target, attachment, renderbuffertarget, renderbuffer)
 			end
+
 			function META:TextureLayer(attachment, texture, level, layer)
-				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferTextureLayer("GL_FRAMEBUFFER", attachment, texture, level, layer)
+				bind(self, "GL_FRAMEBUFFER")
+				return gl.FramebufferTextureLayer("GL_FRAMEBUFFER", attachment, texture, level, layer)
 			end
+
 			function META:SetParameteri(target, pname, param)
-				bind(self, target) return gl.FramebufferParameteri(target, pname, param)
+				bind(self, target)
+				return gl.FramebufferParameteri(target, pname, param)
 			end
+
 			function META:Texture2D(attachment, textarget, texture, level)
-				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferTexture2DEXT("GL_FRAMEBUFFER", attachment, textarget, texture, level)
+				bind(self, "GL_FRAMEBUFFER")
+				return gl.FramebufferTexture2DEXT("GL_FRAMEBUFFER", attachment, textarget, texture, level)
 			end
+
 			function META:DrawBuffersEXT(n, bufs)
-				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferDrawBuffersEXT(self.id, n, bufs)
+				bind(self, "GL_FRAMEBUFFER")
+				return gl.FramebufferDrawBuffersEXT(self.id, n, bufs)
 			end
+
 			function META:Texture(attachment, texture, level, target)
 				--bind(self, "GL_FRAMEBUFFER") return gl.FramebufferTexture("GL_FRAMEBUFFER", attachment, texture, level)
-				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferTexture2D("GL_FRAMEBUFFER", attachment, target or "GL_TEXTURE_2D", texture, level)
+				bind(self, "GL_FRAMEBUFFER")
+				return gl.FramebufferTexture2D("GL_FRAMEBUFFER", attachment, target or "GL_TEXTURE_2D", texture, level)
 			end
+
 			function META:GetParameterivEXT(pname, params)
-				bind(self, "GL_FRAMEBUFFER") return gl.GetFramebufferParameterivEXT(self.id, pname, params)
+				bind(self, "GL_FRAMEBUFFER")
+				return gl.GetFramebufferParameterivEXT(self.id, pname, params)
 			end
+
 			function META:GetAttachmentParameterivEXT(target, attachment, pname, params)
-				bind(self, target) return gl.GetFramebufferAttachmentParameterivEXT(target, attachment, pname, params)
+				bind(self, target)
+				return gl.GetFramebufferAttachmentParameterivEXT(target, attachment, pname, params)
 			end
+
 			function META:ReadBufferEXT(mode)
-				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferReadBufferEXT(self.id, mode)
+				bind(self, "GL_FRAMEBUFFER")
+				return gl.FramebufferReadBufferEXT(self.id, mode)
 			end
+
 			function META:TextureFace(target, attachment, texture, level, face)
-				bind(self, target) return gl.FramebufferTextureFaceEXT(target, attachment, texture, level, face)
+				bind(self, target)
+				return gl.FramebufferTextureFaceEXT(target, attachment, texture, level, face)
 			end
+
 			function META:TextureLayerEXT(target, attachment, texture, level, layer)
-				bind(self, target) return gl.FramebufferTextureLayerEXT(target, attachment, texture, level, layer)
+				bind(self, target)
+				return gl.FramebufferTextureLayerEXT(target, attachment, texture, level, layer)
 			end
+
 			function META:Renderbuffer(attachment, renderbuffer)
-				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferRenderbuffer("GL_FRAMEBUFFER", attachment, "GL_RENDERBUFFER", renderbuffer)
+				bind(self, "GL_FRAMEBUFFER")
+				return gl.FramebufferRenderbuffer("GL_FRAMEBUFFER", attachment, "GL_RENDERBUFFER", renderbuffer)
 			end
+
 			function META:Texture1D(target, attachment, textarget, texture, level)
-				bind(self, target) return gl.FramebufferTexture1DEXT(target, attachment, textarget, texture, level)
+				bind(self, target)
+				return gl.FramebufferTexture1DEXT(target, attachment, textarget, texture, level)
 			end
+
 			function META:GetParameteriv(target, pname, params)
-				bind(self, target) return gl.GetFramebufferParameteriv(target, pname, params)
+				bind(self, target)
+				return gl.GetFramebufferParameteriv(target, pname, params)
 			end
+
 			function META:TextureEXT(target, attachment, texture, level)
-				bind(self, target) return gl.FramebufferTextureEXT(target, attachment, texture, level)
+				bind(self, target)
+				return gl.FramebufferTextureEXT(target, attachment, texture, level)
 			end
+
 			function META:DrawBufferEXT(mode)
-				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferDrawBufferEXT(self.id, mode)
+				bind(self, "GL_FRAMEBUFFER")
+				return gl.FramebufferDrawBufferEXT(self.id, mode)
 			end
+
 			function META:Cleariv(buffer, drawbuffer, value)
-				bind(self, "GL_FRAMEBUFFER") gl.ClearBufferiv(buffer, drawbuffer, value)
+				bind(self, "GL_FRAMEBUFFER")
+				gl.ClearBufferiv(buffer, drawbuffer, value)
 			end
+
 			function META:Clearuiv(buffer, drawbuffer, value)
-				bind(self, "GL_FRAMEBUFFER") gl.ClearBufferuiv(buffer, drawbuffer, value)
+				bind(self, "GL_FRAMEBUFFER")
+				gl.ClearBufferuiv(buffer, drawbuffer, value)
 			end
+
 			function META:Clearfv(buffer, drawbuffer, value)
-				bind(self, "GL_FRAMEBUFFER") gl.ClearBufferfv(buffer, drawbuffer, value)
+				bind(self, "GL_FRAMEBUFFER")
+				gl.ClearBufferfv(buffer, drawbuffer, value)
 			end
+
 			function META:Clearfi(buffer, drawbuffer, depth, stencil)
-				bind(self, "GL_FRAMEBUFFER") gl.ClearBufferfi(buffer, drawbuffer, depth, stencil)
+				bind(self, "GL_FRAMEBUFFER")
+				gl.ClearBufferfi(buffer, drawbuffer, depth, stencil)
 			end
-			local ctype = ffi.typeof('struct { int id; }')
+
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteFramebuffers(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteFramebuffers(1, ffi.new("GLuint[1]", self.id))
 			end
+
 			function gl.CreateFramebufferNODSA(id)
 				local self = setmetatable({}, META)
 				self.id = id or gl.GenFramebuffer()
@@ -9212,64 +9820,81 @@ function gl.Initialize(get_proc_address)
 			gl.CreateFramebuffer = gl.CreateFramebufferNODSA
 		end
 	end
+
 	do -- Buffer
 		do
 			local META = {}
 			META.__index = META
-
 			META.Type = "buffer_dsa"
 			META.__tostring = __tostring
 
 			function META:CreateBuffers(buffers)
 				return gl.CreateBuffers(self.id, buffers)
 			end
+
 			function META:ClearData(internalformat, format, type, data)
 				return gl.ClearNamedBufferData(self.id, internalformat, format, type, data)
 			end
+
 			function META:Data(size, data, usage)
 				return gl.NamedBufferData(self.id, size, data, usage)
 			end
+
 			function META:Map(access)
 				return gl.MapNamedBuffer(self.id, access)
 			end
+
 			function META:GetPointerv(pname, params)
 				return gl.GetNamedBufferPointerv(self.id, pname, params)
 			end
+
 			function META:SetSubData(offset, size, data)
 				return gl.NamedBufferSubData(self.id, offset, size, data)
 			end
+
 			function META:MapRange(offset, length, access)
 				return gl.MapNamedBufferRange(self.id, offset, length, access)
 			end
+
 			function META:GetParameteri64v(pname, params)
 				return gl.GetNamedBufferParameteri64v(self.id, pname, params)
 			end
+
 			function META:FlushMappedRange(offset, length)
 				return gl.FlushMappedNamedBufferRange(self.id, offset, length)
 			end
+
 			function META:GetSubData(offset, size, data)
 				return gl.GetNamedBufferSubData(self.id, offset, size, data)
 			end
+
 			function META:Storage(size, data, flags)
 				return gl.NamedBufferStorage(self.id, size, data, flags)
 			end
+
 			function META:CopySubData(writeBuffer, readOffset, writeOffset, size)
 				return gl.CopyNamedBufferSubData(self.id, writeBuffer, readOffset, writeOffset, size)
 			end
+
 			function META:GetParameteriv(pname, params)
 				return gl.GetNamedBufferParameteriv(self.id, pname, params)
 			end
+
 			function META:ClearSubData(internalformat, offset, size, format, type, data)
 				return gl.ClearNamedBufferSubData(self.id, internalformat, offset, size, format, type, data)
 			end
+
 			function META:Unmap()
 				return gl.UnmapNamedBuffer(self.id)
 			end
-			local ctype = ffi.typeof('struct { int id; }')
+
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteBuffers(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.id))
 			end
+
 			function gl.CreateBuffer()
 				local temp = ffi.new("GLuint[1]")
 				gl.CreateBuffers(1, temp)
@@ -9278,73 +9903,105 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
+
 		do
 			local META = {}
 			META.__index = META
-
 			META.Type = "buffer_no_dsa"
 			META.__tostring = __tostring
-
 			local bind
+
 			do
 				local last
+
 				function bind(self)
-					if self ~= last then
-						gl.BindBuffer(self.target, self.id)
-					end
+					if self ~= last then gl.BindBuffer(self.target, self.id) end
+
 					last = self
 				end
 			end
+
 			function META:Bind()
 				bind(self)
 			end
+
 			function META:ClearData(internalformat, format, type, data)
-				bind(self) return gl.ClearBufferData(self.target, internalformat, format, type, data)
+				bind(self)
+				return gl.ClearBufferData(self.target, internalformat, format, type, data)
 			end
+
 			function META:Data(size, data, usage)
-				bind(self) return gl.BufferData(self.target, size, data, usage)
+				bind(self)
+				return gl.BufferData(self.target, size, data, usage)
 			end
+
 			function META:Map(access)
-				bind(self) return gl.MapBuffer(self.target, access)
+				bind(self)
+				return gl.MapBuffer(self.target, access)
 			end
+
 			function META:GetPointerv(pname, params)
-				bind(self) return gl.GetBufferPointerv(self.target, pname, params)
+				bind(self)
+				return gl.GetBufferPointerv(self.target, pname, params)
 			end
+
 			function META:SetSubData(offset, size, data)
-				bind(self) return gl.BufferSubData(self.target, offset, size, data)
+				bind(self)
+				return gl.BufferSubData(self.target, offset, size, data)
 			end
+
 			function META:MapRange(offset, length, access)
-				bind(self) return gl.MapBufferRange(self.target, offset, length, access)
+				bind(self)
+				return gl.MapBufferRange(self.target, offset, length, access)
 			end
+
 			function META:GetParameteri64v(pname, params)
-				bind(self) return gl.GetBufferParameteri64v(self.target, pname, params)
+				bind(self)
+				return gl.GetBufferParameteri64v(self.target, pname, params)
 			end
+
 			function META:FlushMappedRange(offset, length)
-				bind(self) return gl.FlushMappedBufferRange(self.target, offset, length)
+				bind(self)
+				return gl.FlushMappedBufferRange(self.target, offset, length)
 			end
+
 			function META:GetSubData(offset, size, data)
-				bind(self) return gl.GetBufferSubData(self.target, offset, size, data)
+				bind(self)
+				return gl.GetBufferSubData(self.target, offset, size, data)
 			end
+
 			function META:Storage(size, data, flags)
-				bind(self) return gl.BufferStorage(self.target, size, data, flags)
+				bind(self)
+				return gl.BufferStorage(self.target, size, data, flags)
 			end
+
 			function META:CopySubData(readTarget, writeTarget, readOffset, writeOffset, size)
-				bind(self) return gl.CopyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size)
+				bind(self)
+				return gl.CopyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size)
 			end
+
 			function META:GetParameteriv(pname, params)
-				bind(self) return gl.GetBufferParameteriv(self.target, pname, params)
+				bind(self)
+				return gl.GetBufferParameteriv(self.target, pname, params)
 			end
+
 			function META:ClearSubData(internalformat, offset, size, format, type, data)
-				bind(self) return gl.ClearBufferSubData(self.target, internalformat, offset, size, format, type, data)
+				bind(self)
+				return gl.ClearBufferSubData(self.target, internalformat, offset, size, format, type, data)
 			end
+
 			function META:Unmap()
-				bind(self) return gl.UnmapBuffer(self.target)
+				bind(self)
+				return gl.UnmapBuffer(self.target)
 			end
-			local ctype = ffi.typeof('struct { int id; }')
+
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteBuffers(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.id))
 			end
+
 			function gl.CreateBufferNODSA(target)
 				local self = setmetatable({}, META)
 				self.id = gl.GenBuffer()
@@ -9352,23 +10009,25 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
+
 		if GL_ARB_direct_state_access == false or not gl.CreateBuffers then
 			gl.CreateBuffer = gl.CreateBufferNODSA
 		end
 	end
+
 	do -- ProgramPipeline
 		do
 			local META = {}
 			META.__index = META
-
 			META.Type = "program_pipeline_dsa"
 			META.__tostring = __tostring
-
-			local ctype = ffi.typeof('struct { int id; }')
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteProgramPipelines(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteProgramPipelines(1, ffi.new("GLuint[1]", self.id))
 			end
+
 			function gl.CreateProgramPipeline()
 				local temp = ffi.new("GLuint[1]")
 				gl.CreateProgramPipelines(1, temp)
@@ -9377,28 +10036,31 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
+
 		do
 			local META = {}
 			META.__index = META
-
 			META.Type = "program_pipeline_no_dsa"
 			META.__tostring = __tostring
-
 			local bind
+
 			do
 				local last
+
 				function bind(self)
-					if self ~= last then
-						gl.BindProgramPipeline(self.id)
-					end
+					if self ~= last then gl.BindProgramPipeline(self.id) end
+
 					last = self
 				end
 			end
-			local ctype = ffi.typeof('struct { int id; }')
+
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteProgramPipelines(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteProgramPipelines(1, ffi.new("GLuint[1]", self.id))
 			end
+
 			function gl.CreateProgramPipelineNODSA()
 				local self = setmetatable({}, META)
 				self.id = gl.GenProgramPipeline()
@@ -9410,34 +10072,73 @@ function gl.Initialize(get_proc_address)
 			gl.CreateProgramPipeline = gl.CreateProgramPipelineNODSA
 		end
 	end
+
 	do -- Program
 		local META = {}
 		META.__index = META
-
 		META.Type = "program"
 		META.__tostring = __tostring
 
-		function META:AttachShader(shader) return gl.AttachShader(self.id, shader) end
-		function META:DetachShader(shader) return gl.DetachShader(self.id, shader) end
-		function META:Link() return gl.LinkProgram(self.id) end
-		function META:Use() return gl.UseProgram(self.id) end
-		function META:GetInfoLog(...) return gl.GetProgramInfoLog(self.id, ...) end
-		function META:Parameteri(pname, value) return gl.ProgramParameteri(self.id, pname, value) end
-		function META:UniformBlockBinding(blockindex, blockbinding) return gl.UniformBlockBinding(self.id, blockindex, blockbinding) end
-		function META:ShaderStorageBlockBinding(blockindex, blockbinding) return gl.ShaderStorageBlockBinding(self.id, blockindex, blockbinding) end
+		function META:AttachShader(shader)
+			return gl.AttachShader(self.id, shader)
+		end
 
-		function META:Getiv(pname, params) return gl.GetProgramiv(self.id, pname, params) end
-		function META:GetUniformLocation(name) return gl.GetUniformLocation(self.id, name) end
-		function META:GetUniformBlockIndex(name) return gl.GetUniformBlockIndex(self.id, name) end
+		function META:DetachShader(shader)
+			return gl.DetachShader(self.id, shader)
+		end
 
-		function META:BindAttribLocation(index, name) return gl.BindAttribLocation(self.id, index, name) end
+		function META:Link()
+			return gl.LinkProgram(self.id)
+		end
 
-		function META:UniformHandleui64(location, value) return gl.ProgramUniformHandleui64ARB(self.id, location, value) end
+		function META:Use()
+			return gl.UseProgram(self.id)
+		end
 
-		function META:GetInterface(interface, name, params) return gl.GetProgramInterfaceiv(self.id, interface, name, params) end
+		function META:GetInfoLog(...)
+			return gl.GetProgramInfoLog(self.id, ...)
+		end
+
+		function META:Parameteri(pname, value)
+			return gl.ProgramParameteri(self.id, pname, value)
+		end
+
+		function META:UniformBlockBinding(blockindex, blockbinding)
+			return gl.UniformBlockBinding(self.id, blockindex, blockbinding)
+		end
+
+		function META:ShaderStorageBlockBinding(blockindex, blockbinding)
+			return gl.ShaderStorageBlockBinding(self.id, blockindex, blockbinding)
+		end
+
+		function META:Getiv(pname, params)
+			return gl.GetProgramiv(self.id, pname, params)
+		end
+
+		function META:GetUniformLocation(name)
+			return gl.GetUniformLocation(self.id, name)
+		end
+
+		function META:GetUniformBlockIndex(name)
+			return gl.GetUniformBlockIndex(self.id, name)
+		end
+
+		function META:BindAttribLocation(index, name)
+			return gl.BindAttribLocation(self.id, index, name)
+		end
+
+		function META:UniformHandleui64(location, value)
+			return gl.ProgramUniformHandleui64ARB(self.id, location, value)
+		end
+
+		function META:GetInterface(interface, name, params)
+			return gl.GetProgramInterfaceiv(self.id, interface, name, params)
+		end
+
 		function META:GetResource(interface, index, properties_count, properties, buffer_size, length, params)
 			return gl.GetProgramResourceiv(self.id, interface, index, properties_count, properties, buffer_size, length, params)
 		end
+
 		function META:GetResourceName(interface, index, buffer_size, length, name)
 			return gl.GetProgramResourceName(self.id, interface, index, buffer_size, length, name)
 		end
@@ -9447,102 +10148,144 @@ function gl.Initialize(get_proc_address)
 		end
 
 		for i = 1, 4 do
-		for _, t in ipairs({"i", "f", "d"}) do
-		for _, v in ipairs({"", "v"}) do
-			local func_name = "ProgramUniform" .. i .. t .. v
-			local friendly = "Uniform" .. i .. t .. v
-			if v == "v" then
-				META[friendly] = function(self, location, count, value) return gl[func_name](self.id, location, count, value) end
-			else
-				if i == 1 then
-					META[friendly] = function(self, location, a) return gl[func_name](self.id, location, a) end
-				elseif i == 2 then
-					META[friendly] = function(self, location, a,b) return gl[func_name](self.id, location, a,b) end
-				elseif i == 3 then
-					META[friendly] = function(self, location, a,b,c) return gl[func_name](self.id, location, a,b,c) end
-				elseif i == 4 then
-					META[friendly] = function(self, location, a,b,c,d) return gl[func_name](self.id, location, a,b,c,d) end
+			for _, t in ipairs({"i", "f", "d"}) do
+				for _, v in ipairs({"", "v"}) do
+					local func_name = "ProgramUniform" .. i .. t .. v
+					local friendly = "Uniform" .. i .. t .. v
+
+					if v == "v" then
+						META[friendly] = function(self, location, count, value)
+							return gl[func_name](self.id, location, count, value)
+						end
+					else
+						if i == 1 then
+							META[friendly] = function(self, location, a)
+								return gl[func_name](self.id, location, a)
+							end
+						elseif i == 2 then
+							META[friendly] = function(self, location, a, b)
+								return gl[func_name](self.id, location, a, b)
+							end
+						elseif i == 3 then
+							META[friendly] = function(self, location, a, b, c)
+								return gl[func_name](self.id, location, a, b, c)
+							end
+						elseif i == 4 then
+							META[friendly] = function(self, location, a, b, c, d)
+								return gl[func_name](self.id, location, a, b, c, d)
+							end
+						end
+					end
 				end
 			end
-		end
-		end
 		end
 
 		for i = 1, 4 do
 			local func_name = "ProgramUniform" .. i .. "uiv"
-			META["Uniform" .. i .. "uiv"] = function(self, location, count, value) return gl[func_name](self.id, location, count, value) end
+			META["Uniform" .. i .. "uiv"] = function(self, location, count, value)
+				return gl[func_name](self.id, location, count, value)
+			end
 		end
 
-		function META:Uniform1ui(location, a) return gl.ProgramUniform1ui(self.id, location, a) end
-		function META:Uniform2ui(location, a,b) return gl.ProgramUniform2ui(self.id, location, a,b) end
-		function META:Uniform3ui(location, a,b,c) return gl.ProgramUniform3ui(self.id, location, a,b,c) end
-		function META:Uniform4ui(location, a,b,c,d) return gl.ProgramUniform4ui(self.id, location, a,b,c,d) end
+		function META:Uniform1ui(location, a)
+			return gl.ProgramUniform1ui(self.id, location, a)
+		end
+
+		function META:Uniform2ui(location, a, b)
+			return gl.ProgramUniform2ui(self.id, location, a, b)
+		end
+
+		function META:Uniform3ui(location, a, b, c)
+			return gl.ProgramUniform3ui(self.id, location, a, b, c)
+		end
+
+		function META:Uniform4ui(location, a, b, c, d)
+			return gl.ProgramUniform4ui(self.id, location, a, b, c, d)
+		end
 
 		for i = 2, 4 do
-		for _, t in ipairs({"f", "d"}) do
-		for _, v in ipairs({"", "v"}) do
-			local func_name = "ProgramUniformMatrix" .. i .. t .. v
-			META["UniformMatrix" .. i .. t .. v] = function(self, location, count, transpose, value) return gl[func_name](self.id, location, count, transpose, value) end
-		end
-		end
+			for _, t in ipairs({"f", "d"}) do
+				for _, v in ipairs({"", "v"}) do
+					local func_name = "ProgramUniformMatrix" .. i .. t .. v
+					META["UniformMatrix" .. i .. t .. v] = function(self, location, count, transpose, value)
+						return gl[func_name](self.id, location, count, transpose, value)
+					end
+				end
+			end
 		end
 
 		for _, i in ipairs({"2x3", "3x2", "2x4", "4x2", "3x4", "4x3"}) do
-		for _, t in ipairs({"f", "d"}) do
-		for _, v in ipairs({"", "v"}) do
-			local func_name = "ProgramUniformMatrix" .. i .. t .. v
-			META["UniformMatrix" .. i .. t .. v] = function(self, location, count, transpose, value) return gl[func_name](self.id, location, count, transpose, value) end
-		end
-		end
+			for _, t in ipairs({"f", "d"}) do
+				for _, v in ipairs({"", "v"}) do
+					local func_name = "ProgramUniformMatrix" .. i .. t .. v
+					META["UniformMatrix" .. i .. t .. v] = function(self, location, count, transpose, value)
+						return gl[func_name](self.id, location, count, transpose, value)
+					end
+				end
+			end
 		end
 
 		function META:Delete()
 			gl.DeleteProgram(self.id)
 		end
+
 		function gl.CreateProgram2()
-			local ctype = ffi.typeof('struct { int id; }')
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
 			local self = ffi.new(ctype)
 			self.id = gl.CreateProgram()
 			return self
 		end
 	end
+
 	do -- Shader
 		local META = {}
 		META.__index = META
-
 		META.Type = "shader"
 		META.__tostring = __tostring
 
-		function META:Source(count, string, length) return gl.ShaderSource(self.id, count, string, length) end
-		function META:Compile() return gl.CompileShader(self.id) end
-		function META:Getiv(pname, params) return gl.GetShaderiv(self.id, pname, params) end
-		function META:GetInfoLog(...) return gl.GetShaderInfoLog(self.id, ...) end
+		function META:Source(count, string, length)
+			return gl.ShaderSource(self.id, count, string, length)
+		end
+
+		function META:Compile()
+			return gl.CompileShader(self.id)
+		end
+
+		function META:Getiv(pname, params)
+			return gl.GetShaderiv(self.id, pname, params)
+		end
+
+		function META:GetInfoLog(...)
+			return gl.GetShaderInfoLog(self.id, ...)
+		end
 
 		function META:Delete()
 			gl.DeleteShader(self.id)
 		end
+
 		function gl.CreateShader2(type)
-			local ctype = ffi.typeof('struct { int id; }')
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
 			local self = ffi.new(ctype)
 			self.id = gl.CreateShader(type)
 			return self
 		end
 	end
+
 	do -- Sampler
 		do
 			local META = {}
 			META.__index = META
-
 			META.Type = "sampler_dsa"
 			META.__tostring = __tostring
-
-			local ctype = ffi.typeof('struct { int id; }')
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteSamplers(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteSamplers(1, ffi.new("GLuint[1]", self.id))
 			end
+
 			function gl.CreateSampler()
 				local temp = ffi.new("GLuint[1]")
 				gl.CreateSamplers(1, temp)
@@ -9551,27 +10294,29 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
+
 		do
 			local META = {}
 			META.__index = META
-
 			META.Type = "sampler_no_dsa"
 			META.__tostring = __tostring
-
 			local bind
+
 			do
 				local last
+
 				function bind(self)
-					if self ~= last then
-						gl.BindSampler(self.id)
-					end
+					if self ~= last then gl.BindSampler(self.id) end
+
 					last = self
 				end
 			end
-			local ctype = ffi.typeof('struct { int id; }')
+
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteSamplers(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteSamplers(1, ffi.new("GLuint[1]", self.id))
 			end
 
 			function gl.CreateSamplerNODSA()
@@ -9580,44 +10325,54 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
+
 		if GL_ARB_direct_state_access == false or not gl.CreateSamplers then
 			gl.CreateSampler = gl.CreateSamplerNODSA
 		end
 	end
+
 	do -- Renderbuffer
 		do
 			local META = {}
 			META.__index = META
-
 			META.Type = "renderbuffer_dsa"
 			META.__tostring = __tostring
 
 			function META:GetParameterivEXT(pname, params)
 				return gl.GetNamedRenderbufferParameterivEXT(self.id, pname, params)
 			end
+
 			function META:StorageMultisample(samples, internalformat, width, height)
 				return gl.NamedRenderbufferStorageMultisample(self.id, samples, internalformat, width, height)
 			end
+
 			function META:StorageEXT(internalformat, width, height)
 				return gl.NamedRenderbufferStorageEXT(self.id, internalformat, width, height)
 			end
+
 			function META:Storage(internalformat, width, height)
 				return gl.NamedRenderbufferStorage(self.id, internalformat, width, height)
 			end
+
 			function META:StorageMultisampleEXT(samples, internalformat, width, height)
 				return gl.NamedRenderbufferStorageMultisampleEXT(self.id, samples, internalformat, width, height)
 			end
+
 			function META:StorageMultisampleCoverage(coverageSamples, colorSamples, internalformat, width, height)
 				return gl.NamedRenderbufferStorageMultisampleCoverageEXT(self.id, coverageSamples, colorSamples, internalformat, width, height)
 			end
+
 			function META:GetParameteriv(pname, params)
 				return gl.GetNamedRenderbufferParameteriv(self.id, pname, params)
 			end
-			local ctype = ffi.typeof('struct { int id; }')
+
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteRenderbuffers(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteRenderbuffers(1, ffi.new("GLuint[1]", self.id))
 			end
+
 			function gl.CreateRenderbuffer()
 				local temp = ffi.new("GLuint[1]")
 				gl.CreateRenderbuffers(1, temp)
@@ -9626,281 +10381,455 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
+
 		do
 			local META = {}
 			META.__index = META
-
 			META.Type = "renderbuffer_no_dsa"
 			META.__tostring = __tostring
-
 			local bind
+
 			do
 				local last
+
 				function bind(self)
 					if self ~= last then
 						gl.BindRenderbuffer("GL_RENDERBUFFER", self.id)
 					end
+
 					last = self
 				end
 			end
+
 			function META:GetParameterivEXT(target, pname, params)
-				bind(self) return gl.GetRenderbufferParameterivEXT(target, pname, params)
+				bind(self)
+				return gl.GetRenderbufferParameterivEXT(target, pname, params)
 			end
+
 			function META:StorageMultisample(target, samples, internalformat, width, height)
-				bind(self) return gl.RenderbufferStorageMultisample(target, samples, internalformat, width, height)
+				bind(self)
+				return gl.RenderbufferStorageMultisample(target, samples, internalformat, width, height)
 			end
+
 			function META:StorageEXT(target, internalformat, width, height)
-				bind(self) return gl.RenderbufferStorageEXT(target, internalformat, width, height)
+				bind(self)
+				return gl.RenderbufferStorageEXT(target, internalformat, width, height)
 			end
+
 			function META:Storage(internalformat, width, height)
-				bind(self) return gl.RenderbufferStorage("GL_RENDERBUFFER", internalformat, width, height)
+				bind(self)
+				return gl.RenderbufferStorage("GL_RENDERBUFFER", internalformat, width, height)
 			end
+
 			function META:StorageMultisampleEXT(target, samples, internalformat, width, height)
-				bind(self) return gl.RenderbufferStorageMultisampleEXT(target, samples, internalformat, width, height)
+				bind(self)
+				return gl.RenderbufferStorageMultisampleEXT(target, samples, internalformat, width, height)
 			end
+
 			function META:CreateRenderbuffers(n, renderbuffers)
-				bind(self) return gl.CreateRenderbuffers(n, renderbuffers)
+				bind(self)
+				return gl.CreateRenderbuffers(n, renderbuffers)
 			end
+
 			function META:GetParameteriv(target, pname, params)
-				bind(self) return gl.GetRenderbufferParameteriv(target, pname, params)
+				bind(self)
+				return gl.GetRenderbufferParameteriv(target, pname, params)
 			end
-			local ctype = ffi.typeof('struct { int id; }')
+
+			local ctype = ffi.typeof("struct { int id; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteRenderbuffers(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteRenderbuffers(1, ffi.new("GLuint[1]", self.id))
 			end
+
 			function gl.CreateRenderbufferNODSA()
 				local self = setmetatable({}, META)
 				self.id = gl.GenRenderbuffer()
 				return self
 			end
 		end
+
 		if GL_ARB_direct_state_access == false or not gl.CreateRenderbuffers then
 			gl.CreateRenderbuffer = gl.CreateRenderbufferNODSA
 		end
 	end
+
 	do -- Texture
 		do
 			local META = {}
 			META.__index = META
-
 			META.Type = "texture_dsa"
 			META.__tostring = __tostring
 
 			function META:Bind(location)
 				return gl.BindTextureUnit(location, self.id)
 			end
+
 			function META:SubImage1DEXT(target, level, xoffset, width, format, type, pixels)
 				return gl.TextureSubImage1DEXT(self.id, target, level, xoffset, width, format, type, pixels)
 			end
+
 			function META:GetImageEXT(target, level, format, type, pixels)
 				return gl.GetTextureImageEXT(self.id, target, level, format, type, pixels)
 			end
+
 			function META:Storage2DMultisampleEXT(target, samples, internalformat, width, height, fixedsamplelocations)
 				return gl.TextureStorage2DMultisampleEXT(self.id, target, samples, internalformat, width, height, fixedsamplelocations)
 			end
+
 			function META:CopySubImage1D(level, xoffset, x, y, width)
 				return gl.CopyTextureSubImage1D(self.id, level, xoffset, x, y, width)
 			end
+
 			function META:GetImage(level, format, type, bufSize, pixels)
 				return gl.GetTextureImage(self.id, level, format, type, bufSize, pixels)
 			end
+
 			function META:CopyImage2D(target, level, internalformat, x, y, width, height, border)
 				return gl.CopyTextureImage2DEXT(self.id, target, level, internalformat, x, y, width, height, border)
 			end
+
 			function META:Storage1D(levels, internalformat, width)
 				return gl.TextureStorage1D(self.id, levels, internalformat, width)
 			end
+
 			function META:GetParameterIivEXT(target, pname, params)
 				return gl.GetTextureParameterIivEXT(self.id, target, pname, params)
 			end
+
 			function META:BufferRange(internalformat, buffer, offset, size)
 				return gl.TextureBufferRange(self.id, internalformat, buffer, offset, size)
 			end
+
 			function META:GetCompressedImage(level, bufSize, pixels)
 				return gl.GetCompressedTextureImage(self.id, level, bufSize, pixels)
 			end
+
 			function META:GetParameterIiv(pname, params)
 				return gl.GetTextureParameterIiv(self.id, pname, params)
 			end
+
 			function META:IsEXT()
 				return gl.IsTextureEXT(self.id)
 			end
+
 			function META:Image1D(target, level, internalformat, width, border, format, type, pixels)
 				return gl.TextureImage1DEXT(self.id, target, level, internalformat, width, border, format, type, pixels)
 			end
+
 			function META:SetParameterIiv(target, pname, params)
 				return gl.TextureParameterIivEXT(self.id, target, pname, params)
 			end
+
 			function META:GetLevelParameterivEXT(target, level, pname, params)
 				return gl.GetTextureLevelParameterivEXT(self.id, target, level, pname, params)
 			end
+
 			function META:GetParameterivEXT(target, pname, params)
 				return gl.GetTextureParameterivEXT(self.id, target, pname, params)
 			end
+
 			function META:GetLevelParameterfv(level, pname, params)
 				return gl.GetTextureLevelParameterfv(self.id, level, pname, params)
 			end
+
 			function META:BufferRangeEXT(target, internalformat, buffer, offset, size)
 				return gl.TextureBufferRangeEXT(self.id, target, internalformat, buffer, offset, size)
 			end
+
 			function META:Image2D(target, level, internalformat, width, height, border, format, type, pixels)
 				return gl.TextureImage2DEXT(self.id, target, level, internalformat, width, height, border, format, type, pixels)
 			end
+
 			function META:CopySubImage3DEXT(target, level, xoffset, yoffset, zoffset, x, y, width, height)
 				return gl.CopyTextureSubImage3DEXT(self.id, target, level, xoffset, yoffset, zoffset, x, y, width, height)
 			end
+
 			function META:CompressedSubImage2D(level, xoffset, yoffset, width, height, format, imageSize, data)
 				return gl.CompressedTextureSubImage2D(self.id, level, xoffset, yoffset, width, height, format, imageSize, data)
 			end
+
 			function META:GetParameterIuiv(pname, params)
 				return gl.GetTextureParameterIuiv(self.id, pname, params)
 			end
+
 			function META:Image3D(target, level, internalformat, width, height, depth, border, format, type, pixels)
-				return gl.TextureImage3DEXT(self.id, target, level, internalformat, width, height, depth, border, format, type, pixels)
+				return gl.TextureImage3DEXT(
+					self.id,
+					target,
+					level,
+					internalformat,
+					width,
+					height,
+					depth,
+					border,
+					format,
+					type,
+					pixels
+				)
 			end
+
 			function META:CompressedImage2D(target, level, internalformat, width, height, border, imageSize, bits)
 				return gl.CompressedTextureImage2DEXT(self.id, target, level, internalformat, width, height, border, imageSize, bits)
 			end
+
 			function META:GetParameterIuivEXT(target, pname, params)
 				return gl.GetTextureParameterIuivEXT(self.id, target, pname, params)
 			end
+
 			function META:CompressedSubImage3D(level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data)
-				return gl.CompressedTextureSubImage3D(self.id, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data)
+				return gl.CompressedTextureSubImage3D(
+					self.id,
+					level,
+					xoffset,
+					yoffset,
+					zoffset,
+					width,
+					height,
+					depth,
+					format,
+					imageSize,
+					data
+				)
 			end
+
 			function META:Buffer(internalformat, buffer)
 				return gl.TextureBuffer(self.id, internalformat, buffer)
 			end
+
 			function META:ParameteriEXT(target, pname, param)
 				return gl.TextureParameteriEXT(self.id, target, pname, param)
 			end
+
 			function META:Is()
 				return gl.IsTexture(self.id)
 			end
+
 			function META:SubImage3D(level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
 				if AMD or ATI then
 					if self.target == "GL_TEXTURE_CUBE_MAP" then
-						return gl.TextureSubImage2D(self.id, gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + zoffset, level, xoffset, yoffset, width, height, format, type, pixels)
+						return gl.TextureSubImage2D(
+							self.id,
+							gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + zoffset,
+							level,
+							xoffset,
+							yoffset,
+							width,
+							height,
+							format,
+							type,
+							pixels
+						)
 					end
 				else
 					return gl.TextureSubImage3D(self.id, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
 				end
 			end
+
 			function META:CompressedSubImage2DEXT(target, level, xoffset, yoffset, width, height, format, imageSize, bits)
 				return gl.CompressedTextureSubImage2DEXT(self.id, target, level, xoffset, yoffset, width, height, format, imageSize, bits)
 			end
+
 			function META:CompressedImage3D(target, level, internalformat, width, height, depth, border, imageSize, bits)
 				return gl.CompressedTextureImage3DEXT(self.id, target, level, internalformat, width, height, depth, border, imageSize, bits)
 			end
+
 			function META:Renderbuffer(target, renderbuffer)
 				return gl.TextureRenderbufferEXT(self.id, target, renderbuffer)
 			end
+
 			function META:CompressedSubImage1DEXT(target, level, xoffset, width, format, imageSize, bits)
 				return gl.CompressedTextureSubImage1DEXT(self.id, target, level, xoffset, width, format, imageSize, bits)
 			end
+
 			function META:Storage3DMultisample(samples, internalformat, width, height, depth, fixedsamplelocations)
 				return gl.TextureStorage3DMultisample(self.id, samples, internalformat, width, height, depth, fixedsamplelocations)
 			end
+
 			function META:SetParameterf(pname, param)
 				return gl.TextureParameterf(self.id, pname, param)
 			end
+
 			function META:BindUnit(texture)
 				return gl.BindTextureUnit(self.id, texture)
 			end
+
 			function META:Storage3D(levels, internalformat, width, height, depth)
 				return gl.TextureStorage3D(self.id, levels, internalformat, width, height, depth)
 			end
+
 			function META:ParameterfEXT(target, pname, param)
 				return gl.TextureParameterfEXT(self.id, target, pname, param)
 			end
+
 			function META:CopySubImage2D(level, xoffset, yoffset, x, y, width, height)
 				return gl.CopyTextureSubImage2D(self.id, level, xoffset, yoffset, x, y, width, height)
 			end
+
 			function META:SetParameteriv(target, pname, params)
 				return gl.TextureParameterivEXT(self.id, target, pname, params)
 			end
+
 			function META:CopySubImage1DEXT(target, level, xoffset, x, y, width)
 				return gl.CopyTextureSubImage1DEXT(self.id, target, level, xoffset, x, y, width)
 			end
+
 			function META:BufferEXT(target, internalformat, buffer)
 				return gl.TextureBufferEXT(self.id, target, internalformat, buffer)
 			end
+
 			function META:GetLevelParameterfvEXT(target, level, pname, params)
 				return gl.GetTextureLevelParameterfvEXT(self.id, target, level, pname, params)
 			end
+
 			function META:SetParameterfv(pname, params)
 				return gl.TextureParameterfv(self.id, pname, params)
 			end
+
 			function META:CompressedImage1D(target, level, internalformat, width, border, imageSize, bits)
 				return gl.CompressedTextureImage1DEXT(self.id, target, level, internalformat, width, border, imageSize, bits)
 			end
+
 			function META:SetParameteri(pname, param)
 				return gl.TextureParameteri(self.id, pname, param)
 			end
+
 			function META:GetParameteriv(pname, params)
 				return gl.GetTextureParameteriv(self.id, pname, params)
 			end
+
 			function META:CopySubImage2DEXT(target, level, xoffset, yoffset, x, y, width, height)
 				return gl.CopyTextureSubImage2DEXT(self.id, target, level, xoffset, yoffset, x, y, width, height)
 			end
+
 			function META:SetParameterIuiv(pname, params)
 				return gl.TextureParameterIuiv(self.id, pname, params)
 			end
+
 			function META:Storage2DMultisample(samples, internalformat, width, height, fixedsamplelocations)
 				return gl.TextureStorage2DMultisample(self.id, samples, internalformat, width, height, fixedsamplelocations)
 			end
-			function META:CompressedSubImage3DEXT(target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits)
-				return gl.CompressedTextureSubImage3DEXT(self.id, target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits)
+
+			function META:CompressedSubImage3DEXT(
+				target,
+				level,
+				xoffset,
+				yoffset,
+				zoffset,
+				width,
+				height,
+				depth,
+				format,
+				imageSize,
+				bits
+			)
+				return gl.CompressedTextureSubImage3DEXT(
+					self.id,
+					target,
+					level,
+					xoffset,
+					yoffset,
+					zoffset,
+					width,
+					height,
+					depth,
+					format,
+					imageSize,
+					bits
+				)
 			end
+
 			function META:GenerateMipmapEXT(target)
 				return gl.GenerateTextureMipmapEXT(self.id, target)
 			end
+
 			function META:GetParameterfvEXT(target, pname, params)
 				return gl.GetTextureParameterfvEXT(self.id, target, pname, params)
 			end
+
 			function META:GenerateMipmap()
 				return gl.GenerateTextureMipmap(self.id)
 			end
+
 			function META:CopyImage1D(target, level, internalformat, x, y, width, border)
 				return gl.CopyTextureImage1DEXT(self.id, target, level, internalformat, x, y, width, border)
 			end
+
 			function META:GetParameterfv(pname, params)
 				return gl.GetTextureParameterfv(self.id, pname, params)
 			end
+
 			function META:CompressedSubImage1D(level, xoffset, width, format, imageSize, data)
 				return gl.CompressedTextureSubImage1D(self.id, level, xoffset, width, format, imageSize, data)
 			end
+
 			function META:SubImage1D(level, xoffset, width, format, type, pixels)
 				return gl.TextureSubImage1D(self.id, level, xoffset, width, format, type, pixels)
 			end
+
 			function META:CopySubImage3D(level, xoffset, yoffset, zoffset, x, y, width, height)
 				return gl.CopyTextureSubImage3D(self.id, level, xoffset, yoffset, zoffset, x, y, width, height)
 			end
+
 			function META:GetLevelParameteriv(level, pname, params)
 				return gl.GetTextureLevelParameteriv(self.id, level, pname, params)
 			end
+
 			function META:Storage2D(levels, internalformat, width, height)
 				return gl.TextureStorage2D(self.id, levels, internalformat, width, height)
 			end
+
 			function META:SubImage2DEXT(target, level, xoffset, yoffset, width, height, format, type, pixels)
 				return gl.TextureSubImage2DEXT(self.id, target, level, xoffset, yoffset, width, height, format, type, pixels)
 			end
+
 			function META:SubImage2D(level, xoffset, yoffset, width, height, format, type, pixels)
 				return gl.TextureSubImage2D(self.id, level, xoffset, yoffset, width, height, format, type, pixels)
 			end
+
 			function META:GetCompressedImageEXT(target, lod, img)
 				return gl.GetCompressedTextureImageEXT(self.id, target, lod, img)
 			end
-			function META:SubImage3DEXT(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
-				return gl.TextureSubImage3DEXT(self.id, target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
+
+			function META:SubImage3DEXT(
+				target,
+				level,
+				xoffset,
+				yoffset,
+				zoffset,
+				width,
+				height,
+				depth,
+				format,
+				type,
+				pixels
+			)
+				return gl.TextureSubImage3DEXT(
+					self.id,
+					target,
+					level,
+					xoffset,
+					yoffset,
+					zoffset,
+					width,
+					height,
+					depth,
+					format,
+					type,
+					pixels
+				)
 			end
-			local ctype = ffi.typeof('struct { int id, target; }')
+
+			local ctype = ffi.typeof("struct { int id, target; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteTextures(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
 			end
+
 			function gl.CreateTexture(target)
-				local temp = ffi.new('GLuint[1]')
+				local temp = ffi.new("GLuint[1]")
 				gl.CreateTextures(target, 1, temp)
 				local self = ffi.new(ctype)
 				self.target = gl.e[target]
@@ -9908,22 +10837,25 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
+
 		do
 			local META = {}
 			META.__index = META
 			META.Type = "texture_no_dsa"
 			META.__tostring = __tostring
-
 			local bind
+
 			do
 				local last
+
 				function bind(self)
-					if self ~= last then
-						gl.BindTexture(self.target, self.id)
-					end
+					if self ~= last then gl.BindTexture(self.target, self.id) end
+
 					last = self
 				end
+
 				local func = gl.BindTexture
+
 				function gl.BindTexture(target, id)
 					func(target, id)
 					last = nil
@@ -9946,216 +10878,451 @@ function gl.Initialize(get_proc_address)
 			end
 
 			function META:SubImage1DEXT(level, xoffset, width, format, type, pixels)
-				bind(self) return gl.TexSubImage1DEXT(self.target, level, xoffset, width, format, type, pixels)
+				bind(self)
+				return gl.TexSubImage1DEXT(self.target, level, xoffset, width, format, type, pixels)
 			end
+
 			function META:GetImageEXT(texture, level, format, type, pixels)
-				bind(self) return gl.GetTextureImageEXT(texture, self.target, level, format, type, pixels)
+				bind(self)
+				return gl.GetTextureImageEXT(texture, self.target, level, format, type, pixels)
 			end
+
 			function META:Storage2DMultisampleEXT(texture, samples, internalformat, width, height, fixedsamplelocations)
-				bind(self) return gl.TextureStorage2DMultisampleEXT(texture, self.target, samples, internalformat, width, height, fixedsamplelocations)
+				bind(self)
+				return gl.TextureStorage2DMultisampleEXT(
+					texture,
+					self.target,
+					samples,
+					internalformat,
+					width,
+					height,
+					fixedsamplelocations
+				)
 			end
+
 			function META:CopySubImage1D(level, xoffset, x, y, width)
-				bind(self) return gl.CopyTexSubImage1D(self.target, level, xoffset, x, y, width)
+				bind(self)
+				return gl.CopyTexSubImage1D(self.target, level, xoffset, x, y, width)
 			end
+
 			function META:GetImage(level, format, type, _, pixels)
-				bind(self) return gl.GetTexImage(self.target, level, format, type, pixels)
+				bind(self)
+				return gl.GetTexImage(self.target, level, format, type, pixels)
 			end
+
 			function META:CopyImage2D(level, internalformat, x, y, width, height, border)
-				bind(self) return gl.CopyTexImage2DEXT(self.target, level, internalformat, x, y, width, height, border)
+				bind(self)
+				return gl.CopyTexImage2DEXT(self.target, level, internalformat, x, y, width, height, border)
 			end
+
 			function META:Storage1D(levels, internalformat, width)
-				bind(self) return gl.TexStorage1D(self.target, levels, internalformat, width)
+				bind(self)
+				return gl.TexStorage1D(self.target, levels, internalformat, width)
 			end
+
 			function META:GetParameterIivEXT(pname, params)
-				bind(self) return gl.GetTexParameterIivEXT(self.target, pname, params)
+				bind(self)
+				return gl.GetTexParameterIivEXT(self.target, pname, params)
 			end
+
 			function META:BufferRange(internalformat, buffer, offset, size)
-				bind(self) return gl.TexBufferRange("GL_TEXTURE_BUFFER",  internalformat,  buffer,  offset,  size)
+				bind(self)
+				return gl.TexBufferRange("GL_TEXTURE_BUFFER", internalformat, buffer, offset, size)
 			end
+
 			function META:GetCompressedImage(level, img)
-				bind(self) return gl.GetCompressedTexImage(self.target, level, img)
+				bind(self)
+				return gl.GetCompressedTexImage(self.target, level, img)
 			end
+
 			function META:GetParameterIiv(pname, params)
-				bind(self) return gl.GetTexParameterIiv(self.target, pname, params)
+				bind(self)
+				return gl.GetTexParameterIiv(self.target, pname, params)
 			end
+
 			function META:IsEXT(texture)
-				bind(self) return gl.IsTextureEXT(texture)
+				bind(self)
+				return gl.IsTextureEXT(texture)
 			end
+
 			function META:Image1D(texture, level, internalformat, width, border, format, type, pixels)
-				bind(self) return gl.TextureImage1DEXT(texture, self.target, level, internalformat, width, border, format, type, pixels)
+				bind(self)
+				return gl.TextureImage1DEXT(texture, self.target, level, internalformat, width, border, format, type, pixels)
 			end
+
 			function META:SetParameterIiv(pname, params)
-				bind(self) return gl.TexParameterIivEXT(self.target, pname, params)
+				bind(self)
+				return gl.TexParameterIivEXT(self.target, pname, params)
 			end
+
 			function META:GetLevelParameterivEXT(texture, level, pname, params)
-				bind(self) return gl.GetTextureLevelParameterivEXT(texture, self.target, level, pname, params)
+				bind(self)
+				return gl.GetTextureLevelParameterivEXT(texture, self.target, level, pname, params)
 			end
+
 			function META:GetParameterivEXT(texture, pname, params)
-				bind(self) return gl.GetTextureParameterivEXT(texture, self.target, pname, params)
+				bind(self)
+				return gl.GetTextureParameterivEXT(texture, self.target, pname, params)
 			end
+
 			function META:GetLevelParameterfv(level, pname, params)
-				bind(self) return gl.GetTexLevelParameterfv(self.target, level, pname, params)
+				bind(self)
+				return gl.GetTexLevelParameterfv(self.target, level, pname, params)
 			end
+
 			function META:BufferRangeEXT(internalformat, buffer, offset, size)
-				bind(self) return gl.TexBufferRangeEXT("GL_TEXTURE_BUFFER",  internalformat,  buffer,  offset,  size)
+				bind(self)
+				return gl.TexBufferRangeEXT("GL_TEXTURE_BUFFER", internalformat, buffer, offset, size)
 			end
+
 			function META:Image2D(target, level, internalformat, width, height, border, format, type, pixels)
-				bind(self) return gl.TexImage2D(target, level, internalformat, width, height, border, format, type, pixels)
+				bind(self)
+				return gl.TexImage2D(target, level, internalformat, width, height, border, format, type, pixels)
 			end
+
 			function META:CopySubImage3DEXT(level, xoffset, yoffset, zoffset, x, y, width, height)
-				bind(self) return gl.CopyTexSubImage3DEXT(self.target, level, xoffset, yoffset, zoffset, x, y, width, height)
+				bind(self)
+				return gl.CopyTexSubImage3DEXT(self.target, level, xoffset, yoffset, zoffset, x, y, width, height)
 			end
+
 			function META:CompressedSubImage2D(level, xoffset, yoffset, width, height, format, imageSize, data)
-				bind(self) return gl.CompressedTexSubImage2D(self.target, level, xoffset, yoffset, width, height, format, imageSize, data)
+				bind(self)
+				return gl.CompressedTexSubImage2D(self.target, level, xoffset, yoffset, width, height, format, imageSize, data)
 			end
+
 			function META:GetParameterIuiv(pname, params)
-				bind(self) return gl.GetTexParameterIuiv(self.target, pname, params)
+				bind(self)
+				return gl.GetTexParameterIuiv(self.target, pname, params)
 			end
+
 			function META:Image3D(target, level, internalformat, width, height, depth, border, format, type, pixels)
-				bind(self) return gl.TexImage3D(target, level, internalformat, width, height, depth, border, format, type, pixels)
+				bind(self)
+				return gl.TexImage3D(target, level, internalformat, width, height, depth, border, format, type, pixels)
 			end
+
 			function META:CompressedImage2D(texture, level, internalformat, width, height, border, imageSize, bits)
-				bind(self) return gl.CompressedTextureImage2DEXT(texture, self.target, level, internalformat, width, height, border, imageSize, bits)
+				bind(self)
+				return gl.CompressedTextureImage2DEXT(
+					texture,
+					self.target,
+					level,
+					internalformat,
+					width,
+					height,
+					border,
+					imageSize,
+					bits
+				)
 			end
+
 			function META:GetParameterIuivEXT(pname, params)
-				bind(self) return gl.GetTexParameterIuivEXT(self.target, pname, params)
+				bind(self)
+				return gl.GetTexParameterIuivEXT(self.target, pname, params)
 			end
+
 			function META:CompressedSubImage3D(level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data)
-				bind(self) return gl.CompressedTexSubImage3D(self.target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, data)
+				bind(self)
+				return gl.CompressedTexSubImage3D(
+					self.target,
+					level,
+					xoffset,
+					yoffset,
+					zoffset,
+					width,
+					height,
+					depth,
+					format,
+					imageSize,
+					data
+				)
 			end
+
 			function META:Buffer(internalformat, buffer)
-				bind(self) return gl.TexBuffer("GL_TEXTURE_BUFFER",  internalformat,  buffer)
+				bind(self)
+				return gl.TexBuffer("GL_TEXTURE_BUFFER", internalformat, buffer)
 			end
+
 			function META:ParameteriEXT(texture, pname, param)
-				bind(self) return gl.TextureParameteriEXT(texture, self.target, pname, param)
+				bind(self)
+				return gl.TextureParameteriEXT(texture, self.target, pname, param)
 			end
+
 			function META:Is(texture)
-				bind(self) return gl.IsTexture(texture)
+				bind(self)
+				return gl.IsTexture(texture)
 			end
+
 			function META:SubImage3D(level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
 				bind(self)
+
 				if self.target == "GL_TEXTURE_CUBE_MAP" then
-					return gl.TexSubImage2D(gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + zoffset, level, xoffset, yoffset, width, height, format, type, pixels)
+					return gl.TexSubImage2D(
+						gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + zoffset,
+						level,
+						xoffset,
+						yoffset,
+						width,
+						height,
+						format,
+						type,
+						pixels
+					)
 				end
-				return gl.TexSubImage3D(self.target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
+
+				return gl.TexSubImage3D(
+					self.target,
+					level,
+					xoffset,
+					yoffset,
+					zoffset,
+					width,
+					height,
+					depth,
+					format,
+					type,
+					pixels
+				)
 			end
+
 			function META:CompressedSubImage2D(level, xoffset, yoffset, width, height, format, imageSize, bits)
-				bind(self) return gl.CompressedTexSubImage2D(self.target, level, xoffset, yoffset, width, height, format, imageSize, bits)
+				bind(self)
+				return gl.CompressedTexSubImage2D(self.target, level, xoffset, yoffset, width, height, format, imageSize, bits)
 			end
+
 			function META:CompressedImage3D(texture, level, internalformat, width, height, depth, border, imageSize, bits)
-				bind(self) return gl.CompressedTextureImage3DEXT(texture, self.target, level, internalformat, width, height, depth, border, imageSize, bits)
+				bind(self)
+				return gl.CompressedTextureImage3DEXT(
+					texture,
+					self.target,
+					level,
+					internalformat,
+					width,
+					height,
+					depth,
+					border,
+					imageSize,
+					bits
+				)
 			end
+
 			function META:Renderbuffer(texture, renderbuffer)
-				bind(self) return gl.TextureRenderbufferEXT(texture, self.target, renderbuffer)
+				bind(self)
+				return gl.TextureRenderbufferEXT(texture, self.target, renderbuffer)
 			end
+
 			function META:CompressedSubImage1DEXT(texture, level, xoffset, width, format, imageSize, bits)
-				bind(self) return gl.CompressedTextureSubImage1DEXT(texture, self.target, level, xoffset, width, format, imageSize, bits)
+				bind(self)
+				return gl.CompressedTextureSubImage1DEXT(texture, self.target, level, xoffset, width, format, imageSize, bits)
 			end
+
 			function META:Storage3DMultisample(samples, internalformat, width, height, depth, fixedsamplelocations)
-				bind(self) return gl.TexStorage3DMultisample(self.target, samples, internalformat, width, height, depth, fixedsamplelocations)
+				bind(self)
+				return gl.TexStorage3DMultisample(self.target, samples, internalformat, width, height, depth, fixedsamplelocations)
 			end
+
 			function META:SetParameterf(pname, param)
-				bind(self) return gl.TexParameterf(self.target, pname, param)
+				bind(self)
+				return gl.TexParameterf(self.target, pname, param)
 			end
+
 			function META:BindUnit(unit, texture)
-				bind(self) return gl.BindTextureUnit(unit, texture)
+				bind(self)
+				return gl.BindTextureUnit(unit, texture)
 			end
+
 			function META:Storage3D(levels, internalformat, width, height, depth)
-				bind(self) return gl.TexStorage3D(self.target, levels, internalformat, width, height, depth)
+				bind(self)
+				return gl.TexStorage3D(self.target, levels, internalformat, width, height, depth)
 			end
+
 			function META:ParameterfEXT(texture, pname, param)
-				bind(self) return gl.TextureParameterfEXT(texture, self.target, pname, param)
+				bind(self)
+				return gl.TextureParameterfEXT(texture, self.target, pname, param)
 			end
+
 			function META:CopySubImage2D(level, xoffset, yoffset, x, y, width, height)
-				bind(self) return gl.CopyTexSubImage2D(self.target, level, xoffset, yoffset, x, y, width, height)
+				bind(self)
+				return gl.CopyTexSubImage2D(self.target, level, xoffset, yoffset, x, y, width, height)
 			end
+
 			function META:SetParameteriv(texture, pname, params)
-				bind(self) return gl.TextureParameterivEXT(texture, self.target, pname, params)
+				bind(self)
+				return gl.TextureParameterivEXT(texture, self.target, pname, params)
 			end
+
 			function META:CopySubImage1DEXT(level, xoffset, x, y, width)
-				bind(self) return gl.CopyTexSubImage1DEXT(self.target, level, xoffset, x, y, width)
+				bind(self)
+				return gl.CopyTexSubImage1DEXT(self.target, level, xoffset, x, y, width)
 			end
+
 			function META:BufferEXT(internalformat, buffer)
-				bind(self) return gl.TexBufferEXT(self.target, internalformat, buffer)
+				bind(self)
+				return gl.TexBufferEXT(self.target, internalformat, buffer)
 			end
+
 			function META:GetLevelParameterfvEXT(texture, level, pname, params)
-				bind(self) return gl.GetTextureLevelParameterfvEXT(texture, self.target, level, pname, params)
+				bind(self)
+				return gl.GetTextureLevelParameterfvEXT(texture, self.target, level, pname, params)
 			end
+
 			function META:SetParameterfv(pname, param)
-				bind(self) return gl.TexParameterfv(self.target, pname, param)
+				bind(self)
+				return gl.TexParameterfv(self.target, pname, param)
 			end
+
 			function META:CompressedImage1D(texture, level, internalformat, width, border, imageSize, bits)
-				bind(self) return gl.CompressedTextureImage1DEXT(texture, self.target, level, internalformat, width, border, imageSize, bits)
+				bind(self)
+				return gl.CompressedTextureImage1DEXT(texture, self.target, level, internalformat, width, border, imageSize, bits)
 			end
+
 			function META:SetParameteri(pname, param)
-				bind(self) return gl.TexParameteri(self.target, pname, param)
+				bind(self)
+				return gl.TexParameteri(self.target, pname, param)
 			end
+
 			function META:GetParameteriv(pname, params)
-				bind(self) return gl.GetTexParameteriv(self.target, pname, params)
+				bind(self)
+				return gl.GetTexParameteriv(self.target, pname, params)
 			end
+
 			function META:CopySubImage2DEXT(level, xoffset, yoffset, x, y, width, height)
-				bind(self) return gl.CopyTexSubImage2DEXT(self.target, level, xoffset, yoffset, x, y, width, height)
+				bind(self)
+				return gl.CopyTexSubImage2DEXT(self.target, level, xoffset, yoffset, x, y, width, height)
 			end
+
 			function META:SetParameterIuiv(pname, params)
-				bind(self) return gl.TexParameterIuiv(self.target, pname, params)
+				bind(self)
+				return gl.TexParameterIuiv(self.target, pname, params)
 			end
+
 			function META:Storage2DMultisample(samples, internalformat, width, height, fixedsamplelocations)
-				bind(self) return gl.TexStorage2DMultisample(self.target, samples, internalformat, width, height, fixedsamplelocations)
+				bind(self)
+				return gl.TexStorage2DMultisample(self.target, samples, internalformat, width, height, fixedsamplelocations)
 			end
-			function META:CompressedSubImage3DEXT(texture, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits)
-				bind(self) return gl.CompressedTextureSubImage3DEXT(texture, self.target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits)
+
+			function META:CompressedSubImage3DEXT(
+				texture,
+				level,
+				xoffset,
+				yoffset,
+				zoffset,
+				width,
+				height,
+				depth,
+				format,
+				imageSize,
+				bits
+			)
+				bind(self)
+				return gl.CompressedTextureSubImage3DEXT(
+					texture,
+					self.target,
+					level,
+					xoffset,
+					yoffset,
+					zoffset,
+					width,
+					height,
+					depth,
+					format,
+					imageSize,
+					bits
+				)
 			end
+
 			function META:GenerateMipmapEXT()
 				if not gl.GenerateMipmapEXT then return end
-				bind(self) return gl.GenerateMipmapEXT(self.target)
+
+				bind(self)
+				return gl.GenerateMipmapEXT(self.target)
 			end
+
 			function META:GetParameterfvEXT(texture, pname, params)
-				bind(self) return gl.GetTextureParameterfvEXT(texture, self.target, pname, params)
+				bind(self)
+				return gl.GetTextureParameterfvEXT(texture, self.target, pname, params)
 			end
+
 			function META:GenerateMipmap()
-				if not gl.GenerateMipmap then
-					return self:GenerateMipmapEXT()
-				end
-				bind(self) return gl.GenerateMipmap(self.target)
+				if not gl.GenerateMipmap then return self:GenerateMipmapEXT() end
+
+				bind(self)
+				return gl.GenerateMipmap(self.target)
 			end
+
 			function META:CopyImage1D(level, internalformat, x, y, width, border)
-				bind(self) return gl.CopyTexImage1DEXT(self.target, level, internalformat, x, y, width, border)
+				bind(self)
+				return gl.CopyTexImage1DEXT(self.target, level, internalformat, x, y, width, border)
 			end
+
 			function META:GetParameterfv(pname, params)
-				bind(self) return gl.GetTexParameterfv(self.target, pname, params)
+				bind(self)
+				return gl.GetTexParameterfv(self.target, pname, params)
 			end
+
 			function META:CompressedSubImage1D(level, xoffset, width, format, imageSize, data)
-				bind(self) return gl.CompressedTexSubImage1D(self.target, level, xoffset, width, format, imageSize, data)
+				bind(self)
+				return gl.CompressedTexSubImage1D(self.target, level, xoffset, width, format, imageSize, data)
 			end
+
 			function META:SubImage1D(level, xoffset, width, format, type, pixels)
-				bind(self) return gl.TexSubImage1D(self.target, level, xoffset, width, format, type, pixels)
+				bind(self)
+				return gl.TexSubImage1D(self.target, level, xoffset, width, format, type, pixels)
 			end
+
 			function META:CopySubImage3D(level, xoffset, yoffset, zoffset, x, y, width, height)
-				bind(self) return gl.CopyTexSubImage3D(self.target, level, xoffset, yoffset, zoffset, x, y, width, height)
+				bind(self)
+				return gl.CopyTexSubImage3D(self.target, level, xoffset, yoffset, zoffset, x, y, width, height)
 			end
+
 			function META:GetLevelParameteriv(level, pname, params)
-				bind(self) return gl.GetTexLevelParameteriv(self.target, level, pname, params)
+				bind(self)
+				return gl.GetTexLevelParameteriv(self.target, level, pname, params)
 			end
+
 			function META:Storage2D(levels, internalformat, width, height)
-				bind(self) return gl.TexStorage2D(self.target, levels, internalformat, width, height)
+				bind(self)
+				return gl.TexStorage2D(self.target, levels, internalformat, width, height)
 			end
+
 			function META:SubImage2DEXT(level, xoffset, yoffset, width, height, format, type, pixels)
-				bind(self) return gl.TexSubImage2DEXT(self.target, level, xoffset, yoffset, width, height, format, type, pixels)
+				bind(self)
+				return gl.TexSubImage2DEXT(self.target, level, xoffset, yoffset, width, height, format, type, pixels)
 			end
+
 			function META:SubImage2D(level, xoffset, yoffset, width, height, format, type, pixels)
-				bind(self) return gl.TexSubImage2D(self.target, level, xoffset, yoffset, width, height, format, type, pixels)
+				bind(self)
+				return gl.TexSubImage2D(self.target, level, xoffset, yoffset, width, height, format, type, pixels)
 			end
+
 			function META:GetCompressedImageEXT(texture, lod, img)
-				bind(self) return gl.GetCompressedTextureImageEXT(texture, self.target, lod, img)
+				bind(self)
+				return gl.GetCompressedTextureImageEXT(texture, self.target, lod, img)
 			end
+
 			function META:SubImage3DEXT(level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
-				bind(self) return gl.TexSubImage3DEXT(self.target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
+				bind(self)
+				return gl.TexSubImage3DEXT(
+					self.target,
+					level,
+					xoffset,
+					yoffset,
+					zoffset,
+					width,
+					height,
+					depth,
+					format,
+					type,
+					pixels
+				)
 			end
-			local ctype = ffi.typeof('struct { int id, target; }')
+
+			local ctype = ffi.typeof("struct { int id, target; }")
 			ffi.metatype(ctype, META)
+
 			function META:Delete()
-				gl.DeleteTextures(1, ffi.new('GLuint[1]', self.id))
+				gl.DeleteTextures(1, ffi.new("GLuint[1]", self.id))
 			end
+
 			function gl.CreateTextureNODSA(target)
 				local self = setmetatable({}, META)
 				self.id = gl.GenTexture()
@@ -10163,33 +11330,47 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
+
 		if GL_ARB_direct_state_access == false or not gl.CreateTextures then
 			gl.CreateTexture = gl.CreateTextureNODSA
 		end
 	end
 end
-gl.e = setmetatable({}, {__index = function(_, key)
-	local ok, res = pcall(ffi.cast, "GL_LUA_ENUMS", key)
 
-	if not ok then
-		error(key .. "is not a valid enum", 2)
-	end
+gl.e = setmetatable(
+	{},
+	{
+		__index = function(_, key)
+			local ok, res = pcall(ffi.cast, "GL_LUA_ENUMS", key)
 
-	return tonumber(res)
-end})
+			if not ok then error(key .. "is not a valid enum", 2) end
+
+			return tonumber(res)
+		end,
+	}
+)
 
 function gl.StartRecordingCalls()
 	gl.old_funcs = gl.old_funcs or {}
 	gl.call_log = gl.call_log or {}
 	local i = 1
-	for k,v in pairs(gl) do
-		if (type(v) == "cdata" or type(v) == "function") and k ~= "StartRecordingCalls" and k ~= "StopRecordingCalls" and k:sub(1, 3) ~= "Gen" then
-			gl.old_funcs[k] = v
 
+	for k, v in pairs(gl) do
+		if
+			(
+				type(v) == "cdata" or
+				type(v) == "function"
+			)
+			and
+			k ~= "StartRecordingCalls" and
+			k ~= "StopRecordingCalls" and
+			k:sub(1, 3) ~= "Gen"
+		then
+			gl.old_funcs[k] = v
 			gl[k] = function(...)
 				local ret = v(...)
 				gl.call_log[i] = {func_name = k, ret = ret, args = {...}}
-				i = i  + 1
+				i = i + 1
 				return ret
 			end
 		end
@@ -10199,14 +11380,12 @@ end
 function gl.StopRecordingCalls()
 	if not gl.old_funcs then return end
 
-	for k,v in pairs(gl.old_funcs) do
+	for k, v in pairs(gl.old_funcs) do
 		gl[k] = v
 	end
 
 	local tbl = gl.call_log
-
 	gl.call_log = nil
-
 	return tbl
 end
 

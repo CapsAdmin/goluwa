@@ -1,4 +1,8 @@
-local ffi = require("ffi");local CLIB = ffi.C;ffi.cdef([[struct lua_State {};
+local ffi = require("ffi")
+
+local CLIB = ffi.C
+
+ffi.cdef([[struct lua_State {};
 struct lua_Debug {int event;const char*name;const char*namewhat;const char*what;const char*source;int currentline;int nups;int linedefined;int lastlinedefined;char short_src[60];int i_ci;};
 struct luaL_Reg {const char*name;int(*func)(struct lua_State*);};
 struct luaL_Buffer {char*p;int lvl;struct lua_State*L;};
@@ -149,22 +153,29 @@ const char*(lua_getupvalue)(struct lua_State*,int,int);
 ]])
 local library = {}
 
-
 --====helper safe_clib_index====
-		function SAFE_INDEX(clib)
-			return setmetatable({}, {__index = function(_, k)
-				local ok, val = pcall(function() return clib[k] end)
+function SAFE_INDEX(clib)
+	return setmetatable(
+		{},
+		{
+			__index = function(_, k)
+				local ok, val = pcall(function()
+					return clib[k]
+				end)
+
 				if ok then
 					return val
 				elseif clib_index then
 					return clib_index(k)
 				end
-			end})
-		end
-	
---====helper safe_clib_index====
+			end,
+		}
+	)
+end
 
-CLIB = SAFE_INDEX(CLIB)library = {
+--====helper safe_clib_index====
+CLIB = SAFE_INDEX(CLIB)
+library = {
 	setfield = CLIB.lua_setfield,
 	xmove = CLIB.lua_xmove,
 	getallocf = CLIB.lua_getallocf,

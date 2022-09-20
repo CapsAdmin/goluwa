@@ -1,19 +1,19 @@
 local render = ... or _G.render
 local gl = require("opengl") -- OpenGL
-
 if not render.IsExtensionSupported("ARB_framebuffer_object") then
 	runfile("../null/framebuffer.lua", render)
-
 	local META = prototype.GetRegistered("framebuffer")
 
-	function META:ClearAll(r,g,b,a, d,s)
+	function META:ClearAll(r, g, b, a, d, s)
 		gl.ClearColor(r or 0, g or 0, b or 0, a or 0)
 		gl.ClearDepth(d or 0)
 		gl.ClearStencil(s or 0)
-		gl.Clear(bit.bor(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT, gl.e.GL_STENCIL_BUFFER_BIT))
+		gl.Clear(
+			bit.bor(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT, gl.e.GL_STENCIL_BUFFER_BIT)
+		)
 	end
 
-	function META:ClearColor(r,g,b,a)
+	function META:ClearColor(r, g, b, a)
 		gl.ClearColor(r or 0, g or 0, b or 0, a or 0)
 		gl.Clear(gl.e.GL_COLOR_BUFFER_BIT)
 	end
@@ -34,20 +34,16 @@ if not render.IsExtensionSupported("ARB_framebuffer_object") then
 		gl.Clear(bit.bor(gl.e.GL_STENCIL_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT))
 	end
 
-	function META:ClearTexture(i, r,g,b,a)
+	function META:ClearTexture(i, r, g, b, a)
 		self:ClearColor(r or 0, g or 0, b or 0, a or 0)
 	end
 
 	prototype.Register(META)
-
 	return
 end
 
-
 local META = prototype.GetRegistered("framebuffer")
-
 local ffi = require("ffi")
-
 local base_color = gl.e.GL_COLOR_ATTACHMENT0
 
 local function attachment_to_enum(self, var)
@@ -82,8 +78,16 @@ local function generate_draw_buffers(self)
 
 	for _, v in ipairs(self.textures_sorted) do
 		if
-			(v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER") and
-			(v.enum ~= "GL_DEPTH_ATTACHMENT" and v.enum ~= "GL_STENCIL_ATTACHMENT" and v.enum ~= "GL_DEPTH_STENCIL_ATTACHMENT")
+			(
+				v.mode == "GL_DRAW_FRAMEBUFFER" or
+				v.mode == "GL_FRAMEBUFFER"
+			)
+			and
+			(
+				v.enum ~= "GL_DEPTH_ATTACHMENT" and
+				v.enum ~= "GL_STENCIL_ATTACHMENT" and
+				v.enum ~= "GL_DEPTH_STENCIL_ATTACHMENT"
+			)
 		then
 			draw_buffers[i] = v.enum
 			i = i + 1
@@ -91,7 +95,6 @@ local function generate_draw_buffers(self)
 	end
 
 	--table.sort(draw_buffers, function(a, b) return a < b end)
-
 	self.draw_buffers = ffi.new("GLenum[?]", i, draw_buffers)
 	self.draw_buffers_size = i - 1
 end
@@ -110,7 +113,6 @@ function render._CreateFrameBuffer(self, id_override)
 	self.render_buffers = {}
 	self.draw_buffers_cache = {}
 end
-
 
 function META:OnRemove()
 	self.gl_fb:Delete()
@@ -142,23 +144,21 @@ end
 function META:SetTexture(pos, tex, mode, uid, face)
 	local enum = attachment_to_enum(self, pos)
 
-	if not uid then
-		uid = enum
-	end
+	if not uid then uid = enum end
 
 	if tex then
 		if tex.gl_tex then
 			local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
-
 			if face then
 				self.gl_fb:TextureLayer(enum, tex and tex.gl_tex.id or 0, 0, face - 1)
 			else
 				self.gl_fb:Texture(enum, id, 0, tex.gl_tex.target)
 			end
 
-			for i,v in ipairs(self.textures_sorted) do
+			for i, v in ipairs(self.textures_sorted) do
 				if v.uid == uid then
 					table.remove(self.textures_sorted, i)
+
 					break
 				end
 			end
@@ -174,19 +174,15 @@ function META:SetTexture(pos, tex, mode, uid, face)
 				if tex:GetMipMapLevels() < 1 then
 					self.gen_mip_map_textures = self.gen_mip_map_textures or {}
 					local ok = true
+
 					for _, v in ipairs(self.gen_mip_map_textures) do
-						if v == tex then
-							ok = false
-						end
+						if v == tex then ok = false end
 					end
 
-					if ok then
-						table.insert(self.gen_mip_map_textures, tex)
-					end
+					if ok then table.insert(self.gen_mip_map_textures, tex) end
 				end
 
 				table.insert(self.textures_sorted, self.textures[uid])
-
 				self:SetSize(tex:GetSize():Copy())
 			end
 		else
@@ -204,14 +200,12 @@ function META:SetTexture(pos, tex, mode, uid, face)
 			else
 				rb:Storage("GL_" .. tex.internal_format:upper(), tex.width, tex.height)
 			end
-			self.gl_fb:Renderbuffer(enum, rb.id)
 
+			self.gl_fb:Renderbuffer(enum, rb.id)
 			self.render_buffers[uid] = {rb = rb}
 		end
 	else
-		if self.render_buffers[uid] then
-			self.render_buffers[uid].rb:Delete()
-		end
+		if self.render_buffers[uid] then self.render_buffers[uid].rb:Delete() end
 
 		self.render_buffers[uid] = nil
 		self.textures[uid] = nil
@@ -223,15 +217,11 @@ end
 function META:GetTexture(pos)
 	pos = pos or 1
 
-	if self.textures[pos] then
-		return self.textures[pos].tex
-	end
+	if self.textures[pos] then return self.textures[pos].tex end
 
 	local uid = attachment_to_enum(self, pos)
 
-	if uid and self.textures[uid] then
-		return self.textures[uid].tex
-	end
+	if uid and self.textures[uid] then return self.textures[uid].tex end
 
 	return render.GetErrorTexture()
 end
@@ -240,24 +230,22 @@ function META:SetWrite(pos, b)
 	if pos == "depth" or pos == "depth_stencil" or pos == "stencil" then return end
 
 	pos = attachment_to_enum(self, pos)
+
 	if pos then
 		local val = self.textures[pos]
+
 		if val then
 			local mode = val.mode
 
 			if b then
-				if mode == "GL_READ_FRAMEBUFFER" then
-					val.mode = "GL_FRAMEBUFFER"
-				end
+				if mode == "GL_READ_FRAMEBUFFER" then val.mode = "GL_FRAMEBUFFER" end
 			else
 				if mode == "GL_FRAMEBUFFER" or mode == "GL_DRAW_FRAMEBUFFER" then
 					val.mode = "GL_READ_FRAMEBUFFER"
 				end
 			end
 
-			if mode ~= val.mode then
-				generate_draw_buffers(self)
-			end
+			if mode ~= val.mode then generate_draw_buffers(self) end
 		end
 	end
 
@@ -290,15 +278,13 @@ function META:WriteThese(str)
 
 	self.draw_buffers = self.draw_buffers_cache[str][1]
 	self.draw_buffers_size = self.draw_buffers_cache[str][2]
-
 	update_drawbuffers(self)
 end
 
 function META:CheckStatus()
 	local ret = self.gl_fb:CheckStatus(self.enum_bind_mode)
-	if ret == gl.e.GL_FRAMEBUFFER_COMPLETE then
-		return true
-	end
+
+	if ret == gl.e.GL_FRAMEBUFFER_COMPLETE then return true end
 
 	return false, ret
 end
@@ -316,11 +302,9 @@ function META:RestoreDrawBuffers()
 	end
 end
 
-function META:ClearAll(r,g,b,a, d,s)
+function META:ClearAll(r, g, b, a, d, s)
 	self:SaveDrawBuffers()
-
 	self:WriteThese("all")
-
 	local color = ffi.new("GLfloat[4]", r or 0, g or 0, b or 0, a or 0)
 
 	for i = 0, self.draw_buffers_size do
@@ -340,11 +324,9 @@ function META:ClearAll(r,g,b,a, d,s)
 	self:RestoreDrawBuffers()
 end
 
-function META:ClearColor(r,g,b,a)
+function META:ClearColor(r, g, b, a)
 	self:SaveDrawBuffers()
-
 	self:WriteThese("all")
-
 	local color = ffi.new("GLfloat[4]", r or 0, g or 0, b or 0, a or 0)
 
 	for i = 0, self.draw_buffers_size or 1 do
@@ -366,12 +348,10 @@ function META:ClearDepthStencil(d, s)
 	self.gl_fb:Clearfi("GL_DEPTH_STENCIL", 0, d or 0, s or 0)
 end
 
-function META:ClearTexture(i, r,g,b,a)
+function META:ClearTexture(i, r, g, b, a)
 	self:SaveDrawBuffers()
-
 	self:WriteThese(tostring(i))
 	self.gl_fb:Clearfv("GL_COLOR", 0, ffi.new("GLfloat[4]", r or 0, g or 0, b or 0, a or 0))
-
 	self:RestoreDrawBuffers()
 end
 
@@ -380,8 +360,14 @@ function META.Blit(a, b, a_rect, b_rect, method)
 	b_rect = b_rect or Rect(0, 0, b.Size.x, b.Size.y)
 	a.gl_fb:Blit(
 		b.gl_fb.id,
-		a_rect.x, a_rect.y, a_rect.w, a_rect.h,
-		b_rect.x, b_rect.y, b_rect.w, b_rect.h,
+		a_rect.x,
+		a_rect.y,
+		a_rect.w,
+		a_rect.h,
+		b_rect.x,
+		b_rect.y,
+		b_rect.w,
+		b_rect.h,
 		gl.e.GL_COLOR_BUFFER_BIT,
 		method or "GL_NEAREST"
 	)

@@ -1,10 +1,9 @@
 local META = ...
 
-
 function META:Type()
 	local node = self:Node("type")
-
 	local out = {}
+
 	for _ = 1, self:GetLength() do
 		local token = self:ReadToken()
 
@@ -16,7 +15,6 @@ function META:Type()
 
 		if token.type == "letter" and self:IsValue("(") then
 			local start = self:GetToken()
-
 			node.tokens["func("] = self:ReadExpectValue("(")
 			node.function_arguments = self:IdentifierList()
 			node.tokens["func)"] = self:ReadExpectValue(")", start, start)
@@ -24,9 +22,7 @@ function META:Type()
 			node.function_return_type = self:Type()
 		end
 
-		if not self:IsValue("|") then
-			break
-		end
+		if not self:IsValue("|") then break end
 
 		node.tokens["|"] = self:ReadToken()
 	end
@@ -57,7 +53,14 @@ function META:IdentifierList(out, destructor)
 	out = out or {}
 
 	for _ = 1, self:GetLength() do
-		if not self:IsType("letter") and not self:IsValue("...") and not self:IsValue(":") and not self:IsValue("{") then
+		if
+			not self:IsType("letter") and
+			not self:IsValue("...")
+			and
+			not self:IsValue(":")
+			and
+			not self:IsValue("{")
+		then
 			break
 		end
 
@@ -66,6 +69,7 @@ function META:IdentifierList(out, destructor)
 		if self:IsValue("...") then
 			node = self:Node("value")
 			node.value = self:ReadToken()
+
 			if self:IsValue(":") then
 				node.tokens[":"] = self:ReadToken(":")
 				node.data_type = self:Type()
@@ -73,7 +77,6 @@ function META:IdentifierList(out, destructor)
 		else
 			node = self:ReadIdentifier()
 		end
-
 
 		if destructor and self:IsValue("=") then
 			self:ReadToken()

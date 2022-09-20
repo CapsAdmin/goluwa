@@ -6,13 +6,12 @@ local file_obj_Close = META.Close
 local file_obj_Flush = META.Flush
 local file_obj_Seek = META.Seek
 local file_obj_Tell = META.Tell
-
 local file_Open = gmod.file.Open
 local Msg = gmod.Msg
 local GoluwaToGmodPath = GoluwaToGmodPath
-
-local dprint = function(...) if DEBUG then gmod.print("[goluwa] io: ", ...) end end
-
+local dprint = function(...)
+	if DEBUG then gmod.print("[goluwa] io: ", ...) end
+end
 local io = ... or _G.io
 
 do -- file
@@ -24,7 +23,6 @@ do -- file
 	end
 
 	function META:write(...)
-
 		local str = ""
 
 		for i = 1, select("#", ...) do
@@ -32,12 +30,9 @@ do -- file
 		end
 
 		dprint("file " .. self.__path .. ":write: ", #str)
-
 		file_obj_Write(self.__file, str)
 
-		if self.uncache_on_write then
-			fs.uncache(self.uncache_on_write)
-		end
+		if self.uncache_on_write then fs.uncache(self.uncache_on_write) end
 	end
 
 	local function read(self, format)
@@ -47,23 +42,25 @@ do -- file
 			return file_obj_Read(self.__file, file_obj_Size(self.__file))
 		elseif format:sub(1, 2) == "*l" then
 			local str = ""
+
 			for i = 1, file_obj_Size(self.__file) do
 				local char = file_obj_Read(self.__file, 1)
+
 				if char == "\n" then break end
+
 				str = str .. char
 			end
+
 			return str ~= "" and str or nil
 		elseif format:sub(1, 2) == "*n" then
 			local str = file_obj_Read(self.__file, 1)
-			if tonumber(str) then
-				return tonumber(str)
-			end
+
+			if tonumber(str) then return tonumber(str) end
 		end
 	end
 
 	function META:read(...)
 		dprint("file " .. self.__path .. ":read: ", ...)
-
 		local args = {}
 
 		for i = 1, select("#", ...) do
@@ -101,19 +98,13 @@ do -- file
 		end
 	end
 
-	function META:setvbuf()
-
-	end
+	function META:setvbuf() end
 
 	function io.open(path, mode)
 		mode = mode or "r"
-
 		local original_path = path
-
 		local self = setmetatable({}, META)
-
 		local path, where = GoluwaToGmodPath(path)
-
 		local f = file_Open(path, mode, where)
 		dprint("file.Open: ", f, path, mode, where)
 
@@ -121,14 +112,11 @@ do -- file
 			return nil, path .. " " .. mode .. " " .. where .. ": No such file", 2
 		end
 
-		if mode:find("w") then
-			self.uncache_on_write = original_path
-		end
+		if mode:find("w") then self.uncache_on_write = original_path end
 
 		self.__file = f
 		self.__path = path
 		self.__mode = mode
-
 		return self
 	end
 end
@@ -146,9 +134,7 @@ function io.input(var)
 end
 
 function io.type(var)
-	if getmetatable(var) == META then
-		return "file"
-	end
+	if getmetatable(var) == META then return "file" end
 
 	return nil
 end
@@ -175,8 +161,7 @@ function io.lines(...)
 	return current_file_out:lines(...)
 end
 
-function io.flush(...)
---	return current_file_out:flush(...)
+function io.flush(...) --	return current_file_out:flush(...)
 end
 
 function io.popen(...)

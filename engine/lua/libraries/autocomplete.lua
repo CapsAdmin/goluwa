@@ -6,6 +6,7 @@ do -- lists
 
 	function autocomplete.RemoveList(id)
 		env[id] = nil
+
 		for _, v in ipairs(autocomplete.lists) do
 			if v.id == id then
 				table.remove(autocomplete.lists, 1)
@@ -23,7 +24,9 @@ do -- lists
 		for _, v in ipairs(autocomplete.lists) do
 			if v.id == id then
 				local list = v.list
+
 				if type(list) == "function" then list = list() end
+
 				return list
 			end
 		end
@@ -45,11 +48,9 @@ local function search(list, str, found, found_list, id)
 				found[#found + 1] = {val = list[math.random(#list)], id = id}
 			end
 		else
-			for i = found_list and 1 or math.max(#str+1, 1), #list do
+			for i = found_list and 1 or math.max(#str + 1, 1), #list do
 				if type(list[i]) == "table" then
-					if list[i].val:find(pattern) then
-						found[#found + 1] = list[i]
-					end
+					if list[i].val:find(pattern) then found[#found + 1] = list[i] end
 				else
 					if list[i]:find(pattern) then
 						found[#found + 1] = {val = list[i], id = id}
@@ -59,14 +60,12 @@ local function search(list, str, found, found_list, id)
 		end
 	elseif type(list) == "function" then
 		local v = list(str)
-		if v then
-			found[#found + 1] = {val = v, id = id}
-		end
+
+		if v then found[#found + 1] = {val = v, id = id} end
 	end
 end
 
 function autocomplete.Search(str, id)
-
 	local found = {}
 
 	-- check if it's a valid string pattern
@@ -92,50 +91,50 @@ end
 autocomplete.translate_list_id = {}
 
 function autocomplete.DrawFound(id, x, y, found, max, offset)
-	if not env[id] then
-		env[id] = {found_autocomplete = {}, scroll = 0}
-	end
+	if not env[id] then env[id] = {found_autocomplete = {}, scroll = 0} end
 
 	offset = offset or 1
 	max = max or 100
-
 	local height_offset = 0
 	local width_offset = 0
-
-	render2d.SetColor(1,1,1,1)
+	render2d.SetColor(1, 1, 1, 1)
 	render2d.PushMatrix(x, y)
 	local done = {}
-		for i = offset, max do
-			local v = found[i]
 
-			if not v then break end
+	for i = offset, max do
+		local v = found[i]
 
-			if v.id then
-				if not done[v.id] then
-					local str = autocomplete.translate_list_id[v.id]
-					if type(str) == "function" then
-						str = str()
-					end
-					if str then
-						local _, h = gfx.GetTextSize(str)
-						render2d.SetAlphaMultiplier(0.75)
-						gfx.DrawText(str, 5, (i - offset) * h + height_offset)
-						height_offset = height_offset + h
-						width_offset = 5
-					end
-					done[v.id] = true
+		if not v then break end
+
+		if v.id then
+			if not done[v.id] then
+				local str = autocomplete.translate_list_id[v.id]
+
+				if type(str) == "function" then str = str() end
+
+				if str then
+					local _, h = gfx.GetTextSize(str)
+					render2d.SetAlphaMultiplier(0.75)
+					gfx.DrawText(str, 5, (i - offset) * h + height_offset)
+					height_offset = height_offset + h
+					width_offset = 5
 				end
+
+				done[v.id] = true
 			end
-
-			local alpha = (-(i / max) + 1) ^ 5
-
-			render2d.SetAlphaMultiplier(alpha)
-
-			local _, h = gfx.GetTextSize(v.val)
-			gfx.DrawText(((env[id].scroll + i - 1)%#found + 1) .. ". " ..  v.val, 5 + width_offset, (i - offset) * h + height_offset)
 		end
 
-		render2d.SetAlphaMultiplier(1)
+		local alpha = (-(i / max) + 1) ^ 5
+		render2d.SetAlphaMultiplier(alpha)
+		local _, h = gfx.GetTextSize(v.val)
+		gfx.DrawText(
+			((env[id].scroll + i - 1) % #found + 1) .. ". " .. v.val,
+			5 + width_offset,
+			(i - offset) * h + height_offset
+		)
+	end
+
+	render2d.SetAlphaMultiplier(1)
 	render2d.PopMatrix()
 end
 
@@ -146,9 +145,7 @@ end
 function autocomplete.Query(id, str, scroll, list)
 	scroll = scroll or 0
 
-	if not env[id] then
-		env[id] = {found_autocomplete = {}, scroll = 0}
-	end
+	if not env[id] then env[id] = {found_autocomplete = {}, scroll = 0} end
 
 	if scroll == 0 then
 		if env[id].last_str and #env[id].last_str > #str then
@@ -176,15 +173,12 @@ function autocomplete.Query(id, str, scroll, list)
 
 	if scroll ~= 0 then
 		if #env[id].found_autocomplete > 0 then
-
 			if not env[id].tab_str then
 				env[id].tab_str = str
 				env[id].tab_autocomplete = env[id].found_autocomplete
 			end
 
-			if env[id].last_str then
-				env[id].scroll = env[id].scroll + scroll
-			end
+			if env[id].last_str then env[id].scroll = env[id].scroll + scroll end
 
 			env[id].last_str = str
 		end

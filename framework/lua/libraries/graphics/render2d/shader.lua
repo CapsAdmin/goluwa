@@ -1,5 +1,4 @@
 local render2d = ... or _G.render2d
-
 render2d.shader_data = {
 	name = "mesh_2d",
 	vertex = {
@@ -8,7 +7,7 @@ render2d.shader_data = {
 			{uv = "vec2"},
 			{color = "vec4"},
 		},
-		source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);"
+		source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);",
 	},
 	fragment = {
 		mesh_layout = {
@@ -49,8 +48,8 @@ render2d.shader_data = {
 					frag_color.rgb = hsv2rgb(rgb2hsv(frag_color.rgb) * hsv_mult);
 				}
 			}
-		]]
-	}
+		]],
+	},
 }
 
 function render2d.CreateMesh(vertices)
@@ -58,17 +57,16 @@ function render2d.CreateMesh(vertices)
 end
 
 render2d.shader = render2d.shader or NULL
-
 render2d.rectangle_mesh_data = {
-	{pos = {0, 1, 0}, uv = {0, 0}, color = {1,1,1,1}},
-	{pos = {0, 0, 0}, uv = {0, 1}, color = {1,1,1,1}},
-	{pos = {1, 1, 0}, uv = {1, 0}, color = {1,1,1,1}},
-	{pos = {1, 0, 0}, uv = {1, 1}, color = {1,1,1,1}},
-	{pos = {1, 1, 0}, uv = {1, 0}, color = {1,1,1,1}},
-	{pos = {0, 0, 0}, uv = {0, 1}, color = {1,1,1,1}},
+	{pos = {0, 1, 0}, uv = {0, 0}, color = {1, 1, 1, 1}},
+	{pos = {0, 0, 0}, uv = {0, 1}, color = {1, 1, 1, 1}},
+	{pos = {1, 1, 0}, uv = {1, 0}, color = {1, 1, 1, 1}},
+	{pos = {1, 0, 0}, uv = {1, 1}, color = {1, 1, 1, 1}},
+	{pos = {1, 1, 0}, uv = {1, 0}, color = {1, 1, 1, 1}},
+	{pos = {0, 0, 0}, uv = {0, 1}, color = {1, 1, 1, 1}},
 }
 
-function render2d.SetHSV(h,s,v)
+function render2d.SetHSV(h, s, v)
 	render2d.shader.hsv_mult.x = h
 	render2d.shader.hsv_mult.y = s
 	render2d.shader.hsv_mult.z = v
@@ -138,6 +136,7 @@ utility.MakePushPopFunction(render2d, "Texture")
 
 function render2d.SetAlphaTestReference(num)
 	if not num then num = 0 end
+
 	render2d.shader.alpha_test_ref = num
 end
 
@@ -155,6 +154,4 @@ function render2d.BindShader()
 	end
 end
 
-if RELOAD then
-	render2d.Initialize()
-end
+if RELOAD then render2d.Initialize() end

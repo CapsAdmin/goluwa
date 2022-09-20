@@ -2,11 +2,8 @@ if not SOUND then return end
 
 local love = ... or _G.love
 local ENV = love._line_env
-
 local ffi = require("ffi")
-
 love.sound = love.sound or {}
-
 local SoundData = line.TypeTemplate("SoundData")
 
 function SoundData:getPointer()
@@ -48,9 +45,11 @@ end
 function SoundData:getSampleRate()
 	return self.buffer:GetSampleRate()
 end
+
 function SoundData:setSample(i, sample)
 	if not self.samples then return end
-	self.samples[i] = sample*127
+
+	self.samples[i] = sample * 127
 	self.buffer:SetData(self.buffer:GetData()) -- slow!!!
 end
 
@@ -85,41 +84,51 @@ function love.sound.newSoundData(samples, rate, bits, channels)
 
 			if data then
 				local buffer = audio.CreateBuffer()
-				if al then buffer:SetFormat(info.channels == 1 and al.e.FORMAT_MONO16 or al.e.FORMAT_STEREO16) end
+
+				if al then
+					buffer:SetFormat(info.channels == 1 and al.e.FORMAT_MONO16 or al.e.FORMAT_STEREO16)
+				end
+
 				buffer:SetSampleRate(info.samplerate)
 				buffer:SetData(data, length)
-
 				self.buffer = buffer
-
 			end
 		end)
 
 		return self
 	end
 
-
 	buffer:SetFormat(get_format(channels, bits))
 	buffer:SetData(ffi.new("int8_t[?]", samples * channels), samples * channels)
-
 	self.samples = buffer:GetData()
-
 	return self
 end
 
 line.RegisterType(SoundData)
-
-
 local Decoder = line.TypeTemplate("Decoder")
 
-function Decoder:getDepth() return 8 end
-function Decoder:getBits() return 8 end
-function Decoder:getChannels() return self.info.channels end
-function Decoder:getDuration() return self.length end
-function Decoder:getSampleRate() return self.info.samplerate end
+function Decoder:getDepth()
+	return 8
+end
+
+function Decoder:getBits()
+	return 8
+end
+
+function Decoder:getChannels()
+	return self.info.channels
+end
+
+function Decoder:getDuration()
+	return self.length
+end
+
+function Decoder:getSampleRate()
+	return self.info.samplerate
+end
 
 function love.sound.newDecoder(file, buffer_size)
 	local self = line.CreateObject("Decoder")
-
 	local file
 
 	if line.Type(file) == "File" then
@@ -129,11 +138,9 @@ function love.sound.newDecoder(file, buffer_size)
 	end
 
 	local decoded_data, length, info = audio.Decode(file)
-
 	self.decoded_data = decoded_data
 	self.length = length
 	self.info = info
-
 	return self
 end
 

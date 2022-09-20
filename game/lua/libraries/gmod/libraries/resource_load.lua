@@ -1,39 +1,19 @@
-function gine.env.AddParticles()
+function gine.env.AddParticles() end
 
-end
+function gine.env.game.AddDecal() end
 
-function gine.env.game.AddDecal()
+function gine.env.PrecacheParticleSystem() end
 
-end
+function gine.env.sound.Add(tbl) end
 
-function gine.env.PrecacheParticleSystem()
+function gine.env.util.PrecacheModel() end
 
-end
+function gine.env.util.PrecacheSound() end
 
-function gine.env.sound.Add(tbl)
+function gine.env.AddCSLuaFile() end
 
-end
+function gine.env.resource.AddFile() end
 
-function gine.env.util.PrecacheModel()
+function gine.env.resource.AddSingleFile() end
 
-end
-
-function gine.env.util.PrecacheSound()
-
-end
-
-function gine.env.AddCSLuaFile()
-
-end
-
-function gine.env.resource.AddFile()
-
-end
-
-function gine.env.resource.AddSingleFile()
-
-end
-
-function gine.env.game.AddParticles()
-
-end
+function gine.env.game.AddParticles() end

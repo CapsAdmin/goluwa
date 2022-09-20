@@ -14,7 +14,7 @@ end
 do
 	local META = prototype.CreateTemplate("steam_friend")
 
-	for k,v in pairs(steam.steamid_meta) do
+	for k, v in pairs(steam.steamid_meta) do
 		META[k] = META[k] or v
 	end
 
@@ -37,19 +37,14 @@ do
 					local w = ffi.new("uint32_t[1]")
 					local h = ffi.new("uint32_t[1]")
 					steamworks.utils.GetImageSize(handle, w, h)
-
 					local size = w[0] * h[0] * 4
 					local buffer = ffi.new("uint8_t[?]", size)
-
 					steamworks.utils.GetImageRGBA(handle, buffer, size)
-
-					self.avatar_texture:Upload({
-						buffer = buffer,
-						size = Vec2(w[0], h[0])
-					})
+					self.avatar_texture:Upload({buffer = buffer, size = Vec2(w[0], h[0])})
 					return true
 				end
 			end)
+
 			self.requesting_avatar = true
 		end
 
@@ -61,21 +56,21 @@ do
 
 	function META:GetChatMessage(message_id)
 		local length = steam.friends.GetFriendMessage(self.id, message_id, str, 512, type)
-		if length > 0 then
-			return ffi.string(str), type[0]
-		end
+
+		if length > 0 then return ffi.string(str), type[0] end
 	end
 
 	local last = {}
 
 	function META:GetLastChatMessage()
-		if steam.friends.GetFriendMessage(self.id, 0, str, 512, type) == 0 then return end
+		if steam.friends.GetFriendMessage(self.id, 0, str, 512, type) == 0 then
+			return
+		end
 
 		local i = last[tostring(self.id)] or 0
 
 		while true do
 			type[0] = 0
-
 			local length = steam.friends.GetFriendMessage(self.id, i, str, 512, type)
 
 			if type[0] == 0 and length == 0 then break end
@@ -84,22 +79,28 @@ do
 		end
 
 		last[tostring(self.id)] = i
-
 		return self:GetChatMessage(i - 1)
 	end
 
-	event.Timer("steam_friends", 0.25, 0, function()
-		for i, friend in ipairs(steam.GetFriends()) do
-			local message = friend:GetLastChatMessage()
-			if message then
-				if friend.last_message ~= message then
-					print(message)
-					event.Call("SteamFriendsMessage", friend, message)
+	event.Timer(
+		"steam_friends",
+		0.25,
+		0,
+		function()
+			for i, friend in ipairs(steam.GetFriends()) do
+				local message = friend:GetLastChatMessage()
+
+				if message then
+					if friend.last_message ~= message then
+						print(message)
+						event.Call("SteamFriendsMessage", friend, message)
+					end
+
+					friend.last_message = message
 				end
-				friend.last_message = message
 			end
 		end
-	end)
+	)
 
 	META:Register()
 end
@@ -108,7 +109,6 @@ local active = table.weak()
 
 function steam.GetFriendObjectFromSteamID(id)
 	active[tostring(id)] = active[tostring(id)] or prototype.CreateObject("steam_friend", {id = id})
-
 	return active[tostring(id)]
 end
 
@@ -117,7 +117,7 @@ function steam.GetFriends()
 
 	for i = 0, steam.friends.GetFriendCount(65535) - 1 do
 		local id = steam.friends.GetFriendByIndex(i, 65535)
-		out[i+1] = steam.GetFriendObjectFromSteamID(id)
+		out[i + 1] = steam.GetFriendObjectFromSteamID(id)
 	end
 
 	return out
@@ -125,9 +125,7 @@ end
 
 function steam.FindFriend(nick)
 	for _, v in pairs(steam.GetFriends()) do
-		if v:GetPersonaName():find(nick) or v.id == nick then
-			return v
-		end
+		if v:GetPersonaName():find(nick) or v.id == nick then return v end
 	end
 end
 
@@ -142,7 +140,7 @@ if RELOAD then
 
 	event.AddListener("PostDrawGUI", "lol", function()
 		render2d.SetTexture(tex)
-		render2d.SetColor(1,1,1,1)
-		render2d.DrawRect(50,50,tex:GetSize().x,tex:GetSize().y)
+		render2d.SetColor(1, 1, 1, 1)
+		render2d.DrawRect(50, 50, tex:GetSize().x, tex:GetSize().y)
 	end)
 end

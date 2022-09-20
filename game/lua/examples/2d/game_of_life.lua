@@ -2,14 +2,19 @@ local start = 0.5
 local tex = render.CreateBlankTexture(Vec2(render.GetHeight(), render.GetWidth()))
 tex:SetMinFilter("nearest")
 tex:SetMagFilter("nearest")
+
 tex:Fill(function()
 	return 255, 255, 255, math.random() > start and 255 or 0
 end)
 
-event.Timer("update_cells", 0, 0,function()
-	--render.SetBlendMode("src_color", "src_color", "add")
-	render.SetPresetBlendMode("none")
-	tex:Shade([[
+event.Timer(
+	"update_cells",
+	0,
+	0,
+	function()
+		--render.SetBlendMode("src_color", "src_color", "add")
+		render.SetPresetBlendMode("none")
+		tex:Shade([[
 		vec4 color = texture(self, uv);
 		vec2 uv = gl_FragCoord.xy / size;
 		vec2 uv_unit = 1.0 / size;
@@ -40,14 +45,14 @@ event.Timer("update_cells", 0, 0,function()
 
 		return color;
 	]])
-end)
+	end
+)
 
 function goluwa.PreDrawGUI()
 	render2d.SetTexture()
-	render2d.SetColor(0,0,0,1)
+	render2d.SetColor(0, 0, 0, 1)
 	render2d.DrawRect(0, 0, tex:GetSize().x, tex:GetSize().y)
-
 	render2d.SetTexture(tex)
-	render2d.SetColor(1,1,1,1)
+	render2d.SetColor(1, 1, 1, 1)
 	render2d.DrawRect(0, 0, tex:GetSize().x, tex:GetSize().y)
 end

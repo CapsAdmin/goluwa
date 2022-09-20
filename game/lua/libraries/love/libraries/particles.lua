@@ -2,225 +2,152 @@ if not GRAPHICS then return end
 
 local love = ... or _G.love
 local ENV = love._line_env
-
 local ParticleSystem = line.TypeTemplate("ParticleSystem")
 
-function ParticleSystem:clone()
+function ParticleSystem:clone() end
 
-end
-function ParticleSystem:count()
+function ParticleSystem:count() end
 
-end
-function ParticleSystem:emit()
+function ParticleSystem:emit() end
 
-end
-function ParticleSystem:getAreaSpread()
+function ParticleSystem:getAreaSpread() end
 
-end
-function ParticleSystem:getBufferSize()
+function ParticleSystem:getBufferSize() end
 
-end
-function ParticleSystem:getColors()
+function ParticleSystem:getColors() end
 
-end
-function ParticleSystem:getCount()
+function ParticleSystem:getCount() end
 
-end
-function ParticleSystem:getDirection()
+function ParticleSystem:getDirection() end
 
-end
-function ParticleSystem:getEmissionRate()
+function ParticleSystem:getEmissionRate() end
 
-end
-function ParticleSystem:getEmitterLifetime()
+function ParticleSystem:getEmitterLifetime() end
 
-end
-function ParticleSystem:getImage()
+function ParticleSystem:getImage() end
 
-end
-function ParticleSystem:getInsertMode()
+function ParticleSystem:getInsertMode() end
 
-end
-function ParticleSystem:getLinearAcceleration()
+function ParticleSystem:getLinearAcceleration() end
 
-end
-function ParticleSystem:getOffset()
+function ParticleSystem:getOffset() end
 
-end
-function ParticleSystem:getOffsetX()
+function ParticleSystem:getOffsetX() end
 
-end
-function ParticleSystem:getOffsetY()
+function ParticleSystem:getOffsetY() end
 
-end
-function ParticleSystem:getParticleLifetime()
+function ParticleSystem:getParticleLifetime() end
 
-end
-function ParticleSystem:getPosition()
+function ParticleSystem:getPosition() end
 
-end
-function ParticleSystem:getRadialAcceleration()
+function ParticleSystem:getRadialAcceleration() end
 
-end
-function ParticleSystem:getRotation()
+function ParticleSystem:getRotation() end
 
-end
-function ParticleSystem:getSizeVariation()
+function ParticleSystem:getSizeVariation() end
 
-end
-function ParticleSystem:getSizes()
+function ParticleSystem:getSizes() end
 
-end
-function ParticleSystem:getSpeed()
+function ParticleSystem:getSpeed() end
 
-end
-function ParticleSystem:getSpin()
+function ParticleSystem:getSpin() end
 
-end
-function ParticleSystem:getSpinVariation()
+function ParticleSystem:getSpinVariation() end
 
-end
-function ParticleSystem:getSpread()
+function ParticleSystem:getSpread() end
 
-end
-function ParticleSystem:getTangentialAcceleration()
+function ParticleSystem:getTangentialAcceleration() end
 
-end
-function ParticleSystem:getTexture()
+function ParticleSystem:getTexture() end
 
-end
-function ParticleSystem:getX()
+function ParticleSystem:getX() end
 
-end
-function ParticleSystem:getY()
+function ParticleSystem:getY() end
 
-end
-function ParticleSystem:hasRelativeRotation()
+function ParticleSystem:hasRelativeRotation() end
 
-end
-function ParticleSystem:isActive()
+function ParticleSystem:isActive() end
 
-end
-function ParticleSystem:isEmpty()
+function ParticleSystem:isEmpty() end
 
-end
-function ParticleSystem:isFull()
+function ParticleSystem:isFull() end
 
-end
-function ParticleSystem:isPaused()
+function ParticleSystem:isPaused() end
 
-end
-function ParticleSystem:isStopped()
+function ParticleSystem:isStopped() end
 
-end
-function ParticleSystem:moveTo()
+function ParticleSystem:moveTo() end
 
-end
-function ParticleSystem:pause()
+function ParticleSystem:pause() end
 
-end
-function ParticleSystem:reset()
+function ParticleSystem:reset() end
 
-end
-function ParticleSystem:setAreaSpread()
+function ParticleSystem:setAreaSpread() end
 
-end
-function ParticleSystem:setBufferSize()
+function ParticleSystem:setBufferSize() end
 
-end
-function ParticleSystem:setColor()
+function ParticleSystem:setColor() end
 
-end
-function ParticleSystem:setColors()
+function ParticleSystem:setColors() end
 
-end
-function ParticleSystem:setDirection()
+function ParticleSystem:setDirection() end
 
-end
-function ParticleSystem:setEmissionRate()
+function ParticleSystem:setEmissionRate() end
 
-end
-function ParticleSystem:setEmitterLifetime()
+function ParticleSystem:setEmitterLifetime() end
 
-end
-function ParticleSystem:setGravity()
+function ParticleSystem:setGravity() end
 
-end
-function ParticleSystem:setImage()
+function ParticleSystem:setImage() end
 
-end
-function ParticleSystem:setInsertMode()
+function ParticleSystem:setInsertMode() end
 
-end
-function ParticleSystem:setLifetime()
+function ParticleSystem:setLifetime() end
 
-end
-function ParticleSystem:setLinearAcceleration()
+function ParticleSystem:setLinearAcceleration() end
 
-end
-function ParticleSystem:setOffset()
+function ParticleSystem:setOffset() end
 
-end
-function ParticleSystem:setParticleLife()
+function ParticleSystem:setParticleLife() end
 
-end
-function ParticleSystem:setParticleLifetime()
+function ParticleSystem:setParticleLifetime() end
 
-end
-function ParticleSystem:setPosition()
+function ParticleSystem:setPosition() end
 
-end
-function ParticleSystem:setRadialAcceleration()
+function ParticleSystem:setRadialAcceleration() end
 
-end
-function ParticleSystem:setRelativeRotation()
+function ParticleSystem:setRelativeRotation() end
 
-end
-function ParticleSystem:setRotation()
+function ParticleSystem:setRotation() end
 
-end
-function ParticleSystem:setSize()
+function ParticleSystem:setSize() end
 
-end
-function ParticleSystem:setSizeVariation()
+function ParticleSystem:setSizeVariation() end
 
-end
-function ParticleSystem:setSizes()
+function ParticleSystem:setSizes() end
 
-end
-function ParticleSystem:setSpeed()
+function ParticleSystem:setSpeed() end
 
-end
-function ParticleSystem:setSpin()
+function ParticleSystem:setSpin() end
 
-end
-function ParticleSystem:setSpinVariation()
+function ParticleSystem:setSpinVariation() end
 
-end
-function ParticleSystem:setSpread()
+function ParticleSystem:setSpread() end
 
-end
-function ParticleSystem:setSprite()
+function ParticleSystem:setSprite() end
 
-end
-function ParticleSystem:setTangentialAcceleration()
+function ParticleSystem:setTangentialAcceleration() end
 
-end
-function ParticleSystem:setTexture()
+function ParticleSystem:setTexture() end
 
-end
-function ParticleSystem:start()
+function ParticleSystem:start() end
 
-end
-function ParticleSystem:stop()
+function ParticleSystem:stop() end
 
-end
-function ParticleSystem:update()
+function ParticleSystem:update() end
 
-end
 function love.graphics.newParticleSystem()
 	local self = line.CreateObject("ParticleSystem")
-
 	return self
 end
 

@@ -1,5 +1,4 @@
 render3d.camera:SetAngles(Ang3())
-
 local min
 local max
 

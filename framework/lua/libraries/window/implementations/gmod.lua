@@ -15,13 +15,10 @@ local gui_SetMousePos = gmod.gui.SetMousePos
 local gui_EnableScreenClicker = gmod.gui.EnableScreenClicker
 local system_HasFocus = gmod.system.HasFocus
 local SetClipboardText = gmod.SetClipboardText
-
 local META = ... or prototype.GetRegistered("window")
-
 
 function META:Initialize()
 	local self = META:CreateObject()
-
 	local event_name_translate = {}
 
 	local function call(self, name, ...)
@@ -40,7 +37,6 @@ function META:Initialize()
 		return b
 	end
 
-
 	if not gmod.TEST_GOLUWA_GUI then return self end
 
 	local translate = {
@@ -48,28 +44,21 @@ function META:Initialize()
 		mouse2 = "button_2",
 		mouse3 = "button_3",
 		mouse4 = "button_4",
-
 		leftarrow = "left",
 		rightarrow = "right",
 		uparrow = "up",
 		downarrow = "down",
-
 		[gmod.KEY_LCONTROL] = "left_control",
 		[gmod.KEY_RCONTROL] = "right_control",
 		[gmod.KEY_LALT] = "left_alt",
 		[gmod.KEY_RALT] = "right_alt",
 	}
-
 	local keys = {}
 
 	local function key_input(i, press)
 		local key = input_GetKeyName(i)
 
-		if key then
-			key = key:lower()
-		else
-			key = i
-		end
+		if key then key = key:lower() else key = i end
 
 		key = translate[key] or translate[i] or key
 
@@ -84,11 +73,7 @@ function META:Initialize()
 	local function char_input(i)
 		local key = input_GetKeyName(i)
 
-		if key then
-			key = key:lower()
-		else
-			key = i
-		end
+		if key then key = key:lower() else key = i end
 
 		key = translate[key] or key
 
@@ -113,12 +98,11 @@ function META:Initialize()
 		end
 
 		if char then
-			if input_IsShiftDown() then
-				char = utf8.upper(char)
-			end
+			if input_IsShiftDown() then char = utf8.upper(char) end
 
 			if utf8.length(char) == 1 then
 				if input.debug then print("char:", char) end
+
 				call(self, "OnCharInput", char)
 			end
 		end
@@ -128,7 +112,6 @@ function META:Initialize()
 
 	local function mouse_input(btn, press)
 		btn = translate[btn] or btn
-
 		call(self, "OnMouseInput", btn, press, gui_MousePos())
 	end
 
@@ -140,22 +123,21 @@ function META:Initialize()
 			if input_IsKeyDown(i) then
 				if not keys[i] then
 					key_input(i, true)
-					--char_input(i)
-					--char_input_timer = system.GetElapsedTime() + 0.5
+				--char_input(i)
+				--char_input_timer = system.GetElapsedTime() + 0.5
 				end
+
 				keys[i] = true
---[[
+			--[[
 				if system.GetElapsedTime() > char_input_timer then
 					if next_char_input < system.GetElapsedTime() then
 						char_input(i)
 						next_char_input = system.GetElapsedTime() + 0.05
 					end
 				end
-]]
-			else
-				if keys[i] then
-					key_input(i, false)
-				end
+]] else
+				if keys[i] then key_input(i, false) end
+
 				keys[i] = false
 			end
 		end
@@ -165,11 +147,11 @@ function META:Initialize()
 				if not buttons[i] then
 					mouse_input(input_GetKeyName(i):lower(), true)
 				end
+
 				buttons[i] = true
 			else
-				if buttons[i] then
-					mouse_input(input_GetKeyName(i):lower(), false)
-				end
+				if buttons[i] then mouse_input(input_GetKeyName(i):lower(), false) end
+
 				buttons[i] = false
 			end
 		end
@@ -177,33 +159,27 @@ function META:Initialize()
 
 	gmod.hook.Add("Think", "goluwa_keys", check_keys)
 	gmod.hook.Add("KeyPress", "goluwa_keys", check_keys) -- resposnive
-
 	local gmod_text_entry = NULL
 
 	event.AddListener("TextInputFocus", "gmod_text_input", function(pnl)
 		if not gmod_text_entry:IsValid() then
 			local pnl = gmod.vgui.Create("EditablePanel")
 			gmod_text_entry = pnl
-
 			local text_entry = pnl:Add("TextEntry")
-
 			pnl:MakePopup()
 			text_entry:RequestFocus()
-			text_entry:SetSize(0,0)
+			text_entry:SetSize(0, 0)
 			text_entry.Paint = function() end
 			text_entry.OnTextChanged = function()
 				call(self, "OnCharInput", text_entry:GetText())
 				text_entry:SetText("")
 			end
-
 			pnl.text_entry = text_entry
 		end
 	end)
 
 	event.AddListener("TextInputUnfocus", "gmod_text_input", function(pnl)
-		if gmod_text_entry:IsValid() then
-			gmod_text_entry:Remove()
-		end
+		if gmod_text_entry:IsValid() then gmod_text_entry:Remove() end
 	end)
 
 	return self
@@ -212,14 +188,14 @@ end
 function META:OnRemove()
 	event.RemoveListener("TextInputFocus", "gmod_text_input")
 	event.RemoveListener("TextInputUnfocus", "gmod_text_input")
-
 	gmod.hook.Remove("Think", "goluwa_keys")
 	gmod.hook.Remove("KeyPress", "goluwa_keys")
 end
 
-
 function META:Maximize() end
+
 function META:Minimize() end
+
 function META:Restore() end
 
 function META:SetCursor(mode)
@@ -231,7 +207,6 @@ function META:SetCursor(mode)
 		gui.EnableScreenClicker(true)
 	end
 end
-
 
 function META:GetMousePosition()
 	return Vec2(gui_MousePos())

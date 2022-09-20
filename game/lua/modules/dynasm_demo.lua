@@ -1,56 +1,53 @@
-io.stdout:setvbuf'no'
-io.stderr:setvbuf'no'
-
-local dynasm = require'dynasm'
-local dasm = require'dasm'
-
+io.stdout:setvbuf("no")
+io.stderr:setvbuf("no")
+local dynasm = require("dynasm")
+local dasm = require("dasm")
 --set the globals returned from the dasl module
-
 local demo, demos, actions, externnames, globalnames, DASM_MAXSECTION, DASM_MAXGLOBAL
+
 local function set_vars(t)
 	demo, demos, actions, externnames, globalnames, DASM_MAXSECTION, DASM_MAXGLOBAL = unpack(t)
 end
 
 --load dasl files via loadfile() and via require().
-
 --load and run the dasl file from the current directory.
 local function load_via_loadfile()
-	set_vars(assert(dynasm.loadfile'dynasm_demo_x86.dasl')())
+	set_vars(assert(dynasm.loadfile("dynasm_demo_x86.dasl"))())
 end
 
 --load the same file via require() from package.path.
 local function load_via_require()
-	set_vars(require'dynasm_demo_x86')
+	set_vars(require("dynasm_demo_x86"))
 end
 
 --helpers
+local function hr()
+	return ("-"):rep(60)
+end
 
-local function hr() return ('-'):rep(60) end
-local function printf(...) print(string.format(...)) end
+local function printf(...)
+	print(string.format(...))
+end
 
 --assemble a demo from the dasl file, dump it and run it
 local function run_demo(name)
 	collectgarbage() --clean up from the last session
-print(name)
+	print(name)
 	local gencode = demo[name]
-
 	--make a new dasm state
 	local state, globals = dasm.new(actions, externnames, DASM_MAXSECTION, DASM_MAXGLOBAL)
-
 	--generate the code and get the test function for that code
 	local runcode = gencode(state)
-
 	--build the code
 	local buf, size = state:build()
-
 	--show code and size
-	printf('%-16s %-10s %s', 'code address', '', tostring(buf))
-	printf('%-16s %-10d %s', 'code size', size, 'bytes')
+	printf("%-16s %-10s %s", "code address", "", tostring(buf))
+	printf("%-16s %-10d %s", "code size", size, "bytes")
 
 	--show the labels from this code
 	for i = 0, #globalnames do --from .globalnames directive
 		if globals[i] ~= nil then
-			printf('%-16s %-10s %s', 'global', globalnames[i], globals[i])
+			printf("%-16s %-10s %s", "global", globalnames[i], globals[i])
 		end
 	end
 
@@ -59,14 +56,12 @@ print(name)
 	dasm.dump(buf, size)
 
 	--run the code
-	if runcode then
-		runcode(buf)
-	end
+	if runcode then runcode(buf) end
 end
 
 --run all demos
 local function run_all_demos()
-	for i,name in ipairs(demos) do
+	for i, name in ipairs(demos) do
 		print()
 		print(name)
 		print(hr())
@@ -89,17 +84,17 @@ end
 
 return actions
 ]]
-	local ffi = require'ffi'
+	local ffi = require("ffi")
 	local actions = chunk()
 	print()
-	print('loadstring test: actionlist for `mov ax, bx`:')
+	print("loadstring test: actionlist for `mov ax, bx`:")
 	print(hr())
 	print(string.byte(ffi.string(actions, ffi.sizeof(actions)), 1, ffi.sizeof(actions)))
 end
 
 local function test_translate_tostring()
 	print()
-	print'translate_tostring test:'
+	print("translate_tostring test:")
 	print(hr())
 	local asm = [[
 

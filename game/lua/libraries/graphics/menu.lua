@@ -1,10 +1,10 @@
 local menu = {}
-
 menu.panel = menu.panel or NULL
 
 do -- open close
 	function menu.Open()
 		if menu.visible then return end
+
 		window.SetMouseTrapped(false)
 		input.disable_focus = 0
 		event.Call("ShowMenu", true)
@@ -13,6 +13,7 @@ do -- open close
 
 	function menu.Close()
 		if not menu.visible then return end
+
 		window.SetMouseTrapped(true)
 		input.disable_focus = 0
 		event.Call("ShowMenu", false)
@@ -24,11 +25,7 @@ do -- open close
 	end
 
 	function menu.Toggle()
-		if menu.visible then
-			menu.Close()
-		else
-			menu.Open()
-		end
+		if menu.visible then menu.Close() else menu.Open() end
 	end
 
 	input.Bind("escape", "toggle_menu", function()

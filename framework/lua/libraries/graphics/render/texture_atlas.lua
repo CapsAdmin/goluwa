@@ -10,12 +10,7 @@ local function insert_rect(node, w, h)
 		end
 
 		if node.w - w > node.h - h then
-			node.left = {
-				x = node.x,
-				y = node.y,
-				w = w,
-				h = node.h
-			}
+			node.left = {x = node.x, y = node.y, w = w, h = node.h}
 			node.right = {
 				x = node.x + w,
 				y = node.y,
@@ -23,18 +18,8 @@ local function insert_rect(node, w, h)
 				h = node.h,
 			}
 		else
-			node.left = {
-				x = node.x,
-				y = node.y,
-				w = node.w,
-				h = h
-			}
-			node.right = {
-				x = node.x,
-				y = node.y + h,
-				w = node.w,
-				h = node.h - h
-			}
+			node.left = {x = node.x, y = node.y, w = node.w, h = h}
+			node.right = {x = node.x, y = node.y + h, w = node.w, h = node.h - h}
 		end
 
 		return insert_rect(node.left, w, h)
@@ -42,19 +27,21 @@ local function insert_rect(node, w, h)
 end
 
 local META = prototype.CreateTemplate("texture_atlas")
-
 META:GetSet("Padding", 1)
 
 function render.CreateTextureAtlas(page_width, page_height, filtering)
 	page_height = page_height or page_width
-	return prototype.CreateObject(META, {
-		dirty_textures = {},
-		pages = {},
-		textures = {},
-		width = page_width,
-		height = page_height,
-		filtering = filtering,
-	})
+	return prototype.CreateObject(
+		META,
+		{
+			dirty_textures = {},
+			pages = {},
+			textures = {},
+			width = page_width,
+			height = page_height,
+			filtering = filtering,
+		}
+	)
 end
 
 function META:FindFreePage(w, h)
@@ -63,9 +50,8 @@ function META:FindFreePage(w, h)
 
 	for _, page in ipairs(self.pages) do
 		local found = insert_rect(page.tree, w, h)
-		if found then
-			return page, found
-		end
+
+		if found then return page, found end
 	end
 
 	local tree = {x = 0, y = 0, w = self.width, h = self.height}
@@ -77,42 +63,41 @@ function META:FindFreePage(w, h)
 			textures = {},
 			tree = tree,
 		}
-
 		page.texture:SetMinFilter(self.filtering)
 		page.texture:SetMagFilter(self.filtering)
 		page.texture:SetMipMapLevels(1)
-
 		table.insert(self.pages, page)
-
 		return page, node
 	end
 end
 
-local function sort(a, b) return (a.w + a.h) > (b.w + b.h) end
+local function sort(a, b)
+	return (a.w + a.h) > (b.w + b.h)
+end
 
 function META:Build()
 	table.sort(self.dirty_textures, sort)
 
 	for _, data in ipairs(self.dirty_textures) do
-
 		local page, node = self:FindFreePage(data.w, data.h)
 
-		if not page then
-			error("texture " .. tostring(data) .. " is too big", 2)
-		end
+		if not page then error("texture " .. tostring(data) .. " is too big", 2) end
 
 		local x, y, w, h = node.x, node.y, node.w, node.h
-
 		data.page_x = x + self.Padding
 		data.page_y = y + self.Padding
 		data.page_w = w
 		data.page_h = h
 		data.page = page
-
-		data.page_uv = {x+self.Padding/2, y+self.Padding/2, w, h, page.texture:GetSize().x, page.texture:GetSize().y}
-
+		data.page_uv = {
+			x + self.Padding / 2,
+			y + self.Padding / 2,
+			w,
+			h,
+			page.texture:GetSize().x,
+			page.texture:GetSize().y,
+		}
 		page.textures[data] = data
-
 		page.dirty = true
 	end
 
@@ -124,15 +109,17 @@ function META:Build()
 
 			for _, data in pairs(page.textures) do
 				if data.buffer then
-					page.texture:Upload({
-						buffer = data.buffer,
-						x = data.page_x,
-						y = data.page_y,
-						width = data.w,
-						height = data.h,
-						flip_x = data.flip_x,
-						flip_y = data.flip_y,
-					})
+					page.texture:Upload(
+						{
+							buffer = data.buffer,
+							x = data.page_x,
+							y = data.page_y,
+							width = data.w,
+							height = data.h,
+							flip_x = data.flip_x,
+							flip_y = data.flip_y,
+						}
+					)
 				else
 					local data = data:Download()
 					data.x = data.page_x
@@ -157,12 +144,14 @@ function META:GetTextures()
 end
 
 function META:DebugDraw()
-	render2d.SetColor(1,1,1,1)
-	local x, y = 0,0
+	render2d.SetColor(1, 1, 1, 1)
+	local x, y = 0, 0
+
 	for _, page in ipairs(self.pages) do
 		render2d.SetTexture(page.texture)
-		render2d.DrawRect(x,y,page.texture:GetSize().x, page.texture:GetSize().y)
-		if x + page.texture:GetSize().x*2 > render.GetWidth() then
+		render2d.DrawRect(x, y, page.texture:GetSize().x, page.texture:GetSize().y)
+
+		if x + page.texture:GetSize().x * 2 > render.GetWidth() then
 			x = 0
 			y = y + page.texture:GetSize().y
 		else
@@ -172,38 +161,34 @@ function META:DebugDraw()
 end
 
 function META:Insert(id, data)
-	if id then
-		self.textures[id] = data
-	end
+	if id then self.textures[id] = data end
+
 	table.insert(self.dirty_textures, data)
 end
 
 function META:Draw(id, x, y, w, h)
 	local data = self.textures[id]
+
 	if data then
 		w = w or data.page_w
 		h = h or data.page_h
-
 		render2d.SetTexture(data.page.texture)
-
 		render2d.SetRectUV(unpack(data.page_uv))
-		render2d.DrawRect(x,y, w,h)
+		render2d.DrawRect(x, y, w, h)
 		render2d.SetRectUV()
 	end
 end
 
 function META:GetUV(id)
 	local data = self.textures[id]
-	if data then
-		return unpack(data.page_uv)
-	end
+
+	if data then return unpack(data.page_uv) end
 end
 
 function META:GetPageTexture(id)
 	local data = self.textures[id]
-	if data then
-		return data.page.texture
-	end
+
+	if data then return data.page.texture end
 end
 
 META:Register()

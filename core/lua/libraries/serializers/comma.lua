@@ -27,7 +27,11 @@ end
 
 serializer.AddLibrary(
 	"comma",
-	function(simple, ...) return comma.Encode(...) end,
-	function(simple, ...) return comma.Decode(...) end,
+	function(simple, ...)
+		return comma.Encode(...)
+	end,
+	function(simple, ...)
+		return comma.Decode(...)
+	end,
 	comma
 )

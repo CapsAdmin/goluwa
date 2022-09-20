@@ -4,15 +4,11 @@ do
 	end
 
 	local META = gine.GetMetaTable("CLuaEmitter")
-
 	gine.GetSet(META, "NoDraw", false)
 
-	function META:Add()
-
-	end
+	function META:Add() end
 end
 
 do
 	local META = gine.GetMetaTable("CLuaParticle")
-
 end

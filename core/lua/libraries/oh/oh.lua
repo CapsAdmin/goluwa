@@ -1,5 +1,4 @@
 local oh = {}
-
 oh.utf8_tokenizer_config = runfile("utf8_tokenizer_config.lua", oh)
 oh.CreateBaseTokenizer = runfile("base_tokenizer.lua", oh)
 oh.BaseParser = runfile("base_parser.lua", oh)
@@ -12,11 +11,10 @@ function oh.QuoteToken(str)
 end
 
 function oh.QuoteTokens(var)
-	if type(var) == "string" then
-		var = var:totable()
-	end
+	if type(var) == "string" then var = var:totable() end
 
 	local str = ""
+
 	for i, v in ipairs(var) do
 		str = str .. oh.QuoteToken(v)
 
@@ -26,6 +24,7 @@ function oh.QuoteTokens(var)
 			str = str .. ", "
 		end
 	end
+
 	return str
 end
 
@@ -43,12 +42,10 @@ function oh.FormatError(code, path, msg, start, stop)
 
 	local context_size = 100
 	local line_context_size = 1
-
 	local length = (stop - start) + 1
 	local before = code:sub(math.max(start - context_size, 0), stop - length)
 	local middle = code:sub(start, stop)
 	local after = code:sub(stop + 1, stop + context_size)
-
 	local context_before, line_before = before:match("(.+\n)(.*)")
 	local line_after, context_after = after:match("(.-)(\n.+)")
 
@@ -62,48 +59,56 @@ function oh.FormatError(code, path, msg, start, stop)
 		line_after = after
 
 		-- hmm
-		if context_after == line_after then
-			context_after = ""
-		end
+		if context_after == line_after then context_after = "" end
 	end
 
 	local current_line = code:sub(0, stop):count("\n") + 1
 	local char_number = #line_before + 1
-
 	line_before = tab2space(line_before)
 	line_after = tab2space(line_after)
 	middle = tab2space(middle)
-
 	local out = ""
-	out = out .. "error: " ..  msg:escape() .. "\n"
-	out = out .. " " .. ("-"):rep(line_number_length + 1) .. "> " .. path .. ":" .. current_line .. ":" .. char_number .. "\n"
+	out = out .. "error: " .. msg:escape() .. "\n"
+	out = out .. " " .. (
+			"-"
+		):rep(line_number_length + 1) .. "> " .. path .. ":" .. current_line .. ":" .. char_number .. "\n"
 
 	if line_context_size > 0 then
 		local lines = tab2space(context_before:sub(0, -2)):split("\n")
+
 		if #lines ~= 1 or lines[1] ~= "" then
 			for offset = math.max(#lines - line_context_size, 1), #lines do
 				local str = lines[offset]
 				--if str:trim() ~= "" then
-					offset = offset - 1
-					local line = current_line - (-offset + #lines)
-					if line ~= 0 then
-						out = out .. line2str(line) .. " | " .. str .. "\n"
-					end
-				--end
+				offset = offset - 1
+				local line = current_line - (-offset + #lines)
+
+				if line ~= 0 then
+					out = out .. line2str(line) .. " | " .. str .. "\n"
+				end
+			--end
 			end
 		end
 	end
 
 	out = out .. line2str(current_line) .. " | " .. line_before .. middle .. line_after .. "\n"
-	out = out .. (" "):rep(line_number_length) .. " |" .. (" "):rep(#line_before + 1) .. ("^"):rep(length) .. " " .. msg .. "\n"
+	out = out .. (
+			" "
+		):rep(line_number_length) .. " |" .. (
+			" "
+		):rep(#line_before + 1) .. (
+			"^"
+		):rep(length) .. " " .. msg .. "\n"
 
 	if line_context_size > 0 then
 		local lines = tab2space(context_after:sub(2)):split("\n")
+
 		if #lines ~= 1 or lines[1] ~= "" then
 			for offset = 1, #lines do
 				local str = lines[offset]
 				--if str:trim() ~= "" then
-					out = out .. line2str(current_line + offset) .. " | " .. str .. "\n"
+				out = out .. line2str(current_line + offset) .. " | " .. str .. "\n"
+
 				--end
 				if offset >= line_context_size then break end
 			end
@@ -111,14 +116,11 @@ function oh.FormatError(code, path, msg, start, stop)
 	end
 
 	out = out:trim()
-
 	return out
 end
 
 function oh.GetErrorsFormatted(error_table, code, path)
-	if not error_table[1] then
-		return ""
-	end
+	if not error_table[1] then return "" end
 
 	local errors = {}
 	local max_width = 0
@@ -140,7 +142,6 @@ function oh.GetErrorsFormatted(error_table, code, path)
 	end
 
 	str = str .. ("="):rep(max_width) .. "\n"
-
 	return str
 end
 

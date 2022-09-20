@@ -6,7 +6,6 @@ do
 	{
 		return fract(sin(dot(co.xy * _G.time, vec2(12.9898, 78.233))) * 43758.5453);
 	}]])
-
 	render.AddGlobalShaderCode([[
 	vec2 get_noise2(vec2 uv)
 	{
@@ -15,7 +14,6 @@ do
 
 		return vec2(x, y) * 2 - 1;
 	}]])
-
 	render.AddGlobalShaderCode([[
 	vec3 get_noise3(vec2 uv)
 	{
@@ -56,7 +54,6 @@ float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, 
 	return attenuation;
 }
 ]])
-
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_specular(vec3 L, vec3 V, vec3 N, float attenuation, vec3 light_color)
 {
@@ -89,22 +86,20 @@ vec3 gbuffer_compute_specular(vec3 L, vec3 V, vec3 N, float attenuation, vec3 li
 	return vec3(dotNL * D * F * vis) * atn * 10;
 }
 ]])
-
-
 local PASS = {}
-
 PASS.Position = -1
 PASS.Name = "temporal"
 PASS.Default = true
-
 PASS.Source = {}
-table.insert(PASS.Source, {
-	buffer = {
-		--max_size = Vec2() + 512,
-		size_divider = 1,
-		internal_format = "r11f_g11f_b10f",
-	},
-	source = [[
+table.insert(
+	PASS.Source,
+	{
+		buffer = {
+			--max_size = Vec2() + 512,
+			size_divider = 1,
+			internal_format = "r11f_g11f_b10f",
+		},
+		source = [[
 	out vec3 out_color;
 
 	void main()
@@ -131,40 +126,48 @@ table.insert(PASS.Source, {
 			out_color = mix(texture(self, uv).rgb, light, 0.25);
 		}
 	}
-]]
-})
-
-table.insert(PASS.Source, {
-	buffer = {
-		--max_size = Vec2() + 512,
-		internal_format = "r8",
-	},
-	source =  [[
+]],
+	}
+)
+table.insert(
+	PASS.Source,
+	{
+		buffer = {
+			--max_size = Vec2() + 512,
+			internal_format = "r8",
+		},
+		source = [[
 		out float out_color;
 
 		void main()
 		{
 			out_color = mix(texture(self, uv).r, g_ssao(uv), 0.6);
 		}
-	]]
-})
-
-table.insert(PASS.Source, {
-	buffer = {
-		--max_size = Vec2() + 512,
-		size_divider = 1,
-		internal_format = "r11f_g11f_b10f",
-	},
-	source = [[
+	]],
+	}
+)
+table.insert(
+	PASS.Source,
+	{
+		buffer = {
+			--max_size = Vec2() + 512,
+			size_divider = 1,
+			internal_format = "r11f_g11f_b10f",
+		},
+		source = [[
 		out vec3 out_color;
 
 		void main()
 		{
-			vec3 reflection = texture(tex_stage_]]..(#PASS.Source-1)..[[, uv).rgb;
+			vec3 reflection = texture(tex_stage_]] .. (
+				#PASS.Source - 1
+			) .. [[, uv).rgb;
 			float metallic = get_metallic(uv);
 			vec3 albedo = get_albedo(uv);
 
-			vec3 specular = get_specular(uv) * texture(tex_stage_]]..(#PASS.Source)..[[, uv).r;
+			vec3 specular = get_specular(uv) * texture(tex_stage_]] .. (
+				#PASS.Source
+			) .. [[, uv).r;
 			specular = mix(specular, reflection, pow(metallic, 0.5));
 
 			out_color = albedo * specular;
@@ -175,16 +178,16 @@ table.insert(PASS.Source, {
 
 			out_color = mix(texture(self, uv).rgb, out_color, 0.1);
 		}
-	]]
-})
-
+	]],
+	}
+)
 
 function PASS:Update()
 	local view = render3d.camera:GetViewport()
-	local t = system.GetElapsedTime()*100
+	local t = system.GetElapsedTime() * 100
 	local r = 0.01
-	view.x = math.sin(t)*r*math.random()
-	view.y = math.cos(t)*r*math.random()
+	view.x = math.sin(t) * r * math.random()
+	view.y = math.cos(t) * r * math.random()
 	render3d.camera:SetViewport(view)
 end
 

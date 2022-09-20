@@ -1,6 +1,7 @@
 commands.Add("status", function()
 	logn("hostname: ", network.GetHostname())
-	for k,v in pairs(clients.GetAll()) do
+
+	for k, v in pairs(clients.GetAll()) do
 		logn(v)
 	end
 end)

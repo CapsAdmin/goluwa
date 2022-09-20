@@ -1,10 +1,7 @@
 local ffi = require("ffi")
 local physics = ... or _G.physics
-
 local META = prototype.CreateTemplate("physics_body")
-
 META:StartStorable()
-
 META:IsSet("Movable", true)
 
 function META:SetMovable(b)
@@ -23,7 +20,6 @@ do -- matrix44
 	META:GetSet("Matrix", Matrix44())
 
 	function META:SetMatrix(m)
-
 		if self.Movable then
 			if check_body(self) then
 				physics.ode.BodySetPosition(self.body, physics.Vec3ToEngine(m:GetTranslation()))
@@ -73,7 +69,9 @@ do -- damping
 
 	function META:SetLinearDamping(damping)
 		self.LinearDamping = damping
+
 		if not check_body(self) then return end
+
 		physics.ode.BodySetLinearDamping(self.body, self:GetLinearDamping())
 	end
 
@@ -83,7 +81,9 @@ do -- damping
 
 	function META:SetAngularDamping(damping)
 		self.AngularDamping = damping
+
 		if not check_body(self) then return end
+
 		physics.ode.BodySetAngularDamping(self.body, self:GetAngularDamping())
 	end
 
@@ -102,12 +102,10 @@ do -- mass
 		if check_body(self) then
 			local info = ffi.new("struct dMass[1]")
 			physics.ode.BodyGetMass(self.body, info)
-
-			local x,y,z = physics.Vec3ToEngine(self:GetMassOrigin():Unpack())
+			local x, y, z = physics.Vec3ToEngine(self:GetMassOrigin():Unpack())
 			info[0].c[0] = x
 			info[0].c[1] = y
 			info[0].c[2] = z
-
 			physics.ode.BodySetMass(self.body, info)
 		end
 	end
@@ -118,15 +116,12 @@ do -- mass
 		if check_body(self) then
 			local info = ffi.new("struct dMass[1]")
 			physics.ode.BodyGetMass(self.body, info)
-
 			info[0].mass = self:GetMass()
-
 			physics.ode.BodySetMass(self.body, info)
 		end
 	end
 
 	--local out = ffi.new("float[1]")
-
 	function META:GetMass()
 		if check_body(self) then
 			local out = ffi.new("struct dMass[1]")
@@ -206,10 +201,9 @@ do -- init capsule options
 end
 
 do -- mesh init options
-
 	function META:InitPhysicsConvexHull(tbl)
 		wlog("NYI")
-		--[[if not physics.init then return end
+	--[[if not physics.init then return end
 
 		-- if you don't do this "tbl" will get garbage collected and physics.bullet will crash
 		-- because bullet says it does not make any copies of indices or vertices
@@ -224,12 +218,11 @@ do -- mesh init options
 		end
 
 
-		]]
-	end
+		]] end
 
 	function META:InitPhysicsConvexTriangles(tbl)
 		wlog("NYI")
-		--[[if not physics.init then return end
+	--[[if not physics.init then return end
 
 		-- if you don't do this "tbl" will get garbage collected and bullet will crash
 		-- because bullet says it does not make any copies of indices or vertices
@@ -251,30 +244,24 @@ do -- mesh init options
 			physics.StoreBodyPointer(self)
 		end
 
-		]]
-	end
+		]] end
 
 	function META:InitPhysicsTriangles(tbl)
 		if not physics.init then return end
 
 		self.mesh = tbl
-
 		local data = physics.ode.GeomTriMeshDataCreate()
-
 		physics.ode.GeomTriMeshDataBuildSingle(
 			data,
 			tbl.vertices.pointer,
 			tbl.vertices.stride,
 			tbl.vertices.count,
-
 			tbl.triangles.pointer,
 			tbl.triangles.count,
 			tbl.triangles.stride
 		)
-
 		physics.ode.GeomTriMeshDataPreprocess(data)
-
-		self.geom = physics.ode.CreateTriMesh(physics.hash_space, data, nil,nil,nil)
+		self.geom = physics.ode.CreateTriMesh(physics.hash_space, data, nil, nil, nil)
 
 		if self.Movable then
 			self.body = physics.ode.BodyCreate(physics.world)
@@ -285,22 +272,20 @@ do -- mesh init options
 	end
 end
 
-
 do -- generic get set
-
 	local function GET_SET(name, friendly, default)
 		local set_func = physics.ode and physics.ode["BodySet" .. name] or function() end
 		local get_func = physics.ode and physics.ode["BodyGet" .. name] or function() end
-
 		META:GetSet(friendly, default)
 
 		if type(default) == "number" then
 			META["Set" .. friendly] = function(self, var)
 				self[friendly] = var
+
 				if not check_body(self) then return end
+
 				set_func(self.body, var)
 			end
-
 			META["Get" .. friendly] = function(self)
 				if not check_body(self) then return self[friendly] end
 
@@ -309,12 +294,14 @@ do -- generic get set
 		elseif typex(default) == "vec3" then
 			META["Set" .. friendly] = function(self, var)
 				self[friendly] = var
+
 				if not check_body(self) then return end
+
 				set_func(self.body, physics.Vec3ToEngine(var.x, var.y, var.z))
 			end
-
 			META["Get" .. friendly] = function(self)
 				if not check_body(self) then return self[friendly] end
+
 				local out = get_func(self.body)
 				return Vec3(physics.Vec3FromEngine(out[0], out[1], out[2]))
 			end
@@ -332,16 +319,19 @@ function META:IsPhysicsValid()
 end
 
 function META:OnRemove()
-	for k,v in ipairs(physics.bodies) do
+	for k, v in ipairs(physics.bodies) do
 		if v == self then
 			table.remove(physics.bodies, k)
+
 			break
 		end
 	end
+
 	if check_body(self) then
 		physics.ode.BodyDestroy(self.body)
 		self.body = nil
 	end
+
 	if check_geom(self) then
 		physics.ode.GeomDestroy(self.geom)
 		self.geom = nil
@@ -352,8 +342,6 @@ META:Register()
 
 function physics.CreateBody()
 	local self = META:CreateObject()
-
 	table.insert(physics.bodies, self)
-
 	return self
 end

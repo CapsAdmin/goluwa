@@ -1,13 +1,9 @@
-
-
 commands.Add("profile_start=string|nil", function(how)
 	if not how or how == "st" or how == "s" then
 		profiler.EnableStatisticalProfiling(true)
 	end
 
-	if not how or how == "se" then
-		profiler.EnableSectionProfiling(true)
-	end
+	if not how or how == "se" then profiler.EnableSectionProfiling(true) end
 
 	if not how or how == "ab" or how == "a" then
 		profiler.EnableTraceAbortLogging(true)
@@ -19,9 +15,7 @@ commands.Add("profile_stop=string|nil", function(how)
 		profiler.EnableStatisticalProfiling(false)
 	end
 
-	if not how or how == "se" then
-		profiler.EnableSectionProfiling(false)
-	end
+	if not how or how == "se" then profiler.EnableSectionProfiling(false) end
 
 	if not how or how == "ab" or how == "a" then
 		profiler.EnableTraceAbortLogging(false)
@@ -37,13 +31,9 @@ commands.Add("profile_dump=nil,number|nil", function(how, min_samples)
 		profiler.PrintStatistical(min_samples)
 	end
 
-	if how == "" or how == "se" then
-		profiler.PrintSections()
-	end
+	if how == "" or how == "se" then profiler.PrintSections() end
 
-	if how == "" or how == "ab" or how == "a" then
-		profiler.PrintTraceAborts()
-	end
+	if how == "" or how == "ab" or how == "a" then profiler.PrintTraceAborts() end
 end)
 
 commands.Add("sprofile=number[5],string|nil,string|nil", function(time, file_filter, method)
@@ -66,10 +56,12 @@ end)
 commands.Add("zbprofile", function()
 	os.remove("./zerobrane_statistical.msgpack")
 	os.remove("./zerobrane_trace_aborts.msgpack")
-
 	local prf = require("zbprofiler")
 	prf.start()
-	event.Timer("zbprofiler_save", 3, 0, function() prf.save(0) end)
+
+	event.Timer("zbprofiler_save", 3, 0, function()
+		prf.save(0)
+	end)
 end)
 
 commands.Add("trace_abort", function()
@@ -103,20 +95,25 @@ do
 end
 
 if RELOAD then
-
 	profiler.ToggleStatistical()
+
 	for i = 1, 1 do
 		steam.UnmountSourceGame("gmod")
 		steam.MountSourceGame("gmod")
 	end
+
 	profiler.ToggleStatistical()
 
-	do return end
-
-	I""
-	for i = 1, 100 do
-	local panel = gui.CreatePanel("frame")
-	panel:Remove()
+	do
+		return
 	end
-	I""
+
+	I("")
+
+	for i = 1, 100 do
+		local panel = gui.CreatePanel("frame")
+		panel:Remove()
+	end
+
+	I("")
 end

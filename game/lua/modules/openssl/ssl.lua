@@ -1,3 +1,2 @@
-local ctx = require"_openssl.ssl"
-
+local ctx = require("_openssl.ssl")
 return ctx

@@ -1,6 +1,5 @@
 local vk = desire("vulkan")
 local ffi = require("ffi")
-
 local META = {}
 META.__index = META
 
@@ -9,6 +8,7 @@ function META:SetImageLayout(image, aspect_mask, old_layout, new_layout)
 	local dst_mask = {}
 
 	if old_layout == "undefined" then
+
 	--	src_mask = {0}
 	elseif old_layout == "preinitialized" then
 		src_mask = {"host_write"}
@@ -53,12 +53,16 @@ function META:SetImageLayout(image, aspect_mask, old_layout, new_layout)
 		table.insert(dst_mask, "depth_stencil_attachment_read")
 		table.insert(dst_mask, "depth_stencil_attachment_write")
 	end
-]]
-	self.cmd:PipelineBarrier(
-		"top_of_pipe", "top_of_pipe", 0,
-		0, nil,
-		0, nil,
-		nil, {
+]] self.cmd:PipelineBarrier(
+		"top_of_pipe",
+		"top_of_pipe",
+		0,
+		0,
+		nil,
+		0,
+		nil,
+		nil,
+		{
 			{
 				srcAccessMask = src_mask,
 				dstAccessMask = dst_mask,
@@ -67,58 +71,59 @@ function META:SetImageLayout(image, aspect_mask, old_layout, new_layout)
 				image = image,
 				subresourceRange = {
 					aspectMask = aspect_mask,
-
 					levelCount = 1,
 					baseMipLevel = 0,
-
 					layerCount = 1,
-					baseLayerLevel = 0
+					baseLayerLevel = 0,
 				},
-			}
+			},
 		}
 	)
 end
 
 function META:CopyImage(src, dst, w, h, mip_level)
 	self.cmd:CopyImage(
-		src, "transfer_src_optimal",
-		dst, "transfer_dst_optimal",
-		nil, {
+		src,
+		"transfer_src_optimal",
+		dst,
+		"transfer_dst_optimal",
+		nil,
+		{
 			{
 				extent = {w, h, 1},
-
 				srcSubresource = {
 					aspectMask = "color",
 					baseArrayLayer = 0,
 					mipLevel = 0,
 					layerCount = 1,
 				},
-				srcOffset = { 0, 0, 0 },
-
+				srcOffset = {0, 0, 0},
 				dstSubresource = {
 					aspectMask = "color",
 					baseArrayLayer = 0,
 					mipLevel = mip_level,
 					layerCount = 1,
 				},
-				dstOffset = { 0, 0, 0 },
-			}
+				dstOffset = {0, 0, 0},
+			},
 		}
 	)
 end
 
 function META:Begin()
-	self.cmd:Begin({
-		flags = 0,
-		pInheritanceInfo = {
-			renderPass = nil,
-			subpass = 0,
-			framebuffer = nil,
-			offclusionQueryEnable = false,
-			queryFlags = 0,
-			pipelineStatistics = 0,
+	self.cmd:Begin(
+		{
+			flags = 0,
+			pInheritanceInfo = {
+				renderPass = nil,
+				subpass = 0,
+				framebuffer = nil,
+				offclusionQueryEnable = false,
+				queryFlags = 0,
+				pipelineStatistics = 0,
+			},
 		}
-	})
+	)
 end
 
 function META:End()
@@ -129,39 +134,31 @@ function META:Flush()
 	if not self.cmd then return end
 
 	render.device_queue:Submit(
-		nil, {
+		nil,
+		{
 			{
 				waitSemaphoreCount = 0,
 				pWaitSemaphores = nil,
 				pWaitDstStageMask = nil,
-
-				pCommandBuffers = {
-					self.cmd
-				},
-
+				pCommandBuffers = {self.cmd},
 				signalSemaphoreCount = 0,
-				pSignalSemaphores = nil
-			}
+				pSignalSemaphores = nil,
+			},
 		},
 		nil
 	)
-
 	render.device_queue:WaitIdle()
-
-	render.device:FreeCommandBuffers(
-		render.device_command_pool,
-		nil, {
-			self.cmd
-		}
-	)
+	render.device:FreeCommandBuffers(render.device_command_pool, nil, {self.cmd})
 end
 
 function render.CreateCommandBuffer()
 	local self = {}
-	self.cmd = render.device:AllocateCommandBuffers({
-		commandPool = render.device_command_pool,
-		level = "primary",
-		commandBufferCount = 1,
-	})
+	self.cmd = render.device:AllocateCommandBuffers(
+		{
+			commandPool = render.device_command_pool,
+			level = "primary",
+			commandBufferCount = 1,
+		}
+	)
 	return setmetatable(self, META)
 end

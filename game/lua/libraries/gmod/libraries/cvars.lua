@@ -12,9 +12,7 @@ function gine.env.GetConVar_Internal(name)
 		pvar = pvars.Setup(name, 0)
 	end
 
-	if pvar then
-		return gine.WrapObject(pvar, "ConVar")
-	end
+	if pvar then return gine.WrapObject(pvar, "ConVar") end
 end
 
 function gine.env.ConVarExists(name)
@@ -29,7 +27,9 @@ end
 
 function META:GetBool()
 	local val = self.__obj:Get()
+
 	if tonumber(val) then return tonumber(val) > 0 end
+
 	return not not val
 end
 

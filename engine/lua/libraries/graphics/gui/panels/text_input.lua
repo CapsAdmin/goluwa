@@ -1,15 +1,11 @@
 local gui = ... or _G.gui
-
 local META = prototype.CreateTemplate("text_input")
-
 META.Base = "text_edit"
-
 META:GetSet("HistoryPath")
 META:GetSet("Autocomplete")
 
 function META:Initialize()
 	META.BaseClass.Initialize(self)
-
 	self.history_i = 1
 end
 
@@ -18,18 +14,21 @@ function META:SetAutocomplete(str)
 
 	if not str then
 		self:RemoveEvent("PostDrawGUI")
-
 		return
 	end
 
 	self:AddEvent("PostDrawGUI")
-	self:CallOnVisibilityChanged(function(b)
-		if b then
-			self:AddEvent("PostDrawGUI")
-		else
-			self:RemoveEvent("PostDrawGUI")
-		end
-	end, "hide_autocomplete")
+
+	self:CallOnVisibilityChanged(
+		function(b)
+			if b then
+				self:AddEvent("PostDrawGUI")
+			else
+				self:RemoveEvent("PostDrawGUI")
+			end
+		end,
+		"hide_autocomplete"
+	)
 end
 
 function META:OnPostKeyInput(key, press)
@@ -38,7 +37,6 @@ function META:OnPostKeyInput(key, press)
 	local width = self:GetWidth()
 	self:SizeToText()
 	self:SetWidth(width)
-
 	self:OnHeightChanged()
 end
 
@@ -53,12 +51,13 @@ function META:OnPreKeyInput(key, press)
 		return
 	end
 
-	if self.Autocomplete and self.label.markup:GetSubPosFromPosition(self.label.markup:GetCaretPosition()) == #str+1 then
+	if
+		self.Autocomplete and
+		self.label.markup:GetSubPosFromPosition(self.label.markup:GetCaretPosition()) == #str + 1
+	then
 		local scroll = 0
 
-		if key == "tab" then
-			scroll = input.IsKeyDown("left_shift") and -1 or 1
-		end
+		if key == "tab" then scroll = input.IsKeyDown("left_shift") and -1 or 1 end
 
 		self.found_autocomplete = autocomplete.Query(self.Autocomplete, str, scroll)
 
@@ -75,10 +74,21 @@ function META:OnPreKeyInput(key, press)
 		if
 			str == history_last or
 			str == "" or
-			not str:find("\n") or
+			not str:find("\n")
+			or
 			(
-				(self.label.markup:GetSubPosFromPosition(self.label.markup:GetCaretPosition()) == (#str+1) and key == "down") or
-				(self.label.markup:GetSubPosFromPosition(self.label.markup:GetCaretPosition()) == 1 and key == "up")
+				(
+					self.label.markup:GetSubPosFromPosition(self.label.markup:GetCaretPosition()) == (
+						#str + 1
+					)
+					and
+					key == "down"
+				)
+				or
+				(
+					self.label.markup:GetSubPosFromPosition(self.label.markup:GetCaretPosition()) == 1 and
+					key == "up"
+				)
 			)
 		then
 			local browse = false
@@ -92,6 +102,7 @@ function META:OnPreKeyInput(key, press)
 			end
 
 			local found = self.history[self.history_i]
+
 			if browse and found then
 				self:SetText(found)
 				self:SetCaretPosition(Vec2(math.huge, math.huge))
@@ -116,9 +127,7 @@ function META:OnPreKeyInput(key, press)
 
 		local ret = self:OnFinish(str)
 
-		if ret ~= nil then
-			return ret
-		end
+		if ret ~= nil then return ret end
 
 		return
 	end
@@ -126,17 +135,11 @@ function META:OnPreKeyInput(key, press)
 	self:OnTextChanged(str)
 end
 
-function META:OnHeightChanged()
+function META:OnHeightChanged() end
 
-end
+function META:OnFinish() end
 
-function META:OnFinish()
-
-end
-
-function META:OnEscape()
-
-end
+function META:OnEscape() end
 
 function META:OnPostDrawGUI()
 	if self.found_autocomplete and #self.found_autocomplete > 0 then

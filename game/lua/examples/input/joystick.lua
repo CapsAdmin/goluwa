@@ -1,8 +1,7 @@
 function goluwa.PreDrawGUI()
 	local data = window.GetJoystickState(0)
-
 	gfx.SetFont()
-	render2d.SetColor(1,1,1,1)
+	render2d.SetColor(1, 1, 1, 1)
 
 	if data then
 		local x, y = 0, 0

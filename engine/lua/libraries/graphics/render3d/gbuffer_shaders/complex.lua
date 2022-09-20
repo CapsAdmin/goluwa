@@ -1,7 +1,5 @@
 local REFLECTIONS_ONLY = false
-
 runfile("lua/libraries/graphics/render3d/sky_shaders/atmosphere1.lua")
-
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_specular(vec3 L, vec3 V, vec3 N, float attenuation, vec3 light_color)
 {
@@ -37,19 +35,18 @@ vec3 gbuffer_compute_specular(vec3 L, vec3 V, vec3 N, float attenuation, vec3 li
 
 do
 	local PASS = {}
-
 	PASS.Position = 1
 	PASS.Name = "complex"
-
 	PASS.Source = {}
-
-	table.insert(PASS.Source, {
-		buffer = {
-			--max_size = Vec2() + 512,
-			size_divider = 1,
-			internal_format = "r11f_g11f_b10f",
-		},
-		source = [[
+	table.insert(
+		PASS.Source,
+		{
+			buffer = {
+				--max_size = Vec2() + 512,
+				size_divider = 1,
+				internal_format = "r11f_g11f_b10f",
+			},
+			source = [[
 		out vec3 out_color;
 
 		void main()
@@ -75,8 +72,9 @@ do
 				out_color = light;
 			}
 		}
-	]]
-	})
+	]],
+		}
+	)
 
 	if REFLECTIONS_ONLY then
 		render3d.AddGBufferShader(PASS)
@@ -85,19 +83,23 @@ do
 			RELOAD = nil
 			render3d.Initialize()
 		end
+
 		return
 	end
 
 	render3d.AddBilateralBlurPass(PASS, "pow(get_roughness(uv)*0.12, 1.5)", 0.98, "r11f_g11f_b10f", 1)
 	--, 0.001) -- depth testing is more accurate but much slower
-
-	table.insert(PASS.Source, {
-		source = [[
+	table.insert(
+		PASS.Source,
+		{
+			source = [[
 			out vec3 out_color;
 
 			void main()
 			{
-				vec3 reflection = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
+				vec3 reflection = texture(tex_stage_]] .. (
+					#PASS.Source
+				) .. [[, uv).rgb;
 				float metallic = get_metallic(uv);
 				vec3 albedo = get_albedo(uv);
 
@@ -109,9 +111,9 @@ do
 
 				out_color *= 3;
 			}
-		]]
-	})
-
+		]],
+		}
+	)
 	render3d.AddGBufferShader(PASS)
 end
 

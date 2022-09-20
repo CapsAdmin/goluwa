@@ -1,7 +1,6 @@
 local sck
 
 function sockets.SendUDPData(ip, port, str)
-
 	sck = sck or sockets.core.luasocket.udp()
 
 	if not str and type(port) == "string" then

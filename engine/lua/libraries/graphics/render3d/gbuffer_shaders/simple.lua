@@ -8,8 +8,6 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 
 	return color*1.5;
 }]])
-
-
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 {
@@ -22,7 +20,6 @@ vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 	return color;
 }
 ]])
-
 render.AddGlobalShaderCode([[
 float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)
 {
@@ -33,7 +30,6 @@ float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, 
 	return pow(clamp(distance, 0, 1), 4);
 }
 ]])
-
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_specular(vec3 l, vec3 v, vec3 n, float attenuation, vec3 light_color)
 {
@@ -51,14 +47,13 @@ vec3 gbuffer_compute_specular(vec3 l, vec3 v, vec3 n, float attenuation, vec3 li
 
 	return (diffuseTerm + specularTerm) * attenuation * light_color;
 }]])
-
 local PASS = {}
-
 PASS.Name = "simple"
 PASS.Source = {}
-
-table.insert(PASS.Source, {
-	source =  [[
+table.insert(
+	PASS.Source,
+	{
+		source = [[
 		out vec3 out_color;
 
 		void main()
@@ -72,9 +67,9 @@ table.insert(PASS.Source, {
 			out_color = mix(albedo, env*albedo, metallic) * specular;
 			out_color += gbuffer_compute_sky(-get_camera_dir(uv).yzx, get_linearized_depth(uv));
 		}
-	]]
-})
-
+	]],
+	}
+)
 render3d.AddGBufferShader(PASS)
 
 if RELOAD then

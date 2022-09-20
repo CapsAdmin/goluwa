@@ -1,21 +1,19 @@
 -- used like <tag=[pi * rand()]>
-
 local expression = _G.expression or {}
-
-local lib =
-{
+local lib = {
 	PI = math.pi,
 	pi = math.pi,
 	rand = math.random,
 	random = math.random,
 	randomf = math.randomf,
 	abs = math.abs,
-	sgn = function (x)
+	sgn = function(x)
 		if x < 0 then return -1 end
-		if x > 0 then return  1 end
+
+		if x > 0 then return 1 end
+
 		return 0
 	end,
-
 	acos = math.acos,
 	asin = math.asin,
 	atan = math.atan,
@@ -34,22 +32,20 @@ local lib =
 	min = math.min,
 	rad = math.rad,
 	sin = math.sin,
-	sinc = function (x)
+	sinc = function(x)
 		if x == 0 then return 1 end
+
 		return math.sin(x) / x
 	end,
 	sinh = math.sinh,
 	sqrt = math.sqrt,
 	tanh = math.tanh,
 	tan = math.tan,
-
 	clamp = math.clamp,
 	pow = math.pow,
 	clock = os.clock,
 }
-
 local blacklist = {"repeat", "until", "function", "end"}
-
 local expressions = {}
 
 function expression.Compile(str, extra_lib)
@@ -63,19 +59,23 @@ function expression.Compile(str, extra_lib)
 
 	local env = {}
 
-	for k,v in pairs(lib) do env[k] = v end
-
-	if extra_lib then
-		for k,v in pairs(extra_lib) do env[k] = v end
+	for k, v in pairs(lib) do
+		env[k] = v
 	end
 
+	if extra_lib then for k, v in pairs(extra_lib) do
+		env[k] = v
+	end end
+
 	local t0 = system.GetElapsedTime()
-	env.t    = function () return system.GetElapsedTime() - t0 end
-	env.time = function () return system.GetElapsedTime() - t0 end
+	env.t = function()
+		return system.GetElapsedTime() - t0
+	end
+	env.time = function()
+		return system.GetElapsedTime() - t0
+	end
 	env.select = select
-
 	str = "local input = select(1, ...) return " .. str
-
 	local func, err = loadstring(str)
 
 	if func then

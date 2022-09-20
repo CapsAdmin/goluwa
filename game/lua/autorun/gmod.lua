@@ -8,17 +8,12 @@ local addons = {
 
 commands.Add("setup_pac3server_addons", function()
 	local git = system.GetCLICommand("git")
-
 	local gmod_path = steam.GetGamePath("GarrysMod")
 	assert(steam.GetGamePath("GarrysMod"), "could not find gmod install")
-
 	fs.CreateDirectory("pac3_server/addons/", true)
 	fs.Write("pac3_server/addon.json", "this is just to prevent goluwa from loading the addon")
-
 	local goluwa_addons = e.ROOT_FOLDER .. "pac3_server/addons/"
-
 	local gmod_addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
-
 	fs.CreateDirectory(gmod_addons, true)
 
 	for _, url in ipairs(addons) do
@@ -29,27 +24,24 @@ commands.Add("setup_pac3server_addons", function()
 		end
 
 		local ok, err = fs.link(goluwa_addons .. name, gmod_addons .. name, true)
-		if not ok then
-			llog("failed to link " ..name .. ": " .. err)
-		end
+
+		if not ok then llog("failed to link " .. name .. ": " .. err) end
 	end
 
 	local ok, err = fs.link(e.ROOT_FOLDER, gmod_addons .. "goluwa", true)
-	if not ok then
-		llog("failed to link goluwa: " .. err)
-	end
+
+	if not ok then llog("failed to link goluwa: " .. err) end
 end)
 
 commands.Add("setup_gmod_bridge", function()
 	local gmod_path = steam.GetGamePath("GarrysMod")
-
 	assert(gmod_path)
-
 	local gmod_dir = gmod_path .. "garrysmod/"
 	fs.RemoveRecursively(gmod_dir .. "backgrounds/")
 	fs.CreateDirectory(gmod_dir .. "addons/goluwa_bridge/lua/autorun/", true)
-
-	fs.Write(gmod_dir .. "addons/goluwa_bridge/lua/autorun/goluwa_bridge.lua", [[
+	fs.Write(
+		gmod_dir .. "addons/goluwa_bridge/lua/autorun/goluwa_bridge.lua",
+		[[
 file.Delete("goluwa_bridge.txt")
 local next_run = 0
 local last_time = 0
@@ -88,17 +80,24 @@ hook.Add("RenderScene", "goluwa_bridge", function()
 		end
 	end
 end)
-]])
-	logn("wrote script to ", gmod_dir .. "addons/goluwa_bridge/lua/autorun/goluwa_bridge.lua")
+]]
+	)
+	logn(
+		"wrote script to ",
+		gmod_dir .. "addons/goluwa_bridge/lua/autorun/goluwa_bridge.lua"
+	)
 end)
 
 if gmod_path then
 	event.AddListener("LuaFileChanged", "gmod_bridge", function(info)
-		if info.flags.close_write and vfs.IsFile(gmod_path .. "garrysmod/addons/goluwa_bridge/lua/autorun/goluwa_bridge.lua") then
+		if
+			info.flags.close_write and
+			vfs.IsFile(gmod_path .. "garrysmod/addons/goluwa_bridge/lua/autorun/goluwa_bridge.lua")
+		then
 			local content = vfs.Read(info.path)
 			local f = io.open(gmod_path .. "garrysmod/data/goluwa_bridge.txt", "a")
-
 			local path = info.path:lower()
+
 			if path:find("/server/", 1, true) or path:find("/sv_", 1, true) then
 				f:write("if CLIENT then return end ")
 			elseif path:find("/client/", 1, true) or path:find("/cl_", 1, true) then
@@ -106,6 +105,7 @@ if gmod_path then
 			end
 
 			local current = vfs.Read(gmod_path .. "garrysmod/data/goluwa_bridge.txt")
+
 			if current and current:find(content .. "¥$£@DELIMITER@£$¥", nil, true) then
 				return
 			end
@@ -117,72 +117,69 @@ if gmod_path then
 	end)
 end
 
-
-	local repos = {
-		{url = "git@github.com:EgrOnWire/ACF.git"},
-		{url = "git@github.com:CFC-Servers/fin2.git"},
-		{url = "git@github.com:danielga/xcomms.git"},
-		{url = "git@github.com:Metastruct/glua_utilities.git", npm = true},
-		{url = "git@github.com:Metastruct/outfitter.git", branch = "dev"},
-		{url = "git@github.com:Metastruct/RxLua.git"},
-		{url = "git@github.com:Metastruct/Sit-Anywhere.git"},
-		{url = "git@github.com:Metastruct/translation.git"},
-		{url = "git@github.com:Metastruct/weapon_physcannon2.git"},
-		{url = "git@github.com:Metastruct/wire.git"},
-		{url = "git@gitlab.com:metastruct/aowl.git"},
-		{url = "git@gitlab.com:metastruct/fast_addons.git"},
-		{url = "git@gitlab.com:metastruct/metastruct.git"},
-		{url = "git@gitlab.com:metastruct/MetaWorks-metastruct.git"},
-		{url = "git@gitlab.com:metastruct/modules.git"},
-		{url = "git@gitlab.com:metastruct/qbox.git"},
-		{url = "git@gitlab.com:metastruct/srvaddons.git", location = "*/*"},
-		{url = "git@gitlab.threekelv.in:metastruct-security/msascripts.git"},
-		{url = "git@gitlab.threekelv.in:metastruct-security/msasurfacenet.git"},
-		{url = "git@gitlab.threekelv.in:metastruct-security/msavehicles.git"},
-		{url = "git@gitlab.threekelv.in:PotcFdk/MetaWorks.git"},
-		{url = "git@github.com:CapsAdmin/customisable_thirdperson.git"},
-		{url = "git@github.com:CapsAdmin/pac3.git"},
-		{url = "git@github.com:danielga/halloween.git"},
-		{url = "git@github.com:danielga/luachip.git"},
-		{url = "git@github.com:Earu/Hoverbike.git"},
-		{url = "git@github.com:edunad/sprayurl.git"},
-		{url = "git@github.com:Falcqn/makespherical.git"},
-		{url = "git@github.com:Metastruct/advduplicator.git"},
-		{url = "git@github.com:Metastruct/copas.git"},
-		{url = "git@github.com:Metastruct/enum_loader.git"},
-		{url = "git@github.com:Metastruct/eventsystem.git"},
-		{url = "git@github.com:Metastruct/fishingmod.git"},
-		{url = "git@github.com:Metastruct/gcompute.git"},
-		{url = "git@github.com:Metastruct/gm-mediaplayer.git"},
-		{url = "git@github.com:Metastruct/gmod-csweapons.git"},
-		{url = "git@github.com:Metastruct/improved-stacker.git"},
-		{url = "git@github.com:Metastruct/luadev.git"},
-		{url = "git@github.com:Metastruct/mgn.git"},
-		{url = "git@github.com:Metastruct/moonscript.git"},
-		{url = "git@github.com:Metastruct/NeedMoreLegs.git"},
-		{url = "git@github.com:Metastruct/playablepiano.git"},
-		{url = "git@github.com:Metastruct/simfphys_armed.git"},
-		{url = "git@github.com:Metastruct/simfphys_base.git"},
-		{url = "git@github.com:notcake/gcodec.git"},
-		{url = "git@github.com:notcake/glib.git"},
-		{url = "git@github.com:notcake/gooey.git"},
-		{url = "git@github.com:notcake/gvote.git"},
-		{url = "git@github.com:notcake/quicktool.git"},
-		{url = "git@github.com:notcake/vfs.git"},
-		{url = "git@github.com:PotcFdk/AntEater.git"},
-		{url = "git@github.com:PotcFdk/PlyLab.git"},
-		{url = "git@github.com:Python1320/gmod_vstruct.git", submodule = true},
-		{url = "git@github.com:thegrb93/StarfallEx.git"},
-		{url = "git@github.com:wiox/gmod-keypad.git"},
-		{url = "git@github.com:wiremod/advdupe2.git"},
-	}
+local repos = {
+	{url = "git@github.com:EgrOnWire/ACF.git"},
+	{url = "git@github.com:CFC-Servers/fin2.git"},
+	{url = "git@github.com:danielga/xcomms.git"},
+	{url = "git@github.com:Metastruct/glua_utilities.git", npm = true},
+	{url = "git@github.com:Metastruct/outfitter.git", branch = "dev"},
+	{url = "git@github.com:Metastruct/RxLua.git"},
+	{url = "git@github.com:Metastruct/Sit-Anywhere.git"},
+	{url = "git@github.com:Metastruct/translation.git"},
+	{url = "git@github.com:Metastruct/weapon_physcannon2.git"},
+	{url = "git@github.com:Metastruct/wire.git"},
+	{url = "git@gitlab.com:metastruct/aowl.git"},
+	{url = "git@gitlab.com:metastruct/fast_addons.git"},
+	{url = "git@gitlab.com:metastruct/metastruct.git"},
+	{url = "git@gitlab.com:metastruct/MetaWorks-metastruct.git"},
+	{url = "git@gitlab.com:metastruct/modules.git"},
+	{url = "git@gitlab.com:metastruct/qbox.git"},
+	{url = "git@gitlab.com:metastruct/srvaddons.git", location = "*/*"},
+	{url = "git@gitlab.threekelv.in:metastruct-security/msascripts.git"},
+	{url = "git@gitlab.threekelv.in:metastruct-security/msasurfacenet.git"},
+	{url = "git@gitlab.threekelv.in:metastruct-security/msavehicles.git"},
+	{url = "git@gitlab.threekelv.in:PotcFdk/MetaWorks.git"},
+	{url = "git@github.com:CapsAdmin/customisable_thirdperson.git"},
+	{url = "git@github.com:CapsAdmin/pac3.git"},
+	{url = "git@github.com:danielga/halloween.git"},
+	{url = "git@github.com:danielga/luachip.git"},
+	{url = "git@github.com:Earu/Hoverbike.git"},
+	{url = "git@github.com:edunad/sprayurl.git"},
+	{url = "git@github.com:Falcqn/makespherical.git"},
+	{url = "git@github.com:Metastruct/advduplicator.git"},
+	{url = "git@github.com:Metastruct/copas.git"},
+	{url = "git@github.com:Metastruct/enum_loader.git"},
+	{url = "git@github.com:Metastruct/eventsystem.git"},
+	{url = "git@github.com:Metastruct/fishingmod.git"},
+	{url = "git@github.com:Metastruct/gcompute.git"},
+	{url = "git@github.com:Metastruct/gm-mediaplayer.git"},
+	{url = "git@github.com:Metastruct/gmod-csweapons.git"},
+	{url = "git@github.com:Metastruct/improved-stacker.git"},
+	{url = "git@github.com:Metastruct/luadev.git"},
+	{url = "git@github.com:Metastruct/mgn.git"},
+	{url = "git@github.com:Metastruct/moonscript.git"},
+	{url = "git@github.com:Metastruct/NeedMoreLegs.git"},
+	{url = "git@github.com:Metastruct/playablepiano.git"},
+	{url = "git@github.com:Metastruct/simfphys_armed.git"},
+	{url = "git@github.com:Metastruct/simfphys_base.git"},
+	{url = "git@github.com:notcake/gcodec.git"},
+	{url = "git@github.com:notcake/glib.git"},
+	{url = "git@github.com:notcake/gooey.git"},
+	{url = "git@github.com:notcake/gvote.git"},
+	{url = "git@github.com:notcake/quicktool.git"},
+	{url = "git@github.com:notcake/vfs.git"},
+	{url = "git@github.com:PotcFdk/AntEater.git"},
+	{url = "git@github.com:PotcFdk/PlyLab.git"},
+	{url = "git@github.com:Python1320/gmod_vstruct.git", submodule = true},
+	{url = "git@github.com:thegrb93/StarfallEx.git"},
+	{url = "git@github.com:wiox/gmod-keypad.git"},
+	{url = "git@github.com:wiremod/advdupe2.git"},
+}
 
 commands.Add("setup_metastruct_addons", function()
 	local git = system.GetCLICommand("git")
 	local npm = system.GetCLICommand("npm")
-
 	fs.CreateDirectory("metastruct_addons")
-
 	fs.PushWorkingDirectory("metastruct_addons")
 	fs.RemoveRecursively("addons")
 	fs.CreateDirectory("addons/merged", true)
@@ -202,30 +199,26 @@ commands.Add("setup_metastruct_addons", function()
 
 		fs.PushWorkingDirectory(name)
 
-		if repo.branch then
-			git.checkout(repo.branch)
-		end
+		if repo.branch then git.checkout(repo.branch) end
 
 		if repo.submodule then
 			git.submodule("init")
 			git.submodule("update")
 		end
 
-		if repo.npm then
-			npm.install()
-		end
+		if repo.npm then npm.install() end
 
 		local location = repo.location or "*"
 
-		if repo.npm then
-			location = "dist/*"
-		end
+		if repo.npm then location = "dist/*" end
 
 		for _, path in ipairs(fs.get_files_recursive(location)) do
 			fs.CreateDirectory(path:match("(.+)/"), true)
 			fs.link(path, "../addons/merged/")
 		end
+
 		fs.PopWorkingDirectory()
 	end
+
 	fs.PopWorkingDirectory()
 end)

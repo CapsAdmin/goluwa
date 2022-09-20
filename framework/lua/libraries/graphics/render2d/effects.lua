@@ -4,8 +4,10 @@ function render2d.EnableEffects(b)
 	if b then
 		local fb = render.CreateFrameBuffer()
 		fb:SetTexture(1, render.CreateBlankTexture(render.GetScreenSize()))
-		fb:SetTexture("depth_stencil", {internal_format = "depth_stencil", size = render.GetScreenSize()})
-
+		fb:SetTexture(
+			"depth_stencil",
+			{internal_format = "depth_stencil", size = render.GetScreenSize()}
+		)
 		render2d.framebuffer = fb
 	elseif render2d.framebuffer then
 		render2d.framebuffer = nil
@@ -16,7 +18,6 @@ render2d.effects = {}
 
 function render2d.AddEffect(name, pos, ...)
 	render2d.RemoveEffect(name)
-
 	table.insert(render2d.effects, {name = name, pos = pos, args = {...}})
 
 	table.sort(render2d.effects, function(a, b)
@@ -26,9 +27,7 @@ end
 
 function render2d.RemoveEffect(name)
 	for i, info in ipairs(render2d.effects) do
-		if info.name == name then
-			table.remove(render2d.effects, i)
-		end
+		if info.name == name then table.remove(render2d.effects, i) end
 	end
 
 	table.sort(render2d.effects, function(a, b)
@@ -37,9 +36,7 @@ function render2d.RemoveEffect(name)
 end
 
 function render2d.Start()
-	if render2d.framebuffer then
-		render2d.framebuffer:Begin()
-	end
+	if render2d.framebuffer then render2d.framebuffer:Begin() end
 end
 
 function render2d.End()
@@ -49,7 +46,6 @@ function render2d.End()
 		end
 
 		render2d.framebuffer:End()
-
 		render2d.framebuffer:Blit(render.GetScreenFrameBuffer())
 	end
 end

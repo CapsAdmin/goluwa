@@ -1,9 +1,8 @@
 local love = ... or _G.love
 local ENV = love._line_env
-
 love.math = love.math or {}
 
-for k,v in pairs(math) do
+for k, v in pairs(math) do
 	love.math[k] = v
 end
 
@@ -41,7 +40,7 @@ do
 	do
 		local noise = require("noise")
 
-		function love.math.noise(x,y,w,h)
+		function love.math.noise(x, y, w, h)
 			if x and y and z and w then
 				math.randomseed(x)
 				return math.random(), noise.Simplex3D(y, z, w)
@@ -79,6 +78,7 @@ do
 	function RandomGenerator:random(min, max)
 		math.randomseed(self.seed)
 		local val
+
 		if min and max then
 			val = math.random(min, max)
 		elseif min and not max then
@@ -86,19 +86,16 @@ do
 		else
 			val = math.random()
 		end
+
 		math.randomseed(os.clock())
 		return val
 	end
 
-	function RandomGenerator:randomNormal()
-
-	end
+	function RandomGenerator:randomNormal() end
 
 	function love.math.newRandomGenerator()
 		local self = line.CreateObject("RandomGenerator")
-
 		self.seed = 0
-
 		return self
 	end
 
@@ -111,6 +108,7 @@ do
 	function love.math.newBezierCurve(...)
 		local self = line.CreateObject("BezierCurve")
 		local points
+
 		if ... and type(...) == "number" then
 			points = {...}
 		else
@@ -118,12 +116,12 @@ do
 		end
 
 		local polygons = {}
+
 		for i = 1, #points, 2 do
 			table.insert(polygons, Vec2(points[i + 0], points[i + 1]))
 		end
 
 		self.obj = math2d.CreateBezierCurve(polygons)
-
 		return self
 	end
 
@@ -134,14 +132,12 @@ do
 	function BezierCurve:rotate(phi, cx, cy)
 		cx = cx or 0
 		cy = cy or 0
-
 		self.obj:Rotate(phi, Vec2(cx, cy))
 	end
 
 	function BezierCurve:scale(s, cx, cy)
 		cx = cx or 0
 		cy = cy or 0
-
 		self.obj:Scale(s, Vec2(cx, cy))
 	end
 
@@ -199,22 +195,15 @@ end
 function love.math.isConvex(...)
 	local points
 
-	if type(...) == "number" then
-		points = {...}
-	else
-		points = ...
-	end
+	if type(...) == "number" then points = {...} else points = ... end
 
 	return math2d.IsCoordinatesConvex(points)
 end
 
 function love.math.triangulate(...)
 	local points
-	if type(...) == "number" then
-		points = {...}
-	else
-		points = ...
-	end
+
+	if type(...) == "number" then points = {...} else points = ... end
 
 	return math2d.TriangulateCoordinates(points)
 end

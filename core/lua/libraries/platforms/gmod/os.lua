@@ -6,16 +6,18 @@ local util_CRC = gmod.util.CRC
 local RealTime = gmod.RealTime
 local util_RelativePathToFull = gmod.util.RelativePathToFull
 local LocalPlayer = gmod.LocalPlayer
-
-local dprint = function(...) if DEBUG then gmod.print("[goluwa] fs: ", ...) end end
-
+local dprint = function(...)
+	if DEBUG then gmod.print("[goluwa] fs: ", ...) end
+end
 local os = ... or _G.os
 
 function os.getenv(var)
 	var = tostring(var):lower()
 
 	if var == "path" then
-		return (util_RelativePathToFull("lua/includes/init.lua"):gsub("\\", "/"):gsub("lua/includes/init.lua", ""))
+		return (
+			util_RelativePathToFull("lua/includes/init.lua"):gsub("\\", "/"):gsub("lua/includes/init.lua", "")
+		)
 	end
 
 	if var == "username" then
@@ -37,7 +39,6 @@ end
 
 function os.remove(path)
 	fs.uncache(path)
-
 	local path, where = GoluwaToGmodPath(path)
 
 	if file_Exists(path, where) then
@@ -51,10 +52,8 @@ end
 function os.rename(a, b)
 	fs.uncache(a)
 	fs.uncache(b)
-
 	local a, where_a = GoluwaToGmodPath(a)
 	local b, where_b = GoluwaToGmodPath(b)
-
 	dprint("os.rename: " .. a .. " >> " .. b)
 
 	if file_Exists(a, where_a) then
@@ -65,7 +64,6 @@ function os.rename(a, b)
 
 		dprint("file.Delete", a, where_a)
 		file_Delete(a, where_a)
-
 		dprint("file.Write", b, #str)
 		file_Write(b, str)
 		return true

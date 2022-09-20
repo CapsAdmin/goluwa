@@ -4,9 +4,9 @@ local file_Exists = gmod.file.Exists
 
 function loadstring(str, chunkname)
 	local var = CompileString(str, chunkname or "loadstring", false)
-	if type(var) == "string" then
-		return nil, var, 2
-	end
+
+	if type(var) == "string" then return nil, var, 2 end
+
 	return setfenv(var, getfenv(1))
 end
 
@@ -16,7 +16,6 @@ function loadfile(path)
 	end
 
 	local lua = file_Read(path, "LUA")
-
 	return env.loadstring(lua, path)
 end
 

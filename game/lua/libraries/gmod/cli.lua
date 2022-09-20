@@ -1,5 +1,4 @@
 -- golwua cli --gluacheck something.lua
-
 local metatables = {
 	"SWEP",
 	"SKIN",
@@ -14,12 +13,9 @@ local metatables = {
 
 local function get_luacheck_envrionment()
 	local globals --= serializer.ReadFile("luadata", "cache/luacheck")
-
 	if not globals then
 		globals = {"NULL"}
-
 		local done = {}
-
 		local cl_env = runfile("lua/libraries/gmod/cl_exported.lua")
 		local sv_env = runfile("lua/libraries/gmod/sv_exported.lua")
 
@@ -40,6 +36,7 @@ local function get_luacheck_envrionment()
 
 			for lib_name, functions in pairs(env.functions) do
 				globals[lib_name] = globals[lib_name] or {fields = {}}
+
 				for func_name in pairs(functions) do
 					globals[lib_name].fields[func_name] = {}
 				end
@@ -64,9 +61,11 @@ commands.Add("glua2lua=arg_line", function(str)
 
 		else
 			local glua, err = vfs.Read(path)
+
 			if glua then
 				local ok, lua = pcall(gine.PreprocessLua, glua, true)
 				collectgarbage()
+
 				if not ok then
 					logn(path, ": ", lua)
 					vfs.Write("data/last_glua2lua_error.lua", glua)
@@ -86,8 +85,10 @@ commands.Add("glua2lua=arg_line", function(str)
 						logn(path)
 						line = tonumber(line)
 						local lines = lua:split("\n")
+
 						for i = -5, 5 do
 							local str = lines[line + i] or ""
+
 							if i == 0 then
 								str = str .. " <<< " .. err
 								logf("%d:\t%s\n", line + i, str)
@@ -95,6 +96,7 @@ commands.Add("glua2lua=arg_line", function(str)
 								logf("%d:\t%s\n", line + i, str)
 							end
 						end
+
 						vfs.Write("data/last_glua2lua_error.lua", lua)
 					end
 				end
@@ -107,7 +109,6 @@ end)
 
 commands.Add("gluacheck=arg_line", function(str)
 	local paths = utility.CLIPathInputToTable(str, {"lua"})
-
 	local lua_strings = {}
 
 	for i, path in ipairs(paths) do
@@ -123,14 +124,16 @@ commands.Add("gluacheck=arg_line", function(str)
 	end
 
 	local luacheck = require("luacheck.init")
-
-	local data = luacheck.check_strings(lua_strings, {
-		max_line_length = false,
-		read_globals = get_luacheck_envrionment(),
-		module = true,
-		-- ignore = {"113", "143"}, -- ignore all global lookups
-		ignore = {"6..", "212", "213", "42.", "43."},
-	})
+	local data = luacheck.check_strings(
+		lua_strings,
+		{
+			max_line_length = false,
+			read_globals = get_luacheck_envrionment(),
+			module = true,
+			-- ignore = {"113", "143"}, -- ignore all global lookups
+			ignore = {"6..", "212", "213", "42.", "43."},
+		}
+	)
 
 	for i, path in ipairs(paths) do
 		for _, msg in ipairs(data[i]) do

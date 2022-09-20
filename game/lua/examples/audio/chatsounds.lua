@@ -1,5 +1,4 @@
 chatsounds.Initialize()
-
 chatsounds.Say([[
 	nice of the princess to invite us over for a picnic eh luigi
 	(cdi%130--1 cdi%50--1 cdi%180--1 cdi%115--1 cdi%170--1)*5
@@ -15,7 +14,9 @@ chatsounds.Say([[
 	the hotels check out the:choose(4, cdihm_mario) enclosed instruction book
 ]])
 
-do return end
+do
+	return
+end
 
 chatsounds.Say([[
 	cdi%100--5=0.25 cdi%125--5=0.25 cdi%150--5=0.25 cdi%165--5=0.25 cdi%175--5=0.25 cdi%165--5=0.25 cdi%150--5=0.25 cdi%125--5=0.25
@@ -32,7 +33,6 @@ chatsounds.Say([[
 	bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100
 	bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100
 ]])
-
 chatsounds.Say([[
 	what is the weirdest
 	what is%50 the weirdest%150
@@ -43,7 +43,6 @@ chatsounds.Say([[
 	if you need instructions on how to get through the hotels check out the enclosed instruction book
 	uh oh%50 uh oh%50 uh oh%50
 ]])
-
 chatsounds.Say([[
 	button:choose(2,buttons)%100=0.125
 	button:choose(2,buttons)%100=0.125

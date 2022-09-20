@@ -1,12 +1,8 @@
 local sockets = ... or _G.sockets
-
 local META = prototype.CreateTemplate("irc_client")
-
 META:GetSet("Nick", e.USERNAME:gsub("^(.)", string.upper) .. "Bot")
 META:GetSet("Users", {})
-
 -- https://github.com/msva/lua-irc/blob/master/src/irc/constants.lua
-
 local replies = {
 	-- Command responses
 	[001] = "RPL_WELCOME",
@@ -174,16 +170,13 @@ local replies = {
 	[492] = "ERR_NOSERVICEHOST",
 	-- guesses
 	[333] = "RPL_TOPICDATE", -- date the topic was set, in seconds since the epoch
-	[505] = "ERR_NOTREGISTERED" -- freenode blocking privmsg from unreged users
+	[505] = "ERR_NOTREGISTERED", -- freenode blocking privmsg from unreged users
 }
 
 function META:HandleMessage(line)
-	if line:startswith("PING :") then
-		self:Send(line:gsub("PING", "PONG"))
-	end
+	if line:startswith("PING :") then self:Send(line:gsub("PING", "PONG")) end
 
 	local name, id, target, chanmode, str = line:match(":(.-) (.-) (.-) (.-) :(.+)")
-
 	id = replies[tonumber(id)]
 
 	if name and id and target and chanmode then
@@ -196,30 +189,40 @@ function META:HandleMessage(line)
 					table.remove(self.queries, i)
 				end
 			end
+
 			return
 		end
-		--print(name, id, target, chanmode, str)
+	--print(name, id, target, chanmode, str)
 	else
 		local nick, username, ip, cmd, str = line:match(":(.-)!(.-)@(.-) (.-) (.+)")
 
 		if nick and username and ip and cmd and str then
 			if cmd == "PRIVMSG" then
 				local target, message = str:match("(.-) :(.+)")
+
 				if target == self:GetNick() then
 					self:OnPrivateMessage(message, nick, ip)
 				end
+
 				self:OnMessage(message, nick, ip)
 			elseif cmd == "JOIN" then
 				self.Users[nick] = ip or true
-				if nick == self:GetNick() then
-					self:Query("NAMES " .. str, "RPL_NAMREPLY", "RPL_ENDOFNAMES", function(users)
-						for i, user in ipairs(string.split(users, " ")) do
-							if user:startswith("@") then user = user:sub(2) end
-							self.Users[user] = self.Users[user] or true
-						end
 
-						self:OnReady()
-					end)
+				if nick == self:GetNick() then
+					self:Query(
+						"NAMES " .. str,
+						"RPL_NAMREPLY",
+						"RPL_ENDOFNAMES",
+						function(users)
+							for i, user in ipairs(string.split(users, " ")) do
+								if user:startswith("@") then user = user:sub(2) end
+
+								self.Users[user] = self.Users[user] or true
+							end
+
+							self:OnReady()
+						end
+					)
 				end
 
 				self:OnJoin(nick, ip)
@@ -240,20 +243,27 @@ function META:HandleMessage(line)
 			return
 		end
 	end
-
-	--print(line)
+--print(line)
 end
 
 function META:OnPrivateMessage(message, nick, ip) end
+
 function META:OnMessage(message, nick, ip) end
+
 function META:OnReady() end
+
 function META:OnJoin(nick) end
+
 function META:OnPart(nick) end
+
 function META:OnNickChanged(nick, new) end
 
 function META:Query(cmd, response, terminator, callback)
 	self:Send(cmd)
-	table.insert(self.queries, {response = response, terminator = terminator, callback = callback, lines = {}})
+	table.insert(
+		self.queries,
+		{response = response, terminator = terminator, callback = callback, lines = {}}
+	)
 end
 
 function META:SetNick(str)
@@ -271,18 +281,13 @@ function META:Connect(address, port)
 
 	do
 		local socket = sockets.TCPClient()
-
 		socket:Connect(address, port)
 		socket.socket:set_option("keepalive", true)
-
 		socket.OnReceiveChunk = function(s, chunk)
 			for _, line in ipairs(chunk:split("\n")) do
-				if self:OnReceive(line) ~= false then
-					self:HandleMessage(line)
-				end
+				if self:OnReceive(line) ~= false then self:HandleMessage(line) end
 			end
 		end
-
 		self.socket = socket
 	end
 
@@ -292,23 +297,16 @@ end
 
 function META:Send(line)
 	--logn("<< ", line)
-	if self.socket then
-		self.socket:Send(("%s\r\n"):format(line))
-	end
+	if self.socket then self.socket:Send(("%s\r\n"):format(line)) end
 end
 
-function META:OnReceive(line)
-	--logn(">> ", line)
+function META:OnReceive(line) --logn(">> ", line)
 end
 
 function META:__index2(key)
-	if key ==  key:upper() then
+	if key == key:upper() then
 		return function(s, line)
-			if line then
-				self:Send(key .. " " .. line)
-			else
-				self:Send(key)
-			end
+			if line then self:Send(key .. " " .. line) else self:Send(key) end
 		end
 	end
 end
@@ -322,8 +320,6 @@ META:Register()
 
 function sockets.CreateIRCClient()
 	local self = META:CreateObject()
-
 	self.queries = {}
-
 	return self
 end

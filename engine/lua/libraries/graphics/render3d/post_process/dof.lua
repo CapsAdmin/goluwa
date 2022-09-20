@@ -1,20 +1,18 @@
 local PASS = {}
-
 PASS.Name = FILE_NAME
 PASS.Default = false
 PASS.Position = 3
-
 PASS.Source = {}
-
 local FAST_BLUR = false
-
-table.insert(PASS.Source, {
-	buffer = {
-		--max_size = Vec2() + 512,
-		size_divider = 1,
-		internal_format = "r11f_g11f_b10f",
-	},
-	source = [[
+table.insert(
+	PASS.Source,
+	{
+		buffer = {
+			--max_size = Vec2() + 512,
+			size_divider = 1,
+			internal_format = "r11f_g11f_b10f",
+		},
+		source = [[
 	out vec3 out_color;
 
 	#define USE_MIPMAP
@@ -58,19 +56,23 @@ table.insert(PASS.Source, {
 
 		out_color = Bokeh(tex_mixer, uv, z, 1);
 	}
-]]
-})
-
-table.insert(PASS.Source, {
-	source = [[
+]],
+	}
+)
+table.insert(
+	PASS.Source,
+	{
+		source = [[
 		out vec3 out_color;
 
 		void main()
 		{
-			vec3 color = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
+			vec3 color = texture(tex_stage_]] .. (
+				#PASS.Source
+			) .. [[, uv).rgb;
 			out_color = pow(color, vec3(0.5));
 		}
-	]]
-})
-
+	]],
+	}
+)
 render3d.AddGBufferShader(PASS)

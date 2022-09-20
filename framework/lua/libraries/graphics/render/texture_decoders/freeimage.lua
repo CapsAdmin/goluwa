@@ -1,5 +1,4 @@
 local render = ... or _G.render
-
 local freeimage = desire("freeimage")
 
 if not freeimage then return end

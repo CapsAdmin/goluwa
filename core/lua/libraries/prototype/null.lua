@@ -2,7 +2,6 @@ local prototype = ... or _G.prototype
 
 do
 	local NULL = {}
-
 	NULL.Type = "null"
 	NULL.IsNull = true
 
@@ -23,11 +22,8 @@ do
 	end
 
 	function NULL:__index2(key)
-		if type(key) == "string" and key:sub(0, 2) == "Is" then
-			return FALSE
-		end
-
-		--error(("tried to index %q on a NULL value"):format(key), 2)
+		if type(key) == "string" and key:sub(0, 2) == "Is" then return FALSE end
+	--error(("tried to index %q on a NULL value"):format(key), 2)
 	end
 
 	prototype.Register(NULL)
@@ -38,9 +34,7 @@ function prototype.MakeNULL(tbl)
 	tbl.Type = "null"
 	setmetatable(tbl, prototype.GetRegistered("null"))
 
-	if prototype.created_objects then
-		prototype.created_objects[tbl] = nil
-	end
+	if prototype.created_objects then prototype.created_objects[tbl] = nil end
 end
 
-_G.NULL = setmetatable({Type  = "null", ClassName = "ClassName"}, prototype.GetRegistered("null"))
+_G.NULL = setmetatable({Type = "null", ClassName = "ClassName"}, prototype.GetRegistered("null"))

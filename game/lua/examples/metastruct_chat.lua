@@ -1,17 +1,14 @@
 local client = irc_socket or sockets.CreateIRCClient()
 client.debug = true
 client:SetNick(clients.GetLocalClient():GetNick() .. "_GoluwaClient")
-
 local players = {}
 
 function client:OnMessage(msg, nick)
 	if nick == client:GetNick() then return end
+
 	msg = msg:gsub("\15", "")
 	msg = msg:gsub("\3%d%d", "") -- color code
-
-	if nick:find("meta%d") then
-		nick, msg = msg:match("#%d (.-): (.+)")
-	end
+	if nick:find("meta%d") then nick, msg = msg:match("#%d (.-): (.+)") end
 
 	if not nick then return end
 
@@ -21,12 +18,10 @@ function client:OnMessage(msg, nick)
 		ply = clients.Create(nick)
 		ply:SetNick(nick)
 		players[nick] = ply
-
 		event.Call("ClientEntered", ply)
 	end
 
 	ply.last_said = system.GetElapsedTime()
-
 	chat.ClientSay(ply, msg)
 
 	for key, ply in pairs(players) do
@@ -39,7 +34,11 @@ end
 
 if not irc_socket then
 	client:Connect("threekelv.in")
-	event.Delay(0.5, function() client:Join("#metastruct") chatsounds.Initialize() end)
+
+	event.Delay(0.5, function()
+		client:Join("#metastruct")
+		chatsounds.Initialize()
+	end)
 end
 
 function goluwa.ClientChat(client, msg)

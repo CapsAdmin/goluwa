@@ -30,8 +30,9 @@ do
 	end
 
 	META:Register()
-
-	TEST = function() return META:CreateObject() end
+	TEST = function()
+		return META:CreateObject()
+	end
 end
 
 local obj = TEST()

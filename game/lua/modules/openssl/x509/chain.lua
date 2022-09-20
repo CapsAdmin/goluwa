@@ -1,3 +1,2 @@
-local chain = require"_openssl.x509.chain"
-
+local chain = require("_openssl.x509.chain")
 return chain

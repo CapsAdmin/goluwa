@@ -5,7 +5,6 @@ local data = {
 	words = {},
 	files = {},
 }
-
 local blacklist = {
 	"gmod/exported.lua",
 	"ffi/bullet.lua",
@@ -16,7 +15,6 @@ local blacklist = {
 	"icons.lua",
 	"capsadmin",
 }
-
 local blacklist_dir = {
 	"/modules",
 	"/capsdamin",
@@ -25,15 +23,12 @@ local blacklist_dir = {
 	"/build",
 	"/repo",
 }
-
 local words = {}
 local done = {}
 
 for _, path in ipairs(vfs.GetFilesRecursive("lua/", {".lua"}, nil, blacklist_dir)) do
-	for i,v in ipairs(blacklist) do
-		if path:find(v) then
-			goto continue
-		end
+	for i, v in ipairs(blacklist) do
+		if path:find(v) then goto continue end
 	end
 
 	if done[path] then goto continue end
@@ -63,13 +58,17 @@ end
 
 data.total_chars = data.total_chars - data.total_words
 
-table.sort(data.files, function(a, b) return a.lines > b.lines end)
+table.sort(data.files, function(a, b)
+	return a.lines > b.lines
+end)
 
 for word, count in pairs(words) do
 	table.insert(data.words, {word = word, count = count})
 end
 
-table.sort(data.words, function(a, b) return a.count > b.count end)
+table.sort(data.words, function(a, b)
+	return a.count > b.count
+end)
 
 for i = 50 + 1, #data.words do
 	data.words[i] = nil

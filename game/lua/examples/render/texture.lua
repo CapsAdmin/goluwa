@@ -1,9 +1,9 @@
 local tex = render.CreateTexture("2d")
-
 tex:SetPath("textures/greendog.png")
 
 local function blur_texture(dir)
-	tex:Shade([[
+	tex:Shade(
+		[[
 		//this will be our RGBA sum
 		vec4 sum = vec4(0.0);
 
@@ -33,23 +33,28 @@ local function blur_texture(dir)
 		sum += texture(self, vec2(uv.x + 4.0*blur*hstep, uv.y + 4.0*blur*vstep)) * 0.0162162162;
 
 		return sum;
-	]], {
-		radius = 1,
-		resolution = render.GetScreenSize(),
-		dir = dir,
-	})
+	]],
+		{
+			radius = 1,
+			resolution = render.GetScreenSize(),
+			dir = dir,
+		}
+	)
 end
 
-blur_texture(Vec2(0,5))
-blur_texture(Vec2(5,0))
-
+blur_texture(Vec2(0, 5))
+blur_texture(Vec2(5, 0))
 serializer.WriteFile("msgpack", "lol.wtf", tex:Download())
+
 function goluwa.PreDrawGUI()
 	render2d.SetTexture(tex)
 	render2d.SetColor(1, 1, 1, 1)
 	render2d.DrawRect(50, 50, 128, 128)
 end
-do return end
+
+do
+	return
+end
 
 local info = serializer.ReadFile("msgpack", "lol.wtf")
 info.flip_y = true
@@ -64,47 +69,68 @@ tex:Fill(function(x, y)
 	end
 end)
 --tex:Clear()
-]]
-
---[[tex:Upload({
+]] --[[tex:Upload({
 	x = 50,
 	y = 50,
 	buffer = image,
 	width = 8,
 	height = 8,
-})]]
-
-local d = ColorBytes(178, 179, 175)
+})]] local d = ColorBytes(178, 179, 175)
 local m = ColorBytes(203, 203, 202)
 local l = ColorBytes(226, 227, 225)
-
 local grad = render.CreateTexture("2d")
 grad:SetSize(Vec2(5, 5))
 --grad:SetMinFilter("nearest")
 grad:SetMagFilter("nearest")
-grad:Upload({
-	width = 5,
-	height = 5,
-	buffer = {
-		d, d, d, d, m,
-		d, d, d, m, m,
-		d, d, m, m, m,
-		d, m, m, m, l,
-		m, m, m, l, l,
-	},
-})
-
-local shader = render.CreateShader({
-	name = "test",
-	fragment = {
-		variables = {
-			cam_dir = {vec3 = function() return render3d.camera:GetAngles():GetForward() end},
-			tex = tex,
+grad:Upload(
+	{
+		width = 5,
+		height = 5,
+		buffer = {
+			d,
+			d,
+			d,
+			d,
+			m,
+			d,
+			d,
+			d,
+			m,
+			m,
+			d,
+			d,
+			m,
+			m,
+			m,
+			d,
+			m,
+			m,
+			m,
+			l,
+			m,
+			m,
+			m,
+			l,
+			l,
 		},
-		mesh_layout = {
-			{uv = "vec2"},
-		},
-		source = [[
+	}
+)
+local shader = render.CreateShader(
+	{
+		name = "test",
+		fragment = {
+			variables = {
+				cam_dir = {
+					vec3 = function()
+						return render3d.camera:GetAngles():GetForward()
+					end,
+				},
+				tex = tex,
+			},
+			mesh_layout = {
+				{uv = "vec2"},
+			},
+			source = [[
 			out highp vec4 frag_color;
 
 			void main()
@@ -115,27 +141,24 @@ local shader = render.CreateShader({
 				frag_color = tex_color;
 			}
 		]],
+		},
 	}
-})
+)
 
 function goluwa.PreDrawGUI()
 	--render2d.PushMatrix(0, 0, tex:GetSize():Unpack())
-		--render.SetShaderOverride(shader)
-		--render2d.rectangle:Draw(render2d.rectangle_indices)
-		--render.SetShaderOverride()
+	--render.SetShaderOverride(shader)
+	--render2d.rectangle:Draw(render2d.rectangle_indices)
+	--render.SetShaderOverride()
 	--render2d.PopMatrix()
-
 	gfx.SetFont()
 	gfx.DrawText("p", 64, 64)
-
-	--render2d.SetTexture(grad)
-	--render2d.SetColor(1,1,1,1)
-	--render2d.DrawRect(64,64,grad:GetSize().x*32,grad:GetSize().y*32)
-
-	--render2d.SetTexture(tex)
-	--render2d.DrawRect(0,0,tex:GetSize().x,tex:GetSize().y)
-
-	--render2d.SetTexture()
-	--render2d.SetColor(tex:GetPixelColor(gfx.GetMousePosition()):Unpack())
-	--render2d.DrawRect(50,50,50,50)
+--render2d.SetTexture(grad)
+--render2d.SetColor(1,1,1,1)
+--render2d.DrawRect(64,64,grad:GetSize().x*32,grad:GetSize().y*32)
+--render2d.SetTexture(tex)
+--render2d.DrawRect(0,0,tex:GetSize().x,tex:GetSize().y)
+--render2d.SetTexture()
+--render2d.SetColor(tex:GetPixelColor(gfx.GetMousePosition()):Unpack())
+--render2d.DrawRect(50,50,50,50)
 end

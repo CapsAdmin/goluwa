@@ -1,12 +1,11 @@
 local ffi = require("ffi")
-local tbl = {1337,888,444,-1}
-
+local tbl = {1337, 888, 444, -1}
 local ptr = ffi.cast("void *", loadstring("return " .. string.format("%p", tbl) .. "ULL")())
-
 print("guessed location:")
 local guess = ffi.cast("double *", ptr) + 8
+
 for i = 1, #tbl do
-    print("\t" .. i .. ": " .. guess[i])
+	print("\t" .. i .. ": " .. guess[i])
 end
 
 ffi.cdef([[
@@ -29,15 +28,13 @@ ffi.cdef([[
         struct MRef freetop;		/* Hash part. */
       };
 ]])
-
 print("proper location:")
 local gctab = ffi.cast("struct GCTab *", ptr)
 local array = ffi.cast("double *", ffi.cast("struct GCTab *", ptr).array.gcptr32)
 
 for i = 1, gctab.asize - 1 do
-    print("\t" .. i .. ": " .. array[i])
-
-    array[i] = 1337
+	print("\t" .. i .. ": " .. array[i])
+	array[i] = 1337
 end
 
 table.print(tbl)

@@ -1,5 +1,4 @@
 local steam = ... or _G.steam
-
 local patch = {
 	{
 		https = true,
@@ -75,8 +74,8 @@ local patch = {
 						name = "scope",
 						default = "read_profile write_profile read_client write_client",
 					},
-				}
-			}
+				},
+			},
 		},
 	},
 	{
@@ -94,7 +93,7 @@ local patch = {
 						description = "access token",
 						name = "acess_token",
 					},
-				}
+				},
 			},
 			{
 				httpmethod = "GET",
@@ -132,18 +131,16 @@ local patch = {
 						description = "targets steam id",
 						name = "steamid_dst",
 					},
-				}
+				},
 			},
 		},
-	}
+	},
 }
-
 local type_translate = {
 	uint32 = "number",
 	uint64 = "stringnumber",
 	bool = "boolean",
 }
-
 pvars.Setup("steam_webapi_key", "")
 
 function steam.GetWebAPIKey()
@@ -151,9 +148,7 @@ function steam.GetWebAPIKey()
 end
 
 function steam.InitializeWebAPI(force)
-	if force then
-		steam.supported = nil
-	end
+	if force then steam.supported = nil end
 
 	if not steam.supported then
 		steam.supported = serializer.ReadFile("luadata", "steam_webapi_supported.lua") or {}
@@ -205,10 +200,7 @@ function steam.InitializeWebAPI(force)
 						for name, info in pairs(parameters) do
 							data[name] = args[info.i]
 						end
-					end]]
-
-					callback = callback or table.print
-
+					end]] callback = callback or table.print
 					data.key = steam.GetWebAPIKey()
 
 					-- check and convert parameters
@@ -220,6 +212,7 @@ function steam.InitializeWebAPI(force)
 
 						if t == "stringnumber" then
 							local num = tonumber(data[key])
+
 							if not num then
 								errorf("field %q is not a valid type (expected string got %s)", 2, key, type(data[key]))
 							end
@@ -235,63 +228,74 @@ function steam.InitializeWebAPI(force)
 							data[key] = num
 						end
 
-						if t == "boolean" then
-							data[key] = data[key] and "1" or "0"
-						end
+						if t == "boolean" then data[key] = data[key] and "1" or "0" end
 
 						if t == "string" and expected ~= "stringnumber" and key ~= "key" then
 							data[key] = crypto.Base64Encode(data[key])
 						end
 
-						if t ~= expected and not info.optional and (expected ~= "stringnumber" or t ~= "string") then
-							errorf("field %q (%s) is not a valid type (expected %s got %s)", 2, key, info.description, expected, type(data[key]))
+						if
+							t ~= expected and
+							not info.optional and
+							(
+								expected ~= "stringnumber" or
+								t ~= "string"
+							)
+						then
+							errorf(
+								"field %q (%s) is not a valid type (expected %s got %s)",
+								2,
+								key,
+								info.description,
+								expected,
+								type(data[key])
+							)
 						end
 					end
 
-					local url = ("%s://api.steampowered.com/%s/%s/v%.4d/?"):format(interface.https and "https" or "http", interface.name, info.name, data.version or 1)
+					local url = (
+						"%s://api.steampowered.com/%s/%s/v%.4d/?"
+					):format(interface.https and "https" or "http", interface.name, info.name, data.version or 1)
 
-					if steam.debug then
-						llog("http url: %s", url)
-					end
+					if steam.debug then llog("http url: %s", url) end
 
 					local arguments = ""
 
-					if info.httpmethod == "GET" then
-						arguments = "?"
-					end
+					if info.httpmethod == "GET" then arguments = "?" end
 
 					for key, val in pairs(data) do
 						arguments = arguments .. ("%s=%s&"):format(key, val)
 					end
 
 					arguments = arguments:sub(0, -2)
+					sockets.Request(
+						{
+							method = info.httpmethod,
+							host = "api.steampowered.com",
+							ssl_parameters = interface.https and "https",
+							location = ("%s/%s/v%.4d%s"):format(interface.name, info.name, data.version or 1, info.httpmethod == "GET" and arguments or ""),
+							post_data = info.httpmethod == "POST" and arguments,
+							header = {
+								["Content-type"] = "/application/x-www-form-urlencoded",
+								["User-Agent"] = "Steam 1291812 / iPhone",
+								["Accept-Language"] = "en-us",
+								["Accept-Encoding"] = "gzip, deflate",
+								["Accept"] = "*/*",
+							},
+							callback = function(data)
+								local tbl, err = serializer.Decode("json", data.content)
 
-					sockets.Request({
-						method = info.httpmethod,
-						host = "api.steampowered.com",
-						ssl_parameters = interface.https and "https",
-						location = ("%s/%s/v%.4d%s"):format(interface.name, info.name, data.version or 1, info.httpmethod == "GET" and arguments or ""),
-						post_data = info.httpmethod == "POST" and arguments,
-						header = {
-							["Content-type"] = "/application/x-www-form-urlencoded",
-							["User-Agent"] = "Steam 1291812 / iPhone",
-							["Accept-Language"] = "en-us",
-							["Accept-Encoding"] = "gzip, deflate",
-							["Accept"] = "*/*",
-						},
-						callback = function(data)
-							local tbl, err = serializer.Decode("json", data.content)
+								if not tbl then
+									llog("failed to decode data from %s::%s", interface.name, info.name)
+									logn("\turl = ", url)
+									logn("\thtml = ", data.content:gsub("%b<>", "\n"):gsub("%s+", " "):trim())
+									return
+								end
 
-							if not tbl then
-								llog("failed to decode data from %s::%s", interface.name, info.name)
-								logn("\turl = ", url)
-								logn("\thtml = ", data.content:gsub("%b<>", "\n"):gsub("%s+", " "):trim())
-								return
-							end
-
-							callback(tbl.result)
-						end,
-					})
+								callback(tbl.result)
+							end,
+						}
+					)
 				end
 			end
 
@@ -317,7 +321,6 @@ function steam.UpdateSupportedWebAPI(callback)
 
 			serializer.WriteFile("luadata", "steam_webapi_supported.lua", tbl)
 			steam.supported = tbl
-
 			llog("supported api updated")
 
 			if callback then callback() end
@@ -331,6 +334,4 @@ function steam.GetWebAPIService(name)
 	return steam.services[name]
 end
 
-if RELOAD then
-	steam.InitializeWebAPI(true)
-end
+if RELOAD then steam.InitializeWebAPI(true) end

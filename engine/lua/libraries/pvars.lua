@@ -1,8 +1,6 @@
 local pvars = _G.pvars or {}
-
 local path = "data/pvars.txt"
 local mode = "luadata"
-
 pvars.vars = pvars.vars or {}
 pvars.infos = pvars.infos or {}
 
@@ -10,27 +8,17 @@ local function set(key, val)
 	local info = pvars.infos[key]
 
 	if info then
-		if val == nil then
-			val = info.default
-		end
+		if val == nil then val = info.default end
 
 		if info.list then
-			if not table.hasvalue(info.list, val) then
-				val = info.default
-			end
+			if not table.hasvalue(info.list, val) then val = info.default end
 		elseif info.table then
-			if not info.table[val] then
-				val = info.default
-			end
+			if not info.table[val] then val = info.default end
 		end
 
-		if typex(val) ~= info.type then
-			val = info.default
-		end
+		if typex(val) ~= info.type then val = info.default end
 
-		if info.modify then
-			val = info.modify(val)
-		end
+		if info.modify then val = info.modify(val) end
 
 		pvars.vars[key] = val
 	end
@@ -49,27 +37,48 @@ end
 
 function pvars.Save()
 	if pvars.init then
-		event.Delay(0, function()
-			local vars = {}
-			for k, v in pairs(pvars.GetAll()) do
-				if v.store then
-					vars[k] = pvars.vars[k]
+		event.Delay(
+			0,
+			function()
+				local vars = {}
+
+				for k, v in pairs(pvars.GetAll()) do
+					if v.store then vars[k] = pvars.vars[k] end
 				end
-			end
-			serializer.WriteFile(mode, path, vars)
-		end, "save_pvars")
+
+				serializer.WriteFile(mode, path, vars)
+			end,
+			"save_pvars"
+		)
 	end
 end
 
 do -- pvar meta
 	local META = prototype.CreateTemplate("pvar")
 
-	function META:Get() return pvars.Get(self.key) end
-	function META:Set(val) pvars.Set(self.key, val) end
-	function META:GetCallback() return pvars.infos[self.key].callback end
-	function META:GetDefault() return pvars.infos[self.key].default end
-	function META:GetType() return pvars.infos[self.key].type end
-	function META:GetHelp() return pvars.infos[self.key].help end
+	function META:Get()
+		return pvars.Get(self.key)
+	end
+
+	function META:Set(val)
+		pvars.Set(self.key, val)
+	end
+
+	function META:GetCallback()
+		return pvars.infos[self.key].callback
+	end
+
+	function META:GetDefault()
+		return pvars.infos[self.key].default
+	end
+
+	function META:GetType()
+		return pvars.infos[self.key].type
+	end
+
+	function META:GetHelp()
+		return pvars.infos[self.key].help
+	end
 
 	META:Register()
 end
@@ -77,9 +86,7 @@ end
 function pvars.Setup2(info)
 	info.type = info.type or typex(info.default)
 
-	if info.store == nil then
-		info.store = true
-	end
+	if info.store == nil then info.store = true end
 
 	if not info.group then
 		local group = info.key:match("^(%S-)_") or "other"
@@ -89,15 +96,13 @@ function pvars.Setup2(info)
 	if not info.friendly then
 		local friendly = info.key
 		local group = info.key:match("^(%S-)_")
-		if group then
-			friendly = info.key:sub(#group + 2)
-		end
+
+		if group then friendly = info.key:sub(#group + 2) end
 
 		info.friendly = friendly:gsub("_", " ")
 	end
 
 	pvars.infos[info.key] = info
-
 	set(info.key, pvars.vars[info.key])
 
 	if info.callback then
@@ -108,12 +113,19 @@ function pvars.Setup2(info)
 	end
 
 	pvars.Save()
-
 	return pvars.GetObject(info.key)
 end
 
 function pvars.Setup(key, def, callback, help, dont_save)
-	return pvars.Setup2({key = key, default = def, callback = callback, help = help, store = not dont_save})
+	return pvars.Setup2(
+		{
+			key = key,
+			default = def,
+			callback = callback,
+			help = help,
+			store = not dont_save,
+		}
+	)
 end
 
 function pvars.GetAll()
@@ -122,9 +134,8 @@ end
 
 function pvars.GetObject(key)
 	local info = pvars.infos[key]
-	if info then
-		return prototype.CreateObject("pvar", {key = key})
-	end
+
+	if info then return prototype.CreateObject("pvar", {key = key}) end
 end
 
 function pvars.IsSetup(key)
@@ -137,9 +148,7 @@ function pvars.Get(key)
 	if info then
 		local val = pvars.vars[key]
 
-		if val == nil then
-			val = info.default
-		end
+		if val == nil then val = info.default end
 
 		return val
 	end
@@ -148,9 +157,7 @@ end
 function pvars.Set(key, val)
 	local info = pvars.infos[key]
 	local old = pvars.Get(key)
-
 	set(key, val)
-
 	pvars.Save()
 
 	if info.callback and not info.in_callback then
@@ -160,7 +167,6 @@ function pvars.Set(key, val)
 	end
 
 	event.Call("PersistentVariableChanged", key, pvars.Get(key), old)
-
 end
 
 function pvars.SetString(key, val)

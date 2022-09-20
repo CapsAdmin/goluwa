@@ -1,29 +1,34 @@
-ffibuild.Build({
-	name = "vtflib",
-	url = "https://github.com/CapsAdmin/VTFLib.git",
-	cmd = "cmake . -DUSE_LIBTXC_DXTN=0 && make --jobs 32",
-	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
-
-	c_source = [[
+ffibuild.Build(
+	{
+		name = "vtflib",
+		url = "https://github.com/CapsAdmin/VTFLib.git",
+		cmd = "cmake . -DUSE_LIBTXC_DXTN=0 && make --jobs 32",
+		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
+		c_source = [[
 		typedef struct tagSVTFImageFormatInfo {} SVTFImageFormatInfo;
 		#include "VTFLib.h"
 		#include "VTFWrapper.h"
 		#include "VMTWrapper.h"
 	]],
-	gcc_flags = "-I./src",
-
-	process_header = function(header)
-		local meta_data = ffibuild.GetMetaData(header)
-
-		return meta_data:BuildMinimalHeader(function(name) return name:find("^vl") end, function(name) return true end, true, true)
-	end,
-
-	build_lua = function(header, meta_data)
-		local lua = ffibuild.StartLibrary(header)
-		lua = lua .. "library = " .. meta_data:BuildFunctions("^vl(.+)")
-		lua = lua .. "library.e = " .. meta_data:BuildEnums(nil,nil,nil,"^enum tagVTF")
-
-		lua = lua .. [[
+		gcc_flags = "-I./src",
+		process_header = function(header)
+			local meta_data = ffibuild.GetMetaData(header)
+			return meta_data:BuildMinimalHeader(
+				function(name)
+					return name:find("^vl")
+				end,
+				function(name)
+					return true
+				end,
+				true,
+				true
+			)
+		end,
+		build_lua = function(header, meta_data)
+			local lua = ffibuild.StartLibrary(header)
+			lua = lua .. "library = " .. meta_data:BuildFunctions("^vl(.+)")
+			lua = lua .. "library.e = " .. meta_data:BuildEnums(nil, nil, nil, "^enum tagVTF")
+			lua = lua .. [[
 
 
 		local function float(high, low)
@@ -174,7 +179,7 @@ ffibuild.Build({
 			}
 		end
 		]]
-
-		return ffibuild.EndLibrary(lua)
-	end,
-})
+			return ffibuild.EndLibrary(lua)
+		end,
+	}
+)

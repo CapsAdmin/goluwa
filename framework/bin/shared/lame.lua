@@ -1,4 +1,8 @@
-local ffi = require("ffi");local CLIB = assert(ffi.load("lame"));ffi.cdef([[typedef enum lame_errorcodes_t{LAME_OKAY=0,LAME_NOERROR=0,LAME_GENERICERROR=-1,LAME_NOMEM=-10,LAME_BADBITRATE=-11,LAME_BADSAMPFREQ=-12,LAME_INTERNALERROR=-13};
+local ffi = require("ffi")
+
+local CLIB = assert(ffi.load("lame"))
+
+ffi.cdef([[typedef enum lame_errorcodes_t{LAME_OKAY=0,LAME_NOERROR=0,LAME_GENERICERROR=-1,LAME_NOMEM=-10,LAME_BADBITRATE=-11,LAME_BADSAMPFREQ=-12,LAME_INTERNALERROR=-13};
 struct _IO_marker {};
 struct _IO_codecvt {};
 struct _IO_wide_data {};

@@ -1,12 +1,8 @@
 local packet = _G.packet or {}
-
 packet.listeners = packet.listeners or {}
 
 function packet.AddListener(id, callback)
-
-	if SERVER then
-		network.AddString(id)
-	end
+	if SERVER then network.AddString(id) end
 
 	packet.listeners[id] = callback
 end
@@ -16,13 +12,9 @@ function packet.RemoveListener(id)
 end
 
 local function prepend_header(id, buffer)
-	if CLIENT then
-		id = network.StringToID(id)
-	end
+	if CLIENT then id = network.StringToID(id) end
 
-	if SERVER then
-		id = network.AddString(id)
-	end
+	if SERVER then id = network.AddString(id) end
 
 	if not id then return end
 
@@ -32,11 +24,9 @@ end
 local function read_header(buffer)
 	local id = buffer:ReadShort()
 	id = network.IDToString(id)
-
 	table.remove(buffer.buffer, 1)
 	table.remove(buffer.buffer, 1)
 	buffer:SetPosition(0)
-
 	return id
 end
 
@@ -45,21 +35,22 @@ if CLIENT then
 		flags = flags or "unsequenced"
 		local data = prepend_header(id, buffer)
 
-		if data then
-			network.SendPacketToHost(data, flags, channel)
-		end
+		if data then network.SendPacketToHost(data, flags, channel) end
 	end
 
 	function packet.OnPacketReceived(str)
 		local buffer = packet.CreateBuffer(str)
 		local id = read_header(buffer)
 
-		if packet.listeners[id] then
-			packet.listeners[id](buffer)
-		end
+		if packet.listeners[id] then packet.listeners[id](buffer) end
 	end
 
-	event.AddListener("NetworkPacketReceived", "packet", packet.OnPacketReceived, {on_error = system.OnError})
+	event.AddListener(
+		"NetworkPacketReceived",
+		"packet",
+		packet.OnPacketReceived,
+		{on_error = system.OnError}
+	)
 end
 
 if SERVER then
@@ -90,12 +81,15 @@ if SERVER then
 		local buffer = packet.CreateBuffer(str)
 		local id = read_header(buffer)
 
-		if packet.listeners[id] then
-			packet.listeners[id](buffer, client)
-		end
+		if packet.listeners[id] then packet.listeners[id](buffer, client) end
 	end
 
-	event.AddListener("NetworkPacketReceived", "packet", packet.OnPacketReceived, {on_error = system.OnError})
+	event.AddListener(
+		"NetworkPacketReceived",
+		"packet",
+		packet.OnPacketReceived,
+		{on_error = system.OnError}
+	)
 end
 
 do -- buffer object
@@ -124,7 +118,6 @@ do -- buffer object
 	function packet.ExtendBuffer(name, write_callback, read_callback)
 		META["Read" .. name] = read_callback
 		META["Write" .. name] = write_callback
-
 		META:GenerateTypes()
 	end
 
@@ -140,5 +133,4 @@ do -- buffer object
 end
 
 _G.Buffer = packet.CreateBuffer
-
 return packet

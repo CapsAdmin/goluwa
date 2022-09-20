@@ -1,5 +1,5 @@
 function gine.LoadEntities(base_folder, global, register, create_table)
-	for file_name in vfs.Iterate(base_folder.."/") do
+	for file_name in vfs.Iterate(base_folder .. "/") do
 		--logn("gine: registering ",base_folder," ", file_name)
 		if file_name:endswith(".lua") then
 			local tbl = create_table()
@@ -11,10 +11,10 @@ function gine.LoadEntities(base_folder, global, register, create_table)
 			if SERVER then
 				if vfs.IsFile(base_folder .. "/" .. file_name .. "/init.lua") then
 					local tbl = create_table()
-					tbl.Folder = base_folder .."/" .. file_name:sub(0, -5)
+					tbl.Folder = base_folder .. "/" .. file_name:sub(0, -5)
 					gine.env[global] = tbl
 					gine.env[global].Folder = base_folder:sub(5) .. "/" .. file_name -- weapons/gmod_tool/stools/
-					runfile(base_folder.."/" .. file_name .. "/init.lua")
+					runfile(base_folder .. "/" .. file_name .. "/init.lua")
 					register(gine.env[global], file_name)
 				end
 			end
@@ -31,6 +31,7 @@ function gine.LoadEntities(base_folder, global, register, create_table)
 			end
 		end
 	end
+
 	gine.env[global] = nil
 end
 
@@ -52,12 +53,9 @@ do
 	end
 
 	function gine.env.ents.GetByIndex(idx)
-
 		if gine.objectsi.Entity then
 			for _, data in ipairs(gine.objectsi.Entity) do
-				if data.external:EntIndex() == idx then
-					return data.external
-				end
+				if data.external:EntIndex() == idx then return data.external end
 			end
 		end
 
@@ -74,17 +72,14 @@ end
 do
 	function gine.env.ents.Create(class)
 		local ent = entities.CreateEntity("visual")
-
 		local self = gine.WrapObject(ent, "Entity")
-
 		self.ClassName = class
-
 		local meta = gine.env.scripted_ents.Get(class)
 
 		if meta then
 			self.BaseClass = meta
 
-			for k,v in pairs(self.BaseClass) do
+			for k, v in pairs(self.BaseClass) do
 				self[k] = v
 			end
 		else
@@ -92,9 +87,7 @@ do
 		end
 
 		gine.env.ents.created = gine.env.ents.created or {}
-
 		table.insert(gine.env.ents.created, self)
-
 		return self
 	end
 
@@ -109,9 +102,9 @@ do
 	function gine.env.ents.CreateClientProp(mdl)
 		--llog("ents.CreateClientProp: %s", mdl)
 		local ent = gine.env.ents.Create("class C_PhysPropClientside")
-		if mdl then
-			ent:SetModel(mdl)
-		end
+
+		if mdl then ent:SetModel(mdl) end
+
 		return ent
 	end
 
@@ -132,42 +125,42 @@ do
 
 	local META = gine.GetMetaTable("Entity")
 
-	function META:__newindex(k,v)
-		if not rawget(self, "__storable_table") then rawset(self, "__storable_table", {}) end
+	function META:__newindex(k, v)
+		if not rawget(self, "__storable_table") then
+			rawset(self, "__storable_table", {})
+		end
+
 		self.__storable_table[k] = v
 	end
 
 	function META:GetTable()
-		if not rawget(self, "__storable_table") then rawset(self, "__storable_table", {}) end
+		if not rawget(self, "__storable_table") then
+			rawset(self, "__storable_table", {})
+		end
+
 		return self.__storable_table
 	end
 
 	function META:SetPos(vec)
-		if self.__obj.SetPosition then
-			self.__obj:SetPosition(vec.v)
-		end
+		if self.__obj.SetPosition then self.__obj:SetPosition(vec.v) end
 
 		self.__obj.gine_pos = vec
 	end
 
 	function META:SetLocalPos(vec)
-		if self.__obj.SetPosition then
-			self.__obj:SetPosition(vec.v)
-		end
+		if self.__obj.SetPosition then self.__obj:SetPosition(vec.v) end
 
 		self.__obj.gine_pos = vec
 	end
 
 	function META:GetPos()
-		if self == gine.env.LocalPlayer() then
-			return gine.env.EyePos()
-		end
+		if self == gine.env.LocalPlayer() then return gine.env.EyePos() end
 
 		if self.__obj.GetPosition then
 			return gine.env.Vector(self.__obj:GetPosition())
 		end
 
-		return (self.__obj.gine_pos and (self.__obj.gine_pos * 1)) or gine.env.Vector(0,0,0)
+		return (self.__obj.gine_pos and (self.__obj.gine_pos * 1)) or gine.env.Vector(0, 0, 0)
 	end
 
 	function META:GetMaterials()
@@ -175,20 +168,17 @@ do
 	end
 
 	function META:SetAngles(ang)
-
 		self.__obj.gine_ang = ang
 	end
 
 	function META:GetAngles()
-		if self == gine.env.LocalPlayer() then
-			return gine.env.EyeAngles()
-		end
+		if self == gine.env.LocalPlayer() then return gine.env.EyeAngles() end
 
 		if self.__obj.GetRotation then
 			return gine.env.Angle(self.__obj:GetRotation():GetAngles())
 		end
 
-		return (self.__obj.gine_ang and (self.__obj.gine_ang * 1)) or gine.env.Angle(0,0,0)
+		return (self.__obj.gine_ang and (self.__obj.gine_ang * 1)) or gine.env.Angle(0, 0, 0)
 	end
 
 	function META:GetForward()
@@ -196,7 +186,7 @@ do
 			return gine.env.Vector(self.__obj:GetRotation():GetForward())
 		end
 
-		return gine.env.Vector(0,0,0)
+		return gine.env.Vector(0, 0, 0)
 	end
 
 	function META:GetUp()
@@ -204,7 +194,7 @@ do
 			return gine.env.Vector(self.__obj:GetRotation():GetUp())
 		end
 
-		return gine.env.Vector(0,0,0)
+		return gine.env.Vector(0, 0, 0)
 	end
 
 	function META:GetRight()
@@ -212,28 +202,22 @@ do
 			return gine.env.Vector(self.__obj:GetRotation():GetRight())
 		end
 
-		return gine.env.Vector(0,0,0)
+		return gine.env.Vector(0, 0, 0)
 	end
 
 	function META:EyePos()
-		if self == gine.env.LocalPlayer() then
-			return gine.env.EyePos()
-		end
+		if self == gine.env.LocalPlayer() then return gine.env.EyePos() end
 
 		return self:GetPos()
 	end
 
 	function META:EyeAngles()
-		if self == gine.env.LocalPlayer() then
-			return gine.env.EyeAngles()
-		end
+		if self == gine.env.LocalPlayer() then return gine.env.EyeAngles() end
 
 		return self:GetAngles()
 	end
 
-	function META:InvalidateBoneCache()
-
-	end
+	function META:InvalidateBoneCache() end
 
 	function META:GetBoneCount()
 		return 0
@@ -242,7 +226,7 @@ do
 	function META:WaterLevel()
 		return 0
 	end
-	
+
 	function META:LookupBone(name)
 		return 0
 	end
@@ -251,9 +235,7 @@ do
 		return "none"
 	end
 
-	function META:SetupBones()
-
-	end
+	function META:SetupBones() end
 
 	function META:GetBonePosition()
 		return self:GetPos(), self:GetAngles()
@@ -277,36 +259,43 @@ do
 	end
 
 	function META:EntIndex()
-		return tonumber(("%p"):format(self))%2048
+		return tonumber(("%p"):format(self)) % 2048
 	end
 
-	function META:GetBoneMatrix()
-
-	end
+	function META:GetBoneMatrix() end
 
 	function META:GetName()
-		if self.MetaName == "Player" then
-			return self:Nick()
-		end
+		if self.MetaName == "Player" then return self:Nick() end
 
 		return ""
 	end
 
 	function META:GetNetworkedString(what)
-		if what == "UserGroup" then
-			return "Player"
-		end
+		if what == "UserGroup" then return "Player" end
 	end
 
 	function META:IsNextBot()
 		return false
 	end
 
-	function META:GetNumBodyGroups() return 1 end
-	function META:GetBodygroupCount() return 1 end
-	function META:SkinCount() return 1 end
-	function META:LookupSequence() return -1 end
+	function META:GetNumBodyGroups()
+		return 1
+	end
+
+	function META:GetBodygroupCount()
+		return 1
+	end
+
+	function META:SkinCount()
+		return 1
+	end
+
+	function META:LookupSequence()
+		return -1
+	end
+
 	function META:DrawModel() end
+
 	function META:FrameAdvance() end
 
 	function META:GetClass()
@@ -318,28 +307,39 @@ do
 	end
 
 	gine.GetSet(META, "Material", "")
-	gine.GetSet(META, "Velocity", function() return gine.env.Vector(0,0,0) end)
+
+	gine.GetSet(META, "Velocity", function()
+		return gine.env.Vector(0, 0, 0)
+	end)
+
 	gine.GetSet(META, "Model")
 	gine.GetSet(META, "ModelScale")
 	gine.GetSet(META, "LOD", 0)
 	gine.GetSet(META, "Skin", 0)
 	gine.GetSet(META, "Owner", NULL)
-	gine.GetSet(META, "Color", function() return gine.env.Color(255, 255, 255, 255) end)
-	gine.GetSet(META, "MoveType", function() return gine.env.MOVETYPE_NONE end)
-	gine.GetSet(META, "MoveType", function() return gine.env.MOVETYPE_NONE end)
+
+	gine.GetSet(META, "Color", function()
+		return gine.env.Color(255, 255, 255, 255)
+	end)
+
+	gine.GetSet(META, "MoveType", function()
+		return gine.env.MOVETYPE_NONE
+	end)
+
+	gine.GetSet(META, "MoveType", function()
+		return gine.env.MOVETYPE_NONE
+	end)
+
 	gine.GetSet(META, "NoDraw", false)
 	gine.GetSet(META, "MaxHealth", 100)
 	gine.GetSet(META, "Health", 100)
-
 	META.Health = META.GetHealth
 
 	function META:IsFlagSet()
 		return false
 	end
 
-	function META:EnableMatrix()
-
-	end
+	function META:EnableMatrix() end
 
 	function META:GetSequenceActivity()
 		return 0
@@ -406,53 +406,33 @@ do
 		return table.copy(self.__obj.keyvalues)
 	end
 
-	function META:DeleteOnRemove()
-
-	end
+	function META:DeleteOnRemove() end
 
 	function META:Spawn()
 		self:InstallDataTable()
-		if self.SetupDataTables then
-			self:SetupDataTables()
-		end
-		if self.Initialize then
-			self:Initialize()
-		end
+
+		if self.SetupDataTables then self:SetupDataTables() end
+
+		if self.Initialize then self:Initialize() end
 	end
 
-	function META:Activate()
+	function META:Activate() end
 
-	end
-
-	function META:SetParent()
-
-	end
+	function META:SetParent() end
 
 	function META:GetParent()
 		return NULL
 	end
 
-	function META:AddEffects()
+	function META:AddEffects() end
 
-	end
+	function META:SetShouldServerRagdoll() end
 
-	function META:SetShouldServerRagdoll()
+	function META:SetNotSolid(b) end
 
-	end
+	function META:DrawShadow(b) end
 
-	function META:SetNotSolid(b)
+	function META:SetTransmitWithParent() end
 
-	end
-
-	function META:DrawShadow(b)
-
-	end
-
-	function META:SetTransmitWithParent()
-
-	end
-
-	function META:SetBodygroup()
-
-	end
+	function META:SetBodygroup() end
 end

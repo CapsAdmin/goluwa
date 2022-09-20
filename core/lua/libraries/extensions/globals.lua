@@ -1,13 +1,11 @@
 do
 	local pretty_prints = {}
-
 	pretty_prints.table = function(t)
 		local str = tostring(t)
-
 		str = str .. " [" .. table.count(t) .. " subtables]"
-
 		-- guessing the location of a library
 		local sources = {}
+
 		for _, v in pairs(t) do
 			if type(v) == "function" then
 				local src = debug.getinfo(v).source
@@ -16,32 +14,37 @@ do
 		end
 
 		local tmp = {}
+
 		for k, v in pairs(sources) do
 			table.insert(tmp, {k = k, v = v})
 		end
 
-		table.sort(tmp, function(a,b) return a.v > b.v end)
-		if #tmp > 0 then
-			str = str .. "[" .. tmp[1].k:gsub("!/%.%./", "") .. "]"
-		end
+		table.sort(tmp, function(a, b)
+			return a.v > b.v
+		end)
 
+		if #tmp > 0 then str = str .. "[" .. tmp[1].k:gsub("!/%.%./", "") .. "]" end
 
 		return str
 	end
-
 	pretty_prints["function"] = function(self)
 		if debug.getprettysource then
-			return ("function[%p][%s](%s)"):format(self, debug.getprettysource(self, true), table.concat(debug.getparams(self), ", "))
+			return (
+				"function[%p][%s](%s)"
+			):format(
+				self,
+				debug.getprettysource(self, true),
+				table.concat(debug.getparams(self), ", ")
+			)
 		end
+
 		return tostring(self)
 	end
 
 	function tostringx(val)
 		local t = type(val)
 
-		if pretty_prints[t] then
-			return pretty_prints[t](val)
-		end
+		if pretty_prints[t] then return pretty_prints[t](val) end
 
 		return tostring(val)
 	end
@@ -67,14 +70,12 @@ do
 		local function gc(s)
 			local tbl = s.tbl
 			rawset(tbl, "__gc_proxy", nil)
-
 			local new_meta = getmetatable(tbl)
 
 			if new_meta then
 				local __gc = rawget(new_meta, "__gc")
-				if __gc then
-					__gc(tbl)
-				end
+
+				if __gc then __gc(tbl) end
 			end
 		end
 
@@ -83,7 +84,6 @@ do
 			if meta and rawget(meta, "__gc") and not rawget(tbl, "__gc_proxy") then
 				local proxy = _OLD_G.setmetatable(table.gcnew(), {__gc = gc})
 				proxy.tbl = tbl
-
 				rawset(tbl, "__gc_proxy", proxy)
 			end
 
@@ -93,14 +93,12 @@ do
 		local function gc(s)
 			local tbl = getmetatable(s).__div
 			rawset(tbl, "__gc_proxy", nil)
-
 			local new_meta = getmetatable(tbl)
 
 			if new_meta then
 				local __gc = rawget(new_meta, "__gc")
-				if __gc then
-					__gc(tbl)
-				end
+
+				if __gc then __gc(tbl) end
 			end
 		end
 
@@ -109,7 +107,6 @@ do
 			if meta and rawget(meta, "__gc") and not rawget(tbl, "__gc_proxy") then
 				local proxy = newproxy(true)
 				rawset(tbl, "__gc_proxy", proxy)
-
 				getmetatable(proxy).__div = tbl
 				getmetatable(proxy).__gc = gc
 			end
@@ -118,6 +115,7 @@ do
 		end
 	end
 end
+
 do -- logging
 	local tostringx = _G.tostringx
 	local tostring_args = _G.tostring_args
@@ -129,9 +127,7 @@ do -- logging
 
 		for i, chunk in ipairs(str:split("%")) do
 			if i > 1 then
-				if chunk:startswith("s") then
-					args[i] = tostringx(args[i])
-				end
+				if chunk:startswith("s") then args[i] = tostringx(args[i]) end
 			end
 		end
 
@@ -139,13 +135,11 @@ do -- logging
 	end
 
 	local base_log_dir = e.USERDATA_FOLDER .. "logs/"
-
 	local log_files = {}
 	local log_file
 
 	function getlogpath(name)
 		name = name or "console"
-
 		return base_log_dir .. name .. "_" .. jit.os:lower() .. ".txt"
 	end
 
@@ -155,7 +149,6 @@ do -- logging
 		if not log_files[name] then
 			local file = assert(io.open(getlogpath(name), "w"))
 			file:setvbuf("no")
-
 			log_files[name] = file
 		end
 
@@ -164,15 +157,12 @@ do -- logging
 
 	function getlogfile(name)
 		name = name or "console"
-
 		return log_files[name]
 	end
 
 	local count = 0
 	local last_count_length = 0
-
 	fs.create_directory(base_log_dir)
-
 	local suppress_print = false
 
 	local function can_print(str)
@@ -193,9 +183,7 @@ do -- logging
 	end
 
 	local function raw_log(str)
-		if not log_file then
-			setlogfile()
-		end
+		if not log_file then setlogfile() end
 
 		log_file:write(str)
 
@@ -239,10 +227,10 @@ do -- logging
 
 	do
 		local level = 1
+
 		function logsourcelevel(n)
-			if n then
-				level = n
-			end
+			if n then level = n end
+
 			return level
 		end
 	end
@@ -250,9 +238,7 @@ do -- logging
 	-- library log
 	function llog(fmt, ...)
 		fmt = tostringx(fmt)
-
 		local level = tonumber(select(fmt:count("%") + 1, ...) or 1) or 1
-
 		local source = debug.getprettysource(level + 1, false, true)
 		local main_category = source:match(".+/libraries/(.-)/")
 		local sub_category = source:match(".+/libraries/.-/(.-)/") or source:match(".+/(.-)%.lua")
@@ -261,9 +247,7 @@ do -- logging
 			sub_category = source:match(".+/libraries/(.+)%.lua")
 		end
 
-		if main_category == "extensions" then
-			main_category = nil
-		end
+		if main_category == "extensions" then main_category = nil end
 
 		local str = fmt:safeformat(...)
 
@@ -279,14 +263,10 @@ do -- logging
 	-- warning log
 	function wlog(fmt, ...)
 		fmt = tostringx(fmt)
-
 		local level = tonumber(select(fmt:count("%") + 1, ...) or 1) or 1
-
 		local str = fmt:safeformat(...)
 		local source = debug.getprettysource(level + 1, true)
-
 		logn(source, ": ", str)
-
 		return fmt, ...
 	end
 end
@@ -296,12 +276,14 @@ do
 
 	function fromstring(str)
 		local num = tonumber(str)
+
 		if num then return num end
+
 		luadata = luadata or serializer.GetLibrary("luadata")
 		local res, err = luadata.Decode(str, true)
-		if res == nil then
-			return str
-		end
+
+		if res == nil then return str end
+
 		return unpack(res) or str
 	end
 end
@@ -312,13 +294,17 @@ function vprint(...)
 	for i = 1, select("#", ...) do
 		local name = debug.getlocal(logsourcelevel() + 1, i)
 		local arg = select(i, ...)
-		logf("\t%s:\n\t\ttype: %s\n\t\tprty: %s\n", name or "arg" .. i, type(arg), tostring(arg), serializer.Encode("luadata", arg))
-		if type(arg) == "string" then
-			logn("\t\tsize: ", #arg)
-		end
-		if typex(arg) ~= type(arg) then
-			logn("\t\ttypx: ", typex(arg))
-		end
+		logf(
+			"\t%s:\n\t\ttype: %s\n\t\tprty: %s\n",
+			name or "arg" .. i,
+			type(arg),
+			tostring(arg),
+			serializer.Encode("luadata", arg)
+		)
+
+		if type(arg) == "string" then logn("\t\tsize: ", #arg) end
+
+		if typex(arg) ~= type(arg) then logn("\t\ttypx: ", typex(arg)) end
 	end
 end
 
@@ -329,16 +315,13 @@ function desire(name)
 		if VERBOSE then
 			res = res:gsub("module .- not found:%s+", "")
 			res = res:gsub("error loading module .- from file.-:%s+", "")
-
 			wlog("unable to require %s:\n\t%s", name, res, 2)
 		end
 
 		return nil, res
 	end
 
-	if not res and package.loaded[name] then
-		return package.loaded[name]
-	end
+	if not res and package.loaded[name] then return package.loaded[name] end
 
 	return res
 end
@@ -366,28 +349,28 @@ do -- wait
 
 	function wait(seconds)
 		local time = system.GetTime()
+
 		if not temp[seconds] or (temp[seconds] + seconds) <= time then
 			temp[seconds] = system.GetTime()
 			return true
 		end
+
 		return false
 	end
 end
 
-local idx = function(var) return var.Type end
+local idx = function(var)
+	return var.Type
+end
 
 function hasindex(var)
 	if getmetatable(var) == getmetatable(NULL) then return false end
 
 	local T = type(var)
 
-	if T == "string" then
-		return false
-	end
+	if T == "string" then return false end
 
-	if T == "table" then
-		return true
-	end
+	if T == "table" then return true end
 
 	if not pcall(idx, var) then return false end
 
@@ -396,7 +379,6 @@ function hasindex(var)
 	if meta == "ffi" then return true end
 
 	T = type(meta)
-
 	return T == "table" and meta.__index ~= nil
 end
 
@@ -417,9 +399,7 @@ function typex(var)
 
 	local ok, res = pcall(idx, var)
 
-	if ok and res then
-		return res
-	end
+	if ok and res then return res end
 
 	return t
 end
@@ -442,17 +422,12 @@ function istype(var, t)
 	return typex(var) == t
 end
 
-
 function istype(var, ...)
 	for _, str in pairs({...}) do
-		if typex(var) == str then
-			return true
-		end
+		if typex(var) == str then return true end
 	end
 
 	return false
 end
 
-if RELOAD then
-
-end
+if RELOAD then  end

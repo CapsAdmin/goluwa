@@ -1,19 +1,16 @@
 local gui = ... or _G.gui
 local META = prototype.CreateTemplate("text_edit")
-
 META:GetSet("CaretColor")
 META:GetSet("SelectionColor")
 META:GetSet("Editable", true)
 META:GetSet("CaretPosition", Vec2(0, 0))
 META:GetSet("CaretSubPosition", 0)
 META:GetSet("Multiline", false)
-
 META:GetSetDelegate("Text", "", "label")
 META:GetSetDelegate("ParseTags", false, "label")
 META:GetSetDelegate("Font", nil, "label")
 META:GetSetDelegate("TextColor", nil, "label")
 META:GetSetDelegate("TextWrap", false, "label")
-
 META:Delegate("label", "CenterText", "Center")
 META:Delegate("label", "CenterTextY", "CenterY")
 META:Delegate("label", "CenterTextX", "CenterX")
@@ -23,21 +20,15 @@ function META:Initialize()
 	self:SetStyle("text_edit")
 	self:SetFocusOnClick(true)
 	META.BaseClass.Initialize(self)
-
 	local label = self:CreatePanel("text", "label")
-
 	label.OnStyleChanged = function() end
 	label.markup:SetEditable(self.Editable)
-
 	label:SetClipping(true)
 	label:SetIgnoreMouse(true)
-
 	self:SetEditable(true)
 	self:SetSmoothScroll(0)
-
 	label.OnTextChanged = function(_, ...)
 		self:OnTextChanged(...)
-
 		self:ScrollToCaret()
 	end
 	label.markup.OnAdvanceCaret = function()
@@ -45,11 +36,9 @@ function META:Initialize()
 	end
 	label.OnEnter = function(_, ...)
 		self:OnEnter(...)
-		if not self.Multiline then
-			return false
-		end
-	end
 
+		if not self.Multiline then return false end
+	end
 	self:SetCursor("ibeam")
 	self:SizeToText()
 	self:SetMultiline(self.Multiline)
@@ -68,13 +57,10 @@ function META:ScrollToCaret()
 		local padding = self.label.Padding:GetRight() + self.label.Padding:GetLeft()
 		scroll = scroll + self:GetSize().x - padding
 		scroll = scroll + padding
-
-
 		local prev = self:GetScroll()
 		prev.x = scroll
 		self:SetScroll(prev)
 	end
-
 
 	local height = 15
 	local font = self:GetFont()
@@ -98,7 +84,6 @@ function META:ScrollToCaret()
 		local padding = self.label.Padding:GetTop() + self.label.Padding:GetBottom()
 		scroll = scroll + self:GetSize().y - padding
 		scroll = scroll + padding
-
 		local prev = self:GetScroll()
 		prev.y = scroll
 		self:SetScroll(prev)
@@ -107,6 +92,7 @@ end
 
 function META:SetMultiline(b)
 	self.Multiline = b
+
 	if b then
 		self.label:SetupLayout()
 	else
@@ -124,9 +110,9 @@ function META:OnStyleChanged(skin)
 		self:SetSelectionColor(skin.text_edit_color:Copy():SetAlpha(0.5))
 		self:SetTextColor(skin.text_edit_color:Copy())
 	end
+
 	self:SetFont(skin.default_font)
 	--self:SetScrollable(true)
-
 	self.label.markup:SetCaretColor(self.CaretColor)
 	self.label.markup:SetSelectionColor(self.SelectionColor)
 end
@@ -167,7 +153,6 @@ end
 
 function META:SizeToText()
 	local marg = self:GetMargin()
-
 	self.label:SetPosition(marg:GetPosition())
 	self:SetSize(self.label:GetSize() + marg:GetSize() * 2)
 end
@@ -175,9 +160,8 @@ end
 function META:OnFocus()
 	event.Call("TextInputFocus", self)
 	input.PushDisableFocus()
-	if self.Editable then
-		self.label.markup:SetEditable(true)
-	end
+
+	if self.Editable then self.label.markup:SetEditable(true) end
 end
 
 function META:OnUnfocus()
@@ -203,13 +187,14 @@ function META:OnMouseMove(...)
 end
 
 function META:OnEnter() end
+
 function META:OnTextChanged() end
 
 gui.RegisterPanel(META)
 
 if RELOAD then
 	local frame = gui.CreatePanel("frame", nil, "lol")
-	frame:SetSize(Vec2()+256)
+	frame:SetSize(Vec2() + 256)
 	local pnl = frame:CreatePanel(META.ClassName)
 	pnl:SetupLayout("fill")
 	pnl:SetPosition(Vec2() + 50)

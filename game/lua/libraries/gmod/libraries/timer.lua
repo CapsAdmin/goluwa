@@ -1,7 +1,9 @@
 local timer = gine.env.timer
 
 function timer.Create(id, delay, repetitions, func)
-	return event.Timer("gine_" .. tostring(id), delay, repetitions, function() func() end)
+	return event.Timer("gine_" .. tostring(id), delay, repetitions, function()
+		func()
+	end)
 end
 
 function timer.Destroy(id)
@@ -23,5 +25,7 @@ function timer.Exists(id)
 end
 
 function timer.Simple(delay, func)
-	return event.Delay(delay, function() func() end)
+	return event.Delay(delay, function()
+		func()
+	end)
 end

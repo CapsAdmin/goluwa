@@ -1,9 +1,7 @@
 if CLIENT then
-		message.AddListener("print", function(line)
-			if not ZEROBRANE then
-				logn("server >> ", line)
-			end
-		end)
+	message.AddListener("print", function(line)
+		if not ZEROBRANE then logn("server >> ", line) end
+	end)
 end
 
 if SERVER then

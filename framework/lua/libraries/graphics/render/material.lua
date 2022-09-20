@@ -1,12 +1,10 @@
 local render = ... or _G.render
-
 local META = prototype.CreateTemplate("material", "base")
 
 do
 	META:GetSet("Error", nil)
 
 	function render.GetErrorMaterial()
-
 		if not render.error_material then
 			render.error_material = render.CreateMaterial("base")
 			render.error_material:SetError("render.GetErrorMaterial")
@@ -16,9 +14,7 @@ do
 	end
 end
 
-function META:OnBind()
-
-end
+function META:OnBind() end
 
 function META:SetError(reason)
 	self.Error = reason
@@ -30,13 +26,11 @@ META:Register()
 
 function render.CreateMaterial(name)
 	local self = prototype.CreateDerivedObject("material", name)
-
 	return self
 end
 
 function render.CreateMaterialTemplate(name)
 	local META = prototype.CreateTemplate()
-
 	META.Name = name
 
 	function META:Register()
@@ -50,6 +44,7 @@ end
 function render.SetMaterial(mat)
 	local prev = render.current_material
 	render.current_material = mat
+
 	if mat and prev ~= mat then mat:OnBind() end
 end
 

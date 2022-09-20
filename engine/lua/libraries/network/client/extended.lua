@@ -13,7 +13,7 @@ if SERVER then
 	end
 
 	function META:Cexec(str)
-		self:SendLua("commands.RunString('"..str.."')")
+		self:SendLua("commands.RunString('" .. str .. "')")
 	end
 end
 

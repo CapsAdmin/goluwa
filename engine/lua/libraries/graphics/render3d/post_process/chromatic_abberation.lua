@@ -1,8 +1,6 @@
 local PASS = {}
-
 PASS.Name = FILE_NAME
 PASS.Default = false
-
 PASS.Source = [[
 out vec3 fragColor;
 
@@ -27,5 +25,4 @@ void main()
     fragColor = col;
 }
 ]]
-
 render3d.AddGBufferShader(PASS)

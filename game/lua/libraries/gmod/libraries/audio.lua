@@ -27,7 +27,7 @@ do
 	function META:PlayEx(volume, pitch)
 		self.__obj:Play()
 		self.__obj:SetGain(volume)
-		self.__obj:SetPitch(pitch/100)
+		self.__obj:SetPitch(pitch / 100)
 	end
 
 	function META:ChangeVolume(volume)
@@ -35,7 +35,7 @@ do
 	end
 
 	function META:ChangePitch(pitch)
-		self.__obj:SetPitch(pitch/100)
+		self.__obj:SetPitch(pitch / 100)
 	end
 
 	function META:IsPlaying()
@@ -46,6 +46,7 @@ end
 if CLIENT then
 	function gine.env.surface.PlaySound(path)
 		if not SOUND then return end
+
 		resource.skip_providers = true
 		audio.CreateSource("sound/" .. path):Play()
 		resource.skip_providers = false

@@ -1,16 +1,12 @@
 local ScrW = gmod.ScrW
 local ScrH = gmod.ScrH
-
 local render = ... or {}
-
 runfile("texture.lua", render)
 runfile("vertex_buffer.lua", render)
 runfile("index_buffer.lua", render)
 runfile("framebuffer.lua", render)
 
-function render._Initialize(wnd)
-
-end
+function render._Initialize(wnd) end
 
 do
 	local translate_mode = {
@@ -26,13 +22,11 @@ do
 		src_color = gmod.BLEND_SRC_COLOR,
 		one_minus_src_color = gmod.BLEND_ONE_MINUS_SRC_COLOR,
 	}
-
 	local translate_func = {
 		add = gmod.BLENDFUNC_ADD,
 		subtract = gmod.BLENDFUNC_SUBTRACT,
 		reverse_subtract = gmod.BLENDFUNC_REVERSE_SUBTRACT,
 	}
-
 	local render_OverrideBlend = gmod.render.OverrideBlend
 
 	function render.SetBlendMode(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
@@ -48,7 +42,6 @@ do
 			translate_mode[src_color],
 			translate_mode[dst_color],
 			translate_func[func_color],
-
 			translate_mode[src_alpha],
 			translate_mode[dst_alpha],
 			translate_func[func_alpha]
@@ -56,7 +49,7 @@ do
 	end
 end
 
-function render.SetColorMask(r,g,b,a)
+function render.SetColorMask(r, g, b, a)
 	render.color_mask_r = r == 1
 	render.color_mask_g = g == 1
 	render.color_mask_b = b == 1
@@ -88,7 +81,6 @@ do
 		greaterequal = gmod.STENCILCOMPARISONFUNCTION_GREATEREQUAL, -- Passes where the reference value is greater than or equal to the stencil value.
 		always = gmod.STENCILCOMPARISONFUNCTION_ALWAYS, -- Always passes.
 	}
-
 	local render_SetStencilCompareFunction = gmod.render.SetStencilCompareFunction
 	local render_SetStencilReferenceValue = gmod.render.SetStencilReferenceValue
 
@@ -109,7 +101,6 @@ do
 		incr = gmod.STENCILOPERATION_INCR, -- Increments the value in the stencil buffer by 1, wrapping around on overflow.
 		decr = gmod.STENCILOPERATION_DECR, -- Decrements the value in the stencil buffer by 1, wrapping around on overflow.
 	}
-
 	translate.increase = translate.incr
 	translate.increment = translate.incr
 	translate.increase_wrap = translate.incr -- missing
@@ -120,7 +111,6 @@ do
 	translate.decrease_wrap = translate.decr -- missing
 	translate.decrementwrap = translate.decr -- missing
 	translate.decrsat = translate.decr
-
 	local render_SetStencilFailOperation = gmod.render.SetStencilFailOperation
 	local render_SetStencilZFailOperation = gmod.render.SetStencilZFailOperation
 	local render_SetStencilPassOperation = gmod.render.SetStencilPassOperation
@@ -144,8 +134,8 @@ end
 do
 	local render_SetViewPort = gmod.render.SetViewPort
 
-	function render._SetViewport(x,y,w,h)
-		render_SetViewPort(x,y,w,h)
+	function render._SetViewport(x, y, w, h)
+		render_SetViewPort(x, y, w, h)
 	end
 end
 
@@ -161,11 +151,9 @@ do
 	end
 end
 
-
 function render.IsExtensionSupported()
 	return false
 end
-
 
 function render.GetWidth()
 	return ScrW()
@@ -178,4 +166,3 @@ end
 function render.GetScreenSize()
 	return Vec2(ScrW(), ScrH())
 end
-

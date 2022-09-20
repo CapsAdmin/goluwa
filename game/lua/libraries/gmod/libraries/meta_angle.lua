@@ -21,9 +21,7 @@ function gine.env.Angle(p, y, r)
 	p = p or 0
 	y = y or 0
 	r = r or 0
-
 	self.ptr = Ang3(p, y, r)
-
 	return setmetatable(self, META)
 end
 
@@ -62,9 +60,7 @@ function META:__unm()
 end
 
 function META.__mul(a, b)
-	if type(b) == "number" then
-		return gine.env.Angle(a.ptr * b)
-	end
+	if type(b) == "number" then return gine.env.Angle(a.ptr * b) end
 
 	return gine.env.Angle(a.ptr * b.ptr)
 end

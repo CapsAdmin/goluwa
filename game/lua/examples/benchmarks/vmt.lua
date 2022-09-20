@@ -161,14 +161,10 @@ local materials = {
 	"materials/NATURE/DIRTLEAVES01.vmt",
 	"materials/NATURE/BLEND_DIRT_CONCRETE_03WET.vmt",
 }
-
 steam.MountSourceGame("csgo")
 vfs.Mount("data/temp_bsp.zip/")
 
 --S""
-
 for _, path in ipairs(materials) do
 	resource.Download(path):Then(function() end)
-end
-
---S""
+end--S""

@@ -1,27 +1,28 @@
 local repl = _G.repl or {}
-
 repl.buffer = repl.buffer or ""
-repl.command_history = repl.command_history or serializer.ReadFile("luadata", "data/cmd_history.txt") or {}
-for k,v in ipairs(repl.command_history) do
+repl.command_history = repl.command_history or
+	serializer.ReadFile("luadata", "data/cmd_history.txt") or
+	{}
+
+for k, v in ipairs(repl.command_history) do
 	if type(v) ~= "string" then
 		repl.command_history = {}
+
 		break
 	end
 end
-repl.scroll_command_history = repl.scroll_command_history or 0
 
+repl.scroll_command_history = repl.scroll_command_history or 0
 local terminal = system.GetTerminal()
 
 function repl.RenderInput()
-	local w,h = terminal.GetSize()
-	local x,y = repl.GetCaretPosition()
-
+	local w, h = terminal.GetSize()
+	local x, y = repl.GetCaretPosition()
 	-- clear the input row
 	repl.WriteStringToScreen(0, y, (" "):rep(w))
-	
-	repl.SetCaretPosition(0,y)
+	repl.SetCaretPosition(0, y)
 	repl.WriteStringToScreen(0, y, repl.buffer)
-	repl.SetCaretPosition(x,y)
+	repl.SetCaretPosition(x, y)
 end
 
 function repl.MoveCaret(ox, oy)
@@ -33,36 +34,36 @@ if terminal.WriteStringToScreen then
 	repl.WriteStringToScreen = terminal.WriteStringToScreen
 else
 	function repl.WriteStringToScreen(x, y, str)
-		local x_,y_ = repl.GetCaretPosition()
-
-		repl.SetCaretPosition(x,y)
+		local x_, y_ = repl.GetCaretPosition()
+		repl.SetCaretPosition(x, y)
 		repl.Write(str)
-		repl.SetCaretPosition(x_,y_)
+		repl.SetCaretPosition(x_, y_)
 	end
 end
 
 function repl.CharInput(str)
 	event.Call("ReplCharInput", str)
+
 	for _, str in ipairs(str:utotable()) do
 		local x, y = repl.GetCaretPosition()
 		repl.buffer = repl.buffer:usub(0, x - 1) .. str .. repl.buffer:usub(x + str:ulen() - 1, -1)
 		repl.MoveCaret(str:ulen(), 0)
 		repl.RenderInput()
 	end
+
 	repl.Flush()
 end
 
 function repl.SetConsoleTitle(str)
-	if WINDOW and window.IsOpen() then
-		return window.SetTitle(str)
-	end
+	if WINDOW and window.IsOpen() then return window.SetTitle(str) end
+
 	return terminal.SetTitle(str)
 end
 
 repl.caret_x = 0
 repl.caret_y = 0
 
-function repl.SetCaretPosition(x,y)
+function repl.SetCaretPosition(x, y)
 	repl.caret_x = math.max(x, 1)
 	repl.caret_y = math.max(y, 1)
 end
@@ -79,35 +80,32 @@ do
 
 		if repl.move_caret_to_tail then
 			local tx, ty = repl.GetTailPosition()
-			repl.SetCaretPosition(repl.move_caret_to_tail,ty)
+			repl.SetCaretPosition(repl.move_caret_to_tail, ty)
 			repl.move_caret_to_tail = nil
 		end
 
 		terminal.EnableCaret(false)
-		
 		local str = table.concat(buf)
 		table.clear(buf)
-
 		repl.SetCaretPositionReal(0, repl.caret_y)
-		repl.WriteNow((" "):rep(repl.buffer:ulen()+1))
-		repl.SetCaretPositionReal(0, repl.caret_y-1)
+		repl.WriteNow((" "):rep(repl.buffer:ulen() + 1))
+		repl.SetCaretPositionReal(0, repl.caret_y - 1)
 		repl.WriteNow(str)
-
 		repl.SetCaretPositionReal(repl.caret_x, repl.caret_y)
 
 		if repl.buffer ~= "" then
 			repl.Write("\27[s\27[" .. repl.caret_y .. ";0f")
+
 			do
 				local buf = repl.buffer .. " "
 				--repl.WriteStringToScreen(0, repl.caret_y, (" "):rep(100))
-
-				repl.StyledWrite(buf:usub(0, repl.caret_x-1), true, true)
+				repl.StyledWrite(buf:usub(0, repl.caret_x - 1), true, true)
 				terminal.BackgroundColor(0.5, 0.5, 0.5)
 				--repl.Write("\27[47m")
 				repl.StyledWrite(buf:usub(repl.caret_x, repl.caret_x), true, true)
 				--repl.SetBackgroundColor(0,0,0)
 				repl.Write("\27[0m")
-				repl.StyledWrite(buf:usub(repl.caret_x+1), true, true)
+				repl.StyledWrite(buf:usub(repl.caret_x + 1), true, true)
 				repl.Write("\27[u")
 			end
 
@@ -138,9 +136,9 @@ do
 		repl.write_now = false
 	end
 
-	function repl.SetCaretPositionReal(x,y)
+	function repl.SetCaretPositionReal(x, y)
 		repl.write_now = true
-		terminal.SetCaretPosition(x,y)
+		terminal.SetCaretPosition(x, y)
 		repl.write_now = false
 	end
 
@@ -148,11 +146,9 @@ do
 		local tbl = table.concat(buf):split("\n")
 		local y = #tbl + repl.caret_y - 1
 		local x = tbl[#tbl]:ulen()
-
 		return x, y
 	end
 end
-
 
 local set_color
 
@@ -190,21 +186,19 @@ do
 	}
 
 	for key, hex in pairs(colors) do
-		local r,g,b = hex:match("#?(..)(..)(..)")
+		local r, g, b = hex:match("#?(..)(..)(..)")
 		r = tonumber("0x" .. r)
 		g = tonumber("0x" .. g)
 		b = tonumber("0x" .. b)
-		colors[key] = {r,g,b}
+		colors[key] = {r, g, b}
 	end
+
 	local last_color
 	set_color = function(what)
-		if not colors[what] then
-			what = "letter"
-		end
+		if not colors[what] then what = "letter" end
 
 		if what ~= last_color then
 			local c = colors[what]
-
 			terminal.ForegroundColorFast(c[1], c[2], c[3])
 			last_color = what
 		end
@@ -223,15 +217,13 @@ do
 
 	function repl.StyledWrite(str, dont_move)
 		local x, y
-		if not dont_move then
-			x,y = repl.GetCaretPosition()
-		end
+
+		if not dont_move then x, y = repl.GetCaretPosition() end
 
 		if repl.no_color then
 			repl.Write(str)
 		else
 			last_color = nil
-
 			local tokenizer = oh.lua.Tokenizer(str)
 
 			while true do
@@ -239,6 +231,7 @@ do
 
 				for i = 1, #whitespace do
 					local v = whitespace[i]
+
 					if v.type == "line_comment" or v.type == "multiline_comment" then
 						set_color("comment")
 					end
@@ -248,7 +241,11 @@ do
 
 				local chunk = table_concatrange(tokenizer.code, start, stop)
 
-				if type == "letter" and oh.lua.syntax.Keywords[chunk] or oh.lua.syntax.KeywordValues[chunk] then
+				if
+					type == "letter" and
+					oh.lua.syntax.Keywords[chunk] or
+					oh.lua.syntax.KeywordValues[chunk]
+				then
 					set_color("keyword")
 				else
 					set_color(type)
@@ -258,26 +255,23 @@ do
 
 				if type == "end_of_file" then break end
 			end
-
-			--set_color("letter")
+		--set_color("letter")
 		end
 
-		if not dont_move then
-			repl.move_caret_to_tail = x
-		end
+		if not dont_move then repl.move_caret_to_tail = x end
 	end
 end
 
 local function find_next_word(buffer, x, dir)
-    local str = dir == "left" and buffer:usub(0, x-1):reverse() or buffer:usub(x+1, -1)
+	local str = dir == "left" and buffer:usub(0, x - 1):reverse() or buffer:usub(x + 1, -1)
 
-    if str:find("^%s", 0) then
-        return str:find("%S")
-    elseif str:find("^%p", 0) then
-        return str:find("%P", 0) or str:find("^%p+$", 0)
-    end
+	if str:find("^%s", 0) then
+		return str:find("%S")
+	elseif str:find("^%p", 0) then
+		return str:find("%P", 0) or str:find("^%p+$", 0)
+	end
 
-    return str:find("%s", 0) or str:find("%p", 0) or str:ulen() + 1
+	return str:find("%s", 0) or str:find("%p", 0) or str:ulen() + 1
 end
 
 function repl.InputLua(str)
@@ -287,7 +281,6 @@ function repl.InputLua(str)
 		local parser = oh.lua.Parser()
 		local ast = parser:BuildAST(tokens)
 		local code = oh.lua.ASTToCode(ast)
-
 		repl.Echo(code)
 
 		local function print_errors(errors, only_first)
@@ -295,21 +288,21 @@ function repl.InputLua(str)
 				set_color("error")
 				repl.Write((" "):rep(v.start + 1) .. ("^"):rep(v.stop - v.start + 1))
 				set_color("letter")
-				repl.StyledWrite(" " ..  v.msg .. "\n")
+				repl.StyledWrite(" " .. v.msg .. "\n")
+
 				if only_first then break end
 			end
 		end
 
 		print_errors(tokenizer.errors)
 		print_errors(parser.errors, true)
-
 		local func, err = loadstring(code)
 
 		if func then
 			local func, res = system.pcall(func)
+
 			if not func then
 				--res = res:match("^.-:%d+:%s+(.+)")
-
 				set_color("error")
 				logn(res)
 				set_color("letter")
@@ -336,30 +329,27 @@ function repl.Echo(str)
 	repl.WriteStringToScreen(0, y, (" "):rep(w))
 	repl.WriteStringToScreen(0, y, (" "):rep(utf8.length(str)))
 	repl.StyledWrite("> " .. str .. "\n", true)
-	repl.SetCaretPosition(0,y+1)
+	repl.SetCaretPosition(0, y + 1)
 	repl.Flush()
 end
 
 function repl.KeyPressed(key)
 	local x, y = repl.GetCaretPosition()
 	local w, h = terminal.GetSize()
-
 	event.Call("ReplCharInput", key)
 
 	if key == "enter" then
 		local str = repl.buffer
 		repl.buffer = ""
 
-	--	repl.WriteStringToScreen(0, y, (" "):rep(w))
-
-
+		--	repl.WriteStringToScreen(0, y, (" "):rep(w))
 		if str == "detach" and os.getenv("GOLUWA_TMUX") then
 			repl.Echo(str)
 			_OLD_G.os.execute("tmux detach")
 		elseif str == "clear" then
 			repl.Echo(str)
 			repl.ClearScreen()
-			repl.SetCaretPosition(0,0)
+			repl.SetCaretPosition(0, 0)
 		elseif str:startswith("exit") then
 			repl.Echo(str)
 			system.ShutDown(tonumber(str:match("exit (%d+)")) or 0)
@@ -372,31 +362,30 @@ function repl.KeyPressed(key)
 			end
 		end
 
-		local x,y = repl.GetTailPosition()
+		local x, y = repl.GetTailPosition()
 		repl.Flush()
-		repl.SetCaretPosition(x,y)
+		repl.SetCaretPosition(x, y)
 		repl.Flush()
 
 		-- write the buffer
-
 		for i, str in ipairs(repl.command_history) do
-			if str == buffer then
-				table.remove(repl.command_history, i)
-			end
+			if str == buffer then table.remove(repl.command_history, i) end
 		end
 
 		table.insert(repl.command_history, str)
 		serializer.WriteFile("luadata", "data/cmd_history.txt", repl.command_history)
 		repl.scroll_command_history = 0
 	elseif key == "delete" then
-		repl.buffer = repl.buffer:usub(0, x-1) .. repl.buffer:usub(x+1, -1)
+		repl.buffer = repl.buffer:usub(0, x - 1) .. repl.buffer:usub(x + 1, -1)
 	elseif key == "up" or key == "down" then
 		if key == "up" then
 			repl.scroll_command_history = repl.scroll_command_history - 1
 		else
 			repl.scroll_command_history = repl.scroll_command_history + 1
 		end
-		local str = repl.command_history[repl.scroll_command_history%#repl.command_history+1]
+
+		local str = repl.command_history[repl.scroll_command_history % #repl.command_history + 1]
+
 		if str then
 			repl.buffer = str
 			repl.SetCaretPosition(repl.buffer:ulen() + 1, y)
@@ -411,20 +400,18 @@ function repl.KeyPressed(key)
 		repl.SetCaretPosition(repl.buffer:ulen() + 1, y)
 	elseif key == "ctrl_right" then
 		local offset = find_next_word(repl.buffer, x, "right")
-		if offset then
-			repl.MoveCaret(offset + 1, 0)
-		end
+
+		if offset then repl.MoveCaret(offset + 1, 0) end
 	elseif key == "ctrl_left" then
 		local offset = find_next_word(repl.buffer, x, "left")
 
-		if offset then
-			repl.MoveCaret(-offset + 1, 0)
-		end
+		if offset then repl.MoveCaret(-offset + 1, 0) end
 	elseif key == "backspace" then
 		repl.buffer = repl.buffer:usub(0, math.max(x - 2, 0)) .. repl.buffer:usub(x, -1)
 		repl.MoveCaret(-1, 0)
 	elseif key == "ctrl_backspace" then
 		local offset = find_next_word(repl.buffer, x, "left")
+
 		if offset then
 			repl.buffer = repl.buffer:usub(0, x - offset) .. repl.buffer:usub(x, -1)
 			repl.SetCaretPosition(x - offset + 1, y)
@@ -444,14 +431,13 @@ function repl.KeyPressed(key)
 	if key == "ctrl_c" then
 		local str = repl.buffer
 		repl.buffer = ""
-
-	--	repl.WriteStringToScreen(0, y, (" "):rep(w))
+		--	repl.WriteStringToScreen(0, y, (" "):rep(w))
 		repl.WriteStringToScreen(0, y, (" "):rep(utf8.length(str)))
-		repl.SetCaretPositionReal(0,y)
+		repl.SetCaretPositionReal(0, y)
 		repl.StyledWrite("> " .. str, true)
 		repl.Flush()
 		repl.WriteNow("\n")
-		repl.SetCaretPosition(0,y+1)
+		repl.SetCaretPosition(0, y + 1)
 		repl.Flush()
 
 		if repl.ctrl_c_exit then
@@ -466,15 +452,15 @@ function repl.KeyPressed(key)
 			end
 		else
 			repl.ctrl_c_exit = system.GetTime() + 0.5
-
-			local x,y = repl.GetCaretPosition()
+			local x, y = repl.GetCaretPosition()
 
 			if os.getenv("GOLUWA_TMUX") then
 				repl.WriteNow("ctrl+c again to detach\n")
 			else
 				repl.WriteNow("ctrl+c again to exit\n")
 			end
-			repl.SetCaretPosition(0,y+1)
+
+			repl.SetCaretPosition(0, y + 1)
 			repl.Flush()
 		end
 	else
@@ -484,10 +470,8 @@ function repl.KeyPressed(key)
 	local x, y = repl.GetCaretPosition()
 	x = math.min(x, repl.buffer:ulen() + 1)
 	repl.SetCaretPosition(x, y)
-
 	repl.RenderInput()
 	repl.Flush()
-
 	return true
 end
 
@@ -509,9 +493,7 @@ function repl.Start()
 
 			if last_report < system.GetElapsedTime() then
 				system.SetConsoleTitle(
-					client.url ..
-					" progress: " .. math.round((current_length / header["content-length"]) * 100, 3) .. "%" ..
-					" speed: " .. utility.FormatFileSize(current_length - last_downloaded),
+					client.url .. " progress: " .. math.round((current_length / header["content-length"]) * 100, 3) .. "%" .. " speed: " .. utility.FormatFileSize(current_length - last_downloaded),
 					client.url
 				)
 				last_downloaded = current_length
@@ -535,11 +517,11 @@ end
 
 function repl.Update()
 	if not repl.started then error("repl not initialized") end
-	--if math.random() > 0.99 then print(os.clock()) end
 
+	--if math.random() > 0.99 then print(os.clock()) end
 	if repl.move_caret_to_tail then
 		local tx, ty = repl.GetTailPosition()
-		repl.SetCaretPosition(repl.move_caret_to_tail,ty)
+		repl.SetCaretPosition(repl.move_caret_to_tail, ty)
 		repl.move_caret_to_tail = nil
 	end
 
@@ -547,6 +529,7 @@ function repl.Update()
 
 	while events[1] do
 		local what, arg = unpack(table.remove(events, 1))
+
 		if what == "string" and arg:endswith("__ENTERHACK__") then
 			repl.CharInput(arg:sub(0, -#"__ENTERHACK__" - 1))
 			repl.KeyPressed("enter")
@@ -562,15 +545,16 @@ function repl.Update()
 end
 
 function repl.OSExecute(...)
-	if not repl.started then
-		return os.execute(...)
-	end
+	if not repl.started then return os.execute(...) end
+
 	repl.Flush()
 	repl.Stop()
-	local ok, res,a,b = pcall(_OLD_G.os.execute, ...)
+	local ok, res, a, b = pcall(_OLD_G.os.execute, ...)
 	repl.Start()
+
 	if not ok then error(res, 2) end
-	return res,a,b
+
+	return res, a, b
 end
 
 local next_update = 0
@@ -582,10 +566,11 @@ end
 function repl.IsFocused()
 	if os.getenv("GOLUWA_TMUX") then
 		local pipe, err = io.popen("tmux ls")
+
 		if pipe then
 			local str = pipe:read("*all")
 			pipe:close()
-			
+
 			for _, line in ipairs(str:split("\n")) do
 				if line:find("goluwa", nil, true) and line:endswith("(attached)") then
 					return true
@@ -604,6 +589,7 @@ event.AddListener("Update", "repl", function()
 		event.RemoveListener("Update", "repl")
 		return
 	end
+
 	local ok, err = system.pcall(repl.Update)
 
 	if not ok then
@@ -616,7 +602,7 @@ event.AddListener("Update", "repl", function()
 
 	if next_update < time then
 		repl.Flush()
-		next_update = time + 1/30
+		next_update = time + 1 / 30
 	end
 end)
 
@@ -624,6 +610,5 @@ if os.getenv("GOLUWA_TMUX") then
 	os.remove(R("shared/") .. "tmux_log.txt")
 	os.execute("ln -s " .. getlogpath() .. " " .. R("shared/") .. "tmux_log.txt")
 end
-
 
 return repl

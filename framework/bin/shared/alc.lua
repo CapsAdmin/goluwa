@@ -1,4 +1,8 @@
-local ffi = require("ffi");local CLIB = assert(ffi.load("openal"));ffi.cdef([[struct ALCdevice_struct {};
+local ffi = require("ffi")
+
+local CLIB = assert(ffi.load("openal"))
+
+ffi.cdef([[struct ALCdevice_struct {};
 struct ALCcontext_struct {};
 void(alcDestroyContext)(struct ALCcontext_struct*);
 void(alcCaptureStop)(struct ALCdevice_struct*);
@@ -147,21 +151,24 @@ library.e = {
 	EFX_MINOR_VERSION = 131074,
 	MAX_AUXILIARY_SENDS = 131075,
 }
-		function library.GetErrorString(device)
-			local num = library.GetError(device)
-			if num == library.e.NO_ERROR then
-				return "no error"
-			elseif num == library.e.INVALID_DEVICE then
-				return "invalid device"
-			elseif num == library.e.INVALID_CONTEXT then
-				return "invalid context"
-			elseif num == library.e.INVALID_ENUM then
-				return "invalid enum"
-			elseif num == library.e.INVALID_VALUE then
-				return "invalid value"
-			elseif num == library.e.OUT_OF_MEMORY then
-				return "out of memory"
-			end
-		end
-		library.clib = CLIB
+
+function library.GetErrorString(device)
+	local num = library.GetError(device)
+
+	if num == library.e.NO_ERROR then
+		return "no error"
+	elseif num == library.e.INVALID_DEVICE then
+		return "invalid device"
+	elseif num == library.e.INVALID_CONTEXT then
+		return "invalid context"
+	elseif num == library.e.INVALID_ENUM then
+		return "invalid enum"
+	elseif num == library.e.INVALID_VALUE then
+		return "invalid value"
+	elseif num == library.e.OUT_OF_MEMORY then
+		return "out of memory"
+	end
+end
+
+library.clib = CLIB
 return library

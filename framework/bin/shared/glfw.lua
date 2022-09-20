@@ -539,28 +539,31 @@ library.e = {
 	COCOA_MENUBAR = 331778,
 	DONT_CARE = -1,
 }
+
 function library.GetRequiredInstanceExtensions(extra)
 	local count = ffi.new("uint32_t[1]")
 	local array = CLIB.glfwGetRequiredInstanceExtensions(count)
 	local out = {}
+
 	for i = 0, count[0] - 1 do
 		table.insert(out, ffi.string(array[i]))
 	end
-	if extra then
-		for i,v in ipairs(extra) do
-			table.insert(out, v)
-		end
-	end
+
+	if extra then for i, v in ipairs(extra) do
+		table.insert(out, v)
+	end end
+
 	return out
 end
 
 function library.CreateWindowSurface(instance, window, huh)
 	local box = ffi.new("struct VkSurfaceKHR_T * [1]")
 	local status = CLIB.glfwCreateWindowSurface(instance, window, huh, ffi.cast("void **", box))
-	if status == 0 then
-		return box[0]
-	end
+
+	if status == 0 then return box[0] end
+
 	return nil, status
 end
+
 library.clib = CLIB
 return library

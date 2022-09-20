@@ -1,28 +1,23 @@
 local UNROLL_DRAWMODEL = false
-
 local META = prototype.CreateTemplate()
-
 META.Name = "model"
 META.Require = {"transform"}
-
 META:StartStorable()
-	META:GetSet("Cull", true)
-	META:GetSet("NoDraw", false)
-	META:GetSet("ModelPath", "models/cube.obj")
-	META:GetSet("Color", Color(1,1,1,1))
-	META:GetSet("RoughnessMultiplier", 1)
-	META:GetSet("MetallicMultiplier", 1)
-	META:GetSet("UVMultiplier", 1)
+META:GetSet("Cull", true)
+META:GetSet("NoDraw", false)
+META:GetSet("ModelPath", "models/cube.obj")
+META:GetSet("Color", Color(1, 1, 1, 1))
+META:GetSet("RoughnessMultiplier", 1)
+META:GetSet("MetallicMultiplier", 1)
+META:GetSet("UVMultiplier", 1)
 META:EndStorable()
-
 META:IsSet("Loading", false)
 META:GetSet("Model", nil)
 META:GetSet("AABB", AABB())
 META:GetSet("MaterialOverride", nil)
-
 META.Network = {
-	ModelPath = {"string", 1/5, "reliable"},
-	Cull = {"boolean", 1/5},
+	ModelPath = {"string", 1 / 5, "reliable"},
+	Cull = {"boolean", 1 / 5},
 }
 
 if GRAPHICS then
@@ -36,11 +31,8 @@ if GRAPHICS then
 	end
 
 	function META:SetVisible(b)
-		if b then
-			render3d.AddModel(self)
-		else
-			render3d.RemoveModel(self)
-		end
+		if b then render3d.AddModel(self) else render3d.RemoveModel(self) end
+
 		self.is_visible = b
 	end
 
@@ -55,6 +47,7 @@ if GRAPHICS then
 
 	function META:OnRemove()
 		render3d.RemoveModel(self)
+
 		for _, v in pairs(self.occluders) do
 			v:Delete()
 		end
@@ -62,9 +55,7 @@ if GRAPHICS then
 
 	function META:SetModelPath(path)
 		self:RemoveSubModels()
-
 		self.ModelPath = path
-
 		self:SetLoading(true)
 
 		render3d.LoadModel(
@@ -82,7 +73,9 @@ if GRAPHICS then
 			end
 		)
 
-		self.EditorName = ("/" .. self.ModelPath):match("^.+/(.+)%."):lower():gsub("_", " "):gsub("%d", ""):gsub("%s+", " ")
+		self.EditorName = (
+			"/" .. self.ModelPath
+		):match("^.+/(.+)%."):lower():gsub("_", " "):gsub("%d", ""):gsub("%s+", " ")
 	end
 
 	function META:MakeError()
@@ -95,20 +88,19 @@ if GRAPHICS then
 		function META:AddSubModel(model)
 			table.insert(self.sub_models, model)
 
-			model:CallOnRemove(function()
-				if self:IsValid() then
-					self:RemoveSubModel(model)
-				end
-			end, self)
+			model:CallOnRemove(
+				function()
+					if self:IsValid() then self:RemoveSubModel(model) end
+				end,
+				self
+			)
 
 			render3d.AddModel(self)
 
 			for i, sub_mesh in ipairs(model:GetSubMeshes()) do
-
 				sub_mesh.i = i
 				sub_mesh.model = model
 				sub_mesh.data = sub_mesh.data or render3d.default_material
-
 				table.insert(self.sub_meshes, sub_mesh)
 			end
 
@@ -119,15 +111,14 @@ if GRAPHICS then
 			for i, v in ipairs(self.sub_models) do
 				if v == model then
 					table.remove(self.sub_models, i)
+
 					break
 				end
 			end
 
-			if not self.sub_models[1] then
-				render3d.RemoveModel(self)
-			end
+			if not self.sub_models[1] then render3d.RemoveModel(self) end
 
-			for i,v in ipairs(model:GetSubMeshes()) do
+			for i, v in ipairs(model:GetSubMeshes()) do
 				if table.hasvalue(self.sub_meshes, v) then
 					table.remove(self.sub_meshes, i)
 				end
@@ -153,10 +144,10 @@ if GRAPHICS then
 		end
 
 		self:SetAABB(self.AABB)
-
 		render3d.largest_aabb = render3d.largest_aabb or AABB()
 		local old = render3d.largest_aabb:Copy()
 		render3d.largest_aabb:Expand(self.AABB)
+
 		if old ~= render3d.largest_aabb then
 			event.Call("LargestAABB", render3d.largest_aabb)
 		end
@@ -242,15 +233,11 @@ if GRAPHICS then
 			self:DrawModel()
 		else
 			if self:IsVisible(what) then
-				if self.occluders[what] then
-					self.occluders[what]:BeginConditional()
-				end
+				if self.occluders[what] then self.occluders[what]:BeginConditional() end
 
 				self:DrawModel()
 
-				if self.occluders[what] then
-					self.occluders[what]:EndConditional()
-				end
+				if self.occluders[what] then self.occluders[what]:EndConditional() end
 			end
 		end
 	end
@@ -269,29 +256,63 @@ if GRAPHICS then
 
 				for I = 0, indices:GetLength() - 1, 3 do
 					local Index = indices[I]
-					local Vertex = string.format("v %.6f %.6f %.6f\n", vertices[Index].pos[0], vertices[Index].pos[1], vertices[Index].pos[2])
-					Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", vertices[Index].normal[0], vertices[Index].normal[1], vertices[Index].normal[2])
-					
+					local Vertex = string.format(
+						"v %.6f %.6f %.6f\n",
+						vertices[Index].pos[0],
+						vertices[Index].pos[1],
+						vertices[Index].pos[2]
+					)
+					Vertex = Vertex .. string.format(
+							"vn %.6f %.6f %.6f\n",
+							vertices[Index].normal[0],
+							vertices[Index].normal[1],
+							vertices[Index].normal[2]
+						)
 					Vertex = Vertex .. string.format("vt %.6f %.6f\n", vertices[Index].uv[0], vertices[Index].uv[1])
 					Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
-					
 					Index = indices[I + 1]
-					Vertex = Vertex .. string.format("v %.6f %.6f %.6f\n", vertices[Index].pos[0], vertices[Index].pos[1], vertices[Index].pos[2])
-					Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", vertices[Index].normal[0], vertices[Index].normal[1], vertices[Index].normal[2])
-					
+					Vertex = Vertex .. string.format(
+							"v %.6f %.6f %.6f\n",
+							vertices[Index].pos[0],
+							vertices[Index].pos[1],
+							vertices[Index].pos[2]
+						)
+					Vertex = Vertex .. string.format(
+							"vn %.6f %.6f %.6f\n",
+							vertices[Index].normal[0],
+							vertices[Index].normal[1],
+							vertices[Index].normal[2]
+						)
 					Vertex = Vertex .. string.format("vt %.6f %.6f\n", vertices[Index].uv[0], vertices[Index].uv[1])
 					Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
-					
 					Index = indices[I + 2]
-					Vertex = Vertex .. string.format("v %.6f %.6f %.6f\n", vertices[Index].pos[0], vertices[Index].pos[1], vertices[Index].pos[2])
-					Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", vertices[Index].normal[0], vertices[Index].normal[1], vertices[Index].normal[2])
-					
+					Vertex = Vertex .. string.format(
+							"v %.6f %.6f %.6f\n",
+							vertices[Index].pos[0],
+							vertices[Index].pos[1],
+							vertices[Index].pos[2]
+						)
+					Vertex = Vertex .. string.format(
+							"vn %.6f %.6f %.6f\n",
+							vertices[Index].normal[0],
+							vertices[Index].normal[1],
+							vertices[Index].normal[2]
+						)
 					Vertex = Vertex .. string.format("vt %.6f %.6f\n", vertices[Index].uv[0], vertices[Index].uv[1])
 					Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
-
 					Count = Count + 3
-					Vertex = Vertex .. string.format("f %i/%i/%i %i/%i/%i %i/%i/%i\n", Count, Count, Count, Count - 1, Count - 1, Count - 1, Count - 2, Count - 2, Count - 2)
-
+					Vertex = Vertex .. string.format(
+							"f %i/%i/%i %i/%i/%i %i/%i/%i\n",
+							Count,
+							Count,
+							Count,
+							Count - 1,
+							Count - 1,
+							Count - 1,
+							Count - 2,
+							Count - 2,
+							Count - 2
+						)
 					table.insert(out, Vertex)
 				end
 			end
@@ -312,12 +333,12 @@ if GRAPHICS then
 					if not UsedMaterials[MaterialName] then
 						SubmeshCount = SubmeshCount + 1
 						UsedMaterials[MaterialName] = true
-
 						table.insert(out, "g " .. MaterialName .. "\n")
 
 						for _, model in ipairs(self:GetSubModels()) do
 							for _, data in ipairs(model:GetSubMeshes()) do
 								local mat = data.data
+
 								if mat.vmt and mat.vmt.fullpath == MaterialNameRaw then
 									export(model)
 								end
@@ -338,6 +359,4 @@ end
 
 META:RegisterComponent()
 
-if RELOAD then
-	render3d.Initialize()
-end
+if RELOAD then render3d.Initialize() end

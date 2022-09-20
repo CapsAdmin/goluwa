@@ -2,44 +2,44 @@ local tex = render.CreateTexture("cube_map")
 tex:SetInternalFormat("r11f_g11f_b10f")
 tex:SetSize(Vec2() + 256)
 tex:SetupStorage()
-
 local fb = render.CreateFrameBuffer()
 fb:SetTexture(1, tex, "write", nil, 1)
 fb:WriteThese(1)
-
-local shader_view = render.CreateShader({
-	name = "cubemap",
-	fragment = {
-		mesh_layout = {
-			{uv = "vec2"},
-		},
-		variables = {
-			cubemap = tex,
-		},
-		source = [[
+local shader_view = render.CreateShader(
+	{
+		name = "cubemap",
+		fragment = {
+			mesh_layout = {
+				{uv = "vec2"},
+			},
+			variables = {
+				cubemap = tex,
+			},
+			source = [[
 			out vec4 out_color;
 			void main()
 			{
 				out_color = texture(cubemap, -get_camera_dir(uv).xzy);
 			}
 		]],
-	},
-})
-
-local shader_sky = render.CreateShader({
-	name = "cubemap",
-	vertex = {
-		mesh_layout = {
+		},
+	}
+)
+local shader_sky = render.CreateShader(
+	{
+		name = "cubemap",
+		vertex = {
+			mesh_layout = {
 				{pos = "vec3"},
 				{uv = "vec2"},
 			},
-		variables = {
-			turbidity = 2 ,
-			rayleigh = 1,
-			mieCoefficient = 0.005,
-			sunPosition = Vec3(0),
-		},
-		source = [[
+			variables = {
+				turbidity = 2,
+				rayleigh = 1,
+				mieCoefficient = 0.005,
+				sunPosition = Vec3(0),
+			},
+			source = [[
 		vec3 vWorldPosition;
 		vec3 vSunDirection;
 		float vSunfade;
@@ -105,14 +105,14 @@ local shader_sky = render.CreateShader({
 			vBetaM = totalMie(lambda, turbidity) * mieCoefficient;
 
 		}
-		]]
-	},
-	fragment = {
-		variables = {
-			luminance = 1 ,
-			mieDirectionalG = 0.8,
+		]],
 		},
-		source = [[
+		fragment = {
+			variables = {
+				luminance = 1,
+				mieDirectionalG = 0.8,
+			},
+			source = [[
 		vec3 vWorldPosition;
 		vec3 vSunDirection;
 		float vSunfade;
@@ -209,21 +209,18 @@ local shader_sky = render.CreateShader({
 			out_color = max(retColor.rgb, vec3(0,0,0));
 		}
 
-		]]
+		]],
+		},
 	}
-})
-
+)
 local views = {
-	Matrix44():SetRotation(QuatDeg3(0,-90,-90)), -- back
-	Matrix44():SetRotation(QuatDeg3(0,90,90)), -- front
-
-	Matrix44():SetRotation(QuatDeg3(0,0,0)), -- up
-	Matrix44():SetRotation(QuatDeg3(180,0,0)), -- down
-
-	Matrix44():SetRotation(QuatDeg3(90,0,0)), -- left
-	Matrix44():SetRotation(QuatDeg3(-90,180,0)), -- right
+	Matrix44():SetRotation(QuatDeg3(0, -90, -90)), -- back
+	Matrix44():SetRotation(QuatDeg3(0, 90, 90)), -- front
+	Matrix44():SetRotation(QuatDeg3(0, 0, 0)), -- up
+	Matrix44():SetRotation(QuatDeg3(180, 0, 0)), -- down
+	Matrix44():SetRotation(QuatDeg3(90, 0, 0)), -- left
+	Matrix44():SetRotation(QuatDeg3(-90, 180, 0)), -- right
 }
-
 local sky_projection = Matrix44():Perspective(
 	math.rad(90),
 	render3d.camera.FarZ,
@@ -238,29 +235,25 @@ for i, view in pairs(views) do
 	views[i] = cam
 end
 
-
 function goluwa.PreDrawGUI()
 	render.SetPresetBlendMode("none")
 	local old = render3d.camera
-
 	fb:Begin()
+
 	for i, view in ipairs(views) do
 		fb:SetTextureLayer(1, tex, i)
-		fb:ClearTexture(1, ColorHSV(i/6,1,1):Unpack())
-
+		fb:ClearTexture(1, ColorHSV(i / 6, 1, 1):Unpack())
 		render3d.camera = view
-
 		render2d.PushMatrix(0, 0, render2d.GetSize())
-			shader_sky:Bind()
-			render2d.rectangle:Draw(render2d.rectangle_indices)
+		shader_sky:Bind()
+		render2d.rectangle:Draw(render2d.rectangle_indices)
 		render2d.PopMatrix()
 	end
+
 	fb:End()
-
 	render3d.camera = old
-
 	render2d.PushMatrix(0, 0, render2d.GetSize())
-		shader_view:Bind()
-		render2d.rectangle:Draw(render2d.rectangle_indices)
+	shader_view:Bind()
+	render2d.rectangle:Draw(render2d.rectangle_indices)
 	render2d.PopMatrix()
 end

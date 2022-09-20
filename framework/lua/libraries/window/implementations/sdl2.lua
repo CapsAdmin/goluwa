@@ -1,13 +1,14 @@
 local sdl = desire("SDL2")
+
 if not sdl then return end
+
 local ffi = require("ffi")
-
 local META = ... or prototype.GetRegistered("window")
-
 local flags_to_enums = {}
 
-for k,v in pairs(sdl.e) do
+for k, v in pairs(sdl.e) do
 	local friendly = k:match("WINDOW_(.+)")
+
 	if friendly then
 		friendly = friendly:lower()
 		flags_to_enums[friendly] = v
@@ -29,9 +30,7 @@ function META:Initialize()
 	end
 
 	local flags = self.Flags or {"shown", "resizable"}
-
 	self:PreWindowSetup(flags)
-
 	local bit_flags = 0
 
 	for _, v in pairs(flags) do
@@ -40,16 +39,10 @@ function META:Initialize()
 
 	local display_info = ffi.new("struct SDL_DisplayMode[1]")
 	sdl.GetCurrentDisplayMode(0, display_info)
-
 	local w, h = self.Size:Unpack() -- todo
+	if w == 0 then w = display_info[0].w end
 
-	if w == 0 then
-		w = display_info[0].w
-	end
-
-	if h == 0 then
-		h = display_info[0].h
-	end
+	if h == 0 then h = display_info[0].h end
 
 	local wnd_ptr = sdl.CreateWindow(self.Title or "", sdl.e.WINDOWPOS_CENTERED, sdl.e.WINDOWPOS_CENTERED, w, h, bit_flags)
 
@@ -58,7 +51,6 @@ function META:Initialize()
 	end
 
 	self.wnd_ptr = wnd_ptr
-
 	self:PostWindowSetup(self.wnd_ptr)
 
 	if not system.disable_window then
@@ -67,12 +59,9 @@ function META:Initialize()
 	end
 
 	self.sdl_windowid = sdl.GetWindowID(self.wnd_ptr)
-
 	sdl.windowobjects[self.sdl_windowid] = self
 
-	if VERBOSE then
-		llog("version: %s", ffi.string(sdl.GetRevision()))
-	end
+	if VERBOSE then llog("version: %s", ffi.string(sdl.GetRevision())) end
 end
 
 function META:OnFrameEnd()
@@ -87,27 +76,26 @@ do
 		["keypad_+"] = "kp_add",
 		["return"] = "enter",
 	}
+
 	for i = 1, 9 do
 		key_translate["keypad_" .. i] = "kp_" .. i
 	end
 
 	local mbutton_translate = {}
+
 	for i = 1, 8 do
 		mbutton_translate[i] = "button_" .. i
 	end
+
 	mbutton_translate[3] = "button_2"
 	mbutton_translate[2] = "button_3"
-
 	local suppress_char_input = false
-
 	local max = 20
 	local events = ffi.new("union SDL_Event[?]", max)
-
 	local window_flags = {}
-	for k,v in pairs(sdl.e) do
-		if k:startswith("WINDOW_") then
-			window_flags[k] = v
-		end
+
+	for k, v in pairs(sdl.e) do
+		if k:startswith("WINDOW_") then window_flags[k] = v end
 	end
 
 	function META:OnUpdate(dt)
@@ -119,11 +107,25 @@ do
 			local size = self:GetSize()
 			local changed = false
 
-			if pos.x <= 1 then pos.x = size.x-2 changed = true end
-			if pos.y <= 1 then pos.y = size.y-2 changed = true end
+			if pos.x <= 1 then
+				pos.x = size.x - 2
+				changed = true
+			end
 
-			if pos.x >= size.x-1 then pos.x = 2 changed = true end
-			if pos.y >= size.y-1 then pos.y = 2 changed = true end
+			if pos.y <= 1 then
+				pos.y = size.y - 2
+				changed = true
+			end
+
+			if pos.x >= size.x - 1 then
+				pos.x = 2
+				changed = true
+			end
+
+			if pos.y >= size.y - 1 then
+				pos.y = 2
+				changed = true
+			end
 
 			if changed then
 				self.last_mpos = pos
@@ -139,43 +141,33 @@ do
 
 			if events.window.windowID == self.sdl_windowid then
 				--for k,v in pairs(sdl.e) do if v == case and k:startswith("WINDOWEVENT_") then print(k) break end end
-
 				local window_state = utility.FlagsToTable(sdl.GetWindowFlags(self.wnd_ptr), window_flags)
-
 				self.Focused = window_state.WINDOW_INPUT_FOCUS or false
 
 				if case == sdl.e.WINDOWEVENT_MOVED then
 					self.cached_pos = nil
 					self:CallEvent("PositionChanged", Vec2(events.window.data1, events.window.data2))
-
 				elseif case == sdl.e.WINDOWEVENT_RESIZED or case == sdl.e.WINDOWEVENT_SIZE_CHANGED then
 					self.cached_size = nil
 					self.cached_fb_size = nil
 					self:CallEvent("SizeChanged", Vec2(events.window.data1, events.window.data2))
 					self:CallEvent("FramebufferResized", Vec2(events.window.data1, events.window.data2))
-
 				elseif case == sdl.e.WINDOWEVENT_MINIMIZED then
 					self:CallEvent("Minimize")
-
 				elseif case == sdl.e.WINDOWEVENT_MAXIMIZED then
 					self:CallEvent("Maximize")
-
 				elseif case == sdl.e.WINDOWEVENT_ENTER then
 					self:CallEvent("CursorEnter")
-
 				elseif case == sdl.e.WINDOWEVENT_LEAVE then
 					self:CallEvent("CursorLeave")
-
 				elseif case == sdl.e.WINDOWEVENT_FOCUS_GAINED then
 					self:CallEvent("GainedFocus")
 				elseif case == sdl.e.WINDOWEVENT_FOCUS_LOST then
 					self:CallEvent("LostFocus")
 				elseif case == sdl.e.WINDOWEVENT_CLOSE then
 					self:CallEvent("Close")
-
 				elseif events.type == sdl.e.KEYDOWN or events.type == sdl.e.KEYUP then
 					local key = ffi.string(sdl.GetKeyName(events.key.keysym.sym)):lower():gsub(" ", "_")
-
 					key = key_translate[key] or key
 
 					if events.key["repeat"] == 0 then
@@ -184,7 +176,6 @@ do
 								"KeyInput",
 								key,
 								events.type == sdl.e.KEYDOWN,
-
 								events.key.state,
 								events.key.keysym.mod,
 								ffi.string(sdl.GetScancodeName(events.key.keysym.scancode)):lower(),
@@ -200,7 +191,6 @@ do
 						"KeyInputRepeat",
 						key,
 						events.type == sdl.e.KEYDOWN,
-
 						events.key.state,
 						events.key.keysym.mod,
 						ffi.string(sdl.GetScancodeName(events.key.keysym.scancode)):lower(),
@@ -213,26 +203,28 @@ do
 					end
 
 					self:CallEvent("CharInput", ffi.string(events.edit.text), events.edit.start, events.edit.length)
-
 				elseif events.type == sdl.e.MOUSEBUTTONDOWN or events.type == sdl.e.MOUSEBUTTONUP then
-					self:CallEvent("MouseInput", mbutton_translate[events.button.button], events.type == sdl.e.MOUSEBUTTONDOWN, events.button.x, events.button.y)
-
+					self:CallEvent(
+						"MouseInput",
+						mbutton_translate[events.button.button],
+						events.type == sdl.e.MOUSEBUTTONDOWN,
+						events.button.x,
+						events.button.y
+					)
 				elseif events.type == sdl.e.MOUSEWHEEL then
 					self:CallEvent("MouseScroll", Vec2(events.wheel.x, events.wheel.y), events.wheel.which)
-
 				elseif events.type == sdl.e.DROPFILE then
 					self:CallEvent("Drop", ffi.string(events.drop.file))
-
 				else
-					--[[print("unknown event", events.type)]]
-				end
+
+				--[[print("unknown event", events.type)]] end
 			end
 		end
 
 		if count == max then
 			max = max + 1
 			events = ffi.new("union SDL_Event[?]", max)
-			--llog("max events increased: ", max)
+		--llog("max events increased: ", max)
 		end
 	end
 end
@@ -244,13 +236,14 @@ end
 function META:Maximize()
 	sdl.MaximizeWindow(self.wnd_ptr)
 end
+
 function META:Minimize()
 	sdl.MinimizeWindow(self.wnd_ptr)
 end
+
 function META:Restore()
 	sdl.RestoreWindow(self.wnd_ptr)
 end
-
 
 do
 	local enums = {
@@ -258,26 +251,19 @@ do
 		text_input = sdl.e.SYSTEM_CURSOR_IBEAM,
 		crosshair = sdl.e.SYSTEM_CURSOR_CROSSHAIR,
 		hand = sdl.e.SYSTEM_CURSOR_HAND,
-
 		horizontal_resize = sdl.e.SYSTEM_CURSOR_SIZENS,
 		vertical_resize = sdl.e.SYSTEM_CURSOR_SIZEWE,
-
 		top_right_resize = sdl.e.SYSTEM_CURSOR_SIZENESW,
 		bottom_left_resize = sdl.e.SYSTEM_CURSOR_SIZENESW,
-
 		top_left_resize = sdl.e.SYSTEM_CURSOR_SIZENWSE,
 		bottom_right_resize = sdl.e.SYSTEM_CURSOR_SIZENWSE,
-
 		all_resize = sdl.e.SYSTEM_CURSOR_SIZEALL,
 	}
-
 	local last
 	local cache = {}
 
 	function META:SetCursor(mode)
-		if not self.Cursors[mode] then
-			mode = "arrow"
-		end
+		if not self.Cursors[mode] then mode = "arrow" end
 
 		self.Cursor = mode
 
@@ -312,7 +298,6 @@ function META:GetPosition()
 		local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 		sdl.GetWindowPosition(self.wnd_ptr, x, y)
 		local pos = Vec2(x[0], y[0])
-
 		self.cached_pos = pos
 	end
 
@@ -329,7 +314,9 @@ function META:GetSize()
 		local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 		sdl.GetWindowSize(self.wnd_ptr, x, y)
 		local size = Vec2(x[0], y[0])
+
 		if size.x == 0 then debug.trace() end
+
 		self.cached_size = size
 	end
 
@@ -351,21 +338,24 @@ function META:GetFramebufferSize()
 
 	return self.cached_fb_size
 end
+
 function META:SetTitle(title)
 	sdl.SetWindowTitle(self.wnd_ptr, tostring(title))
 end
 
 if sdl.GetGlobalMouseState and os.getenv("SDL_VIDEODRIVER") ~= "wayland" then
 	local x, y = ffi.new("int[1]"), ffi.new("int[1]")
+
 	function META:GetMousePosition()
 		sdl.GetGlobalMouseState(x, y)
-		if self.global_mouse then
-			return Vec2(x[0], y[0])
-		end
+
+		if self.global_mouse then return Vec2(x[0], y[0]) end
+
 		return Vec2(x[0], y[0]) - self:GetPosition()
 	end
 else
 	local x, y = ffi.new("int[1]"), ffi.new("int[1]")
+
 	function META:GetMousePosition()
 		sdl.GetMouseState(x, y)
 		return Vec2(x[0], y[0])
@@ -375,11 +365,12 @@ end
 function META:SetMousePosition(pos)
 	sdl.WarpMouseInWindow(self.wnd_ptr, pos:Unpack())
 end
+
 do
 	local last
 
 	function META:SwapInterval(b)
-		if last~= b then
+		if last ~= b then
 			sdl.GL_SetSwapInterval(b and 1 or 0)
 			last = b
 		end
@@ -431,9 +422,7 @@ if system then
 
 	function system.GetTimeSDL()
 		local time = tonumber(sdl.GetPerformanceCounter())
-
 		time = time - start_time
-
 		return time / freq
 	end
 end
@@ -443,16 +432,12 @@ if VULKAN then
 		table.insert(flags, "vulkan")
 	end
 
-	function META:PostWindowSetup()
-
-	end
+	function META:PostWindowSetup() end
 
 	function render.CreateVulkanSurface(wnd, instance)
 		local surface = sdl.CreateVulkanSurface(wnd.wnd_ptr, instance)
 
-		if surface == nil then
-			return nil, ffi.string(sdl.GetError())
-		end
+		if surface == nil then return nil, ffi.string(sdl.GetError()) end
 
 		return surface
 	end
@@ -467,27 +452,25 @@ if OPENGL and not NULL_OPENGL then
 
 	function META:PreWindowSetup(flags)
 		table.insert(flags, "opengl")
-
 		sdl.GL_SetAttribute(sdl.e.GL_DEPTH_SIZE, 16)
 		sdl.GL_SetAttribute(sdl.e.GL_STENCIL_SIZE, 8)
-
 		-- workaround for srgb on intel mesa driver
 		sdl.GL_SetAttribute(sdl.e.GL_ALPHA_SIZE, 1)
 	end
 
 	local attempts = {
-		{ version = 4.6, profile_mask = "core" },
-		{ version = 4.5, profile_mask = "core" },
-		{ version = 4.4, profile_mask = "core" },
-		{ version = 4.3, profile_mask = "core" },
-		{ version = 4.2, profile_mask = "core" },
-		{ version = 4.1, profile_mask = "core" },
-		{ version = 4.0, profile_mask = "core" },
-		{ version = 3.3, profile_mask = "core" },
-		{ version = 3.2, profile_mask = "core" },
-		{ version = 3.1, profile_mask = "core" },
-		{ version = 3.0, profile_mask = "core" },
-		{ profile_mask = "core" },
+		{version = 4.6, profile_mask = "core"},
+		{version = 4.5, profile_mask = "core"},
+		{version = 4.4, profile_mask = "core"},
+		{version = 4.3, profile_mask = "core"},
+		{version = 4.2, profile_mask = "core"},
+		{version = 4.1, profile_mask = "core"},
+		{version = 4.0, profile_mask = "core"},
+		{version = 3.3, profile_mask = "core"},
+		{version = 3.2, profile_mask = "core"},
+		{version = 3.1, profile_mask = "core"},
+		{version = 3.0, profile_mask = "core"},
+		{profile_mask = "core"},
 	}
 
 	function META:PostWindowSetup(wnd_ptr)
@@ -496,7 +479,10 @@ if OPENGL and not NULL_OPENGL then
 		local failed_once = false
 
 		for _, attempt in ipairs(attempts) do
-			sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e["GL_CONTEXT_PROFILE_" .. attempt.profile_mask:upper()])
+			sdl.GL_SetAttribute(
+				sdl.e.GL_CONTEXT_PROFILE_MASK,
+				sdl.e["GL_CONTEXT_PROFILE_" .. attempt.profile_mask:upper()]
+			)
 
 			if DEBUG_OPENGL then
 				sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_FLAGS, sdl.e.GL_CONTEXT_DEBUG_FLAG)
@@ -512,12 +498,25 @@ if OPENGL and not NULL_OPENGL then
 
 			if context ~= nil then
 				if not errors[1] then
-					llog("successfully created OpenGL context ", attempt.version or "??", " ", attempt.profile_mask)
+					llog(
+						"successfully created OpenGL context ",
+						attempt.version or "??",
+						" ",
+						attempt.profile_mask
+					)
 				end
+
 				break
 			else
 				local err = ffi.string(sdl.GetError()):trim()
-				llog("could not request OpenGL ", attempt.version or "??", " ", attempt.profile_mask, ": ", err)
+				llog(
+					"could not request OpenGL ",
+					attempt.version or "??",
+					" ",
+					attempt.profile_mask,
+					": ",
+					err
+				)
 				table.insert(errors, err)
 			end
 		end
@@ -529,7 +528,6 @@ if OPENGL and not NULL_OPENGL then
 		gl.GetProcAddress = sdl.GL_GetProcAddress
 		gl.Initialize()
 		self:BindContext()
-
 		self.gl_context = context
 	end
 

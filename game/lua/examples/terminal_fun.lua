@@ -5,29 +5,38 @@ commands.Add("ls", function()
 	table.print(files)
 end)
 
-commands.Add("cat", function(line, file)
-	if vfs.Exists(cd .. file) then
-		log(vfs.Read(file))
-	end
-end, nil, function(arg, args)
-	if #args > 1 then return end
+commands.Add(
+	"cat",
+	function(line, file)
+		if vfs.Exists(cd .. file) then log(vfs.Read(file)) end
+	end,
+	nil,
+	function(arg, args)
+		if #args > 1 then return end
 
-	return vfs.Find(cd)
-end)
-commands.Add("cd", function(line, folder)
-	if not folder then
-		logn(cd)
-	elseif folder == ".." then
-		cd = cd:match("(.+)/")
-	elseif vfs.IsDirectory(cd .. "/" .. folder) then
-		cd = cd .. "/" .. folder .. "/"
+		return vfs.Find(cd)
 	end
-end, nil, function(arg, args)
-	if #args > 1 then return end
-	print(#args)
+)
 
-	return vfs.Find(cd)
-end)
+commands.Add(
+	"cd",
+	function(line, folder)
+		if not folder then
+			logn(cd)
+		elseif folder == ".." then
+			cd = cd:match("(.+)/")
+		elseif vfs.IsDirectory(cd .. "/" .. folder) then
+			cd = cd .. "/" .. folder .. "/"
+		end
+	end,
+	nil,
+	function(arg, args)
+		if #args > 1 then return end
+
+		print(#args)
+		return vfs.Find(cd)
+	end
+)
 
 commands.Add("quit", function()
 	system.ShutDown()

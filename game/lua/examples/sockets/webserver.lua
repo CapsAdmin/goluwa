@@ -1,11 +1,8 @@
 sockets.debug = true
-
 server = utility.RemoveOldObject(sockets.CreateServer())
-
 server.port = 1234
 server.content_folder = "www"
 server.version = "0.1.0"
-
 server.file_types = {
 	default = {
 		read_mode = "r",
@@ -32,7 +29,6 @@ function server:OnReceive(str, client)
 
 	if path:find("?") then
 		local new_path, param_line = path:match("(.+)?(.+)")
-
 		param_line = "&" .. param_line
 
 		for key, val in param_line:gmatch("&(.+)=(.+)") do
@@ -54,14 +50,14 @@ function server:OnReceive(str, client)
 		if vfs.Exists(path) then
 			local info = server.file_types[extension] or server.file_types.default
 			local data = vfs.Read(path, info.read_mode)
-
-			local header = sockets.TableToHeader({
-			--	["Content-Type"] = info.mime,
-				["Accept-Ranges"] = "bytes",
-				["Content-Length"] = #data,
-				["Connection"] = "Keep-Alive",
-			})
-
+			local header = sockets.TableToHeader(
+				{
+					--	["Content-Type"] = info.mime,
+					["Accept-Ranges"] = "bytes",
+					["Content-Length"] = #data,
+					["Connection"] = "Keep-Alive",
+				}
+			)
 			client:Send("HTTP/1.1 200 OK\r\n" .. header .. "\r\n" .. data)
 			vfs.Write("data/header.txt", "HTTP/1.1 200 OK\r\n" .. header)
 		else
@@ -86,12 +82,12 @@ function server:NotFound(dir)
 			Found</h1>
 			<span
 			style="color: rgb(0, 0, 0); font-family: 'Times New Roman'; font-size: medium; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; word-spacing: 0px; display: inline ! important; float: none;">The
-			requested URL ]]..dir..[[ was not found on this server.</span><br>
+			requested URL ]] .. dir .. [[ was not found on this server.</span><br>
 			<br>
 			<hr>
 			<span
-			style="color: rgb(0, 0, 0); font-family: 'Times New Roman'; font-size: medium; font-style: italic; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; word-spacing: 0px; display: inline ! important; float: none;">Lua Webserver/]]..self.version..[[
-			(]]..jit.os..[[)</span><br>
+			style="color: rgb(0, 0, 0); font-family: 'Times New Roman'; font-size: medium; font-style: italic; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; word-spacing: 0px; display: inline ! important; float: none;">Lua Webserver/]] .. self.version .. [[
+			(]] .. jit.os .. [[)</span><br>
 			<br>
 		</body>
 	</html>
@@ -103,5 +99,4 @@ function server:OnClientConnected(client)
 end
 
 server:Host("*", server.port)
-
 system.OpenURL("http://localhost:" .. server.port)

@@ -1,8 +1,6 @@
 local message = _G.message or {}
-
 -- "-1" is a reserved id
 local packet_id = -1
-
 message.listeners = message.listeners or {}
 
 function message.AddListener(id, callback)
@@ -16,10 +14,8 @@ end
 if CLIENT then
 	function message.Send(id, ...)
 		local buffer = packet.CreateBuffer()
-
 		buffer:WriteString(id)
 		buffer:WriteTable({...}, typex)
-
 		packet.Send(packet_id, buffer, "reliable")
 	end
 
@@ -37,9 +33,7 @@ if CLIENT then
 			end
 		end
 
-		if message.listeners[id] then
-			message.listeners[id](unpack(args))
-		end
+		if message.listeners[id] then message.listeners[id](unpack(args)) end
 	end
 
 	packet.AddListener(packet_id, message.OnMessageReceived)
@@ -48,10 +42,8 @@ end
 if SERVER then
 	function message.Send(id, filter, ...)
 		local buffer = packet.CreateBuffer()
-
 		buffer:WriteString(id)
 		buffer:WriteTable({...}, typex)
-
 		packet.Send(packet_id, buffer, filter, "reliable")
 	end
 
@@ -86,9 +78,7 @@ do -- console extension
 		message.AddListener("scmd", function(client, cmd, ...)
 			local callback = message.server_commands[cmd]
 
-			if callback then
-				callback(client, ...)
-			end
+			if callback then callback(client, ...) end
 		end)
 	end
 
@@ -119,17 +109,21 @@ do -- event extension
 		message.AddListener("evtmsg", function(...)
 			for i = 1, select("#", ...) do
 				local v = select(i, ...)
+
 				if type(v) == "table" and type(v.IsValid) == "function" then
 					if not v:IsValid() then
 						llog("event.CallShared: event message from server contains NULL value")
+
 						for i = 1, select("#", ...) do
 							local v = select(i, ...)
 							print(i, v)
 						end
+
 						return true
 					end
 				end
 			end
+
 			event.Call(...)
 		end)
 	end
@@ -150,19 +144,14 @@ do -- event extension
 	end
 end
 
-packet.ExtendBuffer(
-	"Null",
-	function(buffer, client)
-		buffer:WriteByte(0)
-	end,
-	function(buffer)
-		buffer:ReadByte()
-		return NULL
-	end
-)
+packet.ExtendBuffer("Null", function(buffer, client)
+	buffer:WriteByte(0)
+end, function(buffer)
+	buffer:ReadByte()
+	return NULL
+end)
 
 if CLIENT then
-
 	function network.PrintOnServer(str)
 		message.Send("network_print_on_server", str)
 	end

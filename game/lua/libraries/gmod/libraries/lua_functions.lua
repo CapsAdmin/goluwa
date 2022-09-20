@@ -1,10 +1,17 @@
 function gine.env.include(path)
 	vfs.modify_chunkname = function(full_path)
-		if full_path:find("/addons/") then return "@" .. full_path:match("^.+/(addons/.+)$") end
-		if full_path:find("/gamemodes/") then return "@" .. full_path:match("^.+/(gamemodes/.+)$") end
-		if full_path:find("/lua/") then return "@" .. full_path:match("^.+/(lua/.+)$") end
-	end
+		if full_path:find("/addons/") then
+			return "@" .. full_path:match("^.+/(addons/.+)$")
+		end
 
+		if full_path:find("/gamemodes/") then
+			return "@" .. full_path:match("^.+/(gamemodes/.+)$")
+		end
+
+		if full_path:find("/lua/") then
+			return "@" .. full_path:match("^.+/(lua/.+)$")
+		end
+	end
 	local lookup = {}
 	local slashes = path:count("/") > 1
 
@@ -29,7 +36,6 @@ function gine.env.include(path)
 	end
 
 	local ok, err = runfile(lookup)
-
 	vfs.modify_chunkname = nil
 
 	if ok == false then
@@ -42,11 +48,10 @@ end
 
 function gine.env.module(name, _ENV)
 	--logn("gine: module(",name,")")
-
 	local tbl = package.loaded[name] or gine.env[name] or {}
 
 	if _ENV == package.seeall then
-		_ENV = gine.env
+		_ENV = gine.env;setfenv(1, _ENV);
 		setmetatable(tbl, {__index = _ENV})
 	elseif _ENV then
 		wlog(_ENV, 2)
@@ -60,7 +65,6 @@ function gine.env.module(name, _ENV)
 
 	package.loaded[name] = tbl
 	gine.env[name] = tbl
-
 	setfenv(2, tbl)
 end
 
@@ -68,20 +72,15 @@ local require = require("require")
 
 function gine.env.require(name, ...)
 	--logn("gine: require(",name,")")
-
 	local func, err, path = require.load(name, gine.package_loaders)
 
 	if type(func) == "function" then
-		if debug.getinfo(func).what ~= "C" then
-			setfenv(func, gine.env)
-		end
+		if debug.getinfo(func).what ~= "C" then setfenv(func, gine.env) end
 
 		return require.require_function(name, func, path, name)
 	end
 
-	if pcall(require, name) then
-		return require(name)
-	end
+	if pcall(require, name) then return require(name) end
 
 	if gine.env[name] then return gine.env[name] end
 
@@ -96,9 +95,7 @@ function gine.env.CompileString(code, identifier, handle_error)
 	local ok, code = pcall(gine.PreprocessLua, code)
 
 	if not ok then
-		if not handle_error then
-			return code
-		end
+		if not handle_error then return code end
 
 		error(err, 2)
 	end
@@ -110,9 +107,7 @@ function gine.env.CompileString(code, identifier, handle_error)
 		return func
 	end
 
-	if handle_error then
-		error(err, 2)
-	end
+	if handle_error then error(err, 2) end
 
 	return err
 end
@@ -144,9 +139,7 @@ end
 function gine.env.ProtectedCall(...)
 	local ret = table.pack(pcall(...))
 
-	if not ret[1] then
-		gine.env.ErrorNoHalt(ret[2])
-	end
+	if not ret[1] then gine.env.ErrorNoHalt(ret[2]) end
 
 	return unpack(ret)
 end

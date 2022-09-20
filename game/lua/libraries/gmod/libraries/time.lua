@@ -26,11 +26,11 @@ function gine.env.VGUIFrameTime()
 	return _G.system.GetElapsedTime()
 end
 
-function gine.env.CurTime()  --system.GetServerTime()
+function gine.env.CurTime() --system.GetServerTime()
 	return _G.system.GetElapsedTime()
 end
 
-function gine.env.SysTime()  --system.GetServerTime()
+function gine.env.SysTime() --system.GetServerTime()
 	return _G.system.GetTime()
 end
 

@@ -1,5 +1,4 @@
 local utility = ... or _G.utility
-
 local colors = {
 	["byzantium"] = Color(0.44, 0.16, 0.39, 1),
 	["firebrick"] = Color(0.70, 0.13, 0.13, 1),
@@ -472,9 +471,17 @@ local colors = {
 
 function utility.FindColor(color)
 	local found = {}
-	for k,v in pairs(colors) do
-		table.insert(found, {name = k, dist = Vec3(color.r, color.g, color.b):Distance(Vec3(v.r, v.g, v.b))})
+
+	for k, v in pairs(colors) do
+		table.insert(
+			found,
+			{name = k, dist = Vec3(color.r, color.g, color.b):Distance(Vec3(v.r, v.g, v.b))}
+		)
 	end
-	table.sort(found, function(a, b) return a.dist < b.dist end)
+
+	table.sort(found, function(a, b)
+		return a.dist < b.dist
+	end)
+
 	return found[1].name, colors[found[1].name]
 end

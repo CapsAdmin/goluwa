@@ -1,3 +1,2 @@
-local ctx = require"_openssl.hmac"
-
+local ctx = require("_openssl.hmac")
 return ctx

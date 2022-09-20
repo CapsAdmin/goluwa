@@ -2,7 +2,7 @@ do
 	local translate_key = {}
 
 	local function find_enums(name)
-		for k,v in pairs(gine.env) do
+		for k, v in pairs(gine.env) do
 			if k:startswith(name .. "_") then
 				translate_key[k:match(name .. "_(.+)"):lower()] = v
 			end
@@ -13,27 +13,23 @@ do
 	find_enums("MOUSE")
 	find_enums("BUTTON")
 	find_enums("JOYSTICK")
-
 	translate_key.left = gine.env.KEY_LEFT
 	translate_key.right = gine.env.KEY_RIGHT
-
 	translate_key.left_shift = gine.env.KEY_LSHIFT
 	translate_key.lshift = nil
 	translate_key.right_shift = gine.env.KEY_RSHIFT
 	translate_key.rshift = nil
-
 	translate_key.lcontrol = nil
 	translate_key.left_control = gine.env.KEY_LCONTROL
 	translate_key.right_control = gine.env.KEY_RCONTROL
 	translate_key.rcontrol = nil
-
 	translate_key.left_alt = gine.env.KEY_LALT
 	translate_key.lalt = nil
 	translate_key.right_alt = gine.env.KEY_RALT
 	translate_key.ralt = nil
-
 	local translate_key_rev = {}
-	for k,v in pairs(translate_key) do
+
+	for k, v in pairs(translate_key) do
 		translate_key_rev[v] = k
 	end
 
@@ -52,6 +48,7 @@ do
 		else
 			if translate_key[key] then
 				if gine.print_keys then llog("key: ", key, " >> ", translate_key[key]) end
+
 				return translate_key[key]
 			else
 				--logf("key %q could not be translated!\n", key)
@@ -69,9 +66,9 @@ do
 		mwheel_up = gine.env.MOUSE_WHEEL_UP,
 		mwheel_down = gine.env.MOUSE_WHEEL_DOWN,
 	}
-
 	local translate_mouse_rev = {}
-	for k,v in pairs(translate_mouse) do
+
+	for k, v in pairs(translate_mouse) do
 		translate_mouse_rev[v] = k
 	end
 
@@ -99,12 +96,16 @@ do
 
 	function gine.SetupKeyBind(key, cmd, on_press, on_release)
 		input.Unbind(key)
-
 		local p = cmd:match("^(%p)")
-		if p then
-			key = p .. key
-		end
-		gine.bindings[key] = {cmd = cmd, p = p, on_press = on_press, on_release = on_release or p and on_press}
+
+		if p then key = p .. key end
+
+		gine.bindings[key] = {
+			cmd = cmd,
+			p = p,
+			on_press = on_press,
+			on_release = on_release or p and on_press,
+		}
 	end
 
 	gine.AddEvent("KeyInput", function(key, press)
@@ -118,7 +119,12 @@ do
 			gine.env.gamemode.Call("KeyRelease", ply, gine.GetKeyCode(key))
 		end
 
-		local info = gine.bindings[key] or (press and gine.bindings["+" .. key] or gine.bindings["-" .. key])
+		local info = gine.bindings[key] or
+			(
+				press and
+				gine.bindings["+" .. key] or
+				gine.bindings["-" .. key]
+			)
 
 		if info then
 			if gine.env.gamemode.Call("PlayerBindPress", ply, info.cmd, press) ~= true then
@@ -131,6 +137,7 @@ do
 						info.on_release()
 					end
 				end
+
 				gine.env.RunConsoleCommand(info.cmd)
 			end
 
@@ -140,7 +147,6 @@ do
 
 	gine.SetupKeyBind("q", "+menu")
 	gine.SetupKeyBind("q", "-menu")
-
 	gine.SetupKeyBind("c", "+menu_context")
 	gine.SetupKeyBind("c", "-menu_context")
 
@@ -152,8 +158,13 @@ do
 		gine.env.gamemode.Call("PlayerEndVoice", gine.env.LocalPlayer())
 	end)
 
-	gine.SetupKeyBind("t", "messagemode", function() chat.Open() end)
-	gine.SetupKeyBind("u", "messagemode2", function() chat.Open() end)
+	gine.SetupKeyBind("t", "messagemode", function()
+		chat.Open()
+	end)
+
+	gine.SetupKeyBind("u", "messagemode2", function()
+		chat.Open()
+	end)
 
 	gine.SetupKeyBind("tab", "+score", function()
 		gine.env.gamemode.Call("ScoreboardShow")
@@ -168,10 +179,8 @@ local input = gine.env.input
 local lib = _G.input
 
 function input.LookupBinding(cmd)
-	for k,v in pairs(gine.bindings) do
-		if v.cmd == cmd then
-			return k
-		end
+	for k, v in pairs(gine.bindings) do
+		if v.cmd == cmd then return k end
 	end
 end
 
@@ -211,8 +220,13 @@ do
 		b = true
 		last_key = nil
 
-		event.AddListener("KeyInput", "gine_keytrap", function(key, press) last_key = gine.GetKeyCode(key) end)
-		event.AddListener("MouseInput", "gine_keytrap", function(key, press) last_key = gine.GetMouseCode(key) end)
+		event.AddListener("KeyInput", "gine_keytrap", function(key, press)
+			last_key = gine.GetKeyCode(key)
+		end)
+
+		event.AddListener("MouseInput", "gine_keytrap", function(key, press)
+			last_key = gine.GetMouseCode(key)
+		end)
 	end
 
 	function input.IsKeyTrapping()
@@ -225,7 +239,6 @@ do
 
 	function input.StopKeyTrapping()
 		b = false
-
 		event.RemoveListener("KeyInput", "gine_keytrap")
 		event.RemoveListener("MouseInput", "gine_keytrap")
 	end

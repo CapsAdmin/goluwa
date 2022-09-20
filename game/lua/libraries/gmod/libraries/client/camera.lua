@@ -1,20 +1,12 @@
 local cam = gine.env.cam
 
-function cam.Start()
+function cam.Start() end
 
-end
+function cam.End() end
 
-function cam.End()
+function cam.End3D() end
 
-end
-
-function cam.End3D()
-
-end
-
-function cam.IgnoreZ()
-
-end
+function cam.IgnoreZ() end
 
 function cam.PushModelMatrix(mat)
 	render2d.camera:PushWorld(mat.ptr, true)
@@ -24,25 +16,15 @@ function cam.PopModelMatrix()
 	render2d.camera:PopWorld()
 end
 
-function cam.Start3D2D()
+function cam.Start3D2D() end
 
-end
+function cam.Start3D() end
 
-function cam.Start3D()
+function cam.End3D2D() end
 
-end
+function cam.End3D() end
 
-function cam.End3D2D()
-
-end
-
-function cam.End3D()
-
-end
-
-function cam.End2D()
-
-end
+function cam.End2D() end
 
 function gine.env.EyeVector()
 	return gine.env.Vector(render3d.camera:GetAngles():GetForward())

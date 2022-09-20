@@ -1,24 +1,24 @@
 local ode = desire("ode")
-
 local ffi = require("ffi")
 local physics = physics or {}
-
 physics.ode = ode
 physics.bodies = physics.bodies or {}
 
 function physics.Vec3ToEngine(x, y, z)
---	return -y, -x, -z
-	return x,y,z
+	--	return -y, -x, -z
+	return x, y, z
 end
 
 function physics.Vec3FromEngine(x, y, z)
---	return -y, -x, -z
-	return x,y,z
+	--	return -y, -x, -z
+	return x, y, z
 end
 
 function physics.BodyToLua(self)
-	local udata = ffi.cast("uint32_t *", self.Movable and ode.BodyGetData(self.body) or ode.GeomGetData(self.geom))
-
+	local udata = ffi.cast(
+		"uint32_t *",
+		self.Movable and ode.BodyGetData(self.body) or ode.GeomGetData(self.geom)
+	)
 	return physics.body_lookup[udata[0]]
 end
 
@@ -42,66 +42,64 @@ function physics.Initialize()
 	if not PHYSICS then return end
 
 	if not RELOAD then
-		for k,v in pairs(physics.bodies) do
-			if v:IsValid() then
-				v:Remove()
-			end
+		for k, v in pairs(physics.bodies) do
+			if v:IsValid() then v:Remove() end
 		end
 
 		ode.InitODE2(0)
-
 		physics.world = ode.WorldCreate()
-
 		ode.WorldSetCFM(physics.world, 1e-5)
 		physics.hash_space = ode.HashSpaceCreate(nil)
 		physics.contact_group = ode.JointGroupCreate(0)
-
 		--LOL = ode.CreatePlane(physics.hash_space, 0, 0, -1, 0)
-
 		--local threading = ode.ThreadingAllocateMultiThreadedImplementation()
 		--local pool = ode.ThreadingAllocateThreadPool(8, 0, ode.e.AllocateMaskAll, nil)
 		--ode.ThreadingThreadPoolServeMultiThreadedImplementation(pool, threading);
 		--ode.WorldSetStepThreadingImplementation(world, ode.ThreadingImplementationGetFunctions(threading), threading)
-
 		physics.bodies = {}
 		physics.body_lookup = table.weak()
 	end
 
 	do
-		local function nearCallback (data, o1, o2)
+		local function nearCallback(data, o1, o2)
 			local b1 = ode.GeomGetBody(o1)
 			local b2 = ode.GeomGetBody(o2)
-
-			local MAX_CONTACTS = 8;
-			local contact = ffi.new("struct dContact[?]",MAX_CONTACTS);
-
-			local numc = ode.Collide( o1, o2, MAX_CONTACTS, contact[0].geom, ffi.sizeof("struct dContact"))
+			local MAX_CONTACTS = 8
+			
+			local contact = ffi.new("struct dContact[?]", MAX_CONTACTS)
+			
+			local numc = ode.Collide(o1, o2, MAX_CONTACTS, contact[0].geom, ffi.sizeof("struct dContact"))
 
 			for i = 0, numc - 1 do
-				contact[i].render2d.mode = ode.e.ContactApprox1;
-				contact[i].render2d.mu = 5;
-
-				local  c = ode.JointCreateContact(physics.world, physics.contact_group, contact+i);
-				ode.JointAttach (c, b1, b2);
+				contact[i].render2d.mode = ode.e.ContactApprox1
+				
+				contact[i].render2d.mu = 5
+				
+				local c = ode.JointCreateContact(physics.world, physics.contact_group, contact + i)
+				
+				ode.JointAttach(c, b1, b2)
+				
 			end
 		end
 
 		local nearCallback_cb = ffi.cast("void(*)(void*,struct dxGeom*,struct dxGeom*)", nearCallback)
 
-		local function nearCallBack_checkSpace(data,o1,o2)
+		local function nearCallBack_checkSpace(data, o1, o2)
 			if ode.GeomIsSpace(o1) ~= nil or ode.GeomIsSpace(o2) ~= nil then
-
-				ode.SpaceCollide2( o1, o2, data, nearCallback_cb);
-
-				if ode.GeomIsSpace( o1 ) ~= nil then
-					ode.SpaceCollide(ode.GeomGetSpace(o1), data, nearCallback_cb );
+				ode.SpaceCollide2(o1, o2, data, nearCallback_cb)
+				
+				if ode.GeomIsSpace(o1) ~= nil then
+					ode.SpaceCollide(ode.GeomGetSpace(o1), data, nearCallback_cb)
+					
 				end
 
-				if ode.GeomIsSpace( o2 ) ~= nil then
-					ode.SpaceCollide( ode.GeomGetSpace(o2), data, nearCallback_cb );
+				if ode.GeomIsSpace(o2) ~= nil then
+					ode.SpaceCollide(ode.GeomGetSpace(o2), data, nearCallback_cb)
+					
 				end
 			else
-				nearCallback (data, o1, o2);
+				nearCallback(data, o1, o2)
+				
 			end
 		end
 
@@ -111,21 +109,19 @@ function physics.Initialize()
 			ode.SpaceCollide(physics.hash_space, nil, nearCallBack_checkSpace_cb)
 			ode.WorldQuickStep(physics.world, dt)
 			ode.JointGroupEmpty(physics.contact_group)
-
-			--[[while ode.ReadCollision(out) do
+		--[[while ode.ReadCollision(out) do
 				local a = physics.BodyToLua(out[0].a)
 				local b = physics.BodyToLua(out[0].b)
 
 				if a and b then
 					event.Call("PhysicsCollide", a.ent, b.ent)
 				end
-			end]]
-		end)
+			end]] end)
 	end
 
 	physics.SetGravity(Vec3(0, 0, 9.8))
 	physics.sub_steps = 1
-	physics.fixed_time_step = 1/120
+	physics.fixed_time_step = 1 / 120
 	physics.init = true
 end
 
@@ -140,7 +136,7 @@ end
 do
 	function physics.RayCast(from, to)
 		wlog("NYI")
-		--[[if ode.RayCast(from.x, from.y, from.z, to.x, to.y, to.z, out) then
+	--[[if ode.RayCast(from.x, from.y, from.z, to.x, to.y, to.z, out) then
 			local tbl = {
 				hit_pos = Vec3(),
 				hit_normal = Vec3(),
@@ -158,8 +154,7 @@ do
 			end
 
 			return tbl
-		end]]
-	end
+		end]] end
 end
 
 do
@@ -176,19 +171,20 @@ do
 end
 
 do -- physcs models
-
 	local assimp = desire("assimp")
-
 	physics.model_cache = {}
-
 	local cb = utility.CreateCallbackThing(physics.model_cache)
 
 	function physics.LoadModel(path, callback, on_fail)
-		if not physics.IsReady() then if on_fail then on_fail("physics is not initialized") end return end
+		if not physics.IsReady() then
+			if on_fail then on_fail("physics is not initialized") end
+
+			return
+		end
+
 		if cb:check(path, callback, {on_fail = on_fail}) then return true end
 
 		steam.MountGamesFromMapPath(path)
-
 		local data = cb:get(path)
 
 		if data then
@@ -204,14 +200,20 @@ do -- physcs models
 
 			function thread:OnStart()
 				if steam.LoadMap and path:endswith(".bsp") then
-
 					-- :(
-					if GRAPHICS and gfx.model_loader_cb and gfx.model_loader_cb:get(path) and gfx.model_loader_cb:get(path).callback then
+					if
+						GRAPHICS and
+						gfx.model_loader_cb and
+						gfx.model_loader_cb:get(path) and
+						gfx.model_loader_cb:get(path).callback
+					then
 						tasks.Report("waiting for render mesh to finish loading")
+
 						repeat
-							tasks.Wait()
+							tasks.Wait()						
 						until not gfx.model_loader_cb:get(path) or not gfx.model_loader_cb:get(path).callback
 					end
+
 					-- :(
 					cb:stop(path, steam.LoadMap(full_path).physics_meshes)
 				elseif assimp then
@@ -221,12 +223,11 @@ do -- physcs models
 						return nil, "no vertices found in " .. path
 					end
 
-					local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices  * 3)
+					local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices * 3)
 					local triangles = ffi.new("unsigned int[?]", scene.mMeshes[0].mNumFaces * 3)
-
 					ffi.copy(vertices, scene.mMeshes[0].mVertices, ffi.sizeof(vertices))
-
 					local i = 0
+
 					for j = 0, scene.mMeshes[0].mNumFaces - 1 do
 						for k = 0, scene.mMeshes[0].mFaces[j].mNumIndices - 1 do
 							triangles[i] = scene.mMeshes[0].mFaces[j].mIndices[k]
@@ -246,9 +247,7 @@ do -- physcs models
 							stride = ffi.sizeof("float") * 3,
 						},
 					}
-
 					cb:stop(path, {mesh})
-
 					assimp.ReleaseImport(scene)
 				else
 					cb:callextra(path, "on_fail", "unknown format " .. path)

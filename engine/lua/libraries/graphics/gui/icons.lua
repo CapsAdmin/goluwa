@@ -20,7 +20,6 @@ local icons = {
 	about = "star.png",
 	appearance = "paintcan.png",
 	orientation = "shape_handles.png",
-
 	text = "text_align_center.png",
 	clip = "cut.png",
 	light = "lightbulb.png",
@@ -56,7 +55,6 @@ local icons = {
 	bodygroup = "user.png",
 	camera = "camera.png",
 	custom_animation = "film.png",
-
 	--below is auto generated
 	accept = "accept.png",
 	add = "add.png",
@@ -1064,7 +1062,7 @@ local icons = {
 	zoom_out = "zoom_out.png",
 }
 
-for k,v in pairs(icons) do
+for k, v in pairs(icons) do
 	icons[k] = "textures/silkicons/" .. v
 end
 

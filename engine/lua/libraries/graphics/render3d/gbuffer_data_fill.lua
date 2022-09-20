@@ -1,25 +1,20 @@
 render3d.csm_count = 3
-
 local PASS = {}
-
 PASS.DepthFormat = "depth_component32f"
-
 PASS.Buffers = {
 	{
 		name = "model",
 		write = "all",
-		layout =
-		{
-			{
-				rgba8 = {
-					rgb = "albedo",
-					a = "roughness",
-				}
-			},
+		layout = {
+			{rgba8 = {
+				rgb = "albedo",
+				a = "roughness",
+			}},
 			{
 				rgb16f = {
 					rg = {
-						"view_normal", "vec3",
+						"view_normal",
+						"vec3",
 						[[
 							vec2 encode(vec3 n)
 							{
@@ -37,25 +32,19 @@ PASS.Buffers = {
 							}
 						]],
 					},
-					b = "metallic"
-				}
+					b = "metallic",
+				},
 			},
-		}
+		},
 	},
 	{
 		name = "light",
 		write = "self",
-		layout =
-		{
-			{
-				r11f_g11f_b10f = {
-					rgb = "specular",
-				}
-			}
-		},
-	}
+		layout = {{r11f_g11f_b10f = {
+			rgb = "specular",
+		}}},
+	},
 }
-
 render.AddGlobalShaderCode([[
 // https://www.shadertoy.com/view/MslGR8
 bool alpha_discard(vec2 uv, float alpha)
@@ -76,21 +65,18 @@ bool alpha_discard(vec2 uv, float alpha)
 	return false;
 }
 ]])
-
 render.AddGlobalShaderCode([[
 vec3 get_view_pos(vec2 uv)
 {
 	vec4 pos = _G.projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
 	return pos.xyz / pos.w;
 }]])
-
 render.AddGlobalShaderCode([[
 vec3 get_world_pos(vec2 uv)
 {
 	vec4 pos = _G.projection_view_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
 	return pos.xyz / pos.w;
 }]])
-
 render.AddGlobalShaderCode([[
 vec3 get_view_normal_from_depth(vec2 uv)
 {
@@ -109,13 +95,11 @@ vec3 get_view_normal_from_depth(vec2 uv)
 
 	return normalize(normal);
 }]])
-
 render.AddGlobalShaderCode([[
 vec3 get_world_normal(vec2 uv)
 {
 	return (-get_view_normal(uv) * mat3(_G.view));
 }]])
-
 render.AddGlobalShaderCode([[
 vec3 get_view_tangent(vec2 uv)
 {
@@ -123,25 +107,21 @@ vec3 get_view_tangent(vec2 uv)
 	vec3 tang = abs(norm.x) < 0.999 ? vec3(1,0,0) : vec3(0,1,0);
 	return normalize(cross(norm, tang));
 }]])
-
 render.AddGlobalShaderCode([[
 vec3 get_world_tangent(vec2 uv)
 {
 	return normalize(-get_view_tangent(uv) * mat3(_G.view));
 }]])
-
 render.AddGlobalShaderCode([[
 vec3 get_view_bitangent(vec2 uv)
 {
 	return normalize(cross(get_view_normal(uv), get_view_tangent(uv)));
 }]])
-
 render.AddGlobalShaderCode([[
 vec3 get_world_bitangent(vec2 uv)
 {
 	return normalize(-get_view_bitangent(uv) * mat3(_G.view));
 }]])
-
 render.AddGlobalShaderCode([[
 // http://www.geeks3d.com/20130122/normal-mapping-without-precomputed-tangent-space-vectors/
 mat3 get_view_tbn(vec2 uv)
@@ -165,7 +145,6 @@ mat3 get_view_tbn(vec2 uv)
 	float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );
 	return mat3( T * invmax, B * invmax, N );
 }]])
-
 render.AddGlobalShaderCode([[
 mat3 get_world_tbn(vec2 uv)
 {
@@ -175,9 +154,8 @@ mat3 get_world_tbn(vec2 uv)
 	tbn[2] *= -mat3(_G.view);
 	return tbn;
 }]])
-
-
-render.AddGlobalShaderCode([[
+render.AddGlobalShaderCode(
+	[[
 #extension GL_ARB_texture_query_levels: enable
 
 vec3 sample_cubemap_roughness(samplerCube tex, vec3 normal, vec3 reflected, float roughness)
@@ -188,8 +166,11 @@ vec3 sample_cubemap_roughness(samplerCube tex, vec3 normal, vec3 reflected, floa
 
 	return textureLod(tex, normalize(mix(reflected, normal, roughness)), mx * levels).rgb;
 }
-]], "sample_cubemap_roughness")
-render.AddGlobalShaderCode([[
+]],
+	"sample_cubemap_roughness"
+)
+render.AddGlobalShaderCode(
+	[[
 vec3 get_env_color()
 {
 	float roughness = get_roughness(uv);
@@ -204,7 +185,9 @@ vec3 get_env_color()
 
 	return mix((irradiance+reflection), reflection, metallic);
 }
-]], "get_env_color")
+]],
+	"get_env_color"
+)
 
 function PASS:Initialize()
 	function render3d.CreateMesh(vertices, is_valid_table)
@@ -212,7 +195,6 @@ function PASS:Initialize()
 	end
 
 	local META = self.model_shader:CreateMaterialTemplate("model")
-
 	runfile("lua/libraries/graphics/render3d/vmt.lua", META)
 
 	function META:OnBind()
@@ -221,9 +203,9 @@ function PASS:Initialize()
 		else
 			render.SetCullMode("front")
 		end
-		--self.SkyTexture = render3d.GetSkyTexture()
-		--self.EnvironmentProbeTexture = render3d.GetEnvironmentProbeTexture()
-		--self.EnvironmentProbePosition = render.GetEnvironmentProbeTexture().probe:GetPosition()
+	--self.SkyTexture = render3d.GetSkyTexture()
+	--self.EnvironmentProbeTexture = render3d.GetEnvironmentProbeTexture()
+	--self.EnvironmentProbePosition = render.GetEnvironmentProbeTexture().probe:GetPosition()
 	end
 
 	META:Register()
@@ -239,26 +221,24 @@ function PASS:EndPass()
 end
 
 function PASS:Draw3D(what)
-
 	if (self.last_update_sky or 0) < system.GetElapsedTime() then
 		render3d.UpdateSky()
-		self.last_update_sky = system.GetElapsedTime() + 1/30
+		self.last_update_sky = system.GetElapsedTime() + 1 / 30
 	end
 
 	render.SetPresetBlendMode("none")
 	render.SetDepth(true)
 	self:BeginPass("model")
-		render.SetCullMode("front")
-		event.Call("PreGBufferModelPass")
-			render3d.shader = render3d.gbuffer_data_pass.model_shader
-			render3d.DrawScene(what or "models")
-		event.Call("PostGBufferModelPass")
+	render.SetCullMode("front")
+	event.Call("PreGBufferModelPass")
+	render3d.shader = render3d.gbuffer_data_pass.model_shader
+	render3d.DrawScene(what or "models")
+	event.Call("PostGBufferModelPass")
 	self:EndPass()
-
 	render.SetDepth(false)
 	self:BeginPass("light")
-		render.SetCullMode("back")
-			event.Call("Draw3DLights")
+	render.SetCullMode("back")
+	event.Call("Draw3DLights")
 	self:EndPass()
 end
 
@@ -274,7 +254,11 @@ PASS.Stages = {
 				{tangent = "vec3"},
 			},
 			source = [[
-				]].. (render3d.shader_name == "flat" and "#define FLAT_SHADING" or "") ..[[
+				]] .. (
+					render3d.shader_name == "flat" and
+					"#define FLAT_SHADING" or
+					""
+				) .. [[
 
 				#ifdef FLAT_SHADING
 					out vec3 vertex_view_normal;
@@ -292,7 +276,7 @@ PASS.Stages = {
 						tangent_space = g_normal_matrix * mat3(tangent, cross(tangent, normal), normal);
 					#endif
 				}
-			]]
+			]],
 		},
 		fragment = {
 			variables = {
@@ -304,7 +288,11 @@ PASS.Stages = {
 				render3d.shader_name == "flat" and {normal = "vec3"} or nil,
 			},
 			source = [[
-				]].. (render3d.shader_name == "flat" and "#define FLAT_SHADING" or "") ..[[
+				]] .. (
+					render3d.shader_name == "flat" and
+					"#define FLAT_SHADING" or
+					""
+				) .. [[
 
 #ifdef FLAT_SHADING
 				in vec3 vertex_view_normal;
@@ -474,8 +462,8 @@ PASS.Stages = {
 					}
 				}
 #endif
-			]]
-		}
+			]],
+		},
 	},
 	{
 		name = "light",
@@ -483,11 +471,11 @@ PASS.Stages = {
 			mesh_layout = {
 				{pos = "vec3"},
 			},
-			source = "gl_Position = g_projection_view_world * vec4(pos*0.5, 1);"
+			source = "gl_Position = g_projection_view_world * vec4(pos*0.5, 1);",
 		},
 		fragment = {
 			variables = {
-				light_color = Color(1,1,1,1),
+				light_color = Color(1, 1, 1, 1),
 				light_intensity = 0.5,
 			},
 			source = [[
@@ -516,10 +504,12 @@ PASS.Stages = {
 						vec3 world_pos = get_world_pos(uv);
 						const float hmm = 1;
 
-						]] .. (function()
-							local code = ""
-							for i = render3d.csm_count, 1, -1 do
-								local str = [[
+						]] .. (
+					function()
+						local code = ""
+
+						for i = render3d.csm_count, 1, -1 do
+							local str = [[
 								{
 									vec4 temp = light_projection_view * vec4(world_pos, 1);
 									vec3 shadow_coord = temp.xyz / temp.w;
@@ -543,32 +533,34 @@ PASS.Stages = {
 									}
 								}
 								]]
+							str = str:gsub("tex_shadow_map", "lua[tex_shadow_map_" .. i .. " = \"sampler2D\"]")
 
-								str = str:gsub("tex_shadow_map", "lua[tex_shadow_map_" .. i .." = \"sampler2D\"]")
-
-								if DEBUG_SHADOWS then
-									if i == 1 then
-										str = str:gsub("shadow = vec3(depth);", "shadow = vec3(depth, 0, 0)*3;")
-									elseif i == 2 then
-										str = str:gsub("shadow = vec3(depth);", "shadow = vec3(0, depth, 0)*3;")
-									elseif i == 3 then
-										str = str:gsub("shadow = vec3(depth);", "shadow = vec3(0, 0, depth)*3;")
-									elseif i == 4 then
-										str = str:gsub("shadow = vec3(depth);", "shadow = vec3(depth, depth, 0)*3;")
-									end
+							if DEBUG_SHADOWS then
+								if i == 1 then
+									str = str:gsub("shadow = vec3(depth);", "shadow = vec3(depth, 0, 0)*3;")
+								elseif i == 2 then
+									str = str:gsub("shadow = vec3(depth);", "shadow = vec3(0, depth, 0)*3;")
+								elseif i == 3 then
+									str = str:gsub("shadow = vec3(depth);", "shadow = vec3(0, 0, depth)*3;")
+								elseif i == 4 then
+									str = str:gsub("shadow = vec3(depth);", "shadow = vec3(depth, depth, 0)*3;")
 								end
-
-								if render3d.camera:GetMatrices().projection_view then
-									str = str:gsub("light_projection_view", "lua[light_projection_view" .. i .. " = \"mat4\"]")
-								else
-									str = str:gsub("light_projection_view", "(light_projection * light_view)")
-									str = str:gsub("light_view", "lua[light_view" .. i .. " = \"mat4\"]")
-									str = str:gsub("light_projection", "lua[light_projection" .. i .. " = \"mat4\"]")
-								end
-								code = code .. str
 							end
-							return code
-						end)() .. [[
+
+							if render3d.camera:GetMatrices().projection_view then
+								str = str:gsub("light_projection_view", "lua[light_projection_view" .. i .. " = \"mat4\"]")
+							else
+								str = str:gsub("light_projection_view", "(light_projection * light_view)")
+								str = str:gsub("light_view", "lua[light_view" .. i .. " = \"mat4\"]")
+								str = str:gsub("light_projection", "lua[light_projection" .. i .. " = \"mat4\"]")
+							end
+
+							code = code .. str
+						end
+
+						return code
+					end
+				)() .. [[
 					}
 
 					return shadow;
@@ -603,11 +595,10 @@ PASS.Stages = {
 					set_specular(gbuffer_compute_specular(L, V, N, attenuation, light_color.rgb * light_intensity) * shadow);
 
 				}
-			]]
-		}
+			]],
+		},
 	},
 }
-
 local TESSELLATION = false
 
 if TESSELLATION then
@@ -632,7 +623,7 @@ if TESSELLATION then
 				vNormal = normal;
 				vTextureBlend = texture_blend;
 			}
-		]]
+		]],
 	}
 	PASS.Stages[1].tess_control = {
 		source = [[
@@ -753,9 +744,7 @@ if TESSELLATION then
 			}
 		]],
 	}
-
 	PASS.Stages[1].fragment.mesh_layout = nil
-
 	PASS.Stages[1].fragment.source = [[
 		#version 420
 		//in vec3 pos;
@@ -763,8 +752,7 @@ if TESSELLATION then
 		//in vec3 normal;
 		//in vec3 tangent;
 		in float texture_blend;
-	]]
-	.. PASS.Stages[1].fragment.source
+	]] .. PASS.Stages[1].fragment.source
 end
 
 if RELOAD then

@@ -1,9 +1,7 @@
 local render = ... or _G.render
 local META = prototype.CreateTemplate("shader_storage_buffer")
-
 local gl = require("opengl")
 local ffi = require("ffi")
-
 local type_translate = {
 	uniform = "GL_UNIFORM_BUFFER",
 	shader_storage = "GL_SHADER_STORAGE_BUFFER",
@@ -11,11 +9,8 @@ local type_translate = {
 
 function render.CreateShaderVariableBuffer(typ, size, persistent)
 	size = size or 0
-
 	typ = type_translate[typ]
-
 	local self = META:CreateObject()
-
 	local usage = gl.e.GL_DYNAMIC_STORAGE_BIT
 
 	if persistent then
@@ -58,6 +53,7 @@ end
 
 function META:UpdateData(data, size, offset)
 	offset = offset or 0
+
 	if self.ptr then
 		ffi.copy(self.ptr + self.offset + offset, data, size)
 	else

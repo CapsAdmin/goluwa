@@ -1,5 +1,4 @@
 local render3d = ... or _G.render3d
-
 local SHADER = {
 	name = "shadow_map",
 	force = true,
@@ -9,7 +8,7 @@ local SHADER = {
 			{uv = "vec2"},
 			{normal = "vec3"},
 		},
-		source = "gl_Position = g_projection_view_world * vec4(pos, 1.0);"
+		source = "gl_Position = g_projection_view_world * vec4(pos, 1.0);",
 	},
 	fragment = {
 		mesh_layout = {
@@ -50,39 +49,34 @@ local function setup(self)
 	tex:SetWrapS("clamp_to_edge")
 	tex:SetWrapT("clamp_to_edge")
 	tex:SetWrapR("clamp_to_edge")
-
 	tex:SetMinFilter("nearest")
 	tex:SetMagFilter("nearest")
 	tex:SetMipMapLevels(1)
-
 	tex:SetupStorage()
-
 	local fb = render.CreateFrameBuffer()
 	fb:SetSize(Vec2() + self.ShadowSize)
-	fb:SetTexture("depth", {
-		size = Vec2() + self.ShadowSize,
-		internal_format = "depth_component16",
-	})
+	fb:SetTexture(
+		"depth",
+		{
+			size = Vec2() + self.ShadowSize,
+			internal_format = "depth_component16",
+		}
+	)
 	fb:SetTexture(1, tex)
 	fb:WriteThese(1)
-
 	self.fb = fb
 	self.tex = tex
 end
 
 local directions = {
-	QuatDeg3(0,-90,-90), -- back
-	QuatDeg3(0,90,90), -- front
-
-	QuatDeg3(0,0,0), -- up
-	QuatDeg3(180,0,0), -- down
-
-	QuatDeg3(90,0,0), -- left
-	QuatDeg3(-90,180,0), -- right
+	QuatDeg3(0, -90, -90), -- back
+	QuatDeg3(0, 90, 90), -- front
+	QuatDeg3(0, 0, 0), -- up
+	QuatDeg3(180, 0, 0), -- down
+	QuatDeg3(90, 0, 0), -- left
+	QuatDeg3(-90, 180, 0), -- right
 }
-
 local META = prototype.CreateTemplate("shadow_map")
-
 META:GetSet("ShadowSize", 256)
 
 function META:SetShadowSize(size)
@@ -117,9 +111,7 @@ function META:GetDirections()
 end
 
 function META:SetupCube(i)
-	if self.cubemap then
-		self.fb:SetTexture(1, self.tex, nil, nil, i)
-	end
+	if self.cubemap then self.fb:SetTexture(1, self.tex, nil, nil, i) end
 end
 
 META:Register()
@@ -132,12 +124,8 @@ function render3d.CreateShadowMap(cubemap)
 	end
 
 	self.cubemap = cubemap
-
 	setup(self)
-
 	return self
 end
 
-if RELOAD then
-	render3d.shadow_map_shader = render.CreateShader(SHADER)
-end
+if RELOAD then render3d.shadow_map_shader = render.CreateShader(SHADER) end

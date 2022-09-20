@@ -1,21 +1,21 @@
 local vfs = (...) or _G.vfs
-
 local fs = require("fs")
 local ffi = desire("ffi")
-
 local CONTEXT = {}
-
 CONTEXT.Name = "os"
 CONTEXT.Position = 0
 
 function CONTEXT:CreateFolder(path_info, force)
-	if force or path_info.full_path:startswith(e.STORAGE_FOLDER) or path_info.full_path:startswith(e.USERDATA_FOLDER) or path_info.full_path:startswith(e.ROOT_FOLDER) then
+	if
+		force or
+		path_info.full_path:startswith(e.STORAGE_FOLDER) or
+		path_info.full_path:startswith(e.USERDATA_FOLDER) or
+		path_info.full_path:startswith(e.ROOT_FOLDER)
+	then
 		if self:IsFolder(path_info) then return true end
 
 		if force then
-			if VERBOSE then
-				llog("creating directory: ", path_info.full_path)
-			end
+			if VERBOSE then llog("creating directory: ", path_info.full_path) end
 		end
 
 		local path = path_info.full_path
@@ -24,14 +24,15 @@ function CONTEXT:CreateFolder(path_info, force)
 		vfs.ClearCallCache()
 		return ok or false, err
 	end
+
 	return false, "directory does not start from goluwa"
 end
 
 function CONTEXT:GetFiles(path_info)
 	local files, err = fs.get_files(path_info.full_path)
-	if not files then
-		return false, err
-	end
+
+	if not files then return false, err end
+
 	return files
 end
 
@@ -57,11 +58,8 @@ local translate_mode = {
 }
 
 if fs.open and ffi then
-
 	-- if CONTEXT:Open errors the virtual file system will assume
 	-- the file doesn't exist and will go to the next mounted context
-
-
 	function CONTEXT:Open(path_info, ...)
 		local mode = translate_mode[self:GetMode()]
 
@@ -97,21 +95,19 @@ if fs.open and ffi then
 
 	function CONTEXT:ReadBytes(bytes)
 		bytes = math_min(bytes, self.attributes.size)
-
 		local buff = bytes > 32 and ctype(bytes) or cache[bytes]
 
 		if self.memory then
 			local mem_pos_start = math_min(tonumber(self.mem_pos), self.attributes.size)
 			local mem_pos_stop = math_min(tonumber(mem_pos_start + bytes), self.attributes.size)
-
 			local i = 0
-			for mem_i = mem_pos_start, mem_pos_stop-1 do
+
+			for mem_i = mem_pos_start, mem_pos_stop - 1 do
 				buff[i] = self.memory[mem_i]
 				i = i + 1
 			end
 
 			self.mem_pos = self.mem_pos + bytes
-
 			return ffi.string(buff, bytes)
 		else
 			local len = fs.read(buff, bytes, 1, self.file)
@@ -156,15 +152,12 @@ if fs.open and ffi then
 	end
 
 	function CONTEXT:GetSize()
-		if self.Mode == "read" or self.memory then
-			return self.attributes.size
-		end
+		if self.Mode == "read" or self.memory then return self.attributes.size end
 
 		local pos = fs.tell(self.file)
 		fs.seek(self.file, 0, 2)
 		local size = fs.tell(self.file)
 		fs.seek(self.file, pos, 0)
-
 		return tonumber(size) -- hmm, 64bit?
 	end
 else
@@ -174,12 +167,9 @@ else
 		if not mode then return false, "mode not supported" end
 
 		local f, err = io.open(path_info.full_path, mode)
-
 		self.file = f
 
-		if self.file == nil then
-			return false, "unable to open file: " .. err
-		end
+		if self.file == nil then return false, "unable to open file: " .. err end
 
 		self.attributes = fs.get_attributes(path_info.full_path)
 	end
@@ -190,7 +180,6 @@ else
 
 	function CONTEXT:ReadBytes(bytes)
 		bytes = math.min(bytes, self.attributes.size)
-
 		return self.file:read(bytes)
 	end
 
@@ -222,8 +211,7 @@ function CONTEXT:GetLastAccessed()
 	return self.attributes.last_accessed
 end
 
-function CONTEXT:Flush()
-	--self.file:flush()
+function CONTEXT:Flush() --self.file:flush()
 end
 
 vfs.RegisterFileSystem(CONTEXT)

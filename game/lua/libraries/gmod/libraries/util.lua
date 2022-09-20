@@ -2,10 +2,12 @@ local util = gine.env.util
 
 function util.KeyValuesToTable(str)
 	local tbl, ok = utility.VDFToTable(str, true)
+
 	if not tbl then
 		llog(ok)
 		return {}
 	end
+
 	local key, val = next(tbl)
 	print(str, key, val, "?!?!")
 	return val
@@ -17,12 +19,15 @@ end
 
 function util.RelativePathToFull(path)
 	if path == "." then path = "" end
+
 	return R(path) or ""
 end
 
 function util.JSONToTable(str)
 	local ok, res = pcall(serializer.Decode, "json", str)
+
 	if ok then return res end
+
 	wlog(res)
 end
 
@@ -60,7 +65,7 @@ end
 
 function util.GetSunInfo()
 	return {
-		direction = gine.env.Vector(0,0,1),
+		direction = gine.env.Vector(0, 0, 1),
 		obstruction = 0,
 	}
 end

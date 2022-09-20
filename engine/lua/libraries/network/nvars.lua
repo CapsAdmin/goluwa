@@ -1,10 +1,8 @@
 local nvars = _G.nvars or {}
-
 nvars.Environments = nvars.Environments or {}
 nvars.added_cvars = nvars.added_cvars or {}
 
 local function get_is_set(is, meta, name, default, cvar)
-
 	local get = is and "Is" or "Get"
 	local set = "Set"
 
@@ -23,23 +21,47 @@ local function get_is_set(is, meta, name, default, cvar)
 		end
 	end
 
-    if type(default) == "number" then
-		meta[set .. name] = function(self, var) self.nv[name] = tonumber(var) end
-		meta[get .. name] = function(self) return tonumber(self.nv[name]) or default end
+	if type(default) == "number" then
+		meta[set .. name] = function(self, var)
+			self.nv[name] = tonumber(var)
+		end
+		meta[get .. name] = function(self)
+			return tonumber(self.nv[name]) or default
+		end
 	elseif type(default) == "string" then
-		meta[set .. name] = function(self, var) self.nv[name] = tostring(var) end
-		meta[get .. name] = function(self) if self.nv[name] ~= nil then return tostring(self.nv[name]) end return default end
+		meta[set .. name] = function(self, var)
+			self.nv[name] = tostring(var)
+		end
+		meta[get .. name] = function(self)
+			if self.nv[name] ~= nil then return tostring(self.nv[name]) end
+
+			return default
+		end
 	else
-		meta[set .. name] = function(self, var) if var == nil then var = default end self.nv[name] = var end
-		meta[get .. name] = function(self) if self.nv[name] ~= nil then return self.nv[name] end return default end
+		meta[set .. name] = function(self, var)
+			if var == nil then var = default end
+
+			self.nv[name] = var
+		end
+		meta[get .. name] = function(self)
+			if self.nv[name] ~= nil then return self.nv[name] end
+
+			return default
+		end
 	end
 
 	-- this is important because it sets up property info for this object for editors and such to use
-	return is and prototype.IsSet(meta, name, default) or prototype.GetSet(meta, name, default)
+	return is and
+		prototype.IsSet(meta, name, default) or
+		prototype.GetSet(meta, name, default)
 end
 
-nvars.GetSet = function(...) return get_is_set(false, ...) end
-nvars.IsSet = function(...) return get_is_set(true, ...) end
+nvars.GetSet = function(...)
+	return get_is_set(false, ...)
+end
+nvars.IsSet = function(...)
+	return get_is_set(true, ...)
+end
 
 if CLIENT then
 	message.AddListener("nv", function(env, key, value)
@@ -55,9 +77,7 @@ if CLIENT then
 			pvars.Set(cvar, pvars.Get(cvar))
 		end
 
-		if network.debug or nvars.debug then
-			logn("done synchronizing nvars")
-		end
+		if network.debug or nvars.debug then logn("done synchronizing nvars") end
 
 		message.Send("nvsync")
 	end
@@ -74,8 +94,8 @@ if SERVER then
 				nvars.Set(key, value, env, client)
 			end
 		end
-		waiting_for[client] = callback
 
+		waiting_for[client] = callback
 		message.Send("nvsync")
 	end
 
@@ -93,15 +113,12 @@ if SERVER then
 	message.AddListener("ncv", function(client, cvar, var)
 		local key = nvars.added_cvars[cvar]
 
-		if key then
-			client.nv[key] = var
-		end
+		if key then client.nv[key] = var end
 	end)
 end
 
 function nvars.Set(key, value, env, client)
 	env = env or "g"
-
 	nvars.Environments[env] = nvars.Environments[env] or {}
 	nvars.Environments[env][key] = value
 
@@ -111,9 +128,7 @@ function nvars.Set(key, value, env, client)
 		end
 	end
 
-	if SERVER then
-		message.Send("nv", client, env, key, value)
-	end
+	if SERVER then message.Send("nv", client, env, key, value) end
 end
 
 function nvars.Get(key, def, env)
@@ -135,9 +150,9 @@ do
 
 	function META:__index(key)
 		local val = nvars.Get(key, nil, self.Env)
-		if val ~= nil then
-			return val
-		end
+
+		if val ~= nil then return val end
+
 		return META[key]
 	end
 
@@ -158,9 +173,8 @@ end
 
 function nvars.RemoveObject(env)
 	nvars.Environments[env] = nil
-	if SERVER then
-		message.Send("nv", nil, env)
-	end
+
+	if SERVER then message.Send("nv", nil, env) end
 end
 
 return nvars

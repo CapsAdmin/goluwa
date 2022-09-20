@@ -1,8 +1,6 @@
 local profiler = _G.profiler or {}
-
 profiler.data = profiler.data or {sections = {}, statistical = {}, trace_aborts = {}}
 profiler.raw_data = profiler.raw_data or {sections = {}, statistical = {}, trace_aborts = {}}
-
 local blacklist = {
 	["leaving loop in root trace"] = true,
 	["error thrown or hook fed during recording"] = true,
@@ -21,24 +19,20 @@ local function parse_raw_trace_abort_data()
 
 	for _ = 1, #profiler.raw_data.trace_aborts do
 		local args = table.remove(profiler.raw_data.trace_aborts)
-
 		local info = args[1]
 		local trace_error_id = args[2]
 		local trace_error_arg = args[3]
-
 		local reason = jit.vmdef.traceerr[trace_error_id]
 
 		if not blacklist[reason] then
 			if type(trace_error_arg) == "number" and reason:find("bytecode") then
-				trace_error_arg = string.sub(jit.vmdef.bcnames, trace_error_arg*6+1, trace_error_arg*6+6)
+				trace_error_arg = string.sub(jit.vmdef.bcnames, trace_error_arg * 6 + 1, trace_error_arg * 6 + 6)
 				reason = reason:gsub("(%%d)", "%%s")
 			end
 
 			reason = reason:format(trace_error_arg)
-
 			local path = info.source
 			local line = info.currentline or info.linedefined
-
 			data[path] = data[path] or {}
 			data[path][line] = data[path][line] or {}
 			data[path][line][reason] = (data[path][line][reason] or 0) + 1
@@ -48,13 +42,17 @@ end
 
 function profiler.EnableTraceAbortLogging(b)
 	if b then
-		jit.attach(function(...)
-			local ok, err = xpcall(type(b) == "function" and b or trace_dump_callback, system.OnError, ...)
-			if not ok then
-				logn(err)
-				profiler.EnableTraceAbortLogging(false)
-			end
-		end, "trace")
+		jit.attach(
+			function(...)
+				local ok, err = xpcall(type(b) == "function" and b or trace_dump_callback, system.OnError, ...)
+
+				if not ok then
+					logn(err)
+					profiler.EnableTraceAbortLogging(false)
+				end
+			end,
+			"trace"
+		)
 	else
 		jit.attach(trace_dump_callback)
 	end
@@ -72,42 +70,57 @@ local function parse_raw_statistical_data()
 			local path, line_number = line:match("(.+):(%d+)")
 
 			if not path and not line_number then
-				line = line:gsub("%[builtin#(%d+)%]", function(x) return jit.vmdef.ffnames[tonumber(x)] end)
+				line = line:gsub("%[builtin#(%d+)%]", function(x)
+					return jit.vmdef.ffnames[tonumber(x)]
+				end)
 				table.insert(children, {name = line or -1, external_function = true})
 			else
-				table.insert(children, {path = path, line = tonumber(line_number) or -1, external_function = false})
+				table.insert(
+					children,
+					{path = path, line = tonumber(line_number) or -1, external_function = false}
+				)
 			end
 		end
 
 		local info = children[#children]
 		table.remove(children, #children)
-
 		local path = info.path or info.name
 		local line = tonumber(info.line) or -1
-
 		data[path] = data[path] or {}
-		data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path, vmstate = vmstate}
-
+		data[path][line] = data[path][line] or
+			{
+				total_time = 0,
+				samples = 0,
+				children = {},
+				parents = {},
+				ready = false,
+				func_name = path,
+				vmstate = vmstate,
+			}
 		data[path][line].samples = data[path][line].samples + samples
 		data[path][line].start_time = data[path][line].start_time or system.GetTime()
-
 		local parent = data[path][line]
 
 		for _, info in ipairs(children) do
 			local path = info.path or info.name
 			local line = tonumber(info.line) or -1
-
 			data[path] = data[path] or {}
-			data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path, vmstate = vmstate}
-
+			data[path][line] = data[path][line] or
+				{
+					total_time = 0,
+					samples = 0,
+					children = {},
+					parents = {},
+					ready = false,
+					func_name = path,
+					vmstate = vmstate,
+				}
 			data[path][line].samples = data[path][line].samples + samples
 			data[path][line].start_time = data[path][line].start_time or system.GetTime()
-
 			data[path][line].parents[tostring(parent)] = parent
 			parent.children[tostring(data[path][line])] = data[path][line]
-
-			--table.insert(data[path][line].parents, parent)
-			--table.insert(parent.children, data[path][line])
+		--table.insert(data[path][line].parents, parent)
+		--table.insert(parent.children, data[path][line])
 		end
 	end
 end
@@ -128,6 +141,7 @@ function profiler.EnableStatisticalProfiling(b)
 	if b then
 		jit.profiler.start("li0", function(...)
 			local ok, err = pcall(statistical_callback, ...)
+
 			if not ok then
 				logn(err)
 				profiler.EnableStatisticalProfiling(false)
@@ -183,13 +197,15 @@ do
 
 		local info = debug.getinfo(3)
 		local start_time = system.GetTime()
-
-		table.insert(stack, {
-			section_name = section_name,
-			start_time = start_time,
-			info = info,
-			level = #stack,
-		})
+		table.insert(
+			stack,
+			{
+				section_name = section_name,
+				start_time = start_time,
+				info = info,
+				level = #stack,
+			}
+		)
 	end
 
 	function profiler.PopSection()
@@ -200,21 +216,26 @@ do
 		if res then
 			local time = system.GetTime() - res.start_time
 			local path, line = res.info.source, res.info.currentline
+
 			if type(res.section_name) == "string" then line = res.section_name end
 
 			local data = profiler.data.sections
-
 			data[path] = data[path] or {}
-			data[path][line] = data[path][line] or {total_time = 0, samples = 0, name = res.section_name, section_name = res.section_name, instrumental = true, section = true}
-
+			data[path][line] = data[path][line] or
+				{
+					total_time = 0,
+					samples = 0,
+					name = res.section_name,
+					section_name = res.section_name,
+					instrumental = true,
+					section = true,
+				}
 			data[path][line].total_time = data[path][line].total_time + time
 			data[path][line].samples = data[path][line].samples + 1
 			data[path][line].level = res.level
 			data[path][line].start_time = res.start_time
 			data[path][line].i = i
-
 			i = i + 1
-
 			return time
 		end
 	end
@@ -225,7 +246,9 @@ do
 
 	function profiler.EnableSectionProfiling(b, reset)
 		enabled = b
+
 		if reset then table.clear(profiler.data.sections) end
+
 		table.clear(stack)
 	end
 
@@ -248,7 +271,7 @@ do -- timer
 		local delta = time - data.time
 
 		if not no_print then
-			logf("%s%s: %1.22f\n", (" "):rep(data.level-1), data.str, math.round(delta, 5))
+			logf("%s%s: %1.22f\n", (" "):rep(data.level - 1), data.str, math.round(delta, 5))
 		end
 
 		return delta
@@ -266,33 +289,27 @@ do -- timer
 end
 
 function profiler.GetBenchmark(type, file, dump_line)
-
 	local benchmark_time
+
 	if profiler.start_time and profiler.stop_time then
 		benchmark_time = profiler.stop_time - profiler.start_time
 	end
 
-	if type == "statistical" then
-	 	parse_raw_statistical_data()
-	end
+	if type == "statistical" then parse_raw_statistical_data() end
 
 	local out = {}
 
 	for path, lines in pairs(profiler.data[type]) do
-		if path:startswith("@") then
-			path = path:sub(2)
-		end
+		if path:startswith("@") then path = path:sub(2) end
 
 		if not file or path:find(file) then
 			for line, data in pairs(lines) do
 				line = tonumber(line) or line
-
 				local name = "unknown(file not found)"
 				local debug_info
 
 				if data.func then
 					debug_info = debug.getinfo(data.func)
-
 					-- remove some useless fields
 					debug_info.source = nil
 					debug_info.short_src = nil
@@ -305,6 +322,7 @@ function profiler.GetBenchmark(type, file, dump_line)
 
 					if content then
 						name = content:split("\n")[line]
+
 						if name then
 							name = name:gsub("function ", "")
 							name = name:trim()
@@ -336,7 +354,7 @@ function profiler.GetBenchmark(type, file, dump_line)
 
 				if data.total_time then
 					data.average_time = data.total_time / data.samples
-					--data.total_time = data.average_time * data.samples
+				--data.total_time = data.average_time * data.samples
 				end
 
 				if benchmark_time then
@@ -345,10 +363,8 @@ function profiler.GetBenchmark(type, file, dump_line)
 
 				data.start_time = data.start_time or 0
 				data.samples = data.samples or 0
-
 				data.sample_duration = system.GetTime() - data.start_time
 				data.times_called = data.samples
-
 				table.insert(out, data)
 			end
 		end
@@ -357,15 +373,15 @@ function profiler.GetBenchmark(type, file, dump_line)
 	return out
 end
 
-
 function profiler.PrintTraceAborts(min_samples)
 	min_samples = min_samples or 500
-
 	parse_raw_statistical_data()
 	parse_raw_trace_abort_data()
-
-	logn("trace abort reasons for functions that were sampled by the profiler more than ", min_samples, " times:")
-
+	logn(
+		"trace abort reasons for functions that were sampled by the profiler more than ",
+		min_samples,
+		" times:"
+	)
 	local blacklist = {
 		["NYI: return to lower frame"] = true,
 		["inner loop in root trace"] = true,
@@ -374,20 +390,17 @@ function profiler.PrintTraceAborts(min_samples)
 
 	for path, lines in pairs(profiler.data.trace_aborts) do
 		path = path:sub(2)
-
 		local s = profiler.data.statistical
 
 		if s[path] or not next(s) then
 			local full_path = R(path) or path
 			full_path = full_path:replace("../../../", e.CORE_FOLDER)
 			full_path = full_path:lower():replace(e.ROOT_FOLDER:lower(), "")
-
 			local temp = {}
 
 			for line, reasons in pairs(lines) do
 				if not next(s) or s[path][line] and s[path][line].samples > min_samples then
 					local str = "unknown line"
-
 					local content, err = vfs.Read(e.ROOT_FOLDER .. path)
 
 					if content then
@@ -416,22 +429,36 @@ function profiler.PrintTraceAborts(min_samples)
 end
 
 function profiler.PrintSections()
-	log(utility.TableToColumns(
-		"sections",
-		profiler.GetBenchmark("sections"),
-		{
-			{key = "times_called", friendly = "calls"},
-			{key = "name", tostring = function(val, column) return ("    "):rep(column.level - 1) .. tostring(val) end},
-			{key = "average_time", friendly = "time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
-		},
-		function(a) return a.times_called > 50 end,
-		"i"
-	))
+	log(
+		utility.TableToColumns(
+			"sections",
+			profiler.GetBenchmark("sections"),
+			{
+				{key = "times_called", friendly = "calls"},
+				{
+					key = "name",
+					tostring = function(val, column)
+						return ("    "):rep(column.level - 1) .. tostring(val)
+					end,
+				},
+				{
+					key = "average_time",
+					friendly = "time",
+					tostring = function(val)
+						return math.round(val * 100 * 100, 3)
+					end,
+				},
+			},
+			function(a)
+				return a.times_called > 50
+			end,
+			"i"
+		)
+	)
 end
 
 function profiler.PrintStatistical(min_samples)
 	min_samples = min_samples or 100
-
 	local tr = {
 		N = "native",
 		I = "interpreted",
@@ -439,78 +466,118 @@ function profiler.PrintStatistical(min_samples)
 		J = "JIT compiler",
 		C = "C",
 	}
-
-	log(utility.TableToColumns(
-		"statistical",
-		profiler.GetBenchmark("statistical"),
-		{
-			{key = "name"},
-			{key = "times_called", friendly = "percent", tostring = function(val, column, columns)  return math.round((val / columns[#columns].val.times_called) * 100, 2) end},
-			{key = "vmstate", tostring = function(str)
-				return tr[str]
-			end},
-		},
-		function(a) return a.name and a.times_called > min_samples end,
-		function(a, b) return a.times_called < b.times_called end
-	))
+	log(
+		utility.TableToColumns(
+			"statistical",
+			profiler.GetBenchmark("statistical"),
+			{
+				{key = "name"},
+				{
+					key = "times_called",
+					friendly = "percent",
+					tostring = function(val, column, columns)
+						return math.round((val / columns[#columns].val.times_called) * 100, 2)
+					end,
+				},
+				{
+					key = "vmstate",
+					tostring = function(str)
+						return tr[str]
+					end,
+				},
+			},
+			function(a)
+				return a.name and a.times_called > min_samples
+			end,
+			function(a, b)
+				return a.times_called < b.times_called
+			end
+		)
+	)
 end
 
 function profiler.StartInstrumental(file_filter, method)
 	method = method or "cr"
 	profiler.EnableSectionProfiling(true, true)
 	profiler.busy = true
-
 	local last_info
-	debug.sethook(function(what, line)
-		local info = debug.getinfo(2)
 
-		if not file_filter or not info.source:find(file_filter, nil, true) then
-			if what == "call" then
-				if last_info and last_info.what == "C" then
+	debug.sethook(
+		function(what, line)
+			local info = debug.getinfo(2)
+
+			if not file_filter or not info.source:find(file_filter, nil, true) then
+				if what == "call" then
+					if last_info and last_info.what == "C" then profiler.PopSection() end
+
+					local name
+
+					if info.what == "C" then
+						name = info.name
+
+						if not name then name = "" end
+
+						local info = debug.getinfo(3)
+						name = name .. " " .. info.source .. ":" .. info.currentline
+					end
+
+					profiler.PushSection(name)
+				elseif what == "return" then
 					profiler.PopSection()
 				end
-				local name
-				if info.what == "C" then
-					name = info.name
-					if not name then
-						name = ""
-					end
-					local info = debug.getinfo(3)
-					name = name .. " " .. info.source .. ":" .. info.currentline
-				end
-				profiler.PushSection(name)
-			elseif what == "return"  then
-				profiler.PopSection()
 			end
-		end
-		last_info = info
-	end, method)
+
+			last_info = info
+		end,
+		method
+	)
 
 	profiler.start_time = system.GetTime()
 end
 
 function profiler.StopInstrumental(file_filter, show_everything)
 	profiler.EnableSectionProfiling(false)
-
 	profiler.stop_time = system.GetTime()
-
 	profiler.busy = false
 	debug.sethook()
 	profiler.PopSection()
-
-	log(utility.TableToColumns(
-		"instrumental",
-		profiler.GetBenchmark("sections"),
-		{
-			{key = "times_called", friendly = "calls"},
-			{key = "name"},
-			{key = "average_time", friendly = "time", tostring = function(val) return ("%f"):format(val) end},
-			{key = "total_time", friendly = "total time", tostring = function(val) return ("%f"):format(val) end},
-			{key = "fraction_time", friendly = "percent", tostring = function(val) return math.round(val * 100, 2) end},
-		},
-		function(a) return show_everything or a.average_time > 0.5 or (file_filter or a.times_called > 100) end,
-		function(a, b) return a.total_time < b.total_time end
-	))
+	log(
+		utility.TableToColumns(
+			"instrumental",
+			profiler.GetBenchmark("sections"),
+			{
+				{key = "times_called", friendly = "calls"},
+				{key = "name"},
+				{
+					key = "average_time",
+					friendly = "time",
+					tostring = function(val)
+						return ("%f"):format(val)
+					end,
+				},
+				{
+					key = "total_time",
+					friendly = "total time",
+					tostring = function(val)
+						return ("%f"):format(val)
+					end,
+				},
+				{
+					key = "fraction_time",
+					friendly = "percent",
+					tostring = function(val)
+						return math.round(val * 100, 2)
+					end,
+				},
+			},
+			function(a)
+				return show_everything or a.average_time > 0.5 or (file_filter or a.times_called > 100)
+			end,
+			function(a, b)
+				return a.total_time < b.total_time
+			end
+		)
+	)
 end
 
 do
@@ -542,8 +609,10 @@ function profiler.DumpZerobraneProfileTree(min, filter)
 	local huh = serializer.ReadFile("msgpack", "zerobrane_statistical.msgpack")
 	local most_samples
 	local path, root
-	for k,v in pairs(huh) do
+
+	for k, v in pairs(huh) do
 		most_samples = most_samples or v
+
 		if v.samples >= most_samples.samples then
 			most_samples = v
 			path = k
@@ -555,6 +624,7 @@ function profiler.DumpZerobraneProfileTree(min, filter)
 
 	local function dump(path, node)
 		local percent = math.round((node.samples / root.samples) * 100, 3)
+
 		if percent > min then
 			if not filter or path:find(filter) then
 				logf("%s%s (%s) %s\n", ("\t"):rep(level), percent, node.samples, path)
@@ -587,7 +657,6 @@ local blacklist = {
 }
 
 function profiler.EnableRealTimeTraceAbortLogging(b)
-
 	if not jit.attach then
 		wlog("jit profiler is not available")
 		return
@@ -595,38 +664,46 @@ function profiler.EnableRealTimeTraceAbortLogging(b)
 
 	if b then
 		local last_log
-		jit.attach(function(what, trace_id, func, pc, trace_error_id, trace_error_arg)
-			if what == "abort" then
-				local info = jit.util.funcinfo(func, pc)
-				local reason = jit.vmdef.traceerr[trace_error_id]
 
-				if not blacklist[reason] then
-					if type(trace_error_arg) == "number" and reason:find("bytecode") then
-						trace_error_arg = string.sub(jit.vmdef.bcnames, trace_error_arg*6+1, trace_error_arg*6+6)
-						reason = reason:gsub("(%%d)", "%%s")
-					end
+		jit.attach(
+			function(what, trace_id, func, pc, trace_error_id, trace_error_arg)
+				if what == "abort" then
+					local info = jit.util.funcinfo(func, pc)
+					local reason = jit.vmdef.traceerr[trace_error_id]
 
-					reason = reason:format(trace_error_arg)
+					if not blacklist[reason] then
+						if type(trace_error_arg) == "number" and reason:find("bytecode") then
+							trace_error_arg = string.sub(jit.vmdef.bcnames, trace_error_arg * 6 + 1, trace_error_arg * 6 + 6)
+							reason = reason:gsub("(%%d)", "%%s")
+						end
 
-					local path = info.source
-					local line = info.currentline or info.linedefined
-					local content = vfs.Read(e.ROOT_FOLDER .. path:sub(2)) or vfs.Read(path:sub(2))
+						reason = reason:format(trace_error_arg)
+						local path = info.source
+						local line = info.currentline or info.linedefined
+						local content = vfs.Read(e.ROOT_FOLDER .. path:sub(2)) or vfs.Read(path:sub(2))
+						local str
 
-					local str
+						if content then
+							str = string.format(
+								"%s:%s\n%s:--\t%s\n\n",
+								path:sub(2):replace(e.ROOT_FOLDER, ""),
+								line,
+								content:split("\n")[line]:trim(),
+								reason
+							)
+						else
+							str = string.format("%s:%s:\n\t%s\n\n", path, line, reason)
+						end
 
-					if content then
-						str = string.format("%s:%s\n%s:--\t%s\n\n", path:sub(2):replace(e.ROOT_FOLDER, ""), line, content:split("\n")[line]:trim(), reason)
-					else
-						str = string.format("%s:%s:\n\t%s\n\n", path, line, reason)
-					end
-
-					if str ~= last_log then
-						log(str)
-						last_log = str
+						if str ~= last_log then
+							log(str)
+							last_log = str
+						end
 					end
 				end
-			end
-		end, "trace")
+			end,
+			"trace"
+		)
 	else
 		jit.attach(function() end)
 	end
@@ -637,7 +714,6 @@ local system_GetTime = system.GetTime
 function profiler.MeasureFunction(func, count, name, no_print)
 	count = count or 1
 	name = name or "measure result"
-
 	local total_time = 0
 
 	for _ = 1, count do
@@ -657,11 +733,16 @@ end
 
 function profiler.MeasureFunctions(tbl, count)
 	local res = {}
+
 	for name, func in pairs(tbl) do
 		table.insert(res, {time = profiler.MeasureFunction(func, count, name, true), name = name})
 	end
-	table.sort(res, function(a, b) return a.time < b.time end)
-	for i,v in ipairs(res) do
+
+	table.sort(res, function(a, b)
+		return a.time < b.time
+	end)
+
+	for i, v in ipairs(res) do
 		logf("%s: average: %1.22f total: %f\n", v.name, v.time / count, v.time)
 	end
 end
@@ -672,5 +753,4 @@ function profiler.Compare(old, new, count)
 end
 
 profiler.Restart()
-
 return profiler

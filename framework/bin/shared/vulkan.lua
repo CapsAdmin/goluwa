@@ -621,22 +621,28 @@ enum VkResult(vkDisplayPowerControlEXT)(struct VkDevice_T*,struct VkDisplayKHR_T
 ]])
 local library = {}
 
-
 --====helper safe_clib_index====
-		function SAFE_INDEX(clib)
-			return setmetatable({}, {__index = function(_, k)
-				local ok, val = pcall(function() return clib[k] end)
+function SAFE_INDEX(clib)
+	return setmetatable(
+		{},
+		{
+			__index = function(_, k)
+				local ok, val = pcall(function()
+					return clib[k]
+				end)
+
 				if ok then
 					return val
 				elseif clib_index then
 					return clib_index(k)
 				end
-			end})
-		end
-		CLIB = SAFE_INDEX(CLIB)
+			end,
+		}
+	)
+end
 
+CLIB = SAFE_INDEX(CLIB)
 --====helper safe_clib_index====
-
 library = {
 	CreateBufferView = CLIB.vkCreateBufferView,
 	CmdCopyImageToBuffer = CLIB.vkCmdCopyImageToBuffer,
@@ -805,31 +811,28 @@ library = {
 	CmdPipelineBarrier = CLIB.vkCmdPipelineBarrier,
 }
 library.util = {}
+
 function library.util.StringList(tbl)
-	return ffi.new("const char * const ["..#tbl.."]", tbl), #tbl
+	return ffi.new("const char * const [" .. #tbl .. "]", tbl), #tbl
 end
+
 function library.util.GLSLToSpirV(type, glsl)
 	local glsl_name = os.tmpname() .. "." .. type
 	local spirv_name = os.tmpname()
-
 	local temp
-
 	temp = io.open(glsl_name, "wb")
 	temp:write(glsl)
 	temp:close()
-
 	local msg = io.popen("glslangValidator -V -o " .. spirv_name .. " " .. glsl_name):read("*all")
-
 	temp = io.open(spirv_name, "rb")
 	local spirv = temp:read("*all")
 	temp:close()
 
-	if msg:find("ERROR") then
-		error(msg, 2)
-	end
+	if msg:find("ERROR") then error(msg, 2) end
 
 	return {pCode = ffi.cast("uint32_t *", spirv), codeSize = #spirv}
 end
+
 function library.Assert(var, res)
 	if var == nil and res ~= "VK_SUCCESS" then
 		for name, v in pairs(library.e.result) do
@@ -837,6 +840,7 @@ function library.Assert(var, res)
 				name = name:gsub("error_", "")
 				name = name:gsub("_", " ")
 				error("Assertion failed: " .. name, 2)
+
 				break
 			end
 		end
@@ -844,123 +848,532 @@ function library.Assert(var, res)
 
 	return var
 end
+
 function library.e(str_enum)
 	return ffi.cast("enum GLFWenum", str_enum)
 end
-library.struct_gc = setmetatable({},{__mode = "k"})
+
+library.struct_gc = setmetatable({}, {__mode = "k"})
 library.macros = {}
-library.macros.MAKE_VERSION = function(major, minor, patch) return bit.bor(bit.lshift(major, 22), bit.lshift(minor, 12) , patch) end
+library.macros.MAKE_VERSION = function(major, minor, patch)
+	return bit.bor(bit.lshift(major, 22), bit.lshift(minor, 12), patch)
+end
 local extensions = {}
-extensions.vkGetPhysicalDeviceMultisamplePropertiesEXT = {ctype = ffi.typeof("void(* )( struct VkPhysicalDevice_T * , enum VkSampleCountFlagBits , struct VkMultisamplePropertiesEXT * )")}
-extensions.vkDestroyObjectTableNVX = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , struct VkObjectTableNVX_T * , const struct VkAllocationCallbacks * )")}
-extensions.vkSetDebugUtilsObjectTagEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkDebugUtilsObjectTagInfoEXT * )")}
-extensions.vkRegisterDisplayEventEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkDisplayKHR_T * , const struct VkDisplayEventInfoEXT * , const struct VkAllocationCallbacks * , struct VkFence_T * * )")}
-extensions.vkImportFenceFdKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkImportFenceFdInfoKHR * )")}
-extensions.vkGetPhysicalDeviceFormatProperties2KHR = {ctype = ffi.typeof("void(* )( struct VkPhysicalDevice_T * , enum VkFormat , struct VkFormatProperties2 * )")}
-extensions.vkGetRefreshCycleDurationGOOGLE = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * , struct VkRefreshCycleDurationGOOGLE * )")}
-extensions.vkSetDebugUtilsObjectNameEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkDebugUtilsObjectNameInfoEXT * )")}
-extensions.vkGetMemoryFdKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkMemoryGetFdInfoKHR * , int * )")}
-extensions.vkBindBufferMemory2KHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , unsigned int , const struct VkBindBufferMemoryInfo * )")}
-extensions.vkGetDescriptorSetLayoutSupportKHR = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , const struct VkDescriptorSetLayoutCreateInfo * , struct VkDescriptorSetLayoutSupport * )")}
-extensions.vkRegisterObjectsNVX = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkObjectTableNVX_T * , unsigned int , const struct VkObjectTableEntryNVX * const * , const unsigned int * )")}
-extensions.vkCmdDrawIndirectCountAMD = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , struct VkBuffer_T * , unsigned long , struct VkBuffer_T * , unsigned long , unsigned int , unsigned int )")}
-extensions.vkGetDisplayPlaneSupportedDisplaysKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , unsigned int , unsigned int * , struct VkDisplayKHR_T * * )")}
-extensions.vkCreateValidationCacheEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkValidationCacheCreateInfoEXT * , const struct VkAllocationCallbacks * , struct VkValidationCacheEXT_T * * )")}
-extensions.vkGetSwapchainStatusKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * )")}
-extensions.vkCreateDebugUtilsMessengerEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkInstance_T * , const struct VkDebugUtilsMessengerCreateInfoEXT * , const struct VkAllocationCallbacks * , struct VkDebugUtilsMessengerEXT_T * * )")}
-extensions.vkDestroyIndirectCommandsLayoutNVX = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , struct VkIndirectCommandsLayoutNVX_T * , const struct VkAllocationCallbacks * )")}
-extensions.vkGetPhysicalDeviceMemoryProperties2KHR = {ctype = ffi.typeof("void(* )( struct VkPhysicalDevice_T * , struct VkPhysicalDeviceMemoryProperties2 * )")}
-extensions.vkGetPhysicalDeviceExternalSemaphorePropertiesKHR = {ctype = ffi.typeof("void(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceExternalSemaphoreInfo * , struct VkExternalSemaphoreProperties * )")}
+extensions.vkGetPhysicalDeviceMultisamplePropertiesEXT = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkPhysicalDevice_T * , enum VkSampleCountFlagBits , struct VkMultisamplePropertiesEXT * )"
+	),
+}
+extensions.vkDestroyObjectTableNVX = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkDevice_T * , struct VkObjectTableNVX_T * , const struct VkAllocationCallbacks * )"
+	),
+}
+extensions.vkSetDebugUtilsObjectTagEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkDebugUtilsObjectTagInfoEXT * )"
+	),
+}
+extensions.vkRegisterDisplayEventEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkDisplayKHR_T * , const struct VkDisplayEventInfoEXT * , const struct VkAllocationCallbacks * , struct VkFence_T * * )"
+	),
+}
+extensions.vkImportFenceFdKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkImportFenceFdInfoKHR * )"
+	),
+}
+extensions.vkGetPhysicalDeviceFormatProperties2KHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkPhysicalDevice_T * , enum VkFormat , struct VkFormatProperties2 * )"
+	),
+}
+extensions.vkGetRefreshCycleDurationGOOGLE = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * , struct VkRefreshCycleDurationGOOGLE * )"
+	),
+}
+extensions.vkSetDebugUtilsObjectNameEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkDebugUtilsObjectNameInfoEXT * )"
+	),
+}
+extensions.vkGetMemoryFdKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkMemoryGetFdInfoKHR * , int * )"
+	),
+}
+extensions.vkBindBufferMemory2KHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , unsigned int , const struct VkBindBufferMemoryInfo * )"
+	),
+}
+extensions.vkGetDescriptorSetLayoutSupportKHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkDevice_T * , const struct VkDescriptorSetLayoutCreateInfo * , struct VkDescriptorSetLayoutSupport * )"
+	),
+}
+extensions.vkRegisterObjectsNVX = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkObjectTableNVX_T * , unsigned int , const struct VkObjectTableEntryNVX * const * , const unsigned int * )"
+	),
+}
+extensions.vkCmdDrawIndirectCountAMD = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkCommandBuffer_T * , struct VkBuffer_T * , unsigned long , struct VkBuffer_T * , unsigned long , unsigned int , unsigned int )"
+	),
+}
+extensions.vkGetDisplayPlaneSupportedDisplaysKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , unsigned int , unsigned int * , struct VkDisplayKHR_T * * )"
+	),
+}
+extensions.vkCreateValidationCacheEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkValidationCacheCreateInfoEXT * , const struct VkAllocationCallbacks * , struct VkValidationCacheEXT_T * * )"
+	),
+}
+extensions.vkGetSwapchainStatusKHR = {
+	ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * )"),
+}
+extensions.vkCreateDebugUtilsMessengerEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkInstance_T * , const struct VkDebugUtilsMessengerCreateInfoEXT * , const struct VkAllocationCallbacks * , struct VkDebugUtilsMessengerEXT_T * * )"
+	),
+}
+extensions.vkDestroyIndirectCommandsLayoutNVX = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkDevice_T * , struct VkIndirectCommandsLayoutNVX_T * , const struct VkAllocationCallbacks * )"
+	),
+}
+extensions.vkGetPhysicalDeviceMemoryProperties2KHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkPhysicalDevice_T * , struct VkPhysicalDeviceMemoryProperties2 * )"
+	),
+}
+extensions.vkGetPhysicalDeviceExternalSemaphorePropertiesKHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceExternalSemaphoreInfo * , struct VkExternalSemaphoreProperties * )"
+	),
+}
 extensions.vkCmdDebugMarkerEndEXT = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * )")}
-extensions.vkDestroyDebugReportCallbackEXT = {ctype = ffi.typeof("void(* )( struct VkInstance_T * , struct VkDebugReportCallbackEXT_T * , const struct VkAllocationCallbacks * )")}
-extensions.vkGetImageSparseMemoryRequirements2KHR = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , const struct VkImageSparseMemoryRequirementsInfo2 * , unsigned int * , struct VkSparseImageMemoryRequirements2 * )")}
-extensions.vkCmdProcessCommandsNVX = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , const struct VkCmdProcessCommandsInfoNVX * )")}
-extensions.vkGetPhysicalDeviceFeatures2KHR = {ctype = ffi.typeof("void(* )( struct VkPhysicalDevice_T * , struct VkPhysicalDeviceFeatures2 * )")}
-extensions.vkGetPhysicalDeviceExternalBufferPropertiesKHR = {ctype = ffi.typeof("void(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceExternalBufferInfo * , struct VkExternalBufferProperties * )")}
-extensions.vkCmdSetSampleLocationsEXT = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , const struct VkSampleLocationsInfoEXT * )")}
-extensions.vkGetPhysicalDeviceExternalFencePropertiesKHR = {ctype = ffi.typeof("void(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceExternalFenceInfo * , struct VkExternalFenceProperties * )")}
-extensions.vkCreateObjectTableNVX = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkObjectTableCreateInfoNVX * , const struct VkAllocationCallbacks * , struct VkObjectTableNVX_T * * )")}
-extensions.vkGetPastPresentationTimingGOOGLE = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * , unsigned int * , struct VkPastPresentationTimingGOOGLE * )")}
-extensions.vkGetDisplayPlaneCapabilitiesKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkDisplayModeKHR_T * , unsigned int , struct VkDisplayPlaneCapabilitiesKHR * )")}
+extensions.vkDestroyDebugReportCallbackEXT = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkInstance_T * , struct VkDebugReportCallbackEXT_T * , const struct VkAllocationCallbacks * )"
+	),
+}
+extensions.vkGetImageSparseMemoryRequirements2KHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkDevice_T * , const struct VkImageSparseMemoryRequirementsInfo2 * , unsigned int * , struct VkSparseImageMemoryRequirements2 * )"
+	),
+}
+extensions.vkCmdProcessCommandsNVX = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkCommandBuffer_T * , const struct VkCmdProcessCommandsInfoNVX * )"
+	),
+}
+extensions.vkGetPhysicalDeviceFeatures2KHR = {
+	ctype = ffi.typeof("void(* )( struct VkPhysicalDevice_T * , struct VkPhysicalDeviceFeatures2 * )"),
+}
+extensions.vkGetPhysicalDeviceExternalBufferPropertiesKHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceExternalBufferInfo * , struct VkExternalBufferProperties * )"
+	),
+}
+extensions.vkCmdSetSampleLocationsEXT = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkCommandBuffer_T * , const struct VkSampleLocationsInfoEXT * )"
+	),
+}
+extensions.vkGetPhysicalDeviceExternalFencePropertiesKHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceExternalFenceInfo * , struct VkExternalFenceProperties * )"
+	),
+}
+extensions.vkCreateObjectTableNVX = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkObjectTableCreateInfoNVX * , const struct VkAllocationCallbacks * , struct VkObjectTableNVX_T * * )"
+	),
+}
+extensions.vkGetPastPresentationTimingGOOGLE = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * , unsigned int * , struct VkPastPresentationTimingGOOGLE * )"
+	),
+}
+extensions.vkGetDisplayPlaneCapabilitiesKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkDisplayModeKHR_T * , unsigned int , struct VkDisplayPlaneCapabilitiesKHR * )"
+	),
+}
 extensions.vkQueueEndDebugUtilsLabelEXT = {ctype = ffi.typeof("void(* )( struct VkQueue_T * )")}
 extensions.vkCmdSetDeviceMaskKHR = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , unsigned int )")}
-extensions.vkCmdDebugMarkerInsertEXT = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , const struct VkDebugMarkerMarkerInfoEXT * )")}
-extensions.vkCmdReserveSpaceForCommandsNVX = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , const struct VkCmdReserveSpaceForCommandsInfoNVX * )")}
-extensions.vkGetDisplayModePropertiesKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkDisplayKHR_T * , unsigned int * , struct VkDisplayModePropertiesKHR * )")}
-extensions.vkCreateDisplayModeKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkDisplayKHR_T * , const struct VkDisplayModeCreateInfoKHR * , const struct VkAllocationCallbacks * , struct VkDisplayModeKHR_T * * )")}
-extensions.vkCmdBeginDebugUtilsLabelEXT = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , const struct VkDebugUtilsLabelEXT * )")}
-extensions.vkCmdDebugMarkerBeginEXT = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , const struct VkDebugMarkerMarkerInfoEXT * )")}
-extensions.vkDebugMarkerSetObjectNameEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkDebugMarkerObjectNameInfoEXT * )")}
-extensions.vkGetFenceFdKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkFenceGetFdInfoKHR * , int * )")}
-extensions.vkCreateDescriptorUpdateTemplateKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkDescriptorUpdateTemplateCreateInfo * , const struct VkAllocationCallbacks * , struct VkDescriptorUpdateTemplate_T * * )")}
-extensions.vkDebugMarkerSetObjectTagEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkDebugMarkerObjectTagInfoEXT * )")}
-extensions.vkCmdPushDescriptorSetKHR = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , enum VkPipelineBindPoint , struct VkPipelineLayout_T * , unsigned int , unsigned int , const struct VkWriteDescriptorSet * )")}
-extensions.vkUpdateDescriptorSetWithTemplateKHR = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , struct VkDescriptorSet_T * , struct VkDescriptorUpdateTemplate_T * , const void * )")}
-extensions.vkCreateIndirectCommandsLayoutNVX = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkIndirectCommandsLayoutCreateInfoNVX * , const struct VkAllocationCallbacks * , struct VkIndirectCommandsLayoutNVX_T * * )")}
-extensions.vkBindImageMemory2KHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , unsigned int , const struct VkBindImageMemoryInfo * )")}
-extensions.vkGetDeviceGroupPeerMemoryFeaturesKHR = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , unsigned int , unsigned int , unsigned int , unsigned int * )")}
-extensions.vkDestroySamplerYcbcrConversionKHR = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , struct VkSamplerYcbcrConversion_T * , const struct VkAllocationCallbacks * )")}
-extensions.vkGetPhysicalDeviceGeneratedCommandsPropertiesNVX = {ctype = ffi.typeof("void(* )( struct VkPhysicalDevice_T * , struct VkDeviceGeneratedCommandsFeaturesNVX * , struct VkDeviceGeneratedCommandsLimitsNVX * )")}
-extensions.vkQueueInsertDebugUtilsLabelEXT = {ctype = ffi.typeof("void(* )( struct VkQueue_T * , const struct VkDebugUtilsLabelEXT * )")}
-extensions.vkGetPhysicalDeviceSurfaceCapabilities2EXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkSurfaceKHR_T * , struct VkSurfaceCapabilities2EXT * )")}
-extensions.vkGetPhysicalDeviceImageFormatProperties2KHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceImageFormatInfo2 * , struct VkImageFormatProperties2 * )")}
-extensions.vkCmdSetViewportWScalingNV = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , unsigned int , unsigned int , const struct VkViewportWScalingNV * )")}
-extensions.vkDestroySurfaceKHR = {ctype = ffi.typeof("void(* )( struct VkInstance_T * , struct VkSurfaceKHR_T * , const struct VkAllocationCallbacks * )")}
-extensions.vkGetSwapchainCounterEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * , enum VkSurfaceCounterFlagBitsEXT , unsigned long * )")}
-extensions.vkGetPhysicalDeviceQueueFamilyProperties2KHR = {ctype = ffi.typeof("void(* )( struct VkPhysicalDevice_T * , unsigned int * , struct VkQueueFamilyProperties2 * )")}
-extensions.vkDestroyDescriptorUpdateTemplateKHR = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , struct VkDescriptorUpdateTemplate_T * , const struct VkAllocationCallbacks * )")}
-extensions.vkImportSemaphoreFdKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkImportSemaphoreFdInfoKHR * )")}
-extensions.vkGetPhysicalDeviceExternalImageFormatPropertiesNV = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , enum VkFormat , enum VkImageType , enum VkImageTiling , unsigned int , unsigned int , unsigned int , struct VkExternalImageFormatPropertiesNV * )")}
-extensions.vkGetPhysicalDeviceProperties2KHR = {ctype = ffi.typeof("void(* )( struct VkPhysicalDevice_T * , struct VkPhysicalDeviceProperties2 * )")}
-extensions.vkGetPhysicalDeviceSurfaceFormats2KHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceSurfaceInfo2KHR * , unsigned int * , struct VkSurfaceFormat2KHR * )")}
-extensions.vkDestroyDebugUtilsMessengerEXT = {ctype = ffi.typeof("void(* )( struct VkInstance_T * , struct VkDebugUtilsMessengerEXT_T * , const struct VkAllocationCallbacks * )")}
-extensions.vkSubmitDebugUtilsMessageEXT = {ctype = ffi.typeof("void(* )( struct VkInstance_T * , enum VkDebugUtilsMessageSeverityFlagBitsEXT , unsigned int , const struct VkDebugUtilsMessengerCallbackDataEXT * )")}
-extensions.vkGetPhysicalDeviceSurfaceFormatsKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkSurfaceKHR_T * , unsigned int * , struct VkSurfaceFormatKHR * )")}
-extensions.vkGetPhysicalDeviceSurfaceCapabilitiesKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkSurfaceKHR_T * , struct VkSurfaceCapabilitiesKHR * )")}
-extensions.vkTrimCommandPoolKHR = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , struct VkCommandPool_T * , unsigned int )")}
-extensions.vkGetPhysicalDeviceSurfaceSupportKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , unsigned int , struct VkSurfaceKHR_T * , unsigned int * )")}
-extensions.vkGetPhysicalDeviceSparseImageFormatProperties2KHR = {ctype = ffi.typeof("void(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceSparseImageFormatInfo2 * , unsigned int * , struct VkSparseImageFormatProperties2 * )")}
-extensions.vkCreateDebugReportCallbackEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkInstance_T * , const struct VkDebugReportCallbackCreateInfoEXT * , const struct VkAllocationCallbacks * , struct VkDebugReportCallbackEXT_T * * )")}
-extensions.vkGetPhysicalDevicePresentRectanglesKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkSurfaceKHR_T * , unsigned int * , struct VkRect2D * )")}
-extensions.vkCmdWriteBufferMarkerAMD = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , enum VkPipelineStageFlagBits , struct VkBuffer_T * , unsigned long , unsigned int )")}
-extensions.vkGetMemoryHostPointerPropertiesEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , enum VkExternalMemoryHandleTypeFlagBits , const void * , struct VkMemoryHostPointerPropertiesEXT * )")}
-extensions.vkCmdPushDescriptorSetWithTemplateKHR = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , struct VkDescriptorUpdateTemplate_T * , struct VkPipelineLayout_T * , unsigned int , const void * )")}
-extensions.vkGetValidationCacheDataEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkValidationCacheEXT_T * , unsigned long * , void * )")}
-extensions.vkCreateSamplerYcbcrConversionKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkSamplerYcbcrConversionCreateInfo * , const struct VkAllocationCallbacks * , struct VkSamplerYcbcrConversion_T * * )")}
-extensions.vkDestroyValidationCacheEXT = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , struct VkValidationCacheEXT_T * , const struct VkAllocationCallbacks * )")}
-extensions.vkCmdInsertDebugUtilsLabelEXT = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , const struct VkDebugUtilsLabelEXT * )")}
-extensions.vkGetSemaphoreFdKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkSemaphoreGetFdInfoKHR * , int * )")}
+extensions.vkCmdDebugMarkerInsertEXT = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkCommandBuffer_T * , const struct VkDebugMarkerMarkerInfoEXT * )"
+	),
+}
+extensions.vkCmdReserveSpaceForCommandsNVX = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkCommandBuffer_T * , const struct VkCmdReserveSpaceForCommandsInfoNVX * )"
+	),
+}
+extensions.vkGetDisplayModePropertiesKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkDisplayKHR_T * , unsigned int * , struct VkDisplayModePropertiesKHR * )"
+	),
+}
+extensions.vkCreateDisplayModeKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkDisplayKHR_T * , const struct VkDisplayModeCreateInfoKHR * , const struct VkAllocationCallbacks * , struct VkDisplayModeKHR_T * * )"
+	),
+}
+extensions.vkCmdBeginDebugUtilsLabelEXT = {
+	ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , const struct VkDebugUtilsLabelEXT * )"),
+}
+extensions.vkCmdDebugMarkerBeginEXT = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkCommandBuffer_T * , const struct VkDebugMarkerMarkerInfoEXT * )"
+	),
+}
+extensions.vkDebugMarkerSetObjectNameEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkDebugMarkerObjectNameInfoEXT * )"
+	),
+}
+extensions.vkGetFenceFdKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkFenceGetFdInfoKHR * , int * )"
+	),
+}
+extensions.vkCreateDescriptorUpdateTemplateKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkDescriptorUpdateTemplateCreateInfo * , const struct VkAllocationCallbacks * , struct VkDescriptorUpdateTemplate_T * * )"
+	),
+}
+extensions.vkDebugMarkerSetObjectTagEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkDebugMarkerObjectTagInfoEXT * )"
+	),
+}
+extensions.vkCmdPushDescriptorSetKHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkCommandBuffer_T * , enum VkPipelineBindPoint , struct VkPipelineLayout_T * , unsigned int , unsigned int , const struct VkWriteDescriptorSet * )"
+	),
+}
+extensions.vkUpdateDescriptorSetWithTemplateKHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkDevice_T * , struct VkDescriptorSet_T * , struct VkDescriptorUpdateTemplate_T * , const void * )"
+	),
+}
+extensions.vkCreateIndirectCommandsLayoutNVX = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkIndirectCommandsLayoutCreateInfoNVX * , const struct VkAllocationCallbacks * , struct VkIndirectCommandsLayoutNVX_T * * )"
+	),
+}
+extensions.vkBindImageMemory2KHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , unsigned int , const struct VkBindImageMemoryInfo * )"
+	),
+}
+extensions.vkGetDeviceGroupPeerMemoryFeaturesKHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkDevice_T * , unsigned int , unsigned int , unsigned int , unsigned int * )"
+	),
+}
+extensions.vkDestroySamplerYcbcrConversionKHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkDevice_T * , struct VkSamplerYcbcrConversion_T * , const struct VkAllocationCallbacks * )"
+	),
+}
+extensions.vkGetPhysicalDeviceGeneratedCommandsPropertiesNVX = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkPhysicalDevice_T * , struct VkDeviceGeneratedCommandsFeaturesNVX * , struct VkDeviceGeneratedCommandsLimitsNVX * )"
+	),
+}
+extensions.vkQueueInsertDebugUtilsLabelEXT = {
+	ctype = ffi.typeof("void(* )( struct VkQueue_T * , const struct VkDebugUtilsLabelEXT * )"),
+}
+extensions.vkGetPhysicalDeviceSurfaceCapabilities2EXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkSurfaceKHR_T * , struct VkSurfaceCapabilities2EXT * )"
+	),
+}
+extensions.vkGetPhysicalDeviceImageFormatProperties2KHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceImageFormatInfo2 * , struct VkImageFormatProperties2 * )"
+	),
+}
+extensions.vkCmdSetViewportWScalingNV = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkCommandBuffer_T * , unsigned int , unsigned int , const struct VkViewportWScalingNV * )"
+	),
+}
+extensions.vkDestroySurfaceKHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkInstance_T * , struct VkSurfaceKHR_T * , const struct VkAllocationCallbacks * )"
+	),
+}
+extensions.vkGetSwapchainCounterEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * , enum VkSurfaceCounterFlagBitsEXT , unsigned long * )"
+	),
+}
+extensions.vkGetPhysicalDeviceQueueFamilyProperties2KHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkPhysicalDevice_T * , unsigned int * , struct VkQueueFamilyProperties2 * )"
+	),
+}
+extensions.vkDestroyDescriptorUpdateTemplateKHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkDevice_T * , struct VkDescriptorUpdateTemplate_T * , const struct VkAllocationCallbacks * )"
+	),
+}
+extensions.vkImportSemaphoreFdKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkImportSemaphoreFdInfoKHR * )"
+	),
+}
+extensions.vkGetPhysicalDeviceExternalImageFormatPropertiesNV = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , enum VkFormat , enum VkImageType , enum VkImageTiling , unsigned int , unsigned int , unsigned int , struct VkExternalImageFormatPropertiesNV * )"
+	),
+}
+extensions.vkGetPhysicalDeviceProperties2KHR = {
+	ctype = ffi.typeof("void(* )( struct VkPhysicalDevice_T * , struct VkPhysicalDeviceProperties2 * )"),
+}
+extensions.vkGetPhysicalDeviceSurfaceFormats2KHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceSurfaceInfo2KHR * , unsigned int * , struct VkSurfaceFormat2KHR * )"
+	),
+}
+extensions.vkDestroyDebugUtilsMessengerEXT = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkInstance_T * , struct VkDebugUtilsMessengerEXT_T * , const struct VkAllocationCallbacks * )"
+	),
+}
+extensions.vkSubmitDebugUtilsMessageEXT = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkInstance_T * , enum VkDebugUtilsMessageSeverityFlagBitsEXT , unsigned int , const struct VkDebugUtilsMessengerCallbackDataEXT * )"
+	),
+}
+extensions.vkGetPhysicalDeviceSurfaceFormatsKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkSurfaceKHR_T * , unsigned int * , struct VkSurfaceFormatKHR * )"
+	),
+}
+extensions.vkGetPhysicalDeviceSurfaceCapabilitiesKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkSurfaceKHR_T * , struct VkSurfaceCapabilitiesKHR * )"
+	),
+}
+extensions.vkTrimCommandPoolKHR = {
+	ctype = ffi.typeof("void(* )( struct VkDevice_T * , struct VkCommandPool_T * , unsigned int )"),
+}
+extensions.vkGetPhysicalDeviceSurfaceSupportKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , unsigned int , struct VkSurfaceKHR_T * , unsigned int * )"
+	),
+}
+extensions.vkGetPhysicalDeviceSparseImageFormatProperties2KHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceSparseImageFormatInfo2 * , unsigned int * , struct VkSparseImageFormatProperties2 * )"
+	),
+}
+extensions.vkCreateDebugReportCallbackEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkInstance_T * , const struct VkDebugReportCallbackCreateInfoEXT * , const struct VkAllocationCallbacks * , struct VkDebugReportCallbackEXT_T * * )"
+	),
+}
+extensions.vkGetPhysicalDevicePresentRectanglesKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkSurfaceKHR_T * , unsigned int * , struct VkRect2D * )"
+	),
+}
+extensions.vkCmdWriteBufferMarkerAMD = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkCommandBuffer_T * , enum VkPipelineStageFlagBits , struct VkBuffer_T * , unsigned long , unsigned int )"
+	),
+}
+extensions.vkGetMemoryHostPointerPropertiesEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , enum VkExternalMemoryHandleTypeFlagBits , const void * , struct VkMemoryHostPointerPropertiesEXT * )"
+	),
+}
+extensions.vkCmdPushDescriptorSetWithTemplateKHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkCommandBuffer_T * , struct VkDescriptorUpdateTemplate_T * , struct VkPipelineLayout_T * , unsigned int , const void * )"
+	),
+}
+extensions.vkGetValidationCacheDataEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkValidationCacheEXT_T * , unsigned long * , void * )"
+	),
+}
+extensions.vkCreateSamplerYcbcrConversionKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkSamplerYcbcrConversionCreateInfo * , const struct VkAllocationCallbacks * , struct VkSamplerYcbcrConversion_T * * )"
+	),
+}
+extensions.vkDestroyValidationCacheEXT = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkDevice_T * , struct VkValidationCacheEXT_T * , const struct VkAllocationCallbacks * )"
+	),
+}
+extensions.vkCmdInsertDebugUtilsLabelEXT = {
+	ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , const struct VkDebugUtilsLabelEXT * )"),
+}
+extensions.vkGetSemaphoreFdKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkSemaphoreGetFdInfoKHR * , int * )"
+	),
+}
 extensions.vkCmdEndDebugUtilsLabelEXT = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * )")}
-extensions.vkCreateDisplayPlaneSurfaceKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkInstance_T * , const struct VkDisplaySurfaceCreateInfoKHR * , const struct VkAllocationCallbacks * , struct VkSurfaceKHR_T * * )")}
-extensions.vkCmdDispatchBaseKHR = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , unsigned int , unsigned int , unsigned int , unsigned int , unsigned int , unsigned int )")}
-extensions.vkAcquireNextImageKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * , unsigned long , struct VkSemaphore_T * , struct VkFence_T * , unsigned int * )")}
-extensions.vkDestroySwapchainKHR = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * , const struct VkAllocationCallbacks * )")}
-extensions.vkGetPhysicalDeviceSurfaceCapabilities2KHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceSurfaceInfo2KHR * , struct VkSurfaceCapabilities2KHR * )")}
-extensions.vkGetBufferMemoryRequirements2KHR = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , const struct VkBufferMemoryRequirementsInfo2 * , struct VkMemoryRequirements2 * )")}
-extensions.vkGetMemoryFdPropertiesKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , enum VkExternalMemoryHandleTypeFlagBits , int , struct VkMemoryFdPropertiesKHR * )")}
-extensions.vkGetDeviceGroupPresentCapabilitiesKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkDeviceGroupPresentCapabilitiesKHR * )")}
-extensions.vkGetSwapchainImagesKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * , unsigned int * , struct VkImage_T * * )")}
-extensions.vkCreateSwapchainKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkSwapchainCreateInfoKHR * , const struct VkAllocationCallbacks * , struct VkSwapchainKHR_T * * )")}
-extensions.vkQueueBeginDebugUtilsLabelEXT = {ctype = ffi.typeof("void(* )( struct VkQueue_T * , const struct VkDebugUtilsLabelEXT * )")}
-extensions.vkMergeValidationCachesEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkValidationCacheEXT_T * , unsigned int , struct VkValidationCacheEXT_T * const * )")}
-extensions.vkReleaseDisplayEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkDisplayKHR_T * )")}
-extensions.vkUnregisterObjectsNVX = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkObjectTableNVX_T * , unsigned int , const enum VkObjectEntryTypeNVX * , const unsigned int * )")}
-extensions.vkCmdDrawIndexedIndirectCountAMD = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , struct VkBuffer_T * , unsigned long , struct VkBuffer_T * , unsigned long , unsigned int , unsigned int )")}
-extensions.vkGetPhysicalDeviceDisplayPlanePropertiesKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , unsigned int * , struct VkDisplayPlanePropertiesKHR * )")}
-extensions.vkGetPhysicalDeviceSurfacePresentModesKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkSurfaceKHR_T * , unsigned int * , enum VkPresentModeKHR * )")}
-extensions.vkGetImageMemoryRequirements2KHR = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , const struct VkImageMemoryRequirementsInfo2 * , struct VkMemoryRequirements2 * )")}
-extensions.vkQueuePresentKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkQueue_T * , const struct VkPresentInfoKHR * )")}
-extensions.vkSetHdrMetadataEXT = {ctype = ffi.typeof("void(* )( struct VkDevice_T * , unsigned int , struct VkSwapchainKHR_T * const * , const struct VkHdrMetadataEXT * )")}
-extensions.vkGetDeviceGroupSurfacePresentModesKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkSurfaceKHR_T * , unsigned int * )")}
-extensions.vkAcquireNextImage2KHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkAcquireNextImageInfoKHR * , unsigned int * )")}
-extensions.vkCmdSetDiscardRectangleEXT = {ctype = ffi.typeof("void(* )( struct VkCommandBuffer_T * , unsigned int , unsigned int , const struct VkRect2D * )")}
-extensions.vkCreateSharedSwapchainsKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , unsigned int , const struct VkSwapchainCreateInfoKHR * , const struct VkAllocationCallbacks * , struct VkSwapchainKHR_T * * )")}
-extensions.vkEnumeratePhysicalDeviceGroupsKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkInstance_T * , unsigned int * , struct VkPhysicalDeviceGroupProperties * )")}
-extensions.vkRegisterDeviceEventEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , const struct VkDeviceEventInfoEXT * , const struct VkAllocationCallbacks * , struct VkFence_T * * )")}
-extensions.vkGetPhysicalDeviceDisplayPropertiesKHR = {ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , unsigned int * , struct VkDisplayPropertiesKHR * )")}
-extensions.vkGetShaderInfoAMD = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkPipeline_T * , enum VkShaderStageFlagBits , enum VkShaderInfoTypeAMD , unsigned long * , void * )")}
-extensions.vkDebugReportMessageEXT = {ctype = ffi.typeof("void(* )( struct VkInstance_T * , unsigned int , enum VkDebugReportObjectTypeEXT , unsigned long , unsigned long , int , const char * , const char * )")}
-extensions.vkDisplayPowerControlEXT = {ctype = ffi.typeof("enum VkResult(* )( struct VkDevice_T * , struct VkDisplayKHR_T * , const struct VkDisplayPowerInfoEXT * )")}
+extensions.vkCreateDisplayPlaneSurfaceKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkInstance_T * , const struct VkDisplaySurfaceCreateInfoKHR * , const struct VkAllocationCallbacks * , struct VkSurfaceKHR_T * * )"
+	),
+}
+extensions.vkCmdDispatchBaseKHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkCommandBuffer_T * , unsigned int , unsigned int , unsigned int , unsigned int , unsigned int , unsigned int )"
+	),
+}
+extensions.vkAcquireNextImageKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * , unsigned long , struct VkSemaphore_T * , struct VkFence_T * , unsigned int * )"
+	),
+}
+extensions.vkDestroySwapchainKHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * , const struct VkAllocationCallbacks * )"
+	),
+}
+extensions.vkGetPhysicalDeviceSurfaceCapabilities2KHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , const struct VkPhysicalDeviceSurfaceInfo2KHR * , struct VkSurfaceCapabilities2KHR * )"
+	),
+}
+extensions.vkGetBufferMemoryRequirements2KHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkDevice_T * , const struct VkBufferMemoryRequirementsInfo2 * , struct VkMemoryRequirements2 * )"
+	),
+}
+extensions.vkGetMemoryFdPropertiesKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , enum VkExternalMemoryHandleTypeFlagBits , int , struct VkMemoryFdPropertiesKHR * )"
+	),
+}
+extensions.vkGetDeviceGroupPresentCapabilitiesKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkDeviceGroupPresentCapabilitiesKHR * )"
+	),
+}
+extensions.vkGetSwapchainImagesKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkSwapchainKHR_T * , unsigned int * , struct VkImage_T * * )"
+	),
+}
+extensions.vkCreateSwapchainKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkSwapchainCreateInfoKHR * , const struct VkAllocationCallbacks * , struct VkSwapchainKHR_T * * )"
+	),
+}
+extensions.vkQueueBeginDebugUtilsLabelEXT = {
+	ctype = ffi.typeof("void(* )( struct VkQueue_T * , const struct VkDebugUtilsLabelEXT * )"),
+}
+extensions.vkMergeValidationCachesEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkValidationCacheEXT_T * , unsigned int , struct VkValidationCacheEXT_T * const * )"
+	),
+}
+extensions.vkReleaseDisplayEXT = {
+	ctype = ffi.typeof("enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkDisplayKHR_T * )"),
+}
+extensions.vkUnregisterObjectsNVX = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkObjectTableNVX_T * , unsigned int , const enum VkObjectEntryTypeNVX * , const unsigned int * )"
+	),
+}
+extensions.vkCmdDrawIndexedIndirectCountAMD = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkCommandBuffer_T * , struct VkBuffer_T * , unsigned long , struct VkBuffer_T * , unsigned long , unsigned int , unsigned int )"
+	),
+}
+extensions.vkGetPhysicalDeviceDisplayPlanePropertiesKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , unsigned int * , struct VkDisplayPlanePropertiesKHR * )"
+	),
+}
+extensions.vkGetPhysicalDeviceSurfacePresentModesKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , struct VkSurfaceKHR_T * , unsigned int * , enum VkPresentModeKHR * )"
+	),
+}
+extensions.vkGetImageMemoryRequirements2KHR = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkDevice_T * , const struct VkImageMemoryRequirementsInfo2 * , struct VkMemoryRequirements2 * )"
+	),
+}
+extensions.vkQueuePresentKHR = {
+	ctype = ffi.typeof("enum VkResult(* )( struct VkQueue_T * , const struct VkPresentInfoKHR * )"),
+}
+extensions.vkSetHdrMetadataEXT = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkDevice_T * , unsigned int , struct VkSwapchainKHR_T * const * , const struct VkHdrMetadataEXT * )"
+	),
+}
+extensions.vkGetDeviceGroupSurfacePresentModesKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkSurfaceKHR_T * , unsigned int * )"
+	),
+}
+extensions.vkAcquireNextImage2KHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkAcquireNextImageInfoKHR * , unsigned int * )"
+	),
+}
+extensions.vkCmdSetDiscardRectangleEXT = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkCommandBuffer_T * , unsigned int , unsigned int , const struct VkRect2D * )"
+	),
+}
+extensions.vkCreateSharedSwapchainsKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , unsigned int , const struct VkSwapchainCreateInfoKHR * , const struct VkAllocationCallbacks * , struct VkSwapchainKHR_T * * )"
+	),
+}
+extensions.vkEnumeratePhysicalDeviceGroupsKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkInstance_T * , unsigned int * , struct VkPhysicalDeviceGroupProperties * )"
+	),
+}
+extensions.vkRegisterDeviceEventEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , const struct VkDeviceEventInfoEXT * , const struct VkAllocationCallbacks * , struct VkFence_T * * )"
+	),
+}
+extensions.vkGetPhysicalDeviceDisplayPropertiesKHR = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkPhysicalDevice_T * , unsigned int * , struct VkDisplayPropertiesKHR * )"
+	),
+}
+extensions.vkGetShaderInfoAMD = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkPipeline_T * , enum VkShaderStageFlagBits , enum VkShaderInfoTypeAMD , unsigned long * , void * )"
+	),
+}
+extensions.vkDebugReportMessageEXT = {
+	ctype = ffi.typeof(
+		"void(* )( struct VkInstance_T * , unsigned int , enum VkDebugReportObjectTypeEXT , unsigned long , unsigned long , int , const char * , const char * )"
+	),
+}
+extensions.vkDisplayPowerControlEXT = {
+	ctype = ffi.typeof(
+		"enum VkResult(* )( struct VkDevice_T * , struct VkDisplayKHR_T * , const struct VkDisplayPowerInfoEXT * )"
+	),
+}
+
 local function load(func, ptr, ext, decl, name)
 	if extensions[ext] and not decl and not name then
 		decl = extensions[ext].ctype
@@ -970,17 +1383,18 @@ local function load(func, ptr, ext, decl, name)
 
 	if ptr ~= nil then
 		name = name or ext:match("^vk(.+)")
-
 		local func = ffi.cast(decl, ptr)
-
 		library[name] = func
-
 		return func
 	end
 end
 
-library.util.LoadInstanceProcAddr = function(...) return load(CLIB.vkGetInstanceProcAddr, ...) end
-library.util.LoadDeviceProcAddr = function(...) return load(CLIB.vkGetDeviceProcAddr, ...) end
+library.util.LoadInstanceProcAddr = function(...)
+	return load(CLIB.vkGetInstanceProcAddr, ...)
+end
+library.util.LoadDeviceProcAddr = function(...)
+	return load(CLIB.vkGetDeviceProcAddr, ...)
+end
 library.e = {
 	LOD_CLAMP_NONE = 1000.0,
 	REMAINING_MIP_LEVELS = 0xFFFFFFFF,
@@ -1065,12 +1479,24 @@ library.e = {
 	IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL"),
 	IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL"),
 	IMAGE_LAYOUT_PREINITIALIZED = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_PREINITIALIZED"),
-	IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL"),
-	IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL"),
+	IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL = ffi.cast(
+		"enum VkImageLayout",
+		"VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL"
+	),
+	IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL = ffi.cast(
+		"enum VkImageLayout",
+		"VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL"
+	),
 	IMAGE_LAYOUT_PRESENT_SRC_KHR = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_PRESENT_SRC_KHR"),
 	IMAGE_LAYOUT_SHARED_PRESENT_KHR = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR"),
-	IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR"),
-	IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR"),
+	IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR = ffi.cast(
+		"enum VkImageLayout",
+		"VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR"
+	),
+	IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR = ffi.cast(
+		"enum VkImageLayout",
+		"VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR"
+	),
 	IMAGE_LAYOUT_BEGIN_RANGE = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_BEGIN_RANGE"),
 	IMAGE_LAYOUT_END_RANGE = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_END_RANGE"),
 	IMAGE_LAYOUT_RANGE_SIZE = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_RANGE_SIZE"),
@@ -1105,8 +1531,14 @@ library.e = {
 	PIPELINE_STAGE_DRAW_INDIRECT_BIT = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT"),
 	PIPELINE_STAGE_VERTEX_INPUT_BIT = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_VERTEX_INPUT_BIT"),
 	PIPELINE_STAGE_VERTEX_SHADER_BIT = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_VERTEX_SHADER_BIT"),
-	PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT"),
-	PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT"),
+	PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT = ffi.cast(
+		"enum VkPipelineStageFlagBits",
+		"VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT"
+	),
+	PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT = ffi.cast(
+		"enum VkPipelineStageFlagBits",
+		"VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT"
+	),
 	PIPELINE_STAGE_GEOMETRY_SHADER_BIT = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT"),
 	PIPELINE_STAGE_FRAGMENT_SHADER_BIT = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT"),
 	PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT"),
@@ -1130,7 +1562,10 @@ library.e = {
 	IMAGE_USAGE_INPUT_ATTACHMENT_BIT = ffi.cast("enum VkImageUsageFlagBits", "VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT"),
 	IMAGE_USAGE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkImageUsageFlagBits", "VK_IMAGE_USAGE_FLAG_BITS_MAX_ENUM"),
 	COMMAND_POOL_CREATE_TRANSIENT_BIT = ffi.cast("enum VkCommandPoolCreateFlagBits", "VK_COMMAND_POOL_CREATE_TRANSIENT_BIT"),
-	COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT = ffi.cast("enum VkCommandPoolCreateFlagBits", "VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT"),
+	COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT = ffi.cast(
+		"enum VkCommandPoolCreateFlagBits",
+		"VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT"
+	),
 	COMMAND_POOL_CREATE_PROTECTED_BIT = ffi.cast("enum VkCommandPoolCreateFlagBits", "VK_COMMAND_POOL_CREATE_PROTECTED_BIT"),
 	COMMAND_POOL_CREATE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkCommandPoolCreateFlagBits", "VK_COMMAND_POOL_CREATE_FLAG_BITS_MAX_ENUM"),
 	TESSELLATION_DOMAIN_ORIGIN_UPPER_LEFT = ffi.cast("enum VkTessellationDomainOrigin", "VK_TESSELLATION_DOMAIN_ORIGIN_UPPER_LEFT"),
@@ -1149,11 +1584,26 @@ library.e = {
 	QUEUE_GLOBAL_PRIORITY_END_RANGE_EXT = ffi.cast("enum VkQueueGlobalPriorityEXT", "VK_QUEUE_GLOBAL_PRIORITY_END_RANGE_EXT"),
 	QUEUE_GLOBAL_PRIORITY_RANGE_SIZE_EXT = ffi.cast("enum VkQueueGlobalPriorityEXT", "VK_QUEUE_GLOBAL_PRIORITY_RANGE_SIZE_EXT"),
 	QUEUE_GLOBAL_PRIORITY_MAX_ENUM_EXT = ffi.cast("enum VkQueueGlobalPriorityEXT", "VK_QUEUE_GLOBAL_PRIORITY_MAX_ENUM_EXT"),
-	DEVICE_GROUP_PRESENT_MODE_LOCAL_BIT_KHR = ffi.cast("enum VkDeviceGroupPresentModeFlagBitsKHR", "VK_DEVICE_GROUP_PRESENT_MODE_LOCAL_BIT_KHR"),
-	DEVICE_GROUP_PRESENT_MODE_REMOTE_BIT_KHR = ffi.cast("enum VkDeviceGroupPresentModeFlagBitsKHR", "VK_DEVICE_GROUP_PRESENT_MODE_REMOTE_BIT_KHR"),
-	DEVICE_GROUP_PRESENT_MODE_SUM_BIT_KHR = ffi.cast("enum VkDeviceGroupPresentModeFlagBitsKHR", "VK_DEVICE_GROUP_PRESENT_MODE_SUM_BIT_KHR"),
-	DEVICE_GROUP_PRESENT_MODE_LOCAL_MULTI_DEVICE_BIT_KHR = ffi.cast("enum VkDeviceGroupPresentModeFlagBitsKHR", "VK_DEVICE_GROUP_PRESENT_MODE_LOCAL_MULTI_DEVICE_BIT_KHR"),
-	DEVICE_GROUP_PRESENT_MODE_FLAG_BITS_MAX_ENUM_KHR = ffi.cast("enum VkDeviceGroupPresentModeFlagBitsKHR", "VK_DEVICE_GROUP_PRESENT_MODE_FLAG_BITS_MAX_ENUM_KHR"),
+	DEVICE_GROUP_PRESENT_MODE_LOCAL_BIT_KHR = ffi.cast(
+		"enum VkDeviceGroupPresentModeFlagBitsKHR",
+		"VK_DEVICE_GROUP_PRESENT_MODE_LOCAL_BIT_KHR"
+	),
+	DEVICE_GROUP_PRESENT_MODE_REMOTE_BIT_KHR = ffi.cast(
+		"enum VkDeviceGroupPresentModeFlagBitsKHR",
+		"VK_DEVICE_GROUP_PRESENT_MODE_REMOTE_BIT_KHR"
+	),
+	DEVICE_GROUP_PRESENT_MODE_SUM_BIT_KHR = ffi.cast(
+		"enum VkDeviceGroupPresentModeFlagBitsKHR",
+		"VK_DEVICE_GROUP_PRESENT_MODE_SUM_BIT_KHR"
+	),
+	DEVICE_GROUP_PRESENT_MODE_LOCAL_MULTI_DEVICE_BIT_KHR = ffi.cast(
+		"enum VkDeviceGroupPresentModeFlagBitsKHR",
+		"VK_DEVICE_GROUP_PRESENT_MODE_LOCAL_MULTI_DEVICE_BIT_KHR"
+	),
+	DEVICE_GROUP_PRESENT_MODE_FLAG_BITS_MAX_ENUM_KHR = ffi.cast(
+		"enum VkDeviceGroupPresentModeFlagBitsKHR",
+		"VK_DEVICE_GROUP_PRESENT_MODE_FLAG_BITS_MAX_ENUM_KHR"
+	),
 	DEPENDENCY_BY_REGION_BIT = ffi.cast("enum VkDependencyFlagBits", "VK_DEPENDENCY_BY_REGION_BIT"),
 	DEPENDENCY_DEVICE_GROUP_BIT = ffi.cast("enum VkDependencyFlagBits", "VK_DEPENDENCY_DEVICE_GROUP_BIT"),
 	DEPENDENCY_VIEW_LOCAL_BIT = ffi.cast("enum VkDependencyFlagBits", "VK_DEPENDENCY_VIEW_LOCAL_BIT"),
@@ -1178,13 +1628,34 @@ library.e = {
 	FILTER_END_RANGE = ffi.cast("enum VkFilter", "VK_FILTER_END_RANGE"),
 	FILTER_RANGE_SIZE = ffi.cast("enum VkFilter", "VK_FILTER_RANGE_SIZE"),
 	FILTER_MAX_ENUM = ffi.cast("enum VkFilter", "VK_FILTER_MAX_ENUM"),
-	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET = ffi.cast("enum VkDescriptorUpdateTemplateType", "VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET"),
-	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_PUSH_DESCRIPTORS_KHR = ffi.cast("enum VkDescriptorUpdateTemplateType", "VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_PUSH_DESCRIPTORS_KHR"),
-	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET_KHR = ffi.cast("enum VkDescriptorUpdateTemplateType", "VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET_KHR"),
-	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_BEGIN_RANGE = ffi.cast("enum VkDescriptorUpdateTemplateType", "VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_BEGIN_RANGE"),
-	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_END_RANGE = ffi.cast("enum VkDescriptorUpdateTemplateType", "VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_END_RANGE"),
-	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_RANGE_SIZE = ffi.cast("enum VkDescriptorUpdateTemplateType", "VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_RANGE_SIZE"),
-	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_MAX_ENUM = ffi.cast("enum VkDescriptorUpdateTemplateType", "VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_MAX_ENUM"),
+	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET = ffi.cast(
+		"enum VkDescriptorUpdateTemplateType",
+		"VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET"
+	),
+	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_PUSH_DESCRIPTORS_KHR = ffi.cast(
+		"enum VkDescriptorUpdateTemplateType",
+		"VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_PUSH_DESCRIPTORS_KHR"
+	),
+	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET_KHR = ffi.cast(
+		"enum VkDescriptorUpdateTemplateType",
+		"VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET_KHR"
+	),
+	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_BEGIN_RANGE = ffi.cast(
+		"enum VkDescriptorUpdateTemplateType",
+		"VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_BEGIN_RANGE"
+	),
+	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_END_RANGE = ffi.cast(
+		"enum VkDescriptorUpdateTemplateType",
+		"VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_END_RANGE"
+	),
+	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_RANGE_SIZE = ffi.cast(
+		"enum VkDescriptorUpdateTemplateType",
+		"VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_RANGE_SIZE"
+	),
+	DESCRIPTOR_UPDATE_TEMPLATE_TYPE_MAX_ENUM = ffi.cast(
+		"enum VkDescriptorUpdateTemplateType",
+		"VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_MAX_ENUM"
+	),
 	BUFFER_USAGE_TRANSFER_SRC_BIT = ffi.cast("enum VkBufferUsageFlagBits", "VK_BUFFER_USAGE_TRANSFER_SRC_BIT"),
 	BUFFER_USAGE_TRANSFER_DST_BIT = ffi.cast("enum VkBufferUsageFlagBits", "VK_BUFFER_USAGE_TRANSFER_DST_BIT"),
 	BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT = ffi.cast("enum VkBufferUsageFlagBits", "VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT"),
@@ -1201,14 +1672,26 @@ library.e = {
 	DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR = ffi.cast("enum VkDisplayPlaneAlphaFlagBitsKHR", "VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR"),
 	DISPLAY_PLANE_ALPHA_GLOBAL_BIT_KHR = ffi.cast("enum VkDisplayPlaneAlphaFlagBitsKHR", "VK_DISPLAY_PLANE_ALPHA_GLOBAL_BIT_KHR"),
 	DISPLAY_PLANE_ALPHA_PER_PIXEL_BIT_KHR = ffi.cast("enum VkDisplayPlaneAlphaFlagBitsKHR", "VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_BIT_KHR"),
-	DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR = ffi.cast("enum VkDisplayPlaneAlphaFlagBitsKHR", "VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR"),
-	DISPLAY_PLANE_ALPHA_FLAG_BITS_MAX_ENUM_KHR = ffi.cast("enum VkDisplayPlaneAlphaFlagBitsKHR", "VK_DISPLAY_PLANE_ALPHA_FLAG_BITS_MAX_ENUM_KHR"),
+	DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR = ffi.cast(
+		"enum VkDisplayPlaneAlphaFlagBitsKHR",
+		"VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR"
+	),
+	DISPLAY_PLANE_ALPHA_FLAG_BITS_MAX_ENUM_KHR = ffi.cast(
+		"enum VkDisplayPlaneAlphaFlagBitsKHR",
+		"VK_DISPLAY_PLANE_ALPHA_FLAG_BITS_MAX_ENUM_KHR"
+	),
 	PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT"),
 	PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT"),
 	PIPELINE_CREATE_DERIVATIVE_BIT = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_DERIVATIVE_BIT"),
-	PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT"),
+	PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT = ffi.cast(
+		"enum VkPipelineCreateFlagBits",
+		"VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT"
+	),
 	PIPELINE_CREATE_DISPATCH_BASE = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_DISPATCH_BASE"),
-	PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT_KHR = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT_KHR"),
+	PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT_KHR = ffi.cast(
+		"enum VkPipelineCreateFlagBits",
+		"VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT_KHR"
+	),
 	PIPELINE_CREATE_DISPATCH_BASE_KHR = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_DISPATCH_BASE_KHR"),
 	PIPELINE_CREATE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_FLAG_BITS_MAX_ENUM"),
 	COVERAGE_MODULATION_MODE_NONE_NV = ffi.cast("enum VkCoverageModulationModeNV", "VK_COVERAGE_MODULATION_MODE_NONE_NV"),
@@ -1219,15 +1702,42 @@ library.e = {
 	COVERAGE_MODULATION_MODE_END_RANGE_NV = ffi.cast("enum VkCoverageModulationModeNV", "VK_COVERAGE_MODULATION_MODE_END_RANGE_NV"),
 	COVERAGE_MODULATION_MODE_RANGE_SIZE_NV = ffi.cast("enum VkCoverageModulationModeNV", "VK_COVERAGE_MODULATION_MODE_RANGE_SIZE_NV"),
 	COVERAGE_MODULATION_MODE_MAX_ENUM_NV = ffi.cast("enum VkCoverageModulationModeNV", "VK_COVERAGE_MODULATION_MODE_MAX_ENUM_NV"),
-	EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT"),
-	EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_BIT = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_BIT"),
-	EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT"),
-	EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT"),
-	EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR"),
-	EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR"),
-	EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR"),
-	EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT_KHR = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT_KHR"),
-	EXTERNAL_FENCE_HANDLE_TYPE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_FLAG_BITS_MAX_ENUM"),
+	EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT = ffi.cast(
+		"enum VkExternalFenceHandleTypeFlagBits",
+		"VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT"
+	),
+	EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_BIT = ffi.cast(
+		"enum VkExternalFenceHandleTypeFlagBits",
+		"VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_BIT"
+	),
+	EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT = ffi.cast(
+		"enum VkExternalFenceHandleTypeFlagBits",
+		"VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT"
+	),
+	EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT = ffi.cast(
+		"enum VkExternalFenceHandleTypeFlagBits",
+		"VK_EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT"
+	),
+	EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR = ffi.cast(
+		"enum VkExternalFenceHandleTypeFlagBits",
+		"VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR"
+	),
+	EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR = ffi.cast(
+		"enum VkExternalFenceHandleTypeFlagBits",
+		"VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR"
+	),
+	EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR = ffi.cast(
+		"enum VkExternalFenceHandleTypeFlagBits",
+		"VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR"
+	),
+	EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT_KHR = ffi.cast(
+		"enum VkExternalFenceHandleTypeFlagBits",
+		"VK_EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT_KHR"
+	),
+	EXTERNAL_FENCE_HANDLE_TYPE_FLAG_BITS_MAX_ENUM = ffi.cast(
+		"enum VkExternalFenceHandleTypeFlagBits",
+		"VK_EXTERNAL_FENCE_HANDLE_TYPE_FLAG_BITS_MAX_ENUM"
+	),
 	IMAGE_VIEW_TYPE_1D = ffi.cast("enum VkImageViewType", "VK_IMAGE_VIEW_TYPE_1D"),
 	IMAGE_VIEW_TYPE_2D = ffi.cast("enum VkImageViewType", "VK_IMAGE_VIEW_TYPE_2D"),
 	IMAGE_VIEW_TYPE_3D = ffi.cast("enum VkImageViewType", "VK_IMAGE_VIEW_TYPE_3D"),
@@ -1242,11 +1752,20 @@ library.e = {
 	QUERY_CONTROL_PRECISE_BIT = ffi.cast("enum VkQueryControlFlagBits", "VK_QUERY_CONTROL_PRECISE_BIT"),
 	QUERY_CONTROL_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkQueryControlFlagBits", "VK_QUERY_CONTROL_FLAG_BITS_MAX_ENUM"),
 	ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT = ffi.cast("enum VkAttachmentDescriptionFlagBits", "VK_ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT"),
-	ATTACHMENT_DESCRIPTION_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkAttachmentDescriptionFlagBits", "VK_ATTACHMENT_DESCRIPTION_FLAG_BITS_MAX_ENUM"),
+	ATTACHMENT_DESCRIPTION_FLAG_BITS_MAX_ENUM = ffi.cast(
+		"enum VkAttachmentDescriptionFlagBits",
+		"VK_ATTACHMENT_DESCRIPTION_FLAG_BITS_MAX_ENUM"
+	),
 	PIPELINE_CACHE_HEADER_VERSION_ONE = ffi.cast("enum VkPipelineCacheHeaderVersion", "VK_PIPELINE_CACHE_HEADER_VERSION_ONE"),
-	PIPELINE_CACHE_HEADER_VERSION_BEGIN_RANGE = ffi.cast("enum VkPipelineCacheHeaderVersion", "VK_PIPELINE_CACHE_HEADER_VERSION_BEGIN_RANGE"),
+	PIPELINE_CACHE_HEADER_VERSION_BEGIN_RANGE = ffi.cast(
+		"enum VkPipelineCacheHeaderVersion",
+		"VK_PIPELINE_CACHE_HEADER_VERSION_BEGIN_RANGE"
+	),
 	PIPELINE_CACHE_HEADER_VERSION_END_RANGE = ffi.cast("enum VkPipelineCacheHeaderVersion", "VK_PIPELINE_CACHE_HEADER_VERSION_END_RANGE"),
-	PIPELINE_CACHE_HEADER_VERSION_RANGE_SIZE = ffi.cast("enum VkPipelineCacheHeaderVersion", "VK_PIPELINE_CACHE_HEADER_VERSION_RANGE_SIZE"),
+	PIPELINE_CACHE_HEADER_VERSION_RANGE_SIZE = ffi.cast(
+		"enum VkPipelineCacheHeaderVersion",
+		"VK_PIPELINE_CACHE_HEADER_VERSION_RANGE_SIZE"
+	),
 	PIPELINE_CACHE_HEADER_VERSION_MAX_ENUM = ffi.cast("enum VkPipelineCacheHeaderVersion", "VK_PIPELINE_CACHE_HEADER_VERSION_MAX_ENUM"),
 	DEBUG_REPORT_INFORMATION_BIT_EXT = ffi.cast("enum VkDebugReportFlagBitsEXT", "VK_DEBUG_REPORT_INFORMATION_BIT_EXT"),
 	DEBUG_REPORT_WARNING_BIT_EXT = ffi.cast("enum VkDebugReportFlagBitsEXT", "VK_DEBUG_REPORT_WARNING_BIT_EXT"),
@@ -1269,26 +1788,86 @@ library.e = {
 	PRIMITIVE_TOPOLOGY_END_RANGE = ffi.cast("enum VkPrimitiveTopology", "VK_PRIMITIVE_TOPOLOGY_END_RANGE"),
 	PRIMITIVE_TOPOLOGY_RANGE_SIZE = ffi.cast("enum VkPrimitiveTopology", "VK_PRIMITIVE_TOPOLOGY_RANGE_SIZE"),
 	PRIMITIVE_TOPOLOGY_MAX_ENUM = ffi.cast("enum VkPrimitiveTopology", "VK_PRIMITIVE_TOPOLOGY_MAX_ENUM"),
-	DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT = ffi.cast("enum VkDescriptorBindingFlagBitsEXT", "VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT"),
-	DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT_EXT = ffi.cast("enum VkDescriptorBindingFlagBitsEXT", "VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT_EXT"),
-	DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT = ffi.cast("enum VkDescriptorBindingFlagBitsEXT", "VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT"),
-	DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT = ffi.cast("enum VkDescriptorBindingFlagBitsEXT", "VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT"),
-	DESCRIPTOR_BINDING_FLAG_BITS_MAX_ENUM_EXT = ffi.cast("enum VkDescriptorBindingFlagBitsEXT", "VK_DESCRIPTOR_BINDING_FLAG_BITS_MAX_ENUM_EXT"),
-	VALIDATION_CACHE_HEADER_VERSION_ONE_EXT = ffi.cast("enum VkValidationCacheHeaderVersionEXT", "VK_VALIDATION_CACHE_HEADER_VERSION_ONE_EXT"),
-	VALIDATION_CACHE_HEADER_VERSION_BEGIN_RANGE_EXT = ffi.cast("enum VkValidationCacheHeaderVersionEXT", "VK_VALIDATION_CACHE_HEADER_VERSION_BEGIN_RANGE_EXT"),
-	VALIDATION_CACHE_HEADER_VERSION_END_RANGE_EXT = ffi.cast("enum VkValidationCacheHeaderVersionEXT", "VK_VALIDATION_CACHE_HEADER_VERSION_END_RANGE_EXT"),
-	VALIDATION_CACHE_HEADER_VERSION_RANGE_SIZE_EXT = ffi.cast("enum VkValidationCacheHeaderVersionEXT", "VK_VALIDATION_CACHE_HEADER_VERSION_RANGE_SIZE_EXT"),
-	VALIDATION_CACHE_HEADER_VERSION_MAX_ENUM_EXT = ffi.cast("enum VkValidationCacheHeaderVersionEXT", "VK_VALIDATION_CACHE_HEADER_VERSION_MAX_ENUM_EXT"),
-	DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR = ffi.cast("enum VkDescriptorSetLayoutCreateFlagBits", "VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR"),
-	DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT = ffi.cast("enum VkDescriptorSetLayoutCreateFlagBits", "VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT"),
-	DESCRIPTOR_SET_LAYOUT_CREATE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkDescriptorSetLayoutCreateFlagBits", "VK_DESCRIPTOR_SET_LAYOUT_CREATE_FLAG_BITS_MAX_ENUM"),
-	CONSERVATIVE_RASTERIZATION_MODE_DISABLED_EXT = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_DISABLED_EXT"),
-	CONSERVATIVE_RASTERIZATION_MODE_OVERESTIMATE_EXT = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_OVERESTIMATE_EXT"),
-	CONSERVATIVE_RASTERIZATION_MODE_UNDERESTIMATE_EXT = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_UNDERESTIMATE_EXT"),
-	CONSERVATIVE_RASTERIZATION_MODE_BEGIN_RANGE_EXT = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_BEGIN_RANGE_EXT"),
-	CONSERVATIVE_RASTERIZATION_MODE_END_RANGE_EXT = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_END_RANGE_EXT"),
-	CONSERVATIVE_RASTERIZATION_MODE_RANGE_SIZE_EXT = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_RANGE_SIZE_EXT"),
-	CONSERVATIVE_RASTERIZATION_MODE_MAX_ENUM_EXT = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_MAX_ENUM_EXT"),
+	DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT = ffi.cast(
+		"enum VkDescriptorBindingFlagBitsEXT",
+		"VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT"
+	),
+	DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT_EXT = ffi.cast(
+		"enum VkDescriptorBindingFlagBitsEXT",
+		"VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT_EXT"
+	),
+	DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT = ffi.cast(
+		"enum VkDescriptorBindingFlagBitsEXT",
+		"VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT"
+	),
+	DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT = ffi.cast(
+		"enum VkDescriptorBindingFlagBitsEXT",
+		"VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT"
+	),
+	DESCRIPTOR_BINDING_FLAG_BITS_MAX_ENUM_EXT = ffi.cast(
+		"enum VkDescriptorBindingFlagBitsEXT",
+		"VK_DESCRIPTOR_BINDING_FLAG_BITS_MAX_ENUM_EXT"
+	),
+	VALIDATION_CACHE_HEADER_VERSION_ONE_EXT = ffi.cast(
+		"enum VkValidationCacheHeaderVersionEXT",
+		"VK_VALIDATION_CACHE_HEADER_VERSION_ONE_EXT"
+	),
+	VALIDATION_CACHE_HEADER_VERSION_BEGIN_RANGE_EXT = ffi.cast(
+		"enum VkValidationCacheHeaderVersionEXT",
+		"VK_VALIDATION_CACHE_HEADER_VERSION_BEGIN_RANGE_EXT"
+	),
+	VALIDATION_CACHE_HEADER_VERSION_END_RANGE_EXT = ffi.cast(
+		"enum VkValidationCacheHeaderVersionEXT",
+		"VK_VALIDATION_CACHE_HEADER_VERSION_END_RANGE_EXT"
+	),
+	VALIDATION_CACHE_HEADER_VERSION_RANGE_SIZE_EXT = ffi.cast(
+		"enum VkValidationCacheHeaderVersionEXT",
+		"VK_VALIDATION_CACHE_HEADER_VERSION_RANGE_SIZE_EXT"
+	),
+	VALIDATION_CACHE_HEADER_VERSION_MAX_ENUM_EXT = ffi.cast(
+		"enum VkValidationCacheHeaderVersionEXT",
+		"VK_VALIDATION_CACHE_HEADER_VERSION_MAX_ENUM_EXT"
+	),
+	DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR = ffi.cast(
+		"enum VkDescriptorSetLayoutCreateFlagBits",
+		"VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR"
+	),
+	DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT = ffi.cast(
+		"enum VkDescriptorSetLayoutCreateFlagBits",
+		"VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT"
+	),
+	DESCRIPTOR_SET_LAYOUT_CREATE_FLAG_BITS_MAX_ENUM = ffi.cast(
+		"enum VkDescriptorSetLayoutCreateFlagBits",
+		"VK_DESCRIPTOR_SET_LAYOUT_CREATE_FLAG_BITS_MAX_ENUM"
+	),
+	CONSERVATIVE_RASTERIZATION_MODE_DISABLED_EXT = ffi.cast(
+		"enum VkConservativeRasterizationModeEXT",
+		"VK_CONSERVATIVE_RASTERIZATION_MODE_DISABLED_EXT"
+	),
+	CONSERVATIVE_RASTERIZATION_MODE_OVERESTIMATE_EXT = ffi.cast(
+		"enum VkConservativeRasterizationModeEXT",
+		"VK_CONSERVATIVE_RASTERIZATION_MODE_OVERESTIMATE_EXT"
+	),
+	CONSERVATIVE_RASTERIZATION_MODE_UNDERESTIMATE_EXT = ffi.cast(
+		"enum VkConservativeRasterizationModeEXT",
+		"VK_CONSERVATIVE_RASTERIZATION_MODE_UNDERESTIMATE_EXT"
+	),
+	CONSERVATIVE_RASTERIZATION_MODE_BEGIN_RANGE_EXT = ffi.cast(
+		"enum VkConservativeRasterizationModeEXT",
+		"VK_CONSERVATIVE_RASTERIZATION_MODE_BEGIN_RANGE_EXT"
+	),
+	CONSERVATIVE_RASTERIZATION_MODE_END_RANGE_EXT = ffi.cast(
+		"enum VkConservativeRasterizationModeEXT",
+		"VK_CONSERVATIVE_RASTERIZATION_MODE_END_RANGE_EXT"
+	),
+	CONSERVATIVE_RASTERIZATION_MODE_RANGE_SIZE_EXT = ffi.cast(
+		"enum VkConservativeRasterizationModeEXT",
+		"VK_CONSERVATIVE_RASTERIZATION_MODE_RANGE_SIZE_EXT"
+	),
+	CONSERVATIVE_RASTERIZATION_MODE_MAX_ENUM_EXT = ffi.cast(
+		"enum VkConservativeRasterizationModeEXT",
+		"VK_CONSERVATIVE_RASTERIZATION_MODE_MAX_ENUM_EXT"
+	),
 	DISPLAY_POWER_STATE_OFF_EXT = ffi.cast("enum VkDisplayPowerStateEXT", "VK_DISPLAY_POWER_STATE_OFF_EXT"),
 	DISPLAY_POWER_STATE_SUSPEND_EXT = ffi.cast("enum VkDisplayPowerStateEXT", "VK_DISPLAY_POWER_STATE_SUSPEND_EXT"),
 	DISPLAY_POWER_STATE_ON_EXT = ffi.cast("enum VkDisplayPowerStateEXT", "VK_DISPLAY_POWER_STATE_ON_EXT"),
@@ -1304,28 +1883,79 @@ library.e = {
 	SAMPLER_YCBCR_RANGE_END_RANGE = ffi.cast("enum VkSamplerYcbcrRange", "VK_SAMPLER_YCBCR_RANGE_END_RANGE"),
 	SAMPLER_YCBCR_RANGE_RANGE_SIZE = ffi.cast("enum VkSamplerYcbcrRange", "VK_SAMPLER_YCBCR_RANGE_RANGE_SIZE"),
 	SAMPLER_YCBCR_RANGE_MAX_ENUM = ffi.cast("enum VkSamplerYcbcrRange", "VK_SAMPLER_YCBCR_RANGE_MAX_ENUM"),
-	DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT = ffi.cast("enum VkDescriptorPoolCreateFlagBits", "VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT"),
-	DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT = ffi.cast("enum VkDescriptorPoolCreateFlagBits", "VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT"),
-	DESCRIPTOR_POOL_CREATE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkDescriptorPoolCreateFlagBits", "VK_DESCRIPTOR_POOL_CREATE_FLAG_BITS_MAX_ENUM"),
+	DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT = ffi.cast(
+		"enum VkDescriptorPoolCreateFlagBits",
+		"VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT"
+	),
+	DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT = ffi.cast(
+		"enum VkDescriptorPoolCreateFlagBits",
+		"VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT"
+	),
+	DESCRIPTOR_POOL_CREATE_FLAG_BITS_MAX_ENUM = ffi.cast(
+		"enum VkDescriptorPoolCreateFlagBits",
+		"VK_DESCRIPTOR_POOL_CREATE_FLAG_BITS_MAX_ENUM"
+	),
 	SURFACE_TRANSFORM_IDENTITY_BIT_KHR = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR"),
 	SURFACE_TRANSFORM_ROTATE_90_BIT_KHR = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR"),
 	SURFACE_TRANSFORM_ROTATE_180_BIT_KHR = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR"),
 	SURFACE_TRANSFORM_ROTATE_270_BIT_KHR = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR"),
-	SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR"),
-	SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR"),
-	SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR"),
-	SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR"),
+	SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR = ffi.cast(
+		"enum VkSurfaceTransformFlagBitsKHR",
+		"VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR"
+	),
+	SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR = ffi.cast(
+		"enum VkSurfaceTransformFlagBitsKHR",
+		"VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR"
+	),
+	SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR = ffi.cast(
+		"enum VkSurfaceTransformFlagBitsKHR",
+		"VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR"
+	),
+	SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR = ffi.cast(
+		"enum VkSurfaceTransformFlagBitsKHR",
+		"VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR"
+	),
 	SURFACE_TRANSFORM_INHERIT_BIT_KHR = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR"),
-	SURFACE_TRANSFORM_FLAG_BITS_MAX_ENUM_KHR = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_FLAG_BITS_MAX_ENUM_KHR"),
-	DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT = ffi.cast("enum VkDebugUtilsMessageTypeFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT"),
-	DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT = ffi.cast("enum VkDebugUtilsMessageTypeFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT"),
-	DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT = ffi.cast("enum VkDebugUtilsMessageTypeFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT"),
-	DEBUG_UTILS_MESSAGE_TYPE_FLAG_BITS_MAX_ENUM_EXT = ffi.cast("enum VkDebugUtilsMessageTypeFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_TYPE_FLAG_BITS_MAX_ENUM_EXT"),
-	DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT = ffi.cast("enum VkDebugUtilsMessageSeverityFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT"),
-	DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT = ffi.cast("enum VkDebugUtilsMessageSeverityFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT"),
-	DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT = ffi.cast("enum VkDebugUtilsMessageSeverityFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT"),
-	DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT = ffi.cast("enum VkDebugUtilsMessageSeverityFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT"),
-	DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT = ffi.cast("enum VkDebugUtilsMessageSeverityFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT"),
+	SURFACE_TRANSFORM_FLAG_BITS_MAX_ENUM_KHR = ffi.cast(
+		"enum VkSurfaceTransformFlagBitsKHR",
+		"VK_SURFACE_TRANSFORM_FLAG_BITS_MAX_ENUM_KHR"
+	),
+	DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT = ffi.cast(
+		"enum VkDebugUtilsMessageTypeFlagBitsEXT",
+		"VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT"
+	),
+	DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT = ffi.cast(
+		"enum VkDebugUtilsMessageTypeFlagBitsEXT",
+		"VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT"
+	),
+	DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT = ffi.cast(
+		"enum VkDebugUtilsMessageTypeFlagBitsEXT",
+		"VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT"
+	),
+	DEBUG_UTILS_MESSAGE_TYPE_FLAG_BITS_MAX_ENUM_EXT = ffi.cast(
+		"enum VkDebugUtilsMessageTypeFlagBitsEXT",
+		"VK_DEBUG_UTILS_MESSAGE_TYPE_FLAG_BITS_MAX_ENUM_EXT"
+	),
+	DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT = ffi.cast(
+		"enum VkDebugUtilsMessageSeverityFlagBitsEXT",
+		"VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT"
+	),
+	DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT = ffi.cast(
+		"enum VkDebugUtilsMessageSeverityFlagBitsEXT",
+		"VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT"
+	),
+	DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT = ffi.cast(
+		"enum VkDebugUtilsMessageSeverityFlagBitsEXT",
+		"VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT"
+	),
+	DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT = ffi.cast(
+		"enum VkDebugUtilsMessageSeverityFlagBitsEXT",
+		"VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT"
+	),
+	DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT = ffi.cast(
+		"enum VkDebugUtilsMessageSeverityFlagBitsEXT",
+		"VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT"
+	),
 	COMPARE_OP_NEVER = ffi.cast("enum VkCompareOp", "VK_COMPARE_OP_NEVER"),
 	COMPARE_OP_LESS = ffi.cast("enum VkCompareOp", "VK_COMPARE_OP_LESS"),
 	COMPARE_OP_EQUAL = ffi.cast("enum VkCompareOp", "VK_COMPARE_OP_EQUAL"),
@@ -1347,8 +1977,14 @@ library.e = {
 	SHADER_STAGE_ALL_GRAPHICS = ffi.cast("enum VkShaderStageFlagBits", "VK_SHADER_STAGE_ALL_GRAPHICS"),
 	SHADER_STAGE_ALL = ffi.cast("enum VkShaderStageFlagBits", "VK_SHADER_STAGE_ALL"),
 	SHADER_STAGE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkShaderStageFlagBits", "VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM"),
-	SUBPASS_DESCRIPTION_PER_VIEW_ATTRIBUTES_BIT_NVX = ffi.cast("enum VkSubpassDescriptionFlagBits", "VK_SUBPASS_DESCRIPTION_PER_VIEW_ATTRIBUTES_BIT_NVX"),
-	SUBPASS_DESCRIPTION_PER_VIEW_POSITION_X_ONLY_BIT_NVX = ffi.cast("enum VkSubpassDescriptionFlagBits", "VK_SUBPASS_DESCRIPTION_PER_VIEW_POSITION_X_ONLY_BIT_NVX"),
+	SUBPASS_DESCRIPTION_PER_VIEW_ATTRIBUTES_BIT_NVX = ffi.cast(
+		"enum VkSubpassDescriptionFlagBits",
+		"VK_SUBPASS_DESCRIPTION_PER_VIEW_ATTRIBUTES_BIT_NVX"
+	),
+	SUBPASS_DESCRIPTION_PER_VIEW_POSITION_X_ONLY_BIT_NVX = ffi.cast(
+		"enum VkSubpassDescriptionFlagBits",
+		"VK_SUBPASS_DESCRIPTION_PER_VIEW_POSITION_X_ONLY_BIT_NVX"
+	),
 	SUBPASS_DESCRIPTION_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkSubpassDescriptionFlagBits", "VK_SUBPASS_DESCRIPTION_FLAG_BITS_MAX_ENUM"),
 	SUBGROUP_FEATURE_BASIC_BIT = ffi.cast("enum VkSubgroupFeatureFlagBits", "VK_SUBGROUP_FEATURE_BASIC_BIT"),
 	SUBGROUP_FEATURE_VOTE_BIT = ffi.cast("enum VkSubgroupFeatureFlagBits", "VK_SUBGROUP_FEATURE_VOTE_BIT"),
@@ -1418,10 +2054,19 @@ library.e = {
 	IMAGE_CREATE_EXTENDED_USAGE_BIT = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_EXTENDED_USAGE_BIT"),
 	IMAGE_CREATE_PROTECTED_BIT = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_PROTECTED_BIT"),
 	IMAGE_CREATE_DISJOINT_BIT = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_DISJOINT_BIT"),
-	IMAGE_CREATE_SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_EXT = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_EXT"),
-	IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR"),
+	IMAGE_CREATE_SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_EXT = ffi.cast(
+		"enum VkImageCreateFlagBits",
+		"VK_IMAGE_CREATE_SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_EXT"
+	),
+	IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR = ffi.cast(
+		"enum VkImageCreateFlagBits",
+		"VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR"
+	),
 	IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT_KHR = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT_KHR"),
-	IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT_KHR = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT_KHR"),
+	IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT_KHR = ffi.cast(
+		"enum VkImageCreateFlagBits",
+		"VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT_KHR"
+	),
 	IMAGE_CREATE_EXTENDED_USAGE_BIT_KHR = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_EXTENDED_USAGE_BIT_KHR"),
 	IMAGE_CREATE_DISJOINT_BIT_KHR = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_DISJOINT_BIT_KHR"),
 	IMAGE_CREATE_ALIAS_BIT_KHR = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_ALIAS_BIT_KHR"),
@@ -1436,9 +2081,18 @@ library.e = {
 	SAMPLE_COUNT_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkSampleCountFlagBits", "VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM"),
 	EXTERNAL_FENCE_FEATURE_EXPORTABLE_BIT = ffi.cast("enum VkExternalFenceFeatureFlagBits", "VK_EXTERNAL_FENCE_FEATURE_EXPORTABLE_BIT"),
 	EXTERNAL_FENCE_FEATURE_IMPORTABLE_BIT = ffi.cast("enum VkExternalFenceFeatureFlagBits", "VK_EXTERNAL_FENCE_FEATURE_IMPORTABLE_BIT"),
-	EXTERNAL_FENCE_FEATURE_EXPORTABLE_BIT_KHR = ffi.cast("enum VkExternalFenceFeatureFlagBits", "VK_EXTERNAL_FENCE_FEATURE_EXPORTABLE_BIT_KHR"),
-	EXTERNAL_FENCE_FEATURE_IMPORTABLE_BIT_KHR = ffi.cast("enum VkExternalFenceFeatureFlagBits", "VK_EXTERNAL_FENCE_FEATURE_IMPORTABLE_BIT_KHR"),
-	EXTERNAL_FENCE_FEATURE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkExternalFenceFeatureFlagBits", "VK_EXTERNAL_FENCE_FEATURE_FLAG_BITS_MAX_ENUM"),
+	EXTERNAL_FENCE_FEATURE_EXPORTABLE_BIT_KHR = ffi.cast(
+		"enum VkExternalFenceFeatureFlagBits",
+		"VK_EXTERNAL_FENCE_FEATURE_EXPORTABLE_BIT_KHR"
+	),
+	EXTERNAL_FENCE_FEATURE_IMPORTABLE_BIT_KHR = ffi.cast(
+		"enum VkExternalFenceFeatureFlagBits",
+		"VK_EXTERNAL_FENCE_FEATURE_IMPORTABLE_BIT_KHR"
+	),
+	EXTERNAL_FENCE_FEATURE_FLAG_BITS_MAX_ENUM = ffi.cast(
+		"enum VkExternalFenceFeatureFlagBits",
+		"VK_EXTERNAL_FENCE_FEATURE_FLAG_BITS_MAX_ENUM"
+	),
 	QUERY_RESULT_64_BIT = ffi.cast("enum VkQueryResultFlagBits", "VK_QUERY_RESULT_64_BIT"),
 	QUERY_RESULT_WAIT_BIT = ffi.cast("enum VkQueryResultFlagBits", "VK_QUERY_RESULT_WAIT_BIT"),
 	QUERY_RESULT_WITH_AVAILABILITY_BIT = ffi.cast("enum VkQueryResultFlagBits", "VK_QUERY_RESULT_WITH_AVAILABILITY_BIT"),
@@ -1492,69 +2146,198 @@ library.e = {
 	ACCESS_COMMAND_PROCESS_WRITE_BIT_NVX = ffi.cast("enum VkAccessFlagBits", "VK_ACCESS_COMMAND_PROCESS_WRITE_BIT_NVX"),
 	ACCESS_COLOR_ATTACHMENT_READ_NONCOHERENT_BIT_EXT = ffi.cast("enum VkAccessFlagBits", "VK_ACCESS_COLOR_ATTACHMENT_READ_NONCOHERENT_BIT_EXT"),
 	ACCESS_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkAccessFlagBits", "VK_ACCESS_FLAG_BITS_MAX_ENUM"),
-	EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT = ffi.cast("enum VkExternalSemaphoreFeatureFlagBits", "VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT"),
-	EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT = ffi.cast("enum VkExternalSemaphoreFeatureFlagBits", "VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT"),
-	EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT_KHR = ffi.cast("enum VkExternalSemaphoreFeatureFlagBits", "VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT_KHR"),
-	EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT_KHR = ffi.cast("enum VkExternalSemaphoreFeatureFlagBits", "VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT_KHR"),
-	EXTERNAL_SEMAPHORE_FEATURE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkExternalSemaphoreFeatureFlagBits", "VK_EXTERNAL_SEMAPHORE_FEATURE_FLAG_BITS_MAX_ENUM"),
-	INDIRECT_COMMANDS_LAYOUT_USAGE_UNORDERED_SEQUENCES_BIT_NVX = ffi.cast("enum VkIndirectCommandsLayoutUsageFlagBitsNVX", "VK_INDIRECT_COMMANDS_LAYOUT_USAGE_UNORDERED_SEQUENCES_BIT_NVX"),
-	INDIRECT_COMMANDS_LAYOUT_USAGE_SPARSE_SEQUENCES_BIT_NVX = ffi.cast("enum VkIndirectCommandsLayoutUsageFlagBitsNVX", "VK_INDIRECT_COMMANDS_LAYOUT_USAGE_SPARSE_SEQUENCES_BIT_NVX"),
-	INDIRECT_COMMANDS_LAYOUT_USAGE_EMPTY_EXECUTIONS_BIT_NVX = ffi.cast("enum VkIndirectCommandsLayoutUsageFlagBitsNVX", "VK_INDIRECT_COMMANDS_LAYOUT_USAGE_EMPTY_EXECUTIONS_BIT_NVX"),
-	INDIRECT_COMMANDS_LAYOUT_USAGE_INDEXED_SEQUENCES_BIT_NVX = ffi.cast("enum VkIndirectCommandsLayoutUsageFlagBitsNVX", "VK_INDIRECT_COMMANDS_LAYOUT_USAGE_INDEXED_SEQUENCES_BIT_NVX"),
-	INDIRECT_COMMANDS_LAYOUT_USAGE_FLAG_BITS_MAX_ENUM_NVX = ffi.cast("enum VkIndirectCommandsLayoutUsageFlagBitsNVX", "VK_INDIRECT_COMMANDS_LAYOUT_USAGE_FLAG_BITS_MAX_ENUM_NVX"),
+	EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT = ffi.cast(
+		"enum VkExternalSemaphoreFeatureFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT"
+	),
+	EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT = ffi.cast(
+		"enum VkExternalSemaphoreFeatureFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT"
+	),
+	EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT_KHR = ffi.cast(
+		"enum VkExternalSemaphoreFeatureFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT_KHR"
+	),
+	EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT_KHR = ffi.cast(
+		"enum VkExternalSemaphoreFeatureFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT_KHR"
+	),
+	EXTERNAL_SEMAPHORE_FEATURE_FLAG_BITS_MAX_ENUM = ffi.cast(
+		"enum VkExternalSemaphoreFeatureFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_FEATURE_FLAG_BITS_MAX_ENUM"
+	),
+	INDIRECT_COMMANDS_LAYOUT_USAGE_UNORDERED_SEQUENCES_BIT_NVX = ffi.cast(
+		"enum VkIndirectCommandsLayoutUsageFlagBitsNVX",
+		"VK_INDIRECT_COMMANDS_LAYOUT_USAGE_UNORDERED_SEQUENCES_BIT_NVX"
+	),
+	INDIRECT_COMMANDS_LAYOUT_USAGE_SPARSE_SEQUENCES_BIT_NVX = ffi.cast(
+		"enum VkIndirectCommandsLayoutUsageFlagBitsNVX",
+		"VK_INDIRECT_COMMANDS_LAYOUT_USAGE_SPARSE_SEQUENCES_BIT_NVX"
+	),
+	INDIRECT_COMMANDS_LAYOUT_USAGE_EMPTY_EXECUTIONS_BIT_NVX = ffi.cast(
+		"enum VkIndirectCommandsLayoutUsageFlagBitsNVX",
+		"VK_INDIRECT_COMMANDS_LAYOUT_USAGE_EMPTY_EXECUTIONS_BIT_NVX"
+	),
+	INDIRECT_COMMANDS_LAYOUT_USAGE_INDEXED_SEQUENCES_BIT_NVX = ffi.cast(
+		"enum VkIndirectCommandsLayoutUsageFlagBitsNVX",
+		"VK_INDIRECT_COMMANDS_LAYOUT_USAGE_INDEXED_SEQUENCES_BIT_NVX"
+	),
+	INDIRECT_COMMANDS_LAYOUT_USAGE_FLAG_BITS_MAX_ENUM_NVX = ffi.cast(
+		"enum VkIndirectCommandsLayoutUsageFlagBitsNVX",
+		"VK_INDIRECT_COMMANDS_LAYOUT_USAGE_FLAG_BITS_MAX_ENUM_NVX"
+	),
 	FORMAT_FEATURE_SAMPLED_IMAGE_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT"),
 	FORMAT_FEATURE_STORAGE_IMAGE_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT"),
 	FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT"),
 	FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT"),
 	FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT"),
-	FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT"),
+	FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT"
+	),
 	FORMAT_FEATURE_VERTEX_BUFFER_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT"),
 	FORMAT_FEATURE_COLOR_ATTACHMENT_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT"),
 	FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT"),
 	FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT"),
 	FORMAT_FEATURE_BLIT_SRC_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_BLIT_SRC_BIT"),
 	FORMAT_FEATURE_BLIT_DST_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_BLIT_DST_BIT"),
-	FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT"),
+	FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT"
+	),
 	FORMAT_FEATURE_TRANSFER_SRC_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_TRANSFER_SRC_BIT"),
 	FORMAT_FEATURE_TRANSFER_DST_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_TRANSFER_DST_BIT"),
 	FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT"),
-	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT"),
-	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT"),
-	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT"),
-	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT"),
+	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT"
+	),
+	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT"
+	),
+	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT"
+	),
+	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT"
+	),
 	FORMAT_FEATURE_DISJOINT_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_DISJOINT_BIT"),
 	FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT"),
-	FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG"),
-	FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT_EXT = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT_EXT"),
+	FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG"
+	),
+	FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT_EXT = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT_EXT"
+	),
 	FORMAT_FEATURE_TRANSFER_SRC_BIT_KHR = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_TRANSFER_SRC_BIT_KHR"),
 	FORMAT_FEATURE_TRANSFER_DST_BIT_KHR = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_TRANSFER_DST_BIT_KHR"),
-	FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT_KHR = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT_KHR"),
-	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT_KHR = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT_KHR"),
-	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT_KHR = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT_KHR"),
-	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT_KHR = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT_KHR"),
-	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT_KHR = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT_KHR"),
+	FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT_KHR = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT_KHR"
+	),
+	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT_KHR = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT_KHR"
+	),
+	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT_KHR = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT_KHR"
+	),
+	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT_KHR = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT_KHR"
+	),
+	FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT_KHR = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT_KHR"
+	),
 	FORMAT_FEATURE_DISJOINT_BIT_KHR = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_DISJOINT_BIT_KHR"),
-	FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT_KHR = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT_KHR"),
+	FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT_KHR = ffi.cast(
+		"enum VkFormatFeatureFlagBits",
+		"VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT_KHR"
+	),
 	FORMAT_FEATURE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_FLAG_BITS_MAX_ENUM"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_KMT_BIT = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_KMT_BIT"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_HEAP_BIT = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_HEAP_BIT"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_HOST_MAPPED_FOREIGN_MEMORY_BIT_EXT = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_MAPPED_FOREIGN_MEMORY_BIT_EXT"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT_KHR = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT_KHR"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_KMT_BIT_KHR = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_KMT_BIT_KHR"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_HEAP_BIT_KHR = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_HEAP_BIT_KHR"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT_KHR = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT_KHR"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_FLAG_BITS_MAX_ENUM"),
+	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_KMT_BIT = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_KMT_BIT"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_HEAP_BIT = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_HEAP_BIT"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_HOST_MAPPED_FOREIGN_MEMORY_BIT_EXT = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_MAPPED_FOREIGN_MEMORY_BIT_EXT"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT_KHR = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT_KHR"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_KMT_BIT_KHR = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_KMT_BIT_KHR"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_HEAP_BIT_KHR = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_HEAP_BIT_KHR"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT_KHR = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT_KHR"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_FLAG_BITS_MAX_ENUM = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBits",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_FLAG_BITS_MAX_ENUM"
+	),
 	COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT = ffi.cast("enum VkCommandPoolResetFlagBits", "VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT"),
 	COMMAND_POOL_RESET_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkCommandPoolResetFlagBits", "VK_COMMAND_POOL_RESET_FLAG_BITS_MAX_ENUM"),
 	MEMORY_HEAP_DEVICE_LOCAL_BIT = ffi.cast("enum VkMemoryHeapFlagBits", "VK_MEMORY_HEAP_DEVICE_LOCAL_BIT"),
@@ -1563,33 +2346,111 @@ library.e = {
 	MEMORY_HEAP_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkMemoryHeapFlagBits", "VK_MEMORY_HEAP_FLAG_BITS_MAX_ENUM"),
 	OBJECT_ENTRY_USAGE_GRAPHICS_BIT_NVX = ffi.cast("enum VkObjectEntryUsageFlagBitsNVX", "VK_OBJECT_ENTRY_USAGE_GRAPHICS_BIT_NVX"),
 	OBJECT_ENTRY_USAGE_COMPUTE_BIT_NVX = ffi.cast("enum VkObjectEntryUsageFlagBitsNVX", "VK_OBJECT_ENTRY_USAGE_COMPUTE_BIT_NVX"),
-	OBJECT_ENTRY_USAGE_FLAG_BITS_MAX_ENUM_NVX = ffi.cast("enum VkObjectEntryUsageFlagBitsNVX", "VK_OBJECT_ENTRY_USAGE_FLAG_BITS_MAX_ENUM_NVX"),
-	INDIRECT_COMMANDS_TOKEN_TYPE_PIPELINE_NVX = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_PIPELINE_NVX"),
-	INDIRECT_COMMANDS_TOKEN_TYPE_DESCRIPTOR_SET_NVX = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_DESCRIPTOR_SET_NVX"),
-	INDIRECT_COMMANDS_TOKEN_TYPE_INDEX_BUFFER_NVX = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_INDEX_BUFFER_NVX"),
-	INDIRECT_COMMANDS_TOKEN_TYPE_VERTEX_BUFFER_NVX = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_VERTEX_BUFFER_NVX"),
-	INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_CONSTANT_NVX = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_CONSTANT_NVX"),
-	INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_INDEXED_NVX = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_INDEXED_NVX"),
+	OBJECT_ENTRY_USAGE_FLAG_BITS_MAX_ENUM_NVX = ffi.cast(
+		"enum VkObjectEntryUsageFlagBitsNVX",
+		"VK_OBJECT_ENTRY_USAGE_FLAG_BITS_MAX_ENUM_NVX"
+	),
+	INDIRECT_COMMANDS_TOKEN_TYPE_PIPELINE_NVX = ffi.cast(
+		"enum VkIndirectCommandsTokenTypeNVX",
+		"VK_INDIRECT_COMMANDS_TOKEN_TYPE_PIPELINE_NVX"
+	),
+	INDIRECT_COMMANDS_TOKEN_TYPE_DESCRIPTOR_SET_NVX = ffi.cast(
+		"enum VkIndirectCommandsTokenTypeNVX",
+		"VK_INDIRECT_COMMANDS_TOKEN_TYPE_DESCRIPTOR_SET_NVX"
+	),
+	INDIRECT_COMMANDS_TOKEN_TYPE_INDEX_BUFFER_NVX = ffi.cast(
+		"enum VkIndirectCommandsTokenTypeNVX",
+		"VK_INDIRECT_COMMANDS_TOKEN_TYPE_INDEX_BUFFER_NVX"
+	),
+	INDIRECT_COMMANDS_TOKEN_TYPE_VERTEX_BUFFER_NVX = ffi.cast(
+		"enum VkIndirectCommandsTokenTypeNVX",
+		"VK_INDIRECT_COMMANDS_TOKEN_TYPE_VERTEX_BUFFER_NVX"
+	),
+	INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_CONSTANT_NVX = ffi.cast(
+		"enum VkIndirectCommandsTokenTypeNVX",
+		"VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_CONSTANT_NVX"
+	),
+	INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_INDEXED_NVX = ffi.cast(
+		"enum VkIndirectCommandsTokenTypeNVX",
+		"VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_INDEXED_NVX"
+	),
 	INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_NVX = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_NVX"),
-	INDIRECT_COMMANDS_TOKEN_TYPE_DISPATCH_NVX = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_DISPATCH_NVX"),
-	INDIRECT_COMMANDS_TOKEN_TYPE_BEGIN_RANGE_NVX = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_BEGIN_RANGE_NVX"),
-	INDIRECT_COMMANDS_TOKEN_TYPE_END_RANGE_NVX = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_END_RANGE_NVX"),
-	INDIRECT_COMMANDS_TOKEN_TYPE_RANGE_SIZE_NVX = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_RANGE_SIZE_NVX"),
-	INDIRECT_COMMANDS_TOKEN_TYPE_MAX_ENUM_NVX = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_MAX_ENUM_NVX"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709 = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601 = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020 = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY_KHR = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY_KHR"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY_KHR = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY_KHR"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_BEGIN_RANGE = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_BEGIN_RANGE"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_END_RANGE = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_END_RANGE"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_RANGE_SIZE = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_RANGE_SIZE"),
-	SAMPLER_YCBCR_MODEL_CONVERSION_MAX_ENUM = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_MAX_ENUM"),
+	INDIRECT_COMMANDS_TOKEN_TYPE_DISPATCH_NVX = ffi.cast(
+		"enum VkIndirectCommandsTokenTypeNVX",
+		"VK_INDIRECT_COMMANDS_TOKEN_TYPE_DISPATCH_NVX"
+	),
+	INDIRECT_COMMANDS_TOKEN_TYPE_BEGIN_RANGE_NVX = ffi.cast(
+		"enum VkIndirectCommandsTokenTypeNVX",
+		"VK_INDIRECT_COMMANDS_TOKEN_TYPE_BEGIN_RANGE_NVX"
+	),
+	INDIRECT_COMMANDS_TOKEN_TYPE_END_RANGE_NVX = ffi.cast(
+		"enum VkIndirectCommandsTokenTypeNVX",
+		"VK_INDIRECT_COMMANDS_TOKEN_TYPE_END_RANGE_NVX"
+	),
+	INDIRECT_COMMANDS_TOKEN_TYPE_RANGE_SIZE_NVX = ffi.cast(
+		"enum VkIndirectCommandsTokenTypeNVX",
+		"VK_INDIRECT_COMMANDS_TOKEN_TYPE_RANGE_SIZE_NVX"
+	),
+	INDIRECT_COMMANDS_TOKEN_TYPE_MAX_ENUM_NVX = ffi.cast(
+		"enum VkIndirectCommandsTokenTypeNVX",
+		"VK_INDIRECT_COMMANDS_TOKEN_TYPE_MAX_ENUM_NVX"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709 = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601 = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020 = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY_KHR = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY_KHR"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY_KHR = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY_KHR"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_BEGIN_RANGE = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_BEGIN_RANGE"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_END_RANGE = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_END_RANGE"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_RANGE_SIZE = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_RANGE_SIZE"
+	),
+	SAMPLER_YCBCR_MODEL_CONVERSION_MAX_ENUM = ffi.cast(
+		"enum VkSamplerYcbcrModelConversion",
+		"VK_SAMPLER_YCBCR_MODEL_CONVERSION_MAX_ENUM"
+	),
 	DEVICE_QUEUE_CREATE_PROTECTED_BIT = ffi.cast("enum VkDeviceQueueCreateFlagBits", "VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT"),
 	DEVICE_QUEUE_CREATE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkDeviceQueueCreateFlagBits", "VK_DEVICE_QUEUE_CREATE_FLAG_BITS_MAX_ENUM"),
 	STRUCTURE_TYPE_APPLICATION_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_APPLICATION_INFO"),
@@ -1611,14 +2472,35 @@ library.e = {
 	STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO"),
 	STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO"),
 	STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO"),
-	STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO"),
-	STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO"),
-	STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO"),
+	STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO"
+	),
+	STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO"
+	),
+	STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO"
+	),
 	STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO"),
-	STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO"),
-	STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO"),
-	STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO"),
-	STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO"),
+	STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO"
+	),
+	STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO"
+	),
+	STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO"
+	),
+	STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO"
+	),
 	STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO"),
 	STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO"),
 	STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO"),
@@ -1644,12 +2526,18 @@ library.e = {
 	STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES"),
 	STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO"),
 	STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES"
+	),
 	STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS"),
 	STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO"),
 	STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO"),
 	STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO"),
-	STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO"),
+	STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO"
+	),
 	STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO"),
 	STRUCTURE_TYPE_DEVICE_GROUP_BIND_SPARSE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_BIND_SPARSE_INFO"),
 	STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO"),
@@ -1658,7 +2546,10 @@ library.e = {
 	STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO"),
 	STRUCTURE_TYPE_BUFFER_MEMORY_REQUIREMENTS_INFO_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BUFFER_MEMORY_REQUIREMENTS_INFO_2"),
 	STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2"),
-	STRUCTURE_TYPE_IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2"),
+	STRUCTURE_TYPE_IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2 = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2"
+	),
 	STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2"),
 	STRUCTURE_TYPE_SPARSE_IMAGE_MEMORY_REQUIREMENTS_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SPARSE_IMAGE_MEMORY_REQUIREMENTS_2"),
 	STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2"),
@@ -1669,27 +2560,60 @@ library.e = {
 	STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2"),
 	STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2"),
 	STRUCTURE_TYPE_SPARSE_IMAGE_FORMAT_PROPERTIES_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SPARSE_IMAGE_FORMAT_PROPERTIES_2"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES"),
-	STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2 = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES"
+	),
+	STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO"
+	),
 	STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO"),
-	STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO"),
+	STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO"
+	),
 	STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO"),
 	STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES"),
 	STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES"
+	),
 	STRUCTURE_TYPE_PROTECTED_SUBMIT_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PROTECTED_SUBMIT_INFO"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES"
+	),
 	STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2"),
 	STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO"),
 	STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO"),
 	STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO"),
 	STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES"),
-	STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES"),
-	STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES"
+	),
+	STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES"
+	),
+	STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO"
+	),
 	STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES"),
 	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO"),
 	STRUCTURE_TYPE_EXTERNAL_BUFFER_PROPERTIES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_BUFFER_PROPERTIES"),
@@ -1701,11 +2625,20 @@ library.e = {
 	STRUCTURE_TYPE_EXTERNAL_FENCE_PROPERTIES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_FENCE_PROPERTIES"),
 	STRUCTURE_TYPE_EXPORT_FENCE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_FENCE_CREATE_INFO"),
 	STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO"
+	),
 	STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES"
+	),
 	STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_SUPPORT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_SUPPORT"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETER_FEATURES = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETER_FEATURES"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETER_FEATURES = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETER_FEATURES"
+	),
 	STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR"),
 	STRUCTURE_TYPE_PRESENT_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PRESENT_INFO_KHR"),
 	STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_CAPABILITIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_CAPABILITIES_KHR"),
@@ -1713,7 +2646,10 @@ library.e = {
 	STRUCTURE_TYPE_BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR"),
 	STRUCTURE_TYPE_ACQUIRE_NEXT_IMAGE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_ACQUIRE_NEXT_IMAGE_INFO_KHR"),
 	STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_INFO_KHR"),
-	STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR"),
+	STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR"
+	),
 	STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR"),
 	STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR"),
 	STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR"),
@@ -1724,19 +2660,37 @@ library.e = {
 	STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR"),
 	STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR"),
 	STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT"),
-	STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD"),
+	STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD"
+	),
 	STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT"),
 	STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT"),
 	STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT"),
-	STRUCTURE_TYPE_DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV"),
-	STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV"),
-	STRUCTURE_TYPE_DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV"),
-	STRUCTURE_TYPE_TEXTURE_LOD_GATHER_FORMAT_PROPERTIES_AMD = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_TEXTURE_LOD_GATHER_FORMAT_PROPERTIES_AMD"),
+	STRUCTURE_TYPE_DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV"
+	),
+	STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV"
+	),
+	STRUCTURE_TYPE_DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV"
+	),
+	STRUCTURE_TYPE_TEXTURE_LOD_GATHER_FORMAT_PROPERTIES_AMD = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_TEXTURE_LOD_GATHER_FORMAT_PROPERTIES_AMD"
+	),
 	STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_NV = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_NV"),
 	STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_NV = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_NV"),
 	STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_NV = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_NV"),
 	STRUCTURE_TYPE_EXPORT_MEMORY_WIN32_HANDLE_INFO_NV = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_MEMORY_WIN32_HANDLE_INFO_NV"),
-	STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_NV = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_NV"),
+	STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_NV = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_NV"
+	),
 	STRUCTURE_TYPE_VALIDATION_FLAGS_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_VALIDATION_FLAGS_EXT"),
 	STRUCTURE_TYPE_VI_SURFACE_CREATE_INFO_NN = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_VI_SURFACE_CREATE_INFO_NN"),
 	STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR"),
@@ -1746,36 +2700,81 @@ library.e = {
 	STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR"),
 	STRUCTURE_TYPE_MEMORY_FD_PROPERTIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_FD_PROPERTIES_KHR"),
 	STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR"),
-	STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_KHR"),
-	STRUCTURE_TYPE_IMPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR"),
-	STRUCTURE_TYPE_EXPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR"),
+	STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_KHR"
+	),
+	STRUCTURE_TYPE_IMPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR"
+	),
+	STRUCTURE_TYPE_EXPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR"
+	),
 	STRUCTURE_TYPE_D3D12_FENCE_SUBMIT_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_D3D12_FENCE_SUBMIT_INFO_KHR"),
 	STRUCTURE_TYPE_SEMAPHORE_GET_WIN32_HANDLE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SEMAPHORE_GET_WIN32_HANDLE_INFO_KHR"),
 	STRUCTURE_TYPE_IMPORT_SEMAPHORE_FD_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_FD_INFO_KHR"),
 	STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR"
+	),
 	STRUCTURE_TYPE_PRESENT_REGIONS_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR"),
 	STRUCTURE_TYPE_OBJECT_TABLE_CREATE_INFO_NVX = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_OBJECT_TABLE_CREATE_INFO_NVX"),
-	STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NVX = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NVX"),
+	STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NVX = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NVX"
+	),
 	STRUCTURE_TYPE_CMD_PROCESS_COMMANDS_INFO_NVX = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_CMD_PROCESS_COMMANDS_INFO_NVX"),
-	STRUCTURE_TYPE_CMD_RESERVE_SPACE_FOR_COMMANDS_INFO_NVX = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_CMD_RESERVE_SPACE_FOR_COMMANDS_INFO_NVX"),
+	STRUCTURE_TYPE_CMD_RESERVE_SPACE_FOR_COMMANDS_INFO_NVX = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_CMD_RESERVE_SPACE_FOR_COMMANDS_INFO_NVX"
+	),
 	STRUCTURE_TYPE_DEVICE_GENERATED_COMMANDS_LIMITS_NVX = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GENERATED_COMMANDS_LIMITS_NVX"),
-	STRUCTURE_TYPE_DEVICE_GENERATED_COMMANDS_FEATURES_NVX = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GENERATED_COMMANDS_FEATURES_NVX"),
-	STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV"),
+	STRUCTURE_TYPE_DEVICE_GENERATED_COMMANDS_FEATURES_NVX = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DEVICE_GENERATED_COMMANDS_FEATURES_NVX"
+	),
+	STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV"
+	),
 	STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_EXT"),
 	STRUCTURE_TYPE_DISPLAY_POWER_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DISPLAY_POWER_INFO_EXT"),
 	STRUCTURE_TYPE_DEVICE_EVENT_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_EVENT_INFO_EXT"),
 	STRUCTURE_TYPE_DISPLAY_EVENT_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DISPLAY_EVENT_INFO_EXT"),
 	STRUCTURE_TYPE_SWAPCHAIN_COUNTER_CREATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SWAPCHAIN_COUNTER_CREATE_INFO_EXT"),
 	STRUCTURE_TYPE_PRESENT_TIMES_INFO_GOOGLE = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PRESENT_TIMES_INFO_GOOGLE"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX"),
-	STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT"),
-	STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT"),
-	STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX"
+	),
+	STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT"
+	),
+	STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT"
+	),
+	STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT"
+	),
 	STRUCTURE_TYPE_HDR_METADATA_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_HDR_METADATA_EXT"),
-	STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR"),
+	STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR"
+	),
 	STRUCTURE_TYPE_IMPORT_FENCE_WIN32_HANDLE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_FENCE_WIN32_HANDLE_INFO_KHR"),
 	STRUCTURE_TYPE_EXPORT_FENCE_WIN32_HANDLE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_FENCE_WIN32_HANDLE_INFO_KHR"),
 	STRUCTURE_TYPE_FENCE_GET_WIN32_HANDLE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_FENCE_GET_WIN32_HANDLE_INFO_KHR"),
@@ -1789,108 +2788,279 @@ library.e = {
 	STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT"),
 	STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_TAG_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_TAG_INFO_EXT"),
 	STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT"),
-	STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT"),
+	STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT"
+	),
 	STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT"),
 	STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_USAGE_ANDROID = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_USAGE_ANDROID"),
-	STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID"),
-	STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID"),
-	STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID"),
-	STRUCTURE_TYPE_MEMORY_GET_ANDROID_HARDWARE_BUFFER_INFO_ANDROID = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_GET_ANDROID_HARDWARE_BUFFER_INFO_ANDROID"),
+	STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID"
+	),
+	STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID"
+	),
+	STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID"
+	),
+	STRUCTURE_TYPE_MEMORY_GET_ANDROID_HARDWARE_BUFFER_INFO_ANDROID = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_MEMORY_GET_ANDROID_HARDWARE_BUFFER_INFO_ANDROID"
+	),
 	STRUCTURE_TYPE_EXTERNAL_FORMAT_ANDROID = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_ANDROID"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES_EXT"),
-	STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO_EXT"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES_EXT"
+	),
+	STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO_EXT"
+	),
 	STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT"),
-	STRUCTURE_TYPE_RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT"),
-	STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLE_LOCATIONS_PROPERTIES_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLE_LOCATIONS_PROPERTIES_EXT"),
+	STRUCTURE_TYPE_RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT"
+	),
+	STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLE_LOCATIONS_PROPERTIES_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLE_LOCATIONS_PROPERTIES_EXT"
+	),
 	STRUCTURE_TYPE_MULTISAMPLE_PROPERTIES_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MULTISAMPLE_PROPERTIES_EXT"),
 	STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT"),
-	STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT"),
-	STRUCTURE_TYPE_PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV"),
-	STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT"
+	),
+	STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT"
+	),
+	STRUCTURE_TYPE_PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV"
+	),
+	STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV"
+	),
 	STRUCTURE_TYPE_VALIDATION_CACHE_CREATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_VALIDATION_CACHE_CREATE_INFO_EXT"),
-	STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT"),
-	STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES_EXT"),
-	STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT"),
-	STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT_EXT"),
-	STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO_EXT"),
+	STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT"
+	),
+	STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES_EXT"
+	),
+	STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT"
+	),
+	STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT_EXT"
+	),
+	STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO_EXT"
+	),
 	STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT"),
 	STRUCTURE_TYPE_MEMORY_HOST_POINTER_PROPERTIES_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_HOST_POINTER_PROPERTIES_EXT"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT"),
-	STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_EXT = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_EXT"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT"
+	),
+	STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_EXT = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_EXT"
+	),
 	STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHR"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR"
+	),
 	STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR"),
 	STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR"),
 	STRUCTURE_TYPE_FORMAT_PROPERTIES_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2_KHR"),
 	STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2_KHR"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2_KHR"
+	),
 	STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2_KHR"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2_KHR"
+	),
 	STRUCTURE_TYPE_SPARSE_IMAGE_FORMAT_PROPERTIES_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SPARSE_IMAGE_FORMAT_PROPERTIES_2_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2_KHR"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2_KHR"
+	),
 	STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO_KHR"),
-	STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO_KHR"),
-	STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO_KHR"),
+	STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO_KHR"
+	),
+	STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO_KHR"
+	),
 	STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO_KHR"),
 	STRUCTURE_TYPE_DEVICE_GROUP_BIND_SPARSE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_BIND_SPARSE_INFO_KHR"),
-	STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO_KHR"),
-	STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO_KHR"),
+	STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO_KHR"
+	),
+	STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO_KHR"
+	),
 	STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES_KHR"),
 	STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO_KHR"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO_KHR"
+	),
 	STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO_KHR"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO_KHR"
+	),
 	STRUCTURE_TYPE_EXTERNAL_BUFFER_PROPERTIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_BUFFER_PROPERTIES_KHR"),
 	STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES_KHR"),
-	STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO_KHR"),
+	STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO_KHR"
+	),
 	STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR"),
 	STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO_KHR"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO_KHR"
+	),
 	STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES_KHR"),
 	STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR"),
-	STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO_KHR"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR"
+	),
+	STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO_KHR"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO_KHR"
+	),
 	STRUCTURE_TYPE_EXTERNAL_FENCE_PROPERTIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_FENCE_PROPERTIES_KHR"),
 	STRUCTURE_TYPE_EXPORT_FENCE_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_FENCE_CREATE_INFO_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES_KHR"),
-	STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO_KHR"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES_KHR"
+	),
+	STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO_KHR"
+	),
 	STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO_KHR"),
-	STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES_KHR"),
+	STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO_KHR"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES_KHR"
+	),
 	STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS_KHR"),
 	STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_KHR"),
 	STRUCTURE_TYPE_BUFFER_MEMORY_REQUIREMENTS_INFO_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BUFFER_MEMORY_REQUIREMENTS_INFO_2_KHR"),
 	STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2_KHR"),
-	STRUCTURE_TYPE_IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2_KHR"),
+	STRUCTURE_TYPE_IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2_KHR"
+	),
 	STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2_KHR"),
-	STRUCTURE_TYPE_SPARSE_IMAGE_MEMORY_REQUIREMENTS_2_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SPARSE_IMAGE_MEMORY_REQUIREMENTS_2_KHR"),
-	STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO_KHR"),
+	STRUCTURE_TYPE_SPARSE_IMAGE_MEMORY_REQUIREMENTS_2_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_SPARSE_IMAGE_MEMORY_REQUIREMENTS_2_KHR"
+	),
+	STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO_KHR"
+	),
 	STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO_KHR"),
 	STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO_KHR"),
-	STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES_KHR"),
-	STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES_KHR"),
+	STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO_KHR"
+	),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES_KHR"
+	),
+	STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES_KHR"
+	),
 	STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO_KHR"),
 	STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO_KHR"),
-	STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES_KHR"),
+	STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES_KHR = ffi.cast(
+		"enum VkStructureType",
+		"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES_KHR"
+	),
 	STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_SUPPORT_KHR = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_SUPPORT_KHR"),
 	STRUCTURE_TYPE_BEGIN_RANGE = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BEGIN_RANGE"),
 	STRUCTURE_TYPE_END_RANGE = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_END_RANGE"),
 	STRUCTURE_TYPE_RANGE_SIZE = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_RANGE_SIZE"),
 	STRUCTURE_TYPE_MAX_ENUM = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MAX_ENUM"),
-	EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT_NV = ffi.cast("enum VkExternalMemoryFeatureFlagBitsNV", "VK_EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT_NV"),
-	EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT_NV = ffi.cast("enum VkExternalMemoryFeatureFlagBitsNV", "VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT_NV"),
-	EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT_NV = ffi.cast("enum VkExternalMemoryFeatureFlagBitsNV", "VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT_NV"),
-	EXTERNAL_MEMORY_FEATURE_FLAG_BITS_MAX_ENUM_NV = ffi.cast("enum VkExternalMemoryFeatureFlagBitsNV", "VK_EXTERNAL_MEMORY_FEATURE_FLAG_BITS_MAX_ENUM_NV"),
+	EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT_NV = ffi.cast(
+		"enum VkExternalMemoryFeatureFlagBitsNV",
+		"VK_EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT_NV"
+	),
+	EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT_NV = ffi.cast(
+		"enum VkExternalMemoryFeatureFlagBitsNV",
+		"VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT_NV"
+	),
+	EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT_NV = ffi.cast(
+		"enum VkExternalMemoryFeatureFlagBitsNV",
+		"VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT_NV"
+	),
+	EXTERNAL_MEMORY_FEATURE_FLAG_BITS_MAX_ENUM_NV = ffi.cast(
+		"enum VkExternalMemoryFeatureFlagBitsNV",
+		"VK_EXTERNAL_MEMORY_FEATURE_FLAG_BITS_MAX_ENUM_NV"
+	),
 	VERTEX_INPUT_RATE_VERTEX = ffi.cast("enum VkVertexInputRate", "VK_VERTEX_INPUT_RATE_VERTEX"),
 	VERTEX_INPUT_RATE_INSTANCE = ffi.cast("enum VkVertexInputRate", "VK_VERTEX_INPUT_RATE_INSTANCE"),
 	VERTEX_INPUT_RATE_BEGIN_RANGE = ffi.cast("enum VkVertexInputRate", "VK_VERTEX_INPUT_RATE_BEGIN_RANGE"),
@@ -1905,11 +3075,26 @@ library.e = {
 	CHROMA_LOCATION_END_RANGE = ffi.cast("enum VkChromaLocation", "VK_CHROMA_LOCATION_END_RANGE"),
 	CHROMA_LOCATION_RANGE_SIZE = ffi.cast("enum VkChromaLocation", "VK_CHROMA_LOCATION_RANGE_SIZE"),
 	CHROMA_LOCATION_MAX_ENUM = ffi.cast("enum VkChromaLocation", "VK_CHROMA_LOCATION_MAX_ENUM"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_NV = ffi.cast("enum VkExternalMemoryHandleTypeFlagBitsNV", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_NV"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_NV = ffi.cast("enum VkExternalMemoryHandleTypeFlagBitsNV", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_NV"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_IMAGE_BIT_NV = ffi.cast("enum VkExternalMemoryHandleTypeFlagBitsNV", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_IMAGE_BIT_NV"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_IMAGE_KMT_BIT_NV = ffi.cast("enum VkExternalMemoryHandleTypeFlagBitsNV", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_IMAGE_KMT_BIT_NV"),
-	EXTERNAL_MEMORY_HANDLE_TYPE_FLAG_BITS_MAX_ENUM_NV = ffi.cast("enum VkExternalMemoryHandleTypeFlagBitsNV", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_FLAG_BITS_MAX_ENUM_NV"),
+	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_NV = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBitsNV",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_NV"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_NV = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBitsNV",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_NV"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_IMAGE_BIT_NV = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBitsNV",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_IMAGE_BIT_NV"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_IMAGE_KMT_BIT_NV = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBitsNV",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_IMAGE_KMT_BIT_NV"
+	),
+	EXTERNAL_MEMORY_HANDLE_TYPE_FLAG_BITS_MAX_ENUM_NV = ffi.cast(
+		"enum VkExternalMemoryHandleTypeFlagBitsNV",
+		"VK_EXTERNAL_MEMORY_HANDLE_TYPE_FLAG_BITS_MAX_ENUM_NV"
+	),
 	SHADER_INFO_TYPE_STATISTICS_AMD = ffi.cast("enum VkShaderInfoTypeAMD", "VK_SHADER_INFO_TYPE_STATISTICS_AMD"),
 	SHADER_INFO_TYPE_BINARY_AMD = ffi.cast("enum VkShaderInfoTypeAMD", "VK_SHADER_INFO_TYPE_BINARY_AMD"),
 	SHADER_INFO_TYPE_DISASSEMBLY_AMD = ffi.cast("enum VkShaderInfoTypeAMD", "VK_SHADER_INFO_TYPE_DISASSEMBLY_AMD"),
@@ -1931,42 +3116,99 @@ library.e = {
 	IMAGE_TILING_MAX_ENUM = ffi.cast("enum VkImageTiling", "VK_IMAGE_TILING_MAX_ENUM"),
 	DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT"),
 	DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT"),
+	DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT"
+	),
 	DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT"),
 	DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT"),
 	DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT"),
+	DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT"
+	),
 	DEBUG_REPORT_OBJECT_TYPE_FENCE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_FENCE_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT"),
+	DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT"
+	),
 	DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT"),
 	DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT"),
 	DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT"),
 	DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT"),
 	DEBUG_REPORT_OBJECT_TYPE_BUFFER_VIEW_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_VIEW_EXT"),
 	DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT"),
+	DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT"
+	),
+	DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT"
+	),
+	DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT"
+	),
 	DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT"),
 	DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT"),
+	DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT"
+	),
 	DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT"),
+	DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT"
+	),
+	DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT"
+	),
 	DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT"),
 	DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT"),
 	DEBUG_REPORT_OBJECT_TYPE_SURFACE_KHR_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_SURFACE_KHR_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT"),
+	DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT"
+	),
+	DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT"
+	),
 	DEBUG_REPORT_OBJECT_TYPE_DISPLAY_KHR_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_KHR_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_OBJECT_TABLE_NVX_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_OBJECT_TABLE_NVX_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT"),
-	DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR_EXT"),
+	DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT"
+	),
+	DEBUG_REPORT_OBJECT_TYPE_OBJECT_TABLE_NVX_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_OBJECT_TABLE_NVX_EXT"
+	),
+	DEBUG_REPORT_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX_EXT"
+	),
+	DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT"
+	),
+	DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_EXT"
+	),
+	DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_EXT"
+	),
+	DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT"
+	),
+	DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR_EXT = ffi.cast(
+		"enum VkDebugReportObjectTypeEXT",
+		"VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR_EXT"
+	),
 	DEBUG_REPORT_OBJECT_TYPE_BEGIN_RANGE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_BEGIN_RANGE_EXT"),
 	DEBUG_REPORT_OBJECT_TYPE_END_RANGE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_END_RANGE_EXT"),
 	DEBUG_REPORT_OBJECT_TYPE_RANGE_SIZE_EXT = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_RANGE_SIZE_EXT"),
@@ -2269,7 +3511,10 @@ library.e = {
 	ATTACHMENT_LOAD_OP_END_RANGE = ffi.cast("enum VkAttachmentLoadOp", "VK_ATTACHMENT_LOAD_OP_END_RANGE"),
 	ATTACHMENT_LOAD_OP_RANGE_SIZE = ffi.cast("enum VkAttachmentLoadOp", "VK_ATTACHMENT_LOAD_OP_RANGE_SIZE"),
 	ATTACHMENT_LOAD_OP_MAX_ENUM = ffi.cast("enum VkAttachmentLoadOp", "VK_ATTACHMENT_LOAD_OP_MAX_ENUM"),
-	SWAPCHAIN_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR = ffi.cast("enum VkSwapchainCreateFlagBitsKHR", "VK_SWAPCHAIN_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR"),
+	SWAPCHAIN_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR = ffi.cast(
+		"enum VkSwapchainCreateFlagBitsKHR",
+		"VK_SWAPCHAIN_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR"
+	),
 	SWAPCHAIN_CREATE_PROTECTED_BIT_KHR = ffi.cast("enum VkSwapchainCreateFlagBitsKHR", "VK_SWAPCHAIN_CREATE_PROTECTED_BIT_KHR"),
 	SWAPCHAIN_CREATE_FLAG_BITS_MAX_ENUM_KHR = ffi.cast("enum VkSwapchainCreateFlagBitsKHR", "VK_SWAPCHAIN_CREATE_FLAG_BITS_MAX_ENUM_KHR"),
 	COMPOSITE_ALPHA_OPAQUE_BIT_KHR = ffi.cast("enum VkCompositeAlphaFlagBitsKHR", "VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR"),
@@ -2289,24 +3534,63 @@ library.e = {
 	IMAGE_ASPECT_PLANE_2_BIT_KHR = ffi.cast("enum VkImageAspectFlagBits", "VK_IMAGE_ASPECT_PLANE_2_BIT_KHR"),
 	IMAGE_ASPECT_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkImageAspectFlagBits", "VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM"),
 	POINT_CLIPPING_BEHAVIOR_ALL_CLIP_PLANES = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_ALL_CLIP_PLANES"),
-	POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY"),
+	POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY = ffi.cast(
+		"enum VkPointClippingBehavior",
+		"VK_POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY"
+	),
 	POINT_CLIPPING_BEHAVIOR_ALL_CLIP_PLANES_KHR = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_ALL_CLIP_PLANES_KHR"),
-	POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY_KHR = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY_KHR"),
+	POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY_KHR = ffi.cast(
+		"enum VkPointClippingBehavior",
+		"VK_POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY_KHR"
+	),
 	POINT_CLIPPING_BEHAVIOR_BEGIN_RANGE = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_BEGIN_RANGE"),
 	POINT_CLIPPING_BEHAVIOR_END_RANGE = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_END_RANGE"),
 	POINT_CLIPPING_BEHAVIOR_RANGE_SIZE = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_RANGE_SIZE"),
 	POINT_CLIPPING_BEHAVIOR_MAX_ENUM = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_MAX_ENUM"),
-	EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT"),
-	EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT"),
-	EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT"),
-	EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D12_FENCE_BIT = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D12_FENCE_BIT"),
-	EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT"),
-	EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR"),
-	EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR"),
-	EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR"),
-	EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D12_FENCE_BIT_KHR = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D12_FENCE_BIT_KHR"),
-	EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT_KHR = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT_KHR"),
-	EXTERNAL_SEMAPHORE_HANDLE_TYPE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_FLAG_BITS_MAX_ENUM"),
+	EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT = ffi.cast(
+		"enum VkExternalSemaphoreHandleTypeFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT"
+	),
+	EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT = ffi.cast(
+		"enum VkExternalSemaphoreHandleTypeFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT"
+	),
+	EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT = ffi.cast(
+		"enum VkExternalSemaphoreHandleTypeFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT"
+	),
+	EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D12_FENCE_BIT = ffi.cast(
+		"enum VkExternalSemaphoreHandleTypeFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D12_FENCE_BIT"
+	),
+	EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT = ffi.cast(
+		"enum VkExternalSemaphoreHandleTypeFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT"
+	),
+	EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR = ffi.cast(
+		"enum VkExternalSemaphoreHandleTypeFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR"
+	),
+	EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR = ffi.cast(
+		"enum VkExternalSemaphoreHandleTypeFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR"
+	),
+	EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR = ffi.cast(
+		"enum VkExternalSemaphoreHandleTypeFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR"
+	),
+	EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D12_FENCE_BIT_KHR = ffi.cast(
+		"enum VkExternalSemaphoreHandleTypeFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D12_FENCE_BIT_KHR"
+	),
+	EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT_KHR = ffi.cast(
+		"enum VkExternalSemaphoreHandleTypeFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT_KHR"
+	),
+	EXTERNAL_SEMAPHORE_HANDLE_TYPE_FLAG_BITS_MAX_ENUM = ffi.cast(
+		"enum VkExternalSemaphoreHandleTypeFlagBits",
+		"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_FLAG_BITS_MAX_ENUM"
+	),
 	POLYGON_MODE_FILL = ffi.cast("enum VkPolygonMode", "VK_POLYGON_MODE_FILL"),
 	POLYGON_MODE_LINE = ffi.cast("enum VkPolygonMode", "VK_POLYGON_MODE_LINE"),
 	POLYGON_MODE_POINT = ffi.cast("enum VkPolygonMode", "VK_POLYGON_MODE_POINT"),
@@ -2343,7 +3627,10 @@ library.e = {
 	IMAGE_TYPE_MAX_ENUM = ffi.cast("enum VkImageType", "VK_IMAGE_TYPE_MAX_ENUM"),
 	SPARSE_IMAGE_FORMAT_SINGLE_MIPTAIL_BIT = ffi.cast("enum VkSparseImageFormatFlagBits", "VK_SPARSE_IMAGE_FORMAT_SINGLE_MIPTAIL_BIT"),
 	SPARSE_IMAGE_FORMAT_ALIGNED_MIP_SIZE_BIT = ffi.cast("enum VkSparseImageFormatFlagBits", "VK_SPARSE_IMAGE_FORMAT_ALIGNED_MIP_SIZE_BIT"),
-	SPARSE_IMAGE_FORMAT_NONSTANDARD_BLOCK_SIZE_BIT = ffi.cast("enum VkSparseImageFormatFlagBits", "VK_SPARSE_IMAGE_FORMAT_NONSTANDARD_BLOCK_SIZE_BIT"),
+	SPARSE_IMAGE_FORMAT_NONSTANDARD_BLOCK_SIZE_BIT = ffi.cast(
+		"enum VkSparseImageFormatFlagBits",
+		"VK_SPARSE_IMAGE_FORMAT_NONSTANDARD_BLOCK_SIZE_BIT"
+	),
 	SPARSE_IMAGE_FORMAT_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkSparseImageFormatFlagBits", "VK_SPARSE_IMAGE_FORMAT_FLAG_BITS_MAX_ENUM"),
 	BORDER_COLOR_FLOAT_TRANSPARENT_BLACK = ffi.cast("enum VkBorderColor", "VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK"),
 	BORDER_COLOR_INT_TRANSPARENT_BLACK = ffi.cast("enum VkBorderColor", "VK_BORDER_COLOR_INT_TRANSPARENT_BLACK"),
@@ -2366,13 +3653,34 @@ library.e = {
 	INTERNAL_ALLOCATION_TYPE_END_RANGE = ffi.cast("enum VkInternalAllocationType", "VK_INTERNAL_ALLOCATION_TYPE_END_RANGE"),
 	INTERNAL_ALLOCATION_TYPE_RANGE_SIZE = ffi.cast("enum VkInternalAllocationType", "VK_INTERNAL_ALLOCATION_TYPE_RANGE_SIZE"),
 	INTERNAL_ALLOCATION_TYPE_MAX_ENUM = ffi.cast("enum VkInternalAllocationType", "VK_INTERNAL_ALLOCATION_TYPE_MAX_ENUM"),
-	EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT = ffi.cast("enum VkExternalMemoryFeatureFlagBits", "VK_EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT"),
-	EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT = ffi.cast("enum VkExternalMemoryFeatureFlagBits", "VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT"),
-	EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT = ffi.cast("enum VkExternalMemoryFeatureFlagBits", "VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT"),
-	EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT_KHR = ffi.cast("enum VkExternalMemoryFeatureFlagBits", "VK_EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT_KHR"),
-	EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT_KHR = ffi.cast("enum VkExternalMemoryFeatureFlagBits", "VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT_KHR"),
-	EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT_KHR = ffi.cast("enum VkExternalMemoryFeatureFlagBits", "VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT_KHR"),
-	EXTERNAL_MEMORY_FEATURE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkExternalMemoryFeatureFlagBits", "VK_EXTERNAL_MEMORY_FEATURE_FLAG_BITS_MAX_ENUM"),
+	EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT = ffi.cast(
+		"enum VkExternalMemoryFeatureFlagBits",
+		"VK_EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT"
+	),
+	EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT = ffi.cast(
+		"enum VkExternalMemoryFeatureFlagBits",
+		"VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT"
+	),
+	EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT = ffi.cast(
+		"enum VkExternalMemoryFeatureFlagBits",
+		"VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT"
+	),
+	EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT_KHR = ffi.cast(
+		"enum VkExternalMemoryFeatureFlagBits",
+		"VK_EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT_KHR"
+	),
+	EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT_KHR = ffi.cast(
+		"enum VkExternalMemoryFeatureFlagBits",
+		"VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT_KHR"
+	),
+	EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT_KHR = ffi.cast(
+		"enum VkExternalMemoryFeatureFlagBits",
+		"VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT_KHR"
+	),
+	EXTERNAL_MEMORY_FEATURE_FLAG_BITS_MAX_ENUM = ffi.cast(
+		"enum VkExternalMemoryFeatureFlagBits",
+		"VK_EXTERNAL_MEMORY_FEATURE_FLAG_BITS_MAX_ENUM"
+	),
 	BLEND_OVERLAP_UNCORRELATED_EXT = ffi.cast("enum VkBlendOverlapEXT", "VK_BLEND_OVERLAP_UNCORRELATED_EXT"),
 	BLEND_OVERLAP_DISJOINT_EXT = ffi.cast("enum VkBlendOverlapEXT", "VK_BLEND_OVERLAP_DISJOINT_EXT"),
 	BLEND_OVERLAP_CONJOINT_EXT = ffi.cast("enum VkBlendOverlapEXT", "VK_BLEND_OVERLAP_CONJOINT_EXT"),
@@ -2391,19 +3699,58 @@ library.e = {
 	DEVICE_EVENT_TYPE_END_RANGE_EXT = ffi.cast("enum VkDeviceEventTypeEXT", "VK_DEVICE_EVENT_TYPE_END_RANGE_EXT"),
 	DEVICE_EVENT_TYPE_RANGE_SIZE_EXT = ffi.cast("enum VkDeviceEventTypeEXT", "VK_DEVICE_EVENT_TYPE_RANGE_SIZE_EXT"),
 	DEVICE_EVENT_TYPE_MAX_ENUM_EXT = ffi.cast("enum VkDeviceEventTypeEXT", "VK_DEVICE_EVENT_TYPE_MAX_ENUM_EXT"),
-	QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT"),
-	QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT"),
-	QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT"),
-	QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_INVOCATIONS_BIT = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_INVOCATIONS_BIT"),
-	QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_PRIMITIVES_BIT = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_PRIMITIVES_BIT"),
-	QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT"),
-	QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT"),
-	QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT"),
-	QUERY_PIPELINE_STATISTIC_TESSELLATION_CONTROL_SHADER_PATCHES_BIT = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_CONTROL_SHADER_PATCHES_BIT"),
-	QUERY_PIPELINE_STATISTIC_TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT"),
-	QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT"),
-	QUERY_PIPELINE_STATISTIC_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_FLAG_BITS_MAX_ENUM"),
-	COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT = ffi.cast("enum VkCommandBufferResetFlagBits", "VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT"),
+	QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT = ffi.cast(
+		"enum VkQueryPipelineStatisticFlagBits",
+		"VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT"
+	),
+	QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT = ffi.cast(
+		"enum VkQueryPipelineStatisticFlagBits",
+		"VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT"
+	),
+	QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT = ffi.cast(
+		"enum VkQueryPipelineStatisticFlagBits",
+		"VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT"
+	),
+	QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_INVOCATIONS_BIT = ffi.cast(
+		"enum VkQueryPipelineStatisticFlagBits",
+		"VK_QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_INVOCATIONS_BIT"
+	),
+	QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_PRIMITIVES_BIT = ffi.cast(
+		"enum VkQueryPipelineStatisticFlagBits",
+		"VK_QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_PRIMITIVES_BIT"
+	),
+	QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT = ffi.cast(
+		"enum VkQueryPipelineStatisticFlagBits",
+		"VK_QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT"
+	),
+	QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT = ffi.cast(
+		"enum VkQueryPipelineStatisticFlagBits",
+		"VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT"
+	),
+	QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT = ffi.cast(
+		"enum VkQueryPipelineStatisticFlagBits",
+		"VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT"
+	),
+	QUERY_PIPELINE_STATISTIC_TESSELLATION_CONTROL_SHADER_PATCHES_BIT = ffi.cast(
+		"enum VkQueryPipelineStatisticFlagBits",
+		"VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_CONTROL_SHADER_PATCHES_BIT"
+	),
+	QUERY_PIPELINE_STATISTIC_TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT = ffi.cast(
+		"enum VkQueryPipelineStatisticFlagBits",
+		"VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT"
+	),
+	QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT = ffi.cast(
+		"enum VkQueryPipelineStatisticFlagBits",
+		"VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT"
+	),
+	QUERY_PIPELINE_STATISTIC_FLAG_BITS_MAX_ENUM = ffi.cast(
+		"enum VkQueryPipelineStatisticFlagBits",
+		"VK_QUERY_PIPELINE_STATISTIC_FLAG_BITS_MAX_ENUM"
+	),
+	COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT = ffi.cast(
+		"enum VkCommandBufferResetFlagBits",
+		"VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT"
+	),
 	COMMAND_BUFFER_RESET_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkCommandBufferResetFlagBits", "VK_COMMAND_BUFFER_RESET_FLAG_BITS_MAX_ENUM"),
 	FRONT_FACE_COUNTER_CLOCKWISE = ffi.cast("enum VkFrontFace", "VK_FRONT_FACE_COUNTER_CLOCKWISE"),
 	FRONT_FACE_CLOCKWISE = ffi.cast("enum VkFrontFace", "VK_FRONT_FACE_CLOCKWISE"),
@@ -2536,18 +3883,54 @@ library.e = {
 	PHYSICAL_DEVICE_TYPE_END_RANGE = ffi.cast("enum VkPhysicalDeviceType", "VK_PHYSICAL_DEVICE_TYPE_END_RANGE"),
 	PHYSICAL_DEVICE_TYPE_RANGE_SIZE = ffi.cast("enum VkPhysicalDeviceType", "VK_PHYSICAL_DEVICE_TYPE_RANGE_SIZE"),
 	PHYSICAL_DEVICE_TYPE_MAX_ENUM = ffi.cast("enum VkPhysicalDeviceType", "VK_PHYSICAL_DEVICE_TYPE_MAX_ENUM"),
-	VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_X_NV = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_X_NV"),
-	VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_X_NV = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_X_NV"),
-	VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_Y_NV = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_Y_NV"),
-	VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_Y_NV = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_Y_NV"),
-	VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_Z_NV = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_Z_NV"),
-	VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_Z_NV = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_Z_NV"),
-	VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_W_NV = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_W_NV"),
-	VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_W_NV = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_W_NV"),
-	VIEWPORT_COORDINATE_SWIZZLE_BEGIN_RANGE_NV = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_BEGIN_RANGE_NV"),
-	VIEWPORT_COORDINATE_SWIZZLE_END_RANGE_NV = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_END_RANGE_NV"),
-	VIEWPORT_COORDINATE_SWIZZLE_RANGE_SIZE_NV = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_RANGE_SIZE_NV"),
-	VIEWPORT_COORDINATE_SWIZZLE_MAX_ENUM_NV = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_MAX_ENUM_NV"),
+	VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_X_NV = ffi.cast(
+		"enum VkViewportCoordinateSwizzleNV",
+		"VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_X_NV"
+	),
+	VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_X_NV = ffi.cast(
+		"enum VkViewportCoordinateSwizzleNV",
+		"VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_X_NV"
+	),
+	VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_Y_NV = ffi.cast(
+		"enum VkViewportCoordinateSwizzleNV",
+		"VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_Y_NV"
+	),
+	VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_Y_NV = ffi.cast(
+		"enum VkViewportCoordinateSwizzleNV",
+		"VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_Y_NV"
+	),
+	VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_Z_NV = ffi.cast(
+		"enum VkViewportCoordinateSwizzleNV",
+		"VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_Z_NV"
+	),
+	VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_Z_NV = ffi.cast(
+		"enum VkViewportCoordinateSwizzleNV",
+		"VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_Z_NV"
+	),
+	VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_W_NV = ffi.cast(
+		"enum VkViewportCoordinateSwizzleNV",
+		"VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_W_NV"
+	),
+	VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_W_NV = ffi.cast(
+		"enum VkViewportCoordinateSwizzleNV",
+		"VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_W_NV"
+	),
+	VIEWPORT_COORDINATE_SWIZZLE_BEGIN_RANGE_NV = ffi.cast(
+		"enum VkViewportCoordinateSwizzleNV",
+		"VK_VIEWPORT_COORDINATE_SWIZZLE_BEGIN_RANGE_NV"
+	),
+	VIEWPORT_COORDINATE_SWIZZLE_END_RANGE_NV = ffi.cast(
+		"enum VkViewportCoordinateSwizzleNV",
+		"VK_VIEWPORT_COORDINATE_SWIZZLE_END_RANGE_NV"
+	),
+	VIEWPORT_COORDINATE_SWIZZLE_RANGE_SIZE_NV = ffi.cast(
+		"enum VkViewportCoordinateSwizzleNV",
+		"VK_VIEWPORT_COORDINATE_SWIZZLE_RANGE_SIZE_NV"
+	),
+	VIEWPORT_COORDINATE_SWIZZLE_MAX_ENUM_NV = ffi.cast(
+		"enum VkViewportCoordinateSwizzleNV",
+		"VK_VIEWPORT_COORDINATE_SWIZZLE_MAX_ENUM_NV"
+	),
 	MEMORY_PROPERTY_DEVICE_LOCAL_BIT = ffi.cast("enum VkMemoryPropertyFlagBits", "VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT"),
 	MEMORY_PROPERTY_HOST_VISIBLE_BIT = ffi.cast("enum VkMemoryPropertyFlagBits", "VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT"),
 	MEMORY_PROPERTY_HOST_COHERENT_BIT = ffi.cast("enum VkMemoryPropertyFlagBits", "VK_MEMORY_PROPERTY_HOST_COHERENT_BIT"),
@@ -2583,9 +3966,18 @@ library.e = {
 	COMPONENT_SWIZZLE_END_RANGE = ffi.cast("enum VkComponentSwizzle", "VK_COMPONENT_SWIZZLE_END_RANGE"),
 	COMPONENT_SWIZZLE_RANGE_SIZE = ffi.cast("enum VkComponentSwizzle", "VK_COMPONENT_SWIZZLE_RANGE_SIZE"),
 	COMPONENT_SWIZZLE_MAX_ENUM = ffi.cast("enum VkComponentSwizzle", "VK_COMPONENT_SWIZZLE_MAX_ENUM"),
-	COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT = ffi.cast("enum VkCommandBufferUsageFlagBits", "VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT"),
-	COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT = ffi.cast("enum VkCommandBufferUsageFlagBits", "VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT"),
-	COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT = ffi.cast("enum VkCommandBufferUsageFlagBits", "VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT"),
+	COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT = ffi.cast(
+		"enum VkCommandBufferUsageFlagBits",
+		"VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT"
+	),
+	COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT = ffi.cast(
+		"enum VkCommandBufferUsageFlagBits",
+		"VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT"
+	),
+	COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT = ffi.cast(
+		"enum VkCommandBufferUsageFlagBits",
+		"VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT"
+	),
 	COMMAND_BUFFER_USAGE_FLAG_BITS_MAX_ENUM = ffi.cast("enum VkCommandBufferUsageFlagBits", "VK_COMMAND_BUFFER_USAGE_FLAG_BITS_MAX_ENUM"),
 	STENCIL_OP_KEEP = ffi.cast("enum VkStencilOp", "VK_STENCIL_OP_KEEP"),
 	STENCIL_OP_ZERO = ffi.cast("enum VkStencilOp", "VK_STENCIL_OP_ZERO"),
@@ -2615,7 +4007,10 @@ library.e = {
 	DISCARD_RECTANGLE_MODE_END_RANGE_EXT = ffi.cast("enum VkDiscardRectangleModeEXT", "VK_DISCARD_RECTANGLE_MODE_END_RANGE_EXT"),
 	DISCARD_RECTANGLE_MODE_RANGE_SIZE_EXT = ffi.cast("enum VkDiscardRectangleModeEXT", "VK_DISCARD_RECTANGLE_MODE_RANGE_SIZE_EXT"),
 	DISCARD_RECTANGLE_MODE_MAX_ENUM_EXT = ffi.cast("enum VkDiscardRectangleModeEXT", "VK_DISCARD_RECTANGLE_MODE_MAX_ENUM_EXT"),
-	SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_EXT = ffi.cast("enum VkSamplerReductionModeEXT", "VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_EXT"),
+	SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_EXT = ffi.cast(
+		"enum VkSamplerReductionModeEXT",
+		"VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_EXT"
+	),
 	SAMPLER_REDUCTION_MODE_MIN_EXT = ffi.cast("enum VkSamplerReductionModeEXT", "VK_SAMPLER_REDUCTION_MODE_MIN_EXT"),
 	SAMPLER_REDUCTION_MODE_MAX_EXT = ffi.cast("enum VkSamplerReductionModeEXT", "VK_SAMPLER_REDUCTION_MODE_MAX_EXT"),
 	SAMPLER_REDUCTION_MODE_BEGIN_RANGE_EXT = ffi.cast("enum VkSamplerReductionModeEXT", "VK_SAMPLER_REDUCTION_MODE_BEGIN_RANGE_EXT"),
@@ -2683,11 +4078,25 @@ library.e = {
 		command_buffer = ffi.cast("enum VkObjectType", "VK_OBJECT_TYPE_COMMAND_BUFFER"),
 	},
 	display_plane_alpha = {
-		flag_bits_max_enum = ffi.cast("enum VkDisplayPlaneAlphaFlagBitsKHR", "VK_DISPLAY_PLANE_ALPHA_FLAG_BITS_MAX_ENUM_KHR"),
+		flag_bits_max_enum = ffi.cast(
+			"enum VkDisplayPlaneAlphaFlagBitsKHR",
+			"VK_DISPLAY_PLANE_ALPHA_FLAG_BITS_MAX_ENUM_KHR"
+		),
 		per_pixel = ffi.cast("enum VkDisplayPlaneAlphaFlagBitsKHR", "VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_BIT_KHR"),
 		global = ffi.cast("enum VkDisplayPlaneAlphaFlagBitsKHR", "VK_DISPLAY_PLANE_ALPHA_GLOBAL_BIT_KHR"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.display_plane_alpha[v] end return bit.bor(unpack(flags)) end,
-		per_pixel_premultiplied = ffi.cast("enum VkDisplayPlaneAlphaFlagBitsKHR", "VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR"),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.display_plane_alpha[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		per_pixel_premultiplied = ffi.cast(
+			"enum VkDisplayPlaneAlphaFlagBitsKHR",
+			"VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR"
+		),
 		opaque = ffi.cast("enum VkDisplayPlaneAlphaFlagBitsKHR", "VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR"),
 	},
 	attachment_store_op = {
@@ -2699,10 +4108,27 @@ library.e = {
 		store = ffi.cast("enum VkAttachmentStoreOp", "VK_ATTACHMENT_STORE_OP_STORE"),
 	},
 	descriptor_pool_create = {
-		update_after_bind = ffi.cast("enum VkDescriptorPoolCreateFlagBits", "VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.descriptor_pool_create[v] end return bit.bor(unpack(flags)) end,
-		free_descriptor_set = ffi.cast("enum VkDescriptorPoolCreateFlagBits", "VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT"),
-		flag_bits_max_enum = ffi.cast("enum VkDescriptorPoolCreateFlagBits", "VK_DESCRIPTOR_POOL_CREATE_FLAG_BITS_MAX_ENUM"),
+		update_after_bind = ffi.cast(
+			"enum VkDescriptorPoolCreateFlagBits",
+			"VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.descriptor_pool_create[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		free_descriptor_set = ffi.cast(
+			"enum VkDescriptorPoolCreateFlagBits",
+			"VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT"
+		),
+		flag_bits_max_enum = ffi.cast(
+			"enum VkDescriptorPoolCreateFlagBits",
+			"VK_DESCRIPTOR_POOL_CREATE_FLAG_BITS_MAX_ENUM"
+		),
 	},
 	access = {
 		color_attachment_write = ffi.cast("enum VkAccessFlagBits", "VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT"),
@@ -2724,7 +4150,15 @@ library.e = {
 		color_attachment_read_noncoherent = ffi.cast("enum VkAccessFlagBits", "VK_ACCESS_COLOR_ATTACHMENT_READ_NONCOHERENT_BIT_EXT"),
 		index_read = ffi.cast("enum VkAccessFlagBits", "VK_ACCESS_INDEX_READ_BIT"),
 		command_process_read = ffi.cast("enum VkAccessFlagBits", "VK_ACCESS_COMMAND_PROCESS_READ_BIT_NVX"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.access[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.access[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		indirect_command_read = ffi.cast("enum VkAccessFlagBits", "VK_ACCESS_INDIRECT_COMMAND_READ_BIT"),
 		transfer_read = ffi.cast("enum VkAccessFlagBits", "VK_ACCESS_TRANSFER_READ_BIT"),
 	},
@@ -2738,10 +4172,21 @@ library.e = {
 	pipeline_create = {
 		flag_bits_max_enum = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_FLAG_BITS_MAX_ENUM"),
 		disable_optimization = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT"),
-		view_index_from_device_index = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT_KHR"),
+		view_index_from_device_index = ffi.cast(
+			"enum VkPipelineCreateFlagBits",
+			"VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT_KHR"
+		),
 		derivative = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_DERIVATIVE_BIT"),
 		allow_derivatives = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.pipeline_create[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.pipeline_create[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		dispatch_base = ffi.cast("enum VkPipelineCreateFlagBits", "VK_PIPELINE_CREATE_DISPATCH_BASE_KHR"),
 	},
 	display_power_state = {
@@ -2755,27 +4200,79 @@ library.e = {
 	},
 	swapchain_create = {
 		flag_bits_max_enum = ffi.cast("enum VkSwapchainCreateFlagBitsKHR", "VK_SWAPCHAIN_CREATE_FLAG_BITS_MAX_ENUM_KHR"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.swapchain_create[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.swapchain_create[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		protected = ffi.cast("enum VkSwapchainCreateFlagBitsKHR", "VK_SWAPCHAIN_CREATE_PROTECTED_BIT_KHR"),
-		split_instance_bind_regions = ffi.cast("enum VkSwapchainCreateFlagBitsKHR", "VK_SWAPCHAIN_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR"),
+		split_instance_bind_regions = ffi.cast(
+			"enum VkSwapchainCreateFlagBitsKHR",
+			"VK_SWAPCHAIN_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR"
+		),
 	},
 	indirect_commands_token_type = {
-		type_push_constant = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_CONSTANT_NVX"),
-		type_max_enum = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_MAX_ENUM_NVX"),
-		type_pipeline = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_PIPELINE_NVX"),
-		type_dispatch = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_DISPATCH_NVX"),
-		type_index_buffer = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_INDEX_BUFFER_NVX"),
-		type_end_range = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_END_RANGE_NVX"),
-		type_vertex_buffer = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_VERTEX_BUFFER_NVX"),
-		type_begin_range = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_BEGIN_RANGE_NVX"),
-		type_range_size = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_RANGE_SIZE_NVX"),
+		type_push_constant = ffi.cast(
+			"enum VkIndirectCommandsTokenTypeNVX",
+			"VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_CONSTANT_NVX"
+		),
+		type_max_enum = ffi.cast(
+			"enum VkIndirectCommandsTokenTypeNVX",
+			"VK_INDIRECT_COMMANDS_TOKEN_TYPE_MAX_ENUM_NVX"
+		),
+		type_pipeline = ffi.cast(
+			"enum VkIndirectCommandsTokenTypeNVX",
+			"VK_INDIRECT_COMMANDS_TOKEN_TYPE_PIPELINE_NVX"
+		),
+		type_dispatch = ffi.cast(
+			"enum VkIndirectCommandsTokenTypeNVX",
+			"VK_INDIRECT_COMMANDS_TOKEN_TYPE_DISPATCH_NVX"
+		),
+		type_index_buffer = ffi.cast(
+			"enum VkIndirectCommandsTokenTypeNVX",
+			"VK_INDIRECT_COMMANDS_TOKEN_TYPE_INDEX_BUFFER_NVX"
+		),
+		type_end_range = ffi.cast(
+			"enum VkIndirectCommandsTokenTypeNVX",
+			"VK_INDIRECT_COMMANDS_TOKEN_TYPE_END_RANGE_NVX"
+		),
+		type_vertex_buffer = ffi.cast(
+			"enum VkIndirectCommandsTokenTypeNVX",
+			"VK_INDIRECT_COMMANDS_TOKEN_TYPE_VERTEX_BUFFER_NVX"
+		),
+		type_begin_range = ffi.cast(
+			"enum VkIndirectCommandsTokenTypeNVX",
+			"VK_INDIRECT_COMMANDS_TOKEN_TYPE_BEGIN_RANGE_NVX"
+		),
+		type_range_size = ffi.cast(
+			"enum VkIndirectCommandsTokenTypeNVX",
+			"VK_INDIRECT_COMMANDS_TOKEN_TYPE_RANGE_SIZE_NVX"
+		),
 		type_draw = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_NVX"),
-		type_draw_indexed = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_INDEXED_NVX"),
-		type_descriptor_set = ffi.cast("enum VkIndirectCommandsTokenTypeNVX", "VK_INDIRECT_COMMANDS_TOKEN_TYPE_DESCRIPTOR_SET_NVX"),
+		type_draw_indexed = ffi.cast(
+			"enum VkIndirectCommandsTokenTypeNVX",
+			"VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_INDEXED_NVX"
+		),
+		type_descriptor_set = ffi.cast(
+			"enum VkIndirectCommandsTokenTypeNVX",
+			"VK_INDIRECT_COMMANDS_TOKEN_TYPE_DESCRIPTOR_SET_NVX"
+		),
 	},
 	memory_allocate = {
 		flag_bits_max_enum = ffi.cast("enum VkMemoryAllocateFlagBits", "VK_MEMORY_ALLOCATE_FLAG_BITS_MAX_ENUM"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.memory_allocate[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.memory_allocate[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		device_mask = ffi.cast("enum VkMemoryAllocateFlagBits", "VK_MEMORY_ALLOCATE_DEVICE_MASK_BIT_KHR"),
 	},
 	blend_op = {
@@ -2836,33 +4333,111 @@ library.e = {
 		xor = ffi.cast("enum VkBlendOp", "VK_BLEND_OP_XOR_EXT"),
 	},
 	conservative_rasterization_mode = {
-		underestimate = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_UNDERESTIMATE_EXT"),
-		end_range = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_END_RANGE_EXT"),
-		max_enum = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_MAX_ENUM_EXT"),
-		disabled = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_DISABLED_EXT"),
-		begin_range = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_BEGIN_RANGE_EXT"),
-		overestimate = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_OVERESTIMATE_EXT"),
-		range_size = ffi.cast("enum VkConservativeRasterizationModeEXT", "VK_CONSERVATIVE_RASTERIZATION_MODE_RANGE_SIZE_EXT"),
+		underestimate = ffi.cast(
+			"enum VkConservativeRasterizationModeEXT",
+			"VK_CONSERVATIVE_RASTERIZATION_MODE_UNDERESTIMATE_EXT"
+		),
+		end_range = ffi.cast(
+			"enum VkConservativeRasterizationModeEXT",
+			"VK_CONSERVATIVE_RASTERIZATION_MODE_END_RANGE_EXT"
+		),
+		max_enum = ffi.cast(
+			"enum VkConservativeRasterizationModeEXT",
+			"VK_CONSERVATIVE_RASTERIZATION_MODE_MAX_ENUM_EXT"
+		),
+		disabled = ffi.cast(
+			"enum VkConservativeRasterizationModeEXT",
+			"VK_CONSERVATIVE_RASTERIZATION_MODE_DISABLED_EXT"
+		),
+		begin_range = ffi.cast(
+			"enum VkConservativeRasterizationModeEXT",
+			"VK_CONSERVATIVE_RASTERIZATION_MODE_BEGIN_RANGE_EXT"
+		),
+		overestimate = ffi.cast(
+			"enum VkConservativeRasterizationModeEXT",
+			"VK_CONSERVATIVE_RASTERIZATION_MODE_OVERESTIMATE_EXT"
+		),
+		range_size = ffi.cast(
+			"enum VkConservativeRasterizationModeEXT",
+			"VK_CONSERVATIVE_RASTERIZATION_MODE_RANGE_SIZE_EXT"
+		),
 	},
 	descriptor_set_layout_create = {
-		flag_bits_max_enum = ffi.cast("enum VkDescriptorSetLayoutCreateFlagBits", "VK_DESCRIPTOR_SET_LAYOUT_CREATE_FLAG_BITS_MAX_ENUM"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.descriptor_set_layout_create[v] end return bit.bor(unpack(flags)) end,
-		update_after_bind_pool = ffi.cast("enum VkDescriptorSetLayoutCreateFlagBits", "VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT"),
-		push_descriptor = ffi.cast("enum VkDescriptorSetLayoutCreateFlagBits", "VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR"),
+		flag_bits_max_enum = ffi.cast(
+			"enum VkDescriptorSetLayoutCreateFlagBits",
+			"VK_DESCRIPTOR_SET_LAYOUT_CREATE_FLAG_BITS_MAX_ENUM"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.descriptor_set_layout_create[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		update_after_bind_pool = ffi.cast(
+			"enum VkDescriptorSetLayoutCreateFlagBits",
+			"VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT"
+		),
+		push_descriptor = ffi.cast(
+			"enum VkDescriptorSetLayoutCreateFlagBits",
+			"VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR"
+		),
 	},
 	debug_utils_message_type = {
-		flag_bits_max_enum = ffi.cast("enum VkDebugUtilsMessageTypeFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_TYPE_FLAG_BITS_MAX_ENUM_EXT"),
-		performance = ffi.cast("enum VkDebugUtilsMessageTypeFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT"),
-		validation = ffi.cast("enum VkDebugUtilsMessageTypeFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.debug_utils_message_type[v] end return bit.bor(unpack(flags)) end,
-		general = ffi.cast("enum VkDebugUtilsMessageTypeFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT"),
+		flag_bits_max_enum = ffi.cast(
+			"enum VkDebugUtilsMessageTypeFlagBitsEXT",
+			"VK_DEBUG_UTILS_MESSAGE_TYPE_FLAG_BITS_MAX_ENUM_EXT"
+		),
+		performance = ffi.cast(
+			"enum VkDebugUtilsMessageTypeFlagBitsEXT",
+			"VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT"
+		),
+		validation = ffi.cast(
+			"enum VkDebugUtilsMessageTypeFlagBitsEXT",
+			"VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.debug_utils_message_type[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		general = ffi.cast(
+			"enum VkDebugUtilsMessageTypeFlagBitsEXT",
+			"VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT"
+		),
 	},
 	external_memory_feature = {
-		exportable = ffi.cast("enum VkExternalMemoryFeatureFlagBits", "VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT_KHR"),
-		dedicated_only = ffi.cast("enum VkExternalMemoryFeatureFlagBits", "VK_EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT_KHR"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.external_memory_feature[v] end return bit.bor(unpack(flags)) end,
-		flag_bits_max_enum = ffi.cast("enum VkExternalMemoryFeatureFlagBits", "VK_EXTERNAL_MEMORY_FEATURE_FLAG_BITS_MAX_ENUM"),
-		importable = ffi.cast("enum VkExternalMemoryFeatureFlagBits", "VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT_KHR"),
+		exportable = ffi.cast(
+			"enum VkExternalMemoryFeatureFlagBits",
+			"VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT_KHR"
+		),
+		dedicated_only = ffi.cast(
+			"enum VkExternalMemoryFeatureFlagBits",
+			"VK_EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT_KHR"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.external_memory_feature[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		flag_bits_max_enum = ffi.cast(
+			"enum VkExternalMemoryFeatureFlagBits",
+			"VK_EXTERNAL_MEMORY_FEATURE_FLAG_BITS_MAX_ENUM"
+		),
+		importable = ffi.cast(
+			"enum VkExternalMemoryFeatureFlagBits",
+			"VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT_KHR"
+		),
 	},
 	object_entry_type = {
 		descriptor_set = ffi.cast("enum VkObjectEntryTypeNVX", "VK_OBJECT_ENTRY_TYPE_DESCRIPTOR_SET_NVX"),
@@ -2877,31 +4452,58 @@ library.e = {
 	},
 	structure_type = {
 		bind_image_memory_swapchain_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR"),
-		pipeline_input_assembly_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO"),
-		pipeline_viewport_w_scaling_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV"),
+		pipeline_input_assembly_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO"
+		),
+		pipeline_viewport_w_scaling_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV"
+		),
 		pipeline_dynamic_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO"),
 		display_present_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR"),
 		device_generated_commands_limits = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GENERATED_COMMANDS_LIMITS_NVX"),
-		physical_device_sample_locations_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLE_LOCATIONS_PROPERTIES_EXT"),
+		physical_device_sample_locations_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLE_LOCATIONS_PROPERTIES_EXT"
+		),
 		descriptor_set_layout_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO"),
-		export_semaphore_win32_handle_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR"),
+		export_semaphore_win32_handle_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR"
+		),
 		compute_pipeline_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO"),
 		present_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PRESENT_INFO_KHR"),
 		sampler_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO"),
 		cmd_process_commands_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_CMD_PROCESS_COMMANDS_INFO_NVX"),
 		debug_utils_object_tag_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_TAG_INFO_EXT"),
-		physical_device_image_format_info_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2_KHR"),
+		physical_device_image_format_info_2 = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2_KHR"
+		),
 		loader_instance_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO"),
 		buffer_view_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO"),
-		dedicated_allocation_image_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV"),
+		dedicated_allocation_image_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV"
+		),
 		command_buffer_allocate_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO"),
 		write_descriptor_set = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET"),
-		physical_device_maintenance_3_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES_KHR"),
+		physical_device_maintenance_3_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES_KHR"
+		),
 		image_view_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO"),
 		device_group_submit_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO_KHR"),
-		dedicated_allocation_buffer_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV"),
+		dedicated_allocation_buffer_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV"
+		),
 		image_swapchain_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_SWAPCHAIN_CREATE_INFO_KHR"),
-		device_group_render_pass_begin_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO_KHR"),
+		device_group_render_pass_begin_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO_KHR"
+		),
 		device_event_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_EVENT_INFO_EXT"),
 		xcb_surface_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR"),
 		import_fence_fd_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_FENCE_FD_INFO_KHR"),
@@ -2909,18 +4511,30 @@ library.e = {
 		format_properties_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2_KHR"),
 		graphics_pipeline_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO"),
 		event_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EVENT_CREATE_INFO"),
-		physical_device_memory_properties_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2_KHR"),
+		physical_device_memory_properties_2 = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2_KHR"
+		),
 		instance_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO"),
 		device_group_device_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO_KHR"),
 		debug_marker_object_tag_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT"),
 		image_view_usage_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO_KHR"),
-		physical_device_descriptor_indexing_features = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT"),
+		physical_device_descriptor_indexing_features = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT"
+		),
 		max_enum = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MAX_ENUM"),
 		image_memory_barrier = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER"),
 		range_size = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_RANGE_SIZE"),
-		descriptor_set_variable_descriptor_count_allocate_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT"),
+		descriptor_set_variable_descriptor_count_allocate_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT"
+		),
 		end_range = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_END_RANGE"),
-		physical_device_external_semaphore_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO_KHR"),
+		physical_device_external_semaphore_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO_KHR"
+		),
 		memory_dedicated_allocate_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_KHR"),
 		bind_sparse_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_SPARSE_INFO"),
 		memory_get_fd_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR"),
@@ -2931,100 +4545,232 @@ library.e = {
 		mapped_memory_range = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE"),
 		render_pass_begin_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO"),
 		pipeline_cache_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO"),
-		sampler_reduction_mode_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO_EXT"),
+		sampler_reduction_mode_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO_EXT"
+		),
 		device_group_bind_sparse_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_BIND_SPARSE_INFO_KHR"),
 		memory_get_win32_handle_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR"),
 		import_memory_fd_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR"),
-		physical_device_shader_core_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD"),
+		physical_device_shader_core_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD"
+		),
 		wayland_surface_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR"),
-		sampler_ycbcr_conversion_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO_KHR"),
-		physical_device_external_memory_host_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT"),
+		sampler_ycbcr_conversion_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO_KHR"
+		),
+		physical_device_external_memory_host_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT"
+		),
 		image_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO"),
 		vi_surface_create_info_nn = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_VI_SURFACE_CREATE_INFO_NN"),
 		memory_host_pointer_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_HOST_POINTER_PROPERTIES_EXT"),
 		import_semaphore_fd_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_FD_INFO_KHR"),
 		fence_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_FENCE_CREATE_INFO"),
 		display_power_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DISPLAY_POWER_INFO_EXT"),
-		physical_device_external_fence_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO_KHR"),
+		physical_device_external_fence_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO_KHR"
+		),
 		export_semaphore_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO_KHR"),
-		shader_module_validation_cache_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT"),
-		physical_device_descriptor_indexing_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES_EXT"),
+		shader_module_validation_cache_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT"
+		),
+		physical_device_descriptor_indexing_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES_EXT"
+		),
 		framebuffer_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO"),
 		memory_win32_handle_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_WIN32_HANDLE_PROPERTIES_KHR"),
-		descriptor_set_variable_descriptor_count_layout_support = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT_EXT"),
+		descriptor_set_variable_descriptor_count_layout_support = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT_EXT"
+		),
 		buffer_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO"),
-		sampler_ycbcr_conversion_image_format_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES_KHR"),
+		sampler_ycbcr_conversion_image_format_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES_KHR"
+		),
 		validation_cache_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_VALIDATION_CACHE_CREATE_INFO_EXT"),
-		import_android_hardware_buffer_info_android = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID"),
-		pipeline_coverage_modulation_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV"),
+		import_android_hardware_buffer_info_android = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID"
+		),
+		pipeline_coverage_modulation_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV"
+		),
 		acquire_next_image_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_ACQUIRE_NEXT_IMAGE_INFO_KHR"),
-		debug_utils_messenger_callback_data = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT"),
-		pipeline_color_blend_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO"),
-		pipeline_coverage_to_color_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV"),
-		descriptor_update_template_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO_KHR"),
-		physical_device_blend_operation_advanced_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT"),
-		physical_device_blend_operation_advanced_features = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT"),
+		debug_utils_messenger_callback_data = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT"
+		),
+		pipeline_color_blend_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO"
+		),
+		pipeline_coverage_to_color_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV"
+		),
+		descriptor_update_template_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO_KHR"
+		),
+		physical_device_blend_operation_advanced_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT"
+		),
+		physical_device_blend_operation_advanced_features = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT"
+		),
 		display_mode_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR"),
 		external_semaphore_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES_KHR"),
 		pipeline_viewport_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO"),
 		image_format_list_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO_KHR"),
 		multisample_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MULTISAMPLE_PROPERTIES_EXT"),
-		pipeline_sample_locations_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT"),
+		pipeline_sample_locations_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT"
+		),
 		export_fence_win32_handle_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_FENCE_WIN32_HANDLE_INFO_KHR"),
-		render_pass_sample_locations_begin_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT"),
-		import_semaphore_win32_handle_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR"),
+		render_pass_sample_locations_begin_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT"
+		),
+		import_semaphore_win32_handle_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR"
+		),
 		sample_locations_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT"),
 		hdr_metadata = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_HDR_METADATA_EXT"),
-		pipeline_vertex_input_divisor_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_EXT"),
+		pipeline_vertex_input_divisor_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_EXT"
+		),
 		render_pass_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO"),
 		external_format_android = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_ANDROID"),
 		memory_allocate_flags_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO_KHR"),
 		d3d12_fence_submit_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_D3D12_FENCE_SUBMIT_INFO_KHR"),
-		pipeline_rasterization_state_rasterization_order = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD"),
-		device_generated_commands_features = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GENERATED_COMMANDS_FEATURES_NVX"),
+		pipeline_rasterization_state_rasterization_order = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD"
+		),
+		device_generated_commands_features = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_DEVICE_GENERATED_COMMANDS_FEATURES_NVX"
+		),
 		android_surface_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR"),
-		pipeline_depth_stencil_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO"),
-		device_queue_global_priority_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO_EXT"),
+		pipeline_depth_stencil_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO"
+		),
+		device_queue_global_priority_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO_EXT"
+		),
 		surface_capabilities_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR"),
 		command_buffer_inheritance_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO"),
 		semaphore_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO"),
 		macos_surface_create_info_mvk = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK"),
 		ios_surface_create_info_mvk = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IOS_SURFACE_CREATE_INFO_MVK"),
 		descriptor_set_allocate_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO"),
-		physical_device_external_image_format_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO_KHR"),
+		physical_device_external_image_format_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO_KHR"
+		),
 		display_surface_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR"),
 		physical_device_subgroup_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES"),
-		memory_get_android_hardware_buffer_info_android = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_GET_ANDROID_HARDWARE_BUFFER_INFO_ANDROID"),
+		memory_get_android_hardware_buffer_info_android = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_MEMORY_GET_ANDROID_HARDWARE_BUFFER_INFO_ANDROID"
+		),
 		export_fence_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_FENCE_CREATE_INFO_KHR"),
-		physical_device_protected_memory_features = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES"),
+		physical_device_protected_memory_features = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES"
+		),
 		physical_device_surface_info_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR"),
 		debug_marker_object_name_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT"),
 		bind_image_plane_memory_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO_KHR"),
-		bind_image_memory_device_group_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO_KHR"),
-		pipeline_rasterization_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO"),
+		bind_image_memory_device_group_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO_KHR"
+		),
+		pipeline_rasterization_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO"
+		),
 		import_fence_win32_handle_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_FENCE_WIN32_HANDLE_INFO_KHR"),
-		shared_present_surface_capabilities = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR"),
+		shared_present_surface_capabilities = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR"
+		),
 		buffer_memory_requirements_info_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BUFFER_MEMORY_REQUIREMENTS_INFO_2_KHR"),
-		pipeline_rasterization_conservative_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT"),
-		device_group_command_buffer_begin_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO_KHR"),
-		descriptor_set_layout_binding_flags_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT"),
+		pipeline_rasterization_conservative_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT"
+		),
+		device_group_command_buffer_begin_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO_KHR"
+		),
+		descriptor_set_layout_binding_flags_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT"
+		),
 		submit_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SUBMIT_INFO"),
-		pipeline_discard_rectangle_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT"),
-		physical_device_sampler_ycbcr_conversion_features = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES_KHR"),
-		dedicated_allocation_memory_allocate_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV"),
-		pipeline_viewport_swizzle_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV"),
-		physical_device_multiview_per_view_attributes_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX"),
+		pipeline_discard_rectangle_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT"
+		),
+		physical_device_sampler_ycbcr_conversion_features = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES_KHR"
+		),
+		dedicated_allocation_memory_allocate_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV"
+		),
+		pipeline_viewport_swizzle_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV"
+		),
+		physical_device_multiview_per_view_attributes_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX"
+		),
 		present_times_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PRESENT_TIMES_INFO_GOOGLE"),
-		physical_device_shader_draw_parameter_features = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETER_FEATURES"),
+		physical_device_shader_draw_parameter_features = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETER_FEATURES"
+		),
 		memory_requirements_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2_KHR"),
 		external_image_format_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES_KHR"),
-		sparse_image_memory_requirements_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SPARSE_IMAGE_MEMORY_REQUIREMENTS_2_KHR"),
+		sparse_image_memory_requirements_2 = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_SPARSE_IMAGE_MEMORY_REQUIREMENTS_2_KHR"
+		),
 		shader_module_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO"),
 		device_group_present_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_INFO_KHR"),
-		physical_device_16bit_storage_features = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR"),
+		physical_device_16bit_storage_features = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR"
+		),
 		debug_utils_label = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT"),
-		cmd_reserve_space_for_commands_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_CMD_RESERVE_SPACE_FOR_COMMANDS_INFO_NVX"),
-		indirect_commands_layout_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NVX"),
+		cmd_reserve_space_for_commands_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_CMD_RESERVE_SPACE_FOR_COMMANDS_INFO_NVX"
+		),
+		indirect_commands_layout_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NVX"
+		),
 		import_memory_win32_handle_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR"),
 		mir_surface_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MIR_SURFACE_CREATE_INFO_KHR"),
 		present_regions = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR"),
@@ -3032,40 +4778,79 @@ library.e = {
 		bind_buffer_memory_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO_KHR"),
 		semaphore_get_fd_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR"),
 		import_memory_host_pointer_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT"),
-		physical_device_push_descriptor_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR"),
-		android_hardware_buffer_format_properties_android = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID"),
-		device_group_swapchain_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR"),
+		physical_device_push_descriptor_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR"
+		),
+		android_hardware_buffer_format_properties_android = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID"
+		),
+		device_group_swapchain_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR"
+		),
 		memory_fd_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_FD_PROPERTIES_KHR"),
-		external_memory_buffer_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO_KHR"),
-		physical_device_multiview_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR"),
+		external_memory_buffer_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO_KHR"
+		),
+		physical_device_multiview_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR"
+		),
 		debug_marker_marker_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT"),
 		command_pool_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO"),
-		physical_device_vertex_attribute_divisor_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT"),
-		physical_device_conservative_rasterization_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT"),
+		physical_device_vertex_attribute_divisor_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT"
+		),
+		physical_device_conservative_rasterization_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT"
+		),
 		external_fence_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_FENCE_PROPERTIES_KHR"),
 		external_memory_image_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR"),
 		xlib_surface_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR"),
 		sampler_ycbcr_conversion_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO_KHR"),
 		buffer_memory_barrier = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER"),
-		win32_keyed_mutex_acquire_release_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_KHR"),
+		win32_keyed_mutex_acquire_release_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_KHR"
+		),
 		export_memory_win32_handle_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_MEMORY_WIN32_HANDLE_INFO_KHR"),
 		export_memory_allocate_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_KHR"),
-		physical_device_external_buffer_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO_KHR"),
+		physical_device_external_buffer_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO_KHR"
+		),
 		descriptor_pool_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO"),
 		object_table_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_OBJECT_TABLE_CREATE_INFO_NVX"),
-		texture_lod_gather_format_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_TEXTURE_LOD_GATHER_FORMAT_PROPERTIES_AMD"),
+		texture_lod_gather_format_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_TEXTURE_LOD_GATHER_FORMAT_PROPERTIES_AMD"
+		),
 		device_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO"),
 		physical_device_group_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES_KHR"),
 		bind_image_memory_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO_KHR"),
-		physical_device_discard_rectangle_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT"),
+		physical_device_discard_rectangle_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT"
+		),
 		debug_report_callback_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT"),
 		render_pass_multiview_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHR"),
 		fence_get_fd_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_FENCE_GET_FD_INFO_KHR"),
 		device_queue_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO"),
 		memory_barrier = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_BARRIER"),
-		android_hardware_buffer_properties_android = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID"),
+		android_hardware_buffer_properties_android = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID"
+		),
 		win32_surface_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR"),
-		pipeline_multisample_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO"),
+		pipeline_multisample_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO"
+		),
 		image_format_properties_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2_KHR"),
 		debug_utils_messenger_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT"),
 		swapchain_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR"),
@@ -3073,42 +4858,87 @@ library.e = {
 		memory_dedicated_requirements = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS_KHR"),
 		loader_device_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO"),
 		copy_descriptor_set = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET"),
-		render_pass_input_attachment_aspect_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO_KHR"),
+		render_pass_input_attachment_aspect_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO_KHR"
+		),
 		physical_device_features_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR"),
-		physical_device_variable_pointer_features = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES_KHR"),
+		physical_device_variable_pointer_features = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES_KHR"
+		),
 		query_pool_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO"),
 		android_hardware_buffer_usage_android = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_USAGE_ANDROID"),
 		display_event_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DISPLAY_EVENT_INFO_EXT"),
-		bind_buffer_memory_device_group_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO_KHR"),
+		bind_buffer_memory_device_group_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO_KHR"
+		),
 		device_queue_info_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2"),
 		pipeline_shader_stage_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO"),
-		pipeline_tessellation_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO"),
-		physical_device_sampler_filter_minmax_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES_EXT"),
+		pipeline_tessellation_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO"
+		),
+		physical_device_sampler_filter_minmax_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES_EXT"
+		),
 		swapchain_counter_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SWAPCHAIN_COUNTER_CREATE_INFO_EXT"),
 		debug_utils_object_name_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT"),
 		physical_device_properties_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR"),
 		validation_flags = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_VALIDATION_FLAGS_EXT"),
-		physical_device_protected_memory_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES"),
-		physical_device_sparse_image_format_info_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2_KHR"),
+		physical_device_protected_memory_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES"
+		),
+		physical_device_sparse_image_format_info_2 = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2_KHR"
+		),
 		image_memory_requirements_info_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2_KHR"),
 		physical_device_id_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES_KHR"),
 		pipeline_layout_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO"),
-		image_sparse_memory_requirements_info_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2_KHR"),
+		image_sparse_memory_requirements_info_2 = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2_KHR"
+		),
 		protected_submit_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PROTECTED_SUBMIT_INFO"),
-		physical_device_multiview_features = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHR"),
+		physical_device_multiview_features = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHR"
+		),
 		surface_format_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SURFACE_FORMAT_2_KHR"),
-		physical_device_point_clipping_properties = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES_KHR"),
-		image_plane_memory_requirements_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO_KHR"),
+		physical_device_point_clipping_properties = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES_KHR"
+		),
+		image_plane_memory_requirements_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO_KHR"
+		),
 		application_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_APPLICATION_INFO"),
-		pipeline_vertex_input_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO"),
+		pipeline_vertex_input_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO"
+		),
 		sparse_image_format_properties_2 = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_SPARSE_IMAGE_FORMAT_PROPERTIES_2_KHR"),
 		descriptor_set_layout_support = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_SUPPORT_KHR"),
 		device_group_present_capabilities = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_CAPABILITIES_KHR"),
-		pipeline_tessellation_domain_origin_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO_KHR"),
-		pipeline_color_blend_advanced_state_create_info = ffi.cast("enum VkStructureType", "VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT"),
+		pipeline_tessellation_domain_origin_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO_KHR"
+		),
+		pipeline_color_blend_advanced_state_create_info = ffi.cast(
+			"enum VkStructureType",
+			"VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT"
+		),
 	},
 	sampler_reduction_mode = {
-		weighted_average = ffi.cast("enum VkSamplerReductionModeEXT", "VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_EXT"),
+		weighted_average = ffi.cast(
+			"enum VkSamplerReductionModeEXT",
+			"VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_EXT"
+		),
 		end_range = ffi.cast("enum VkSamplerReductionModeEXT", "VK_SAMPLER_REDUCTION_MODE_END_RANGE_EXT"),
 		max_enum = ffi.cast("enum VkSamplerReductionModeEXT", "VK_SAMPLER_REDUCTION_MODE_MAX_ENUM_EXT"),
 		max = ffi.cast("enum VkSamplerReductionModeEXT", "VK_SAMPLER_REDUCTION_MODE_MAX_EXT"),
@@ -3124,43 +4954,106 @@ library.e = {
 		range_size = ffi.cast("enum VkDisplayEventTypeEXT", "VK_DISPLAY_EVENT_TYPE_RANGE_SIZE_EXT"),
 	},
 	format_feature = {
-		sampled_image_filter_linear = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT"),
+		sampled_image_filter_linear = ffi.cast(
+			"enum VkFormatFeatureFlagBits",
+			"VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT"
+		),
 		color_attachment = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT"),
-		sampled_image_filter_cubic_bit_img = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG"),
+		sampled_image_filter_cubic_bit_img = ffi.cast(
+			"enum VkFormatFeatureFlagBits",
+			"VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG"
+		),
 		transfer_dst = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_TRANSFER_DST_BIT_KHR"),
-		sampled_image_ycbcr_conversion_chroma_reconstruction_explicit = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT_KHR"),
+		sampled_image_ycbcr_conversion_chroma_reconstruction_explicit = ffi.cast(
+			"enum VkFormatFeatureFlagBits",
+			"VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT_KHR"
+		),
 		color_attachment_blend = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT"),
-		storage_texel_buffer_atomic = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT"),
+		storage_texel_buffer_atomic = ffi.cast(
+			"enum VkFormatFeatureFlagBits",
+			"VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT"
+		),
 		vertex_buffer = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT"),
-		midpoint_chroma_samples = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT_KHR"),
-		sampled_image_filter_minmax = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT_EXT"),
+		midpoint_chroma_samples = ffi.cast(
+			"enum VkFormatFeatureFlagBits",
+			"VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT_KHR"
+		),
+		sampled_image_filter_minmax = ffi.cast(
+			"enum VkFormatFeatureFlagBits",
+			"VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT_EXT"
+		),
 		blit_src = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_BLIT_SRC_BIT"),
-		cosited_chroma_samples = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT_KHR"),
+		cosited_chroma_samples = ffi.cast(
+			"enum VkFormatFeatureFlagBits",
+			"VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT_KHR"
+		),
 		disjoint = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_DISJOINT_BIT_KHR"),
 		storage_image_atomic = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT"),
 		transfer_src = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_TRANSFER_SRC_BIT_KHR"),
 		sampled_image = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT"),
-		sampled_image_ycbcr_conversion_separate_reconstruction_filter = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT_KHR"),
-		sampled_image_ycbcr_conversion_linear_filter = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT_KHR"),
+		sampled_image_ycbcr_conversion_separate_reconstruction_filter = ffi.cast(
+			"enum VkFormatFeatureFlagBits",
+			"VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT_KHR"
+		),
+		sampled_image_ycbcr_conversion_linear_filter = ffi.cast(
+			"enum VkFormatFeatureFlagBits",
+			"VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT_KHR"
+		),
 		flag_bits_max_enum = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_FLAG_BITS_MAX_ENUM"),
 		storage_texel_buffer = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT"),
 		blit_dst = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_BLIT_DST_BIT"),
 		depth_stencil_attachment = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT"),
 		storage_image = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.format_feature[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.format_feature[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		uniform_texel_buffer = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT"),
-		sampled_image_ycbcr_conversion_chroma_reconstruction_explicit_forceable = ffi.cast("enum VkFormatFeatureFlagBits", "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT_KHR"),
+		sampled_image_ycbcr_conversion_chroma_reconstruction_explicit_forceable = ffi.cast(
+			"enum VkFormatFeatureFlagBits",
+			"VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT_KHR"
+		),
 	},
 	command_buffer_usage = {
-		render_pass_continue = ffi.cast("enum VkCommandBufferUsageFlagBits", "VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT"),
-		simultaneous_use = ffi.cast("enum VkCommandBufferUsageFlagBits", "VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.command_buffer_usage[v] end return bit.bor(unpack(flags)) end,
-		one_time_submit = ffi.cast("enum VkCommandBufferUsageFlagBits", "VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT"),
+		render_pass_continue = ffi.cast(
+			"enum VkCommandBufferUsageFlagBits",
+			"VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT"
+		),
+		simultaneous_use = ffi.cast(
+			"enum VkCommandBufferUsageFlagBits",
+			"VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.command_buffer_usage[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		one_time_submit = ffi.cast(
+			"enum VkCommandBufferUsageFlagBits",
+			"VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT"
+		),
 		flag_bits_max_enum = ffi.cast("enum VkCommandBufferUsageFlagBits", "VK_COMMAND_BUFFER_USAGE_FLAG_BITS_MAX_ENUM"),
 	},
 	query_control = {
 		flag_bits_max_enum = ffi.cast("enum VkQueryControlFlagBits", "VK_QUERY_CONTROL_FLAG_BITS_MAX_ENUM"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.query_control[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.query_control[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		precise = ffi.cast("enum VkQueryControlFlagBits", "VK_QUERY_CONTROL_PRECISE_BIT"),
 	},
 	logic_op = {
@@ -3189,14 +5082,31 @@ library.e = {
 		flag_bits_max_enum = ffi.cast("enum VkCommandPoolCreateFlagBits", "VK_COMMAND_POOL_CREATE_FLAG_BITS_MAX_ENUM"),
 		protected = ffi.cast("enum VkCommandPoolCreateFlagBits", "VK_COMMAND_POOL_CREATE_PROTECTED_BIT"),
 		transient = ffi.cast("enum VkCommandPoolCreateFlagBits", "VK_COMMAND_POOL_CREATE_TRANSIENT_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.command_pool_create[v] end return bit.bor(unpack(flags)) end,
-		reset_command_buffer = ffi.cast("enum VkCommandPoolCreateFlagBits", "VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT"),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.command_pool_create[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		reset_command_buffer = ffi.cast(
+			"enum VkCommandPoolCreateFlagBits",
+			"VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT"
+		),
 	},
 	pipeline_stage = {
-		tessellation_control_shader = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT"),
+		tessellation_control_shader = ffi.cast(
+			"enum VkPipelineStageFlagBits",
+			"VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT"
+		),
 		host = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_HOST_BIT"),
 		draw_indirect = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT"),
-		tessellation_evaluation_shader = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT"),
+		tessellation_evaluation_shader = ffi.cast(
+			"enum VkPipelineStageFlagBits",
+			"VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT"
+		),
 		color_attachment_output = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT"),
 		command_process = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_COMMAND_PROCESS_BIT_NVX"),
 		early_fragment_tests = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT"),
@@ -3210,18 +5120,52 @@ library.e = {
 		bottom_of_pipe = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT"),
 		late_fragment_tests = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT"),
 		geometry_shader = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.pipeline_stage[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.pipeline_stage[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		vertex_shader = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_VERTEX_SHADER_BIT"),
 		fragment_shader = ffi.cast("enum VkPipelineStageFlagBits", "VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT"),
 	},
 	external_semaphore_handle_type = {
-		flag_bits_max_enum = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_FLAG_BITS_MAX_ENUM"),
-		opaque_win32_kmt = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR"),
-		opaque_fd = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR"),
-		sync_fd = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT_KHR"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.external_semaphore_handle_type[v] end return bit.bor(unpack(flags)) end,
-		opaque_win32 = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR"),
-		d3d12_fence = ffi.cast("enum VkExternalSemaphoreHandleTypeFlagBits", "VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D12_FENCE_BIT_KHR"),
+		flag_bits_max_enum = ffi.cast(
+			"enum VkExternalSemaphoreHandleTypeFlagBits",
+			"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_FLAG_BITS_MAX_ENUM"
+		),
+		opaque_win32_kmt = ffi.cast(
+			"enum VkExternalSemaphoreHandleTypeFlagBits",
+			"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR"
+		),
+		opaque_fd = ffi.cast(
+			"enum VkExternalSemaphoreHandleTypeFlagBits",
+			"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR"
+		),
+		sync_fd = ffi.cast(
+			"enum VkExternalSemaphoreHandleTypeFlagBits",
+			"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT_KHR"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.external_semaphore_handle_type[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		opaque_win32 = ffi.cast(
+			"enum VkExternalSemaphoreHandleTypeFlagBits",
+			"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR"
+		),
+		d3d12_fence = ffi.cast(
+			"enum VkExternalSemaphoreHandleTypeFlagBits",
+			"VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D12_FENCE_BIT_KHR"
+		),
 	},
 	discard_rectangle_mode = {
 		end_range = ffi.cast("enum VkDiscardRectangleModeEXT", "VK_DISCARD_RECTANGLE_MODE_END_RANGE_EXT"),
@@ -3255,7 +5199,15 @@ library.e = {
 		front_and_back = ffi.cast("enum VkStencilFaceFlagBits", "VK_STENCIL_FRONT_AND_BACK"),
 		back = ffi.cast("enum VkStencilFaceFlagBits", "VK_STENCIL_FACE_BACK_BIT"),
 		front = ffi.cast("enum VkStencilFaceFlagBits", "VK_STENCIL_FACE_FRONT_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.stencil_face[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.stencil_face[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		flag_bits_max_enum = ffi.cast("enum VkStencilFaceFlagBits", "VK_STENCIL_FACE_FLAG_BITS_MAX_ENUM"),
 	},
 	stencil_op = {
@@ -3303,55 +5255,122 @@ library.e = {
 		flag_bits_max_enum = ffi.cast("enum VkDebugReportFlagBitsEXT", "VK_DEBUG_REPORT_FLAG_BITS_MAX_ENUM_EXT"),
 		performance_warning = ffi.cast("enum VkDebugReportFlagBitsEXT", "VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT"),
 		debug = ffi.cast("enum VkDebugReportFlagBitsEXT", "VK_DEBUG_REPORT_DEBUG_BIT_EXT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.debug_report[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.debug_report[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		error = ffi.cast("enum VkDebugReportFlagBitsEXT", "VK_DEBUG_REPORT_ERROR_BIT_EXT"),
 		information = ffi.cast("enum VkDebugReportFlagBitsEXT", "VK_DEBUG_REPORT_INFORMATION_BIT_EXT"),
 	},
 	debug_report_object_type = {
-		swapchain = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT"),
+		swapchain = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT"
+		),
 		instance = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT"),
 		end_range = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_END_RANGE_EXT"),
 		buffer = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT"),
 		command_pool = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT"),
-		object_table = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_OBJECT_TABLE_NVX_EXT"),
-		pipeline_layout = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT"),
+		object_table = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_OBJECT_TABLE_NVX_EXT"
+		),
+		pipeline_layout = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT"
+		),
 		event = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT"),
 		pipeline = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT"),
 		display = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_KHR_EXT"),
 		semaphore = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT"),
-		validation_cache_ext = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT"),
+		validation_cache_ext = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT"
+		),
 		image_view = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT"),
-		debug_report_callback_ext = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT"),
-		sampler_ycbcr_conversion = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR_EXT"),
+		debug_report_callback_ext = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT"
+		),
+		sampler_ycbcr_conversion = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR_EXT"
+		),
 		surface = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_SURFACE_KHR_EXT"),
-		descriptor_update_template = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT"),
+		descriptor_update_template = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT"
+		),
 		max_enum = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_MAX_ENUM_EXT"),
 		image = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT"),
-		device_memory = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT"),
+		device_memory = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT"
+		),
 		begin_range = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_BEGIN_RANGE_EXT"),
-		display_mode = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT"),
+		display_mode = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT"
+		),
 		buffer_view = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_VIEW_EXT"),
 		range_size = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_RANGE_SIZE_EXT"),
-		descriptor_set = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT"),
-		indirect_commands_layout = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX_EXT"),
+		descriptor_set = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT"
+		),
+		indirect_commands_layout = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NVX_EXT"
+		),
 		query_pool = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT"),
 		framebuffer = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT"),
 		sampler = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT"),
-		descriptor_set_layout = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT"),
-		pipeline_cache = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT"),
+		descriptor_set_layout = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT"
+		),
+		pipeline_cache = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT"
+		),
 		device = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT"),
-		physical_device = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT"),
+		physical_device = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT"
+		),
 		fence = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_FENCE_EXT"),
-		shader_module = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT"),
+		shader_module = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT"
+		),
 		unknown = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT"),
 		queue = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT"),
 		render_pass = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT"),
-		descriptor_pool = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT"),
-		command_buffer = ffi.cast("enum VkDebugReportObjectTypeEXT", "VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT"),
+		descriptor_pool = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT"
+		),
+		command_buffer = ffi.cast(
+			"enum VkDebugReportObjectTypeEXT",
+			"VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT"
+		),
 	},
 	fence_import = {
 		flag_bits_max_enum = ffi.cast("enum VkFenceImportFlagBits", "VK_FENCE_IMPORT_FLAG_BITS_MAX_ENUM"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.fence_import[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.fence_import[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		temporary = ffi.cast("enum VkFenceImportFlagBits", "VK_FENCE_IMPORT_TEMPORARY_BIT_KHR"),
 	},
 	queue = {
@@ -3359,7 +5378,15 @@ library.e = {
 		protected = ffi.cast("enum VkQueueFlagBits", "VK_QUEUE_PROTECTED_BIT"),
 		sparse_binding = ffi.cast("enum VkQueueFlagBits", "VK_QUEUE_SPARSE_BINDING_BIT"),
 		compute = ffi.cast("enum VkQueueFlagBits", "VK_QUEUE_COMPUTE_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.queue[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.queue[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		graphics = ffi.cast("enum VkQueueFlagBits", "VK_QUEUE_GRAPHICS_BIT"),
 		transfer = ffi.cast("enum VkQueueFlagBits", "VK_QUEUE_TRANSFER_BIT"),
 	},
@@ -3379,25 +5406,65 @@ library.e = {
 		flag_bits_max_enum = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_FLAG_BITS_MAX_ENUM"),
 		disjoint = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_DISJOINT_BIT_KHR"),
 		cube_compatible = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT"),
-		sample_locations_compatible_depth = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_EXT"),
+		sample_locations_compatible_depth = ffi.cast(
+			"enum VkImageCreateFlagBits",
+			"VK_IMAGE_CREATE_SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_EXT"
+		),
 		extended_usage = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_EXTENDED_USAGE_BIT_KHR"),
-		split_instance_bind_regions = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR"),
-		block_texel_view_compatible = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT_KHR"),
+		split_instance_bind_regions = ffi.cast(
+			"enum VkImageCreateFlagBits",
+			"VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR"
+		),
+		block_texel_view_compatible = ffi.cast(
+			"enum VkImageCreateFlagBits",
+			"VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT_KHR"
+		),
 		sparse_aliased = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_SPARSE_ALIASED_BIT"),
 		sparse_binding = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_SPARSE_BINDING_BIT"),
 		alias = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_ALIAS_BIT_KHR"),
 		mutable_format = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.image_create[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.image_create[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		["2d_array_compatible"] = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT_KHR"),
 		sparse_residency = ffi.cast("enum VkImageCreateFlagBits", "VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT"),
 	},
 	indirect_commands_layout_usage = {
-		flag_bits_max_enum = ffi.cast("enum VkIndirectCommandsLayoutUsageFlagBitsNVX", "VK_INDIRECT_COMMANDS_LAYOUT_USAGE_FLAG_BITS_MAX_ENUM_NVX"),
-		sparse_sequences = ffi.cast("enum VkIndirectCommandsLayoutUsageFlagBitsNVX", "VK_INDIRECT_COMMANDS_LAYOUT_USAGE_SPARSE_SEQUENCES_BIT_NVX"),
-		empty_executions = ffi.cast("enum VkIndirectCommandsLayoutUsageFlagBitsNVX", "VK_INDIRECT_COMMANDS_LAYOUT_USAGE_EMPTY_EXECUTIONS_BIT_NVX"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.indirect_commands_layout_usage[v] end return bit.bor(unpack(flags)) end,
-		indexed_sequences = ffi.cast("enum VkIndirectCommandsLayoutUsageFlagBitsNVX", "VK_INDIRECT_COMMANDS_LAYOUT_USAGE_INDEXED_SEQUENCES_BIT_NVX"),
-		unordered_sequences = ffi.cast("enum VkIndirectCommandsLayoutUsageFlagBitsNVX", "VK_INDIRECT_COMMANDS_LAYOUT_USAGE_UNORDERED_SEQUENCES_BIT_NVX"),
+		flag_bits_max_enum = ffi.cast(
+			"enum VkIndirectCommandsLayoutUsageFlagBitsNVX",
+			"VK_INDIRECT_COMMANDS_LAYOUT_USAGE_FLAG_BITS_MAX_ENUM_NVX"
+		),
+		sparse_sequences = ffi.cast(
+			"enum VkIndirectCommandsLayoutUsageFlagBitsNVX",
+			"VK_INDIRECT_COMMANDS_LAYOUT_USAGE_SPARSE_SEQUENCES_BIT_NVX"
+		),
+		empty_executions = ffi.cast(
+			"enum VkIndirectCommandsLayoutUsageFlagBitsNVX",
+			"VK_INDIRECT_COMMANDS_LAYOUT_USAGE_EMPTY_EXECUTIONS_BIT_NVX"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.indirect_commands_layout_usage[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		indexed_sequences = ffi.cast(
+			"enum VkIndirectCommandsLayoutUsageFlagBitsNVX",
+			"VK_INDIRECT_COMMANDS_LAYOUT_USAGE_INDEXED_SEQUENCES_BIT_NVX"
+		),
+		unordered_sequences = ffi.cast(
+			"enum VkIndirectCommandsLayoutUsageFlagBitsNVX",
+			"VK_INDIRECT_COMMANDS_LAYOUT_USAGE_UNORDERED_SEQUENCES_BIT_NVX"
+		),
 	},
 	memory_property = {
 		device_local = ffi.cast("enum VkMemoryPropertyFlagBits", "VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT"),
@@ -3405,7 +5472,15 @@ library.e = {
 		host_cached = ffi.cast("enum VkMemoryPropertyFlagBits", "VK_MEMORY_PROPERTY_HOST_CACHED_BIT"),
 		flag_bits_max_enum = ffi.cast("enum VkMemoryPropertyFlagBits", "VK_MEMORY_PROPERTY_FLAG_BITS_MAX_ENUM"),
 		lazily_allocated = ffi.cast("enum VkMemoryPropertyFlagBits", "VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.memory_property[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.memory_property[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		protected = ffi.cast("enum VkMemoryPropertyFlagBits", "VK_MEMORY_PROPERTY_PROTECTED_BIT"),
 		host_visible = ffi.cast("enum VkMemoryPropertyFlagBits", "VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT"),
 	},
@@ -3418,23 +5493,67 @@ library.e = {
 		shuffle_relative = ffi.cast("enum VkSubgroupFeatureFlagBits", "VK_SUBGROUP_FEATURE_SHUFFLE_RELATIVE_BIT"),
 		quad = ffi.cast("enum VkSubgroupFeatureFlagBits", "VK_SUBGROUP_FEATURE_QUAD_BIT"),
 		flag_bits_max_enum = ffi.cast("enum VkSubgroupFeatureFlagBits", "VK_SUBGROUP_FEATURE_FLAG_BITS_MAX_ENUM"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.subgroup_feature[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.subgroup_feature[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		vote = ffi.cast("enum VkSubgroupFeatureFlagBits", "VK_SUBGROUP_FEATURE_VOTE_BIT"),
 		basic = ffi.cast("enum VkSubgroupFeatureFlagBits", "VK_SUBGROUP_FEATURE_BASIC_BIT"),
 	},
 	viewport_coordinate_swizzle = {
-		negative_z = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_Z_NV"),
-		negative_y = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_Y_NV"),
-		negative_x = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_X_NV"),
-		max_enum = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_MAX_ENUM_NV"),
-		negative_w = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_W_NV"),
-		positive_z = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_Z_NV"),
-		positive_y = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_Y_NV"),
-		range_size = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_RANGE_SIZE_NV"),
-		end_range = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_END_RANGE_NV"),
-		positive_x = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_X_NV"),
-		begin_range = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_BEGIN_RANGE_NV"),
-		positive_w = ffi.cast("enum VkViewportCoordinateSwizzleNV", "VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_W_NV"),
+		negative_z = ffi.cast(
+			"enum VkViewportCoordinateSwizzleNV",
+			"VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_Z_NV"
+		),
+		negative_y = ffi.cast(
+			"enum VkViewportCoordinateSwizzleNV",
+			"VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_Y_NV"
+		),
+		negative_x = ffi.cast(
+			"enum VkViewportCoordinateSwizzleNV",
+			"VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_X_NV"
+		),
+		max_enum = ffi.cast(
+			"enum VkViewportCoordinateSwizzleNV",
+			"VK_VIEWPORT_COORDINATE_SWIZZLE_MAX_ENUM_NV"
+		),
+		negative_w = ffi.cast(
+			"enum VkViewportCoordinateSwizzleNV",
+			"VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_W_NV"
+		),
+		positive_z = ffi.cast(
+			"enum VkViewportCoordinateSwizzleNV",
+			"VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_Z_NV"
+		),
+		positive_y = ffi.cast(
+			"enum VkViewportCoordinateSwizzleNV",
+			"VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_Y_NV"
+		),
+		range_size = ffi.cast(
+			"enum VkViewportCoordinateSwizzleNV",
+			"VK_VIEWPORT_COORDINATE_SWIZZLE_RANGE_SIZE_NV"
+		),
+		end_range = ffi.cast(
+			"enum VkViewportCoordinateSwizzleNV",
+			"VK_VIEWPORT_COORDINATE_SWIZZLE_END_RANGE_NV"
+		),
+		positive_x = ffi.cast(
+			"enum VkViewportCoordinateSwizzleNV",
+			"VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_X_NV"
+		),
+		begin_range = ffi.cast(
+			"enum VkViewportCoordinateSwizzleNV",
+			"VK_VIEWPORT_COORDINATE_SWIZZLE_BEGIN_RANGE_NV"
+		),
+		positive_w = ffi.cast(
+			"enum VkViewportCoordinateSwizzleNV",
+			"VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_W_NV"
+		),
 	},
 	image_tiling = {
 		linear = ffi.cast("enum VkImageTiling", "VK_IMAGE_TILING_LINEAR"),
@@ -3458,49 +5577,133 @@ library.e = {
 	composite_alpha = {
 		flag_bits_max_enum = ffi.cast("enum VkCompositeAlphaFlagBitsKHR", "VK_COMPOSITE_ALPHA_FLAG_BITS_MAX_ENUM_KHR"),
 		opaque = ffi.cast("enum VkCompositeAlphaFlagBitsKHR", "VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.composite_alpha[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.composite_alpha[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		post_multiplied = ffi.cast("enum VkCompositeAlphaFlagBitsKHR", "VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR"),
 		inherit = ffi.cast("enum VkCompositeAlphaFlagBitsKHR", "VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR"),
 		pre_multiplied = ffi.cast("enum VkCompositeAlphaFlagBitsKHR", "VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR"),
 	},
 	external_semaphore_feature = {
-		exportable = ffi.cast("enum VkExternalSemaphoreFeatureFlagBits", "VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT_KHR"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.external_semaphore_feature[v] end return bit.bor(unpack(flags)) end,
-		flag_bits_max_enum = ffi.cast("enum VkExternalSemaphoreFeatureFlagBits", "VK_EXTERNAL_SEMAPHORE_FEATURE_FLAG_BITS_MAX_ENUM"),
-		importable = ffi.cast("enum VkExternalSemaphoreFeatureFlagBits", "VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT_KHR"),
+		exportable = ffi.cast(
+			"enum VkExternalSemaphoreFeatureFlagBits",
+			"VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT_KHR"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.external_semaphore_feature[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		flag_bits_max_enum = ffi.cast(
+			"enum VkExternalSemaphoreFeatureFlagBits",
+			"VK_EXTERNAL_SEMAPHORE_FEATURE_FLAG_BITS_MAX_ENUM"
+		),
+		importable = ffi.cast(
+			"enum VkExternalSemaphoreFeatureFlagBits",
+			"VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT_KHR"
+		),
 	},
 	command_pool_reset = {
 		flag_bits_max_enum = ffi.cast("enum VkCommandPoolResetFlagBits", "VK_COMMAND_POOL_RESET_FLAG_BITS_MAX_ENUM"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.command_pool_reset[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.command_pool_reset[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		release_resources = ffi.cast("enum VkCommandPoolResetFlagBits", "VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT"),
 	},
 	sparse_memory_bind = {
 		metadata = ffi.cast("enum VkSparseMemoryBindFlagBits", "VK_SPARSE_MEMORY_BIND_METADATA_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.sparse_memory_bind[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.sparse_memory_bind[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		flag_bits_max_enum = ffi.cast("enum VkSparseMemoryBindFlagBits", "VK_SPARSE_MEMORY_BIND_FLAG_BITS_MAX_ENUM"),
 	},
 	query_result = {
 		flag_bits_max_enum = ffi.cast("enum VkQueryResultFlagBits", "VK_QUERY_RESULT_FLAG_BITS_MAX_ENUM"),
 		["64"] = ffi.cast("enum VkQueryResultFlagBits", "VK_QUERY_RESULT_64_BIT"),
 		with_availability = ffi.cast("enum VkQueryResultFlagBits", "VK_QUERY_RESULT_WITH_AVAILABILITY_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.query_result[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.query_result[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		partial = ffi.cast("enum VkQueryResultFlagBits", "VK_QUERY_RESULT_PARTIAL_BIT"),
 		wait = ffi.cast("enum VkQueryResultFlagBits", "VK_QUERY_RESULT_WAIT_BIT"),
 	},
 	sampler_ycbcr_model_conversion = {
-		ycbcr_identity = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY_KHR"),
-		end_range = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_END_RANGE"),
-		max_enum = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_MAX_ENUM"),
-		ycbcr_601 = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR"),
-		rgb_identity = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY_KHR"),
-		ycbcr_2020 = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR"),
-		begin_range = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_BEGIN_RANGE"),
-		ycbcr_709 = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR"),
-		range_size = ffi.cast("enum VkSamplerYcbcrModelConversion", "VK_SAMPLER_YCBCR_MODEL_CONVERSION_RANGE_SIZE"),
+		ycbcr_identity = ffi.cast(
+			"enum VkSamplerYcbcrModelConversion",
+			"VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY_KHR"
+		),
+		end_range = ffi.cast(
+			"enum VkSamplerYcbcrModelConversion",
+			"VK_SAMPLER_YCBCR_MODEL_CONVERSION_END_RANGE"
+		),
+		max_enum = ffi.cast(
+			"enum VkSamplerYcbcrModelConversion",
+			"VK_SAMPLER_YCBCR_MODEL_CONVERSION_MAX_ENUM"
+		),
+		ycbcr_601 = ffi.cast(
+			"enum VkSamplerYcbcrModelConversion",
+			"VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR"
+		),
+		rgb_identity = ffi.cast(
+			"enum VkSamplerYcbcrModelConversion",
+			"VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY_KHR"
+		),
+		ycbcr_2020 = ffi.cast(
+			"enum VkSamplerYcbcrModelConversion",
+			"VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR"
+		),
+		begin_range = ffi.cast(
+			"enum VkSamplerYcbcrModelConversion",
+			"VK_SAMPLER_YCBCR_MODEL_CONVERSION_BEGIN_RANGE"
+		),
+		ycbcr_709 = ffi.cast(
+			"enum VkSamplerYcbcrModelConversion",
+			"VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR"
+		),
+		range_size = ffi.cast(
+			"enum VkSamplerYcbcrModelConversion",
+			"VK_SAMPLER_YCBCR_MODEL_CONVERSION_RANGE_SIZE"
+		),
 	},
 	device_queue_create = {
 		flag_bits_max_enum = ffi.cast("enum VkDeviceQueueCreateFlagBits", "VK_DEVICE_QUEUE_CREATE_FLAG_BITS_MAX_ENUM"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.device_queue_create[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.device_queue_create[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		protected = ffi.cast("enum VkDeviceQueueCreateFlagBits", "VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT"),
 	},
 	pipeline_bind_point = {
@@ -3543,14 +5746,33 @@ library.e = {
 		depth = ffi.cast("enum VkImageAspectFlagBits", "VK_IMAGE_ASPECT_DEPTH_BIT"),
 		flag_bits_max_enum = ffi.cast("enum VkImageAspectFlagBits", "VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM"),
 		metadata = ffi.cast("enum VkImageAspectFlagBits", "VK_IMAGE_ASPECT_METADATA_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.image_aspect[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.image_aspect[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		color = ffi.cast("enum VkImageAspectFlagBits", "VK_IMAGE_ASPECT_COLOR_BIT"),
 		plane_2 = ffi.cast("enum VkImageAspectFlagBits", "VK_IMAGE_ASPECT_PLANE_2_BIT_KHR"),
 	},
 	command_buffer_reset = {
 		flag_bits_max_enum = ffi.cast("enum VkCommandBufferResetFlagBits", "VK_COMMAND_BUFFER_RESET_FLAG_BITS_MAX_ENUM"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.command_buffer_reset[v] end return bit.bor(unpack(flags)) end,
-		release_resources = ffi.cast("enum VkCommandBufferResetFlagBits", "VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT"),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.command_buffer_reset[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		release_resources = ffi.cast(
+			"enum VkCommandBufferResetFlagBits",
+			"VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT"
+		),
 	},
 	vertex_input_rate = {
 		end_range = ffi.cast("enum VkVertexInputRate", "VK_VERTEX_INPUT_RATE_END_RANGE"),
@@ -3579,19 +5801,63 @@ library.e = {
 		range_size = ffi.cast("enum VkDynamicState", "VK_DYNAMIC_STATE_RANGE_SIZE"),
 	},
 	query_pipeline_statistic = {
-		clipping_primitives = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT"),
-		fragment_shader_invocations = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT"),
-		geometry_shader_primitives = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_PRIMITIVES_BIT"),
-		input_assembly_primitives = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT"),
-		compute_shader_invocations = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT"),
-		flag_bits_max_enum = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_FLAG_BITS_MAX_ENUM"),
-		tessellation_evaluation_shader_invocations = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT"),
-		tessellation_control_shader_patches = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_CONTROL_SHADER_PATCHES_BIT"),
-		vertex_shader_invocations = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT"),
-		clipping_invocations = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.query_pipeline_statistic[v] end return bit.bor(unpack(flags)) end,
-		geometry_shader_invocations = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_INVOCATIONS_BIT"),
-		input_assembly_vertices = ffi.cast("enum VkQueryPipelineStatisticFlagBits", "VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT"),
+		clipping_primitives = ffi.cast(
+			"enum VkQueryPipelineStatisticFlagBits",
+			"VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT"
+		),
+		fragment_shader_invocations = ffi.cast(
+			"enum VkQueryPipelineStatisticFlagBits",
+			"VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT"
+		),
+		geometry_shader_primitives = ffi.cast(
+			"enum VkQueryPipelineStatisticFlagBits",
+			"VK_QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_PRIMITIVES_BIT"
+		),
+		input_assembly_primitives = ffi.cast(
+			"enum VkQueryPipelineStatisticFlagBits",
+			"VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT"
+		),
+		compute_shader_invocations = ffi.cast(
+			"enum VkQueryPipelineStatisticFlagBits",
+			"VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT"
+		),
+		flag_bits_max_enum = ffi.cast(
+			"enum VkQueryPipelineStatisticFlagBits",
+			"VK_QUERY_PIPELINE_STATISTIC_FLAG_BITS_MAX_ENUM"
+		),
+		tessellation_evaluation_shader_invocations = ffi.cast(
+			"enum VkQueryPipelineStatisticFlagBits",
+			"VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT"
+		),
+		tessellation_control_shader_patches = ffi.cast(
+			"enum VkQueryPipelineStatisticFlagBits",
+			"VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_CONTROL_SHADER_PATCHES_BIT"
+		),
+		vertex_shader_invocations = ffi.cast(
+			"enum VkQueryPipelineStatisticFlagBits",
+			"VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT"
+		),
+		clipping_invocations = ffi.cast(
+			"enum VkQueryPipelineStatisticFlagBits",
+			"VK_QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.query_pipeline_statistic[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		geometry_shader_invocations = ffi.cast(
+			"enum VkQueryPipelineStatisticFlagBits",
+			"VK_QUERY_PIPELINE_STATISTIC_GEOMETRY_SHADER_INVOCATIONS_BIT"
+		),
+		input_assembly_vertices = ffi.cast(
+			"enum VkQueryPipelineStatisticFlagBits",
+			"VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT"
+		),
 	},
 	validation_check = {
 		end_range = ffi.cast("enum VkValidationCheckEXT", "VK_VALIDATION_CHECK_END_RANGE_EXT"),
@@ -3602,12 +5868,35 @@ library.e = {
 		all = ffi.cast("enum VkValidationCheckEXT", "VK_VALIDATION_CHECK_ALL_EXT"),
 	},
 	external_fence_handle_type = {
-		flag_bits_max_enum = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_FLAG_BITS_MAX_ENUM"),
-		opaque_win32_kmt = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR"),
-		opaque_fd = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR"),
-		sync_fd = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT_KHR"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.external_fence_handle_type[v] end return bit.bor(unpack(flags)) end,
-		opaque_win32 = ffi.cast("enum VkExternalFenceHandleTypeFlagBits", "VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR"),
+		flag_bits_max_enum = ffi.cast(
+			"enum VkExternalFenceHandleTypeFlagBits",
+			"VK_EXTERNAL_FENCE_HANDLE_TYPE_FLAG_BITS_MAX_ENUM"
+		),
+		opaque_win32_kmt = ffi.cast(
+			"enum VkExternalFenceHandleTypeFlagBits",
+			"VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR"
+		),
+		opaque_fd = ffi.cast(
+			"enum VkExternalFenceHandleTypeFlagBits",
+			"VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR"
+		),
+		sync_fd = ffi.cast(
+			"enum VkExternalFenceHandleTypeFlagBits",
+			"VK_EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT_KHR"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.external_fence_handle_type[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		opaque_win32 = ffi.cast(
+			"enum VkExternalFenceHandleTypeFlagBits",
+			"VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR"
+		),
 	},
 	polygon_mode = {
 		line = ffi.cast("enum VkPolygonMode", "VK_POLYGON_MODE_LINE"),
@@ -3621,28 +5910,75 @@ library.e = {
 	},
 	surface_counter = {
 		flag_bits_max_enum = ffi.cast("enum VkSurfaceCounterFlagBitsEXT", "VK_SURFACE_COUNTER_FLAG_BITS_MAX_ENUM_EXT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.surface_counter[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.surface_counter[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		vblank = ffi.cast("enum VkSurfaceCounterFlagBitsEXT", "VK_SURFACE_COUNTER_VBLANK_EXT"),
 	},
 	device_group_present_mode = {
-		remote = ffi.cast("enum VkDeviceGroupPresentModeFlagBitsKHR", "VK_DEVICE_GROUP_PRESENT_MODE_REMOTE_BIT_KHR"),
-		sum = ffi.cast("enum VkDeviceGroupPresentModeFlagBitsKHR", "VK_DEVICE_GROUP_PRESENT_MODE_SUM_BIT_KHR"),
-		["local"] = ffi.cast("enum VkDeviceGroupPresentModeFlagBitsKHR", "VK_DEVICE_GROUP_PRESENT_MODE_LOCAL_BIT_KHR"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.device_group_present_mode[v] end return bit.bor(unpack(flags)) end,
-		flag_bits_max_enum = ffi.cast("enum VkDeviceGroupPresentModeFlagBitsKHR", "VK_DEVICE_GROUP_PRESENT_MODE_FLAG_BITS_MAX_ENUM_KHR"),
-		local_multi_device = ffi.cast("enum VkDeviceGroupPresentModeFlagBitsKHR", "VK_DEVICE_GROUP_PRESENT_MODE_LOCAL_MULTI_DEVICE_BIT_KHR"),
+		remote = ffi.cast(
+			"enum VkDeviceGroupPresentModeFlagBitsKHR",
+			"VK_DEVICE_GROUP_PRESENT_MODE_REMOTE_BIT_KHR"
+		),
+		sum = ffi.cast(
+			"enum VkDeviceGroupPresentModeFlagBitsKHR",
+			"VK_DEVICE_GROUP_PRESENT_MODE_SUM_BIT_KHR"
+		),
+		["local"] = ffi.cast(
+			"enum VkDeviceGroupPresentModeFlagBitsKHR",
+			"VK_DEVICE_GROUP_PRESENT_MODE_LOCAL_BIT_KHR"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.device_group_present_mode[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		flag_bits_max_enum = ffi.cast(
+			"enum VkDeviceGroupPresentModeFlagBitsKHR",
+			"VK_DEVICE_GROUP_PRESENT_MODE_FLAG_BITS_MAX_ENUM_KHR"
+		),
+		local_multi_device = ffi.cast(
+			"enum VkDeviceGroupPresentModeFlagBitsKHR",
+			"VK_DEVICE_GROUP_PRESENT_MODE_LOCAL_MULTI_DEVICE_BIT_KHR"
+		),
 	},
 	cull_mode = {
 		none = ffi.cast("enum VkCullModeFlagBits", "VK_CULL_MODE_NONE"),
 		back = ffi.cast("enum VkCullModeFlagBits", "VK_CULL_MODE_BACK_BIT"),
 		front = ffi.cast("enum VkCullModeFlagBits", "VK_CULL_MODE_FRONT_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.cull_mode[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.cull_mode[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		flag_bits_max_enum = ffi.cast("enum VkCullModeFlagBits", "VK_CULL_MODE_FLAG_BITS_MAX_ENUM"),
 		front_and_back = ffi.cast("enum VkCullModeFlagBits", "VK_CULL_MODE_FRONT_AND_BACK"),
 	},
 	semaphore_import = {
 		flag_bits_max_enum = ffi.cast("enum VkSemaphoreImportFlagBits", "VK_SEMAPHORE_IMPORT_FLAG_BITS_MAX_ENUM"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.semaphore_import[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.semaphore_import[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		temporary = ffi.cast("enum VkSemaphoreImportFlagBits", "VK_SEMAPHORE_IMPORT_TEMPORARY_BIT_KHR"),
 	},
 	border_color = {
@@ -3658,9 +5994,20 @@ library.e = {
 		float_opaque_black = ffi.cast("enum VkBorderColor", "VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK"),
 	},
 	sparse_image_format = {
-		nonstandard_block_size = ffi.cast("enum VkSparseImageFormatFlagBits", "VK_SPARSE_IMAGE_FORMAT_NONSTANDARD_BLOCK_SIZE_BIT"),
+		nonstandard_block_size = ffi.cast(
+			"enum VkSparseImageFormatFlagBits",
+			"VK_SPARSE_IMAGE_FORMAT_NONSTANDARD_BLOCK_SIZE_BIT"
+		),
 		aligned_mip_size = ffi.cast("enum VkSparseImageFormatFlagBits", "VK_SPARSE_IMAGE_FORMAT_ALIGNED_MIP_SIZE_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.sparse_image_format[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.sparse_image_format[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		single_miptail = ffi.cast("enum VkSparseImageFormatFlagBits", "VK_SPARSE_IMAGE_FORMAT_SINGLE_MIPTAIL_BIT"),
 		flag_bits_max_enum = ffi.cast("enum VkSparseImageFormatFlagBits", "VK_SPARSE_IMAGE_FORMAT_FLAG_BITS_MAX_ENUM"),
 	},
@@ -3668,7 +6015,15 @@ library.e = {
 		flag_bits_max_enum = ffi.cast("enum VkBufferCreateFlagBits", "VK_BUFFER_CREATE_FLAG_BITS_MAX_ENUM"),
 		sparse_aliased = ffi.cast("enum VkBufferCreateFlagBits", "VK_BUFFER_CREATE_SPARSE_ALIASED_BIT"),
 		protected = ffi.cast("enum VkBufferCreateFlagBits", "VK_BUFFER_CREATE_PROTECTED_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.buffer_create[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.buffer_create[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		sparse_binding = ffi.cast("enum VkBufferCreateFlagBits", "VK_BUFFER_CREATE_SPARSE_BINDING_BIT"),
 		sparse_residency = ffi.cast("enum VkBufferCreateFlagBits", "VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT"),
 	},
@@ -3696,44 +6051,144 @@ library.e = {
 		transfer_dst = ffi.cast("enum VkImageUsageFlagBits", "VK_IMAGE_USAGE_TRANSFER_DST_BIT"),
 		flag_bits_max_enum = ffi.cast("enum VkImageUsageFlagBits", "VK_IMAGE_USAGE_FLAG_BITS_MAX_ENUM"),
 		depth_stencil_attachment = ffi.cast("enum VkImageUsageFlagBits", "VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.image_usage[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.image_usage[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		transient_attachment = ffi.cast("enum VkImageUsageFlagBits", "VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT"),
 		storage = ffi.cast("enum VkImageUsageFlagBits", "VK_IMAGE_USAGE_STORAGE_BIT"),
 	},
 	external_fence_feature = {
-		exportable = ffi.cast("enum VkExternalFenceFeatureFlagBits", "VK_EXTERNAL_FENCE_FEATURE_EXPORTABLE_BIT_KHR"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.external_fence_feature[v] end return bit.bor(unpack(flags)) end,
-		flag_bits_max_enum = ffi.cast("enum VkExternalFenceFeatureFlagBits", "VK_EXTERNAL_FENCE_FEATURE_FLAG_BITS_MAX_ENUM"),
-		importable = ffi.cast("enum VkExternalFenceFeatureFlagBits", "VK_EXTERNAL_FENCE_FEATURE_IMPORTABLE_BIT_KHR"),
+		exportable = ffi.cast(
+			"enum VkExternalFenceFeatureFlagBits",
+			"VK_EXTERNAL_FENCE_FEATURE_EXPORTABLE_BIT_KHR"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.external_fence_feature[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		flag_bits_max_enum = ffi.cast(
+			"enum VkExternalFenceFeatureFlagBits",
+			"VK_EXTERNAL_FENCE_FEATURE_FLAG_BITS_MAX_ENUM"
+		),
+		importable = ffi.cast(
+			"enum VkExternalFenceFeatureFlagBits",
+			"VK_EXTERNAL_FENCE_FEATURE_IMPORTABLE_BIT_KHR"
+		),
 	},
 	external_memory_handle_type = {
-		d3d11_texture_kmt = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_KMT_BIT_KHR"),
-		opaque_win32_kmt = ffi.cast("enum VkExternalMemoryHandleTypeFlagBitsNV", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_NV"),
-		opaque_win32 = ffi.cast("enum VkExternalMemoryHandleTypeFlagBitsNV", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_NV"),
-		dma_buf = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT"),
-		d3d11_image_kmt = ffi.cast("enum VkExternalMemoryHandleTypeFlagBitsNV", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_IMAGE_KMT_BIT_NV"),
-		host_allocation = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT"),
-		d3d11_image = ffi.cast("enum VkExternalMemoryHandleTypeFlagBitsNV", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_IMAGE_BIT_NV"),
-		host_mapped_foreign_memory = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_MAPPED_FOREIGN_MEMORY_BIT_EXT"),
-		flag_bits_max_enum = ffi.cast("enum VkExternalMemoryHandleTypeFlagBitsNV", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_FLAG_BITS_MAX_ENUM_NV"),
-		opaque_fd = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR"),
-		d3d11_texture = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT_KHR"),
-		android_hardware_buffer_bit_android = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.external_memory_handle_type[v] end return bit.bor(unpack(flags)) end,
-		d3d12_resource = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT_KHR"),
-		d3d12_heap = ffi.cast("enum VkExternalMemoryHandleTypeFlagBits", "VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_HEAP_BIT_KHR"),
+		d3d11_texture_kmt = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBits",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_KMT_BIT_KHR"
+		),
+		opaque_win32_kmt = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBitsNV",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_NV"
+		),
+		opaque_win32 = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBitsNV",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_NV"
+		),
+		dma_buf = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBits",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT"
+		),
+		d3d11_image_kmt = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBitsNV",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_IMAGE_KMT_BIT_NV"
+		),
+		host_allocation = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBits",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT"
+		),
+		d3d11_image = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBitsNV",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_IMAGE_BIT_NV"
+		),
+		host_mapped_foreign_memory = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBits",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_MAPPED_FOREIGN_MEMORY_BIT_EXT"
+		),
+		flag_bits_max_enum = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBitsNV",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_FLAG_BITS_MAX_ENUM_NV"
+		),
+		opaque_fd = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBits",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR"
+		),
+		d3d11_texture = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBits",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT_KHR"
+		),
+		android_hardware_buffer_bit_android = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBits",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.external_memory_handle_type[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		d3d12_resource = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBits",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT_KHR"
+		),
+		d3d12_heap = ffi.cast(
+			"enum VkExternalMemoryHandleTypeFlagBits",
+			"VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_HEAP_BIT_KHR"
+		),
 	},
 	object_entry_usage = {
 		compute = ffi.cast("enum VkObjectEntryUsageFlagBitsNVX", "VK_OBJECT_ENTRY_USAGE_COMPUTE_BIT_NVX"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.object_entry_usage[v] end return bit.bor(unpack(flags)) end,
-		flag_bits_max_enum = ffi.cast("enum VkObjectEntryUsageFlagBitsNVX", "VK_OBJECT_ENTRY_USAGE_FLAG_BITS_MAX_ENUM_NVX"),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.object_entry_usage[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		flag_bits_max_enum = ffi.cast(
+			"enum VkObjectEntryUsageFlagBitsNVX",
+			"VK_OBJECT_ENTRY_USAGE_FLAG_BITS_MAX_ENUM_NVX"
+		),
 		graphics = ffi.cast("enum VkObjectEntryUsageFlagBitsNVX", "VK_OBJECT_ENTRY_USAGE_GRAPHICS_BIT_NVX"),
 	},
 	subpass_description = {
-		per_view_position_x_only = ffi.cast("enum VkSubpassDescriptionFlagBits", "VK_SUBPASS_DESCRIPTION_PER_VIEW_POSITION_X_ONLY_BIT_NVX"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.subpass_description[v] end return bit.bor(unpack(flags)) end,
+		per_view_position_x_only = ffi.cast(
+			"enum VkSubpassDescriptionFlagBits",
+			"VK_SUBPASS_DESCRIPTION_PER_VIEW_POSITION_X_ONLY_BIT_NVX"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.subpass_description[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		flag_bits_max_enum = ffi.cast("enum VkSubpassDescriptionFlagBits", "VK_SUBPASS_DESCRIPTION_FLAG_BITS_MAX_ENUM"),
-		per_view_attributes = ffi.cast("enum VkSubpassDescriptionFlagBits", "VK_SUBPASS_DESCRIPTION_PER_VIEW_ATTRIBUTES_BIT_NVX"),
+		per_view_attributes = ffi.cast(
+			"enum VkSubpassDescriptionFlagBits",
+			"VK_SUBPASS_DESCRIPTION_PER_VIEW_ATTRIBUTES_BIT_NVX"
+		),
 	},
 	shader_info_type = {
 		statistics = ffi.cast("enum VkShaderInfoTypeAMD", "VK_SHADER_INFO_TYPE_STATISTICS_AMD"),
@@ -3747,7 +6202,10 @@ library.e = {
 	image_layout = {
 		preinitialized = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_PREINITIALIZED"),
 		general = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_GENERAL"),
-		depth_attachment_stencil_read_only_optimal = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR"),
+		depth_attachment_stencil_read_only_optimal = ffi.cast(
+			"enum VkImageLayout",
+			"VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR"
+		),
 		transfer_src_optimal = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL"),
 		depth_stencil_read_only_optimal = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL"),
 		begin_range = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_BEGIN_RANGE"),
@@ -3758,7 +6216,10 @@ library.e = {
 		depth_stencil_attachment_optimal = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL"),
 		shader_read_only_optimal = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL"),
 		max_enum = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_MAX_ENUM"),
-		depth_read_only_stencil_attachment_optimal = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR"),
+		depth_read_only_stencil_attachment_optimal = ffi.cast(
+			"enum VkImageLayout",
+			"VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR"
+		),
 		shared_present = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR"),
 		end_range = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_END_RANGE"),
 		transfer_dst_optimal = ffi.cast("enum VkImageLayout", "VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL"),
@@ -3775,7 +6236,15 @@ library.e = {
 	dependency = {
 		device_group = ffi.cast("enum VkDependencyFlagBits", "VK_DEPENDENCY_DEVICE_GROUP_BIT_KHR"),
 		view_local = ffi.cast("enum VkDependencyFlagBits", "VK_DEPENDENCY_VIEW_LOCAL_BIT_KHR"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.dependency[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.dependency[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		flag_bits_max_enum = ffi.cast("enum VkDependencyFlagBits", "VK_DEPENDENCY_FLAG_BITS_MAX_ENUM"),
 		by_region = ffi.cast("enum VkDependencyFlagBits", "VK_DEPENDENCY_BY_REGION_BIT"),
 	},
@@ -3783,37 +6252,94 @@ library.e = {
 		identity = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR"),
 		rotate_90 = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR"),
 		rotate_180 = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR"),
-		horizontal_mirror_rotate_180 = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR"),
-		horizontal_mirror_rotate_270 = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR"),
+		horizontal_mirror_rotate_180 = ffi.cast(
+			"enum VkSurfaceTransformFlagBitsKHR",
+			"VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR"
+		),
+		horizontal_mirror_rotate_270 = ffi.cast(
+			"enum VkSurfaceTransformFlagBitsKHR",
+			"VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR"
+		),
 		rotate_270 = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR"),
-		horizontal_mirror = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR"),
-		flag_bits_max_enum = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_FLAG_BITS_MAX_ENUM_KHR"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.surface_transform[v] end return bit.bor(unpack(flags)) end,
+		horizontal_mirror = ffi.cast(
+			"enum VkSurfaceTransformFlagBitsKHR",
+			"VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR"
+		),
+		flag_bits_max_enum = ffi.cast(
+			"enum VkSurfaceTransformFlagBitsKHR",
+			"VK_SURFACE_TRANSFORM_FLAG_BITS_MAX_ENUM_KHR"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.surface_transform[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		inherit = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR"),
-		horizontal_mirror_rotate_90 = ffi.cast("enum VkSurfaceTransformFlagBitsKHR", "VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR"),
+		horizontal_mirror_rotate_90 = ffi.cast(
+			"enum VkSurfaceTransformFlagBitsKHR",
+			"VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR"
+		),
 	},
 	peer_memory_feature = {
 		flag_bits_max_enum = ffi.cast("enum VkPeerMemoryFeatureFlagBits", "VK_PEER_MEMORY_FEATURE_FLAG_BITS_MAX_ENUM"),
 		generic_src = ffi.cast("enum VkPeerMemoryFeatureFlagBits", "VK_PEER_MEMORY_FEATURE_GENERIC_SRC_BIT_KHR"),
 		copy_dst = ffi.cast("enum VkPeerMemoryFeatureFlagBits", "VK_PEER_MEMORY_FEATURE_COPY_DST_BIT_KHR"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.peer_memory_feature[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.peer_memory_feature[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		copy_src = ffi.cast("enum VkPeerMemoryFeatureFlagBits", "VK_PEER_MEMORY_FEATURE_COPY_SRC_BIT_KHR"),
 		generic_dst = ffi.cast("enum VkPeerMemoryFeatureFlagBits", "VK_PEER_MEMORY_FEATURE_GENERIC_DST_BIT_KHR"),
 	},
 	debug_utils_message_severity = {
-		warning = ffi.cast("enum VkDebugUtilsMessageSeverityFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT"),
-		verbose = ffi.cast("enum VkDebugUtilsMessageSeverityFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT"),
-		info = ffi.cast("enum VkDebugUtilsMessageSeverityFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.debug_utils_message_severity[v] end return bit.bor(unpack(flags)) end,
-		flag_bits_max_enum = ffi.cast("enum VkDebugUtilsMessageSeverityFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT"),
-		error = ffi.cast("enum VkDebugUtilsMessageSeverityFlagBitsEXT", "VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT"),
+		warning = ffi.cast(
+			"enum VkDebugUtilsMessageSeverityFlagBitsEXT",
+			"VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT"
+		),
+		verbose = ffi.cast(
+			"enum VkDebugUtilsMessageSeverityFlagBitsEXT",
+			"VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT"
+		),
+		info = ffi.cast(
+			"enum VkDebugUtilsMessageSeverityFlagBitsEXT",
+			"VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.debug_utils_message_severity[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		flag_bits_max_enum = ffi.cast(
+			"enum VkDebugUtilsMessageSeverityFlagBitsEXT",
+			"VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT"
+		),
+		error = ffi.cast(
+			"enum VkDebugUtilsMessageSeverityFlagBitsEXT",
+			"VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT"
+		),
 	},
 	point_clipping_behavior = {
 		end_range = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_END_RANGE"),
 		all_clip_planes = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_ALL_CLIP_PLANES_KHR"),
 		max_enum = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_MAX_ENUM"),
 		begin_range = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_BEGIN_RANGE"),
-		user_clip_planes_only = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY_KHR"),
+		user_clip_planes_only = ffi.cast(
+			"enum VkPointClippingBehavior",
+			"VK_POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY_KHR"
+		),
 		range_size = ffi.cast("enum VkPointClippingBehavior", "VK_POINT_CLIPPING_BEHAVIOR_RANGE_SIZE"),
 	},
 	descriptor_type = {
@@ -4124,7 +6650,15 @@ library.e = {
 	},
 	memory_heap = {
 		device_local = ffi.cast("enum VkMemoryHeapFlagBits", "VK_MEMORY_HEAP_DEVICE_LOCAL_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.memory_heap[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.memory_heap[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		flag_bits_max_enum = ffi.cast("enum VkMemoryHeapFlagBits", "VK_MEMORY_HEAP_FLAG_BITS_MAX_ENUM"),
 		multi_instance = ffi.cast("enum VkMemoryHeapFlagBits", "VK_MEMORY_HEAP_MULTI_INSTANCE_BIT_KHR"),
 	},
@@ -4135,7 +6669,15 @@ library.e = {
 		["2"] = ffi.cast("enum VkSampleCountFlagBits", "VK_SAMPLE_COUNT_2_BIT"),
 		["64"] = ffi.cast("enum VkSampleCountFlagBits", "VK_SAMPLE_COUNT_64_BIT"),
 		flag_bits_max_enum = ffi.cast("enum VkSampleCountFlagBits", "VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.sample_count[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.sample_count[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		["1"] = ffi.cast("enum VkSampleCountFlagBits", "VK_SAMPLE_COUNT_1_BIT"),
 		["16"] = ffi.cast("enum VkSampleCountFlagBits", "VK_SAMPLE_COUNT_16_BIT"),
 	},
@@ -4165,9 +6707,15 @@ library.e = {
 	pipeline_cache_header_version = {
 		end_range = ffi.cast("enum VkPipelineCacheHeaderVersion", "VK_PIPELINE_CACHE_HEADER_VERSION_END_RANGE"),
 		max_enum = ffi.cast("enum VkPipelineCacheHeaderVersion", "VK_PIPELINE_CACHE_HEADER_VERSION_MAX_ENUM"),
-		begin_range = ffi.cast("enum VkPipelineCacheHeaderVersion", "VK_PIPELINE_CACHE_HEADER_VERSION_BEGIN_RANGE"),
+		begin_range = ffi.cast(
+			"enum VkPipelineCacheHeaderVersion",
+			"VK_PIPELINE_CACHE_HEADER_VERSION_BEGIN_RANGE"
+		),
 		one = ffi.cast("enum VkPipelineCacheHeaderVersion", "VK_PIPELINE_CACHE_HEADER_VERSION_ONE"),
-		range_size = ffi.cast("enum VkPipelineCacheHeaderVersion", "VK_PIPELINE_CACHE_HEADER_VERSION_RANGE_SIZE"),
+		range_size = ffi.cast(
+			"enum VkPipelineCacheHeaderVersion",
+			"VK_PIPELINE_CACHE_HEADER_VERSION_RANGE_SIZE"
+		),
 	},
 	index_type = {
 		uint32 = ffi.cast("enum VkIndexType", "VK_INDEX_TYPE_UINT32"),
@@ -4178,17 +6726,46 @@ library.e = {
 		range_size = ffi.cast("enum VkIndexType", "VK_INDEX_TYPE_RANGE_SIZE"),
 	},
 	attachment_description = {
-		flag_bits_max_enum = ffi.cast("enum VkAttachmentDescriptionFlagBits", "VK_ATTACHMENT_DESCRIPTION_FLAG_BITS_MAX_ENUM"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.attachment_description[v] end return bit.bor(unpack(flags)) end,
+		flag_bits_max_enum = ffi.cast(
+			"enum VkAttachmentDescriptionFlagBits",
+			"VK_ATTACHMENT_DESCRIPTION_FLAG_BITS_MAX_ENUM"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.attachment_description[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		may_alias = ffi.cast("enum VkAttachmentDescriptionFlagBits", "VK_ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT"),
 	},
 	descriptor_update_template_type = {
-		descriptor_set = ffi.cast("enum VkDescriptorUpdateTemplateType", "VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET_KHR"),
-		end_range = ffi.cast("enum VkDescriptorUpdateTemplateType", "VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_END_RANGE"),
-		push_descriptors = ffi.cast("enum VkDescriptorUpdateTemplateType", "VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_PUSH_DESCRIPTORS_KHR"),
-		begin_range = ffi.cast("enum VkDescriptorUpdateTemplateType", "VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_BEGIN_RANGE"),
-		max_enum = ffi.cast("enum VkDescriptorUpdateTemplateType", "VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_MAX_ENUM"),
-		range_size = ffi.cast("enum VkDescriptorUpdateTemplateType", "VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_RANGE_SIZE"),
+		descriptor_set = ffi.cast(
+			"enum VkDescriptorUpdateTemplateType",
+			"VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET_KHR"
+		),
+		end_range = ffi.cast(
+			"enum VkDescriptorUpdateTemplateType",
+			"VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_END_RANGE"
+		),
+		push_descriptors = ffi.cast(
+			"enum VkDescriptorUpdateTemplateType",
+			"VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_PUSH_DESCRIPTORS_KHR"
+		),
+		begin_range = ffi.cast(
+			"enum VkDescriptorUpdateTemplateType",
+			"VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_BEGIN_RANGE"
+		),
+		max_enum = ffi.cast(
+			"enum VkDescriptorUpdateTemplateType",
+			"VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_MAX_ENUM"
+		),
+		range_size = ffi.cast(
+			"enum VkDescriptorUpdateTemplateType",
+			"VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_RANGE_SIZE"
+		),
 	},
 	filter = {
 		linear = ffi.cast("enum VkFilter", "VK_FILTER_LINEAR"),
@@ -4200,11 +6777,26 @@ library.e = {
 		range_size = ffi.cast("enum VkFilter", "VK_FILTER_RANGE_SIZE"),
 	},
 	validation_cache_header_version = {
-		end_range = ffi.cast("enum VkValidationCacheHeaderVersionEXT", "VK_VALIDATION_CACHE_HEADER_VERSION_END_RANGE_EXT"),
-		max_enum = ffi.cast("enum VkValidationCacheHeaderVersionEXT", "VK_VALIDATION_CACHE_HEADER_VERSION_MAX_ENUM_EXT"),
-		begin_range = ffi.cast("enum VkValidationCacheHeaderVersionEXT", "VK_VALIDATION_CACHE_HEADER_VERSION_BEGIN_RANGE_EXT"),
-		one = ffi.cast("enum VkValidationCacheHeaderVersionEXT", "VK_VALIDATION_CACHE_HEADER_VERSION_ONE_EXT"),
-		range_size = ffi.cast("enum VkValidationCacheHeaderVersionEXT", "VK_VALIDATION_CACHE_HEADER_VERSION_RANGE_SIZE_EXT"),
+		end_range = ffi.cast(
+			"enum VkValidationCacheHeaderVersionEXT",
+			"VK_VALIDATION_CACHE_HEADER_VERSION_END_RANGE_EXT"
+		),
+		max_enum = ffi.cast(
+			"enum VkValidationCacheHeaderVersionEXT",
+			"VK_VALIDATION_CACHE_HEADER_VERSION_MAX_ENUM_EXT"
+		),
+		begin_range = ffi.cast(
+			"enum VkValidationCacheHeaderVersionEXT",
+			"VK_VALIDATION_CACHE_HEADER_VERSION_BEGIN_RANGE_EXT"
+		),
+		one = ffi.cast(
+			"enum VkValidationCacheHeaderVersionEXT",
+			"VK_VALIDATION_CACHE_HEADER_VERSION_ONE_EXT"
+		),
+		range_size = ffi.cast(
+			"enum VkValidationCacheHeaderVersionEXT",
+			"VK_VALIDATION_CACHE_HEADER_VERSION_RANGE_SIZE_EXT"
+		),
 	},
 	result = {
 		error_validation_failed = ffi.cast("enum VkResult", "VK_ERROR_VALIDATION_FAILED_EXT"),
@@ -4258,17 +6850,48 @@ library.e = {
 		vertex_buffer = ffi.cast("enum VkBufferUsageFlagBits", "VK_BUFFER_USAGE_VERTEX_BUFFER_BIT"),
 		storage_texel_buffer = ffi.cast("enum VkBufferUsageFlagBits", "VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT"),
 		indirect_buffer = ffi.cast("enum VkBufferUsageFlagBits", "VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.buffer_usage[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.buffer_usage[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		storage_buffer = ffi.cast("enum VkBufferUsageFlagBits", "VK_BUFFER_USAGE_STORAGE_BUFFER_BIT"),
 		transfer_dst = ffi.cast("enum VkBufferUsageFlagBits", "VK_BUFFER_USAGE_TRANSFER_DST_BIT"),
 	},
 	descriptor_binding = {
-		partially_bound = ffi.cast("enum VkDescriptorBindingFlagBitsEXT", "VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT"),
-		flag_bits_max_enum = ffi.cast("enum VkDescriptorBindingFlagBitsEXT", "VK_DESCRIPTOR_BINDING_FLAG_BITS_MAX_ENUM_EXT"),
-		update_after_bind = ffi.cast("enum VkDescriptorBindingFlagBitsEXT", "VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.descriptor_binding[v] end return bit.bor(unpack(flags)) end,
-		update_unused_while_pending = ffi.cast("enum VkDescriptorBindingFlagBitsEXT", "VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT_EXT"),
-		variable_descriptor_count = ffi.cast("enum VkDescriptorBindingFlagBitsEXT", "VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT"),
+		partially_bound = ffi.cast(
+			"enum VkDescriptorBindingFlagBitsEXT",
+			"VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT"
+		),
+		flag_bits_max_enum = ffi.cast(
+			"enum VkDescriptorBindingFlagBitsEXT",
+			"VK_DESCRIPTOR_BINDING_FLAG_BITS_MAX_ENUM_EXT"
+		),
+		update_after_bind = ffi.cast(
+			"enum VkDescriptorBindingFlagBitsEXT",
+			"VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT"
+		),
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.descriptor_binding[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
+		update_unused_while_pending = ffi.cast(
+			"enum VkDescriptorBindingFlagBitsEXT",
+			"VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT_EXT"
+		),
+		variable_descriptor_count = ffi.cast(
+			"enum VkDescriptorBindingFlagBitsEXT",
+			"VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT"
+		),
 	},
 	subpass_contents = {
 		end_range = ffi.cast("enum VkSubpassContents", "VK_SUBPASS_CONTENTS_END_RANGE"),
@@ -4282,13 +6905,29 @@ library.e = {
 		b = ffi.cast("enum VkColorComponentFlagBits", "VK_COLOR_COMPONENT_B_BIT"),
 		flag_bits_max_enum = ffi.cast("enum VkColorComponentFlagBits", "VK_COLOR_COMPONENT_FLAG_BITS_MAX_ENUM"),
 		r = ffi.cast("enum VkColorComponentFlagBits", "VK_COLOR_COMPONENT_R_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.color_component[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.color_component[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		a = ffi.cast("enum VkColorComponentFlagBits", "VK_COLOR_COMPONENT_A_BIT"),
 		g = ffi.cast("enum VkColorComponentFlagBits", "VK_COLOR_COMPONENT_G_BIT"),
 	},
 	fence_create = {
 		signaled = ffi.cast("enum VkFenceCreateFlagBits", "VK_FENCE_CREATE_SIGNALED_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.fence_create[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.fence_create[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 		flag_bits_max_enum = ffi.cast("enum VkFenceCreateFlagBits", "VK_FENCE_CREATE_FLAG_BITS_MAX_ENUM"),
 	},
 	compare_op = {
@@ -4354,12 +6993,22 @@ library.e = {
 		vertex = ffi.cast("enum VkShaderStageFlagBits", "VK_SHADER_STAGE_VERTEX_BIT"),
 		tessellation_control = ffi.cast("enum VkShaderStageFlagBits", "VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT"),
 		tessellation_evaluation = ffi.cast("enum VkShaderStageFlagBits", "VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT"),
-		make_enums = function(flags) if #flags == 0 then return 0 end for i,v in ipairs(flags) do flags[i] = library.e.shader_stage[v] end return bit.bor(unpack(flags)) end,
+		make_enums = function(flags)
+			if #flags == 0 then return 0 end
+
+			for i, v in ipairs(flags) do
+				flags[i] = library.e.shader_stage[v]
+			end
+
+			return bit.bor(unpack(flags))
+		end,
 	},
 }
+
 function library.GetInstanceLayerProperties()
 	local count = ffi.new("uint32_t[1]")
 	CLIB.vkEnumerateInstanceLayerProperties(count, nil)
+
 	if count[0] == 0 then return end
 
 	local array = ffi.new("struct VkLayerProperties [?]", count[0])
@@ -4377,9 +7026,11 @@ function library.GetInstanceLayerProperties()
 
 	return nil, status
 end
+
 function library.GetPhysicalDevices(instance)
 	local count = ffi.new("uint32_t[1]")
 	CLIB.vkEnumeratePhysicalDevices(instance, count, nil)
+
 	if count[0] == 0 then return end
 
 	local array = ffi.new("struct VkPhysicalDevice_T * [?]", count[0])
@@ -4397,6 +7048,7 @@ function library.GetPhysicalDevices(instance)
 
 	return nil, status
 end
+
 --[[
 function library.GetInstanceVersion()
 	local count = ffi.new("uint32_t[1]")
@@ -4418,10 +7070,10 @@ function library.GetInstanceVersion()
 
 	return nil, status
 end
-]]
-function library.GetInstanceExtensionProperties(pLayerName)
+]] function library.GetInstanceExtensionProperties(pLayerName)
 	local count = ffi.new("uint32_t[1]")
 	CLIB.vkEnumerateInstanceExtensionProperties(pLayerName, count, nil)
+
 	if count[0] == 0 then return end
 
 	local array = ffi.new("struct VkExtensionProperties [?]", count[0])
@@ -4439,9 +7091,11 @@ function library.GetInstanceExtensionProperties(pLayerName)
 
 	return nil, status
 end
+
 function library.GetDeviceLayerProperties(physicalDevice)
 	local count = ffi.new("uint32_t[1]")
 	CLIB.vkEnumerateDeviceLayerProperties(physicalDevice, count, nil)
+
 	if count[0] == 0 then return end
 
 	local array = ffi.new("struct VkLayerProperties [?]", count[0])
@@ -4459,9 +7113,11 @@ function library.GetDeviceLayerProperties(physicalDevice)
 
 	return nil, status
 end
+
 function library.GetPhysicalDeviceGroups(instance)
 	local count = ffi.new("uint32_t[1]")
 	CLIB.vkEnumeratePhysicalDeviceGroups(instance, count, nil)
+
 	if count[0] == 0 then return end
 
 	local array = ffi.new("struct VkPhysicalDeviceGroupProperties [?]", count[0])
@@ -4479,9 +7135,11 @@ function library.GetPhysicalDeviceGroups(instance)
 
 	return nil, status
 end
+
 function library.GetDeviceExtensionProperties(physicalDevice, pLayerName)
 	local count = ffi.new("uint32_t[1]")
 	CLIB.vkEnumerateDeviceExtensionProperties(physicalDevice, pLayerName, count, nil)
+
 	if count[0] == 0 then return end
 
 	local array = ffi.new("struct VkExtensionProperties [?]", count[0])
@@ -4499,9 +7157,11 @@ function library.GetDeviceExtensionProperties(physicalDevice, pLayerName)
 
 	return nil, status
 end
+
 function library.GetPhysicalDeviceGroups(instance)
 	local count = ffi.new("uint32_t[1]")
 	library.EnumeratePhysicalDeviceGroupsKHR(instance, count, nil)
+
 	if count[0] == 0 then return end
 
 	local array = ffi.new("struct VkPhysicalDeviceGroupProperties [?]", count[0])
@@ -4519,88 +7179,93 @@ function library.GetPhysicalDeviceGroups(instance)
 
 	return nil, status
 end
+
 function library.GetPhysicalDeviceMultisampleProperties(physicalDevice, samples)
 	if type(samples) == "table" then
 		samples = library.e.sample_count.make_enums(samples)
 	elseif type(samples) == "string" then
 		samples = library.e.sample_count[samples]
 	end
+
 	local box = ffi.new("struct VkMultisamplePropertiesEXT [1]")
 	library.GetPhysicalDeviceMultisamplePropertiesEXT(physicalDevice, samples, box)
 	return box[0]
 end
+
 function library.GetPipelineCacheData(device, pipelineCache, pDataSize)
 	local box = ffi.new("void [1]")
 	local status = CLIB.vkGetPipelineCacheData(device, pipelineCache, pDataSize, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetPhysicalDeviceExternalSemaphoreProperties(physicalDevice, pExternalSemaphoreInfo)
 	if type(pExternalSemaphoreInfo) == "table" then
 		pExternalSemaphoreInfo = library.s.PhysicalDeviceExternalSemaphoreInfo(pExternalSemaphoreInfo, false)
 	end
+
 	local box = ffi.new("struct VkExternalSemaphoreProperties [1]")
 	CLIB.vkGetPhysicalDeviceExternalSemaphoreProperties(physicalDevice, pExternalSemaphoreInfo, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceFormatProperties2(physicalDevice, format)
-	if type(format) == "string" then
-		format = library.e.format[format]
-	end
+	if type(format) == "string" then format = library.e.format[format] end
+
 	local box = ffi.new("struct VkFormatProperties2 [1]")
 	library.GetPhysicalDeviceFormatProperties2KHR(physicalDevice, format, box)
 	return box[0]
 end
+
 function library.GetRefreshCycleDurationGOO(device, swapchain)
 	local box = ffi.new("struct VkRefreshCycleDurationGOOGLE [1]")
 	local status = library.GetRefreshCycleDurationGOOGLE(device, swapchain, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetMemoryFd(device, pGetFdInfo)
 	if type(pGetFdInfo) == "table" then
 		pGetFdInfo = library.s.MemoryGetFdInfoKHR(pGetFdInfo, false)
 	end
+
 	local box = ffi.new("int [1]")
 	local status = library.GetMemoryFdKHR(device, pGetFdInfo, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetPhysicalDeviceProperties2(physicalDevice)
 	local box = ffi.new("struct VkPhysicalDeviceProperties2 [1]")
 	CLIB.vkGetPhysicalDeviceProperties2(physicalDevice, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceProperties(physicalDevice)
 	local box = ffi.new("struct VkPhysicalDeviceProperties [1]")
 	CLIB.vkGetPhysicalDeviceProperties(physicalDevice, box)
 	return box[0]
 end
+
 function library.GetDescriptorSetLayoutSupport(device, pCreateInfo)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.DescriptorSetLayoutCreateInfo(pCreateInfo, false)
 	end
+
 	local box = ffi.new("struct VkDescriptorSetLayoutSupport [1]")
 	library.GetDescriptorSetLayoutSupportKHR(device, pCreateInfo, box)
 	return box[0]
 end
+
 function library.GetDisplayPlaneSupportedDisplays(physicalDevice, planeIndex)
 	local count = ffi.new("uint32_t[1]")
-
 	library.GetDisplayPlaneSupportedDisplaysKHR(physicalDevice, planeIndex, count, nil)
-
 	local array = ffi.new("struct VkDisplayKHR_T * [?]", count[0])
 	local status = library.GetDisplayPlaneSupportedDisplaysKHR(physicalDevice, planeIndex, count, array)
 
@@ -4613,52 +7278,53 @@ function library.GetDisplayPlaneSupportedDisplays(physicalDevice, planeIndex)
 
 		return out
 	end
+
 	return nil, status
 end
+
 function library.GetSwapchainStatus(device)
 	local box = ffi.new("struct VkSwapchainKHR_T [1]")
 	local status = library.GetSwapchainStatusKHR(device, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetPhysicalDeviceMemoryProperties2(physicalDevice)
 	local box = ffi.new("struct VkPhysicalDeviceMemoryProperties2 [1]")
 	library.GetPhysicalDeviceMemoryProperties2KHR(physicalDevice, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceExternalSemaphoreProperties(physicalDevice, pExternalSemaphoreInfo)
 	if type(pExternalSemaphoreInfo) == "table" then
 		pExternalSemaphoreInfo = library.s.PhysicalDeviceExternalSemaphoreInfo(pExternalSemaphoreInfo, false)
 	end
+
 	local box = ffi.new("struct VkExternalSemaphoreProperties [1]")
 	library.GetPhysicalDeviceExternalSemaphorePropertiesKHR(physicalDevice, pExternalSemaphoreInfo, box)
 	return box[0]
 end
+
 function library.GetFenceStatus(device)
 	local box = ffi.new("struct VkFence_T [1]")
 	local status = CLIB.vkGetFenceStatus(device, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetImageSparseMemoryRequirements2(device, pInfo)
 	if type(pInfo) == "table" then
 		pInfo = library.s.ImageSparseMemoryRequirementsInfo2(pInfo, false)
 	end
+
 	local count = ffi.new("uint32_t[1]")
-
 	library.GetImageSparseMemoryRequirements2KHR(device, pInfo, count, nil)
-
 	local array = ffi.new("struct VkSparseImageMemoryRequirements2 [?]", count[0])
 	library.GetImageSparseMemoryRequirements2KHR(device, pInfo, count, array)
-
 	local out = {}
 
 	for i = 0, count[0] - 1 do
@@ -4667,32 +7333,36 @@ function library.GetImageSparseMemoryRequirements2(device, pInfo)
 
 	return out
 end
+
 function library.GetPhysicalDeviceFeatures2(physicalDevice)
 	local box = ffi.new("struct VkPhysicalDeviceFeatures2 [1]")
 	library.GetPhysicalDeviceFeatures2KHR(physicalDevice, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceExternalBufferProperties(physicalDevice, pExternalBufferInfo)
 	if type(pExternalBufferInfo) == "table" then
 		pExternalBufferInfo = library.s.PhysicalDeviceExternalBufferInfo(pExternalBufferInfo, false)
 	end
+
 	local box = ffi.new("struct VkExternalBufferProperties [1]")
 	library.GetPhysicalDeviceExternalBufferPropertiesKHR(physicalDevice, pExternalBufferInfo, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceExternalFenceProperties(physicalDevice, pExternalFenceInfo)
 	if type(pExternalFenceInfo) == "table" then
 		pExternalFenceInfo = library.s.PhysicalDeviceExternalFenceInfo(pExternalFenceInfo, false)
 	end
+
 	local box = ffi.new("struct VkExternalFenceProperties [1]")
 	library.GetPhysicalDeviceExternalFencePropertiesKHR(physicalDevice, pExternalFenceInfo, box)
 	return box[0]
 end
+
 function library.GetPastPresentationTimingGOO(device, swapchain)
 	local count = ffi.new("uint32_t[1]")
-
 	library.GetPastPresentationTimingGOOGLE(device, swapchain, count, nil)
-
 	local array = ffi.new("struct VkPastPresentationTimingGOOGLE [?]", count[0])
 	local status = library.GetPastPresentationTimingGOOGLE(device, swapchain, count, array)
 
@@ -4705,63 +7375,59 @@ function library.GetPastPresentationTimingGOO(device, swapchain)
 
 		return out
 	end
+
 	return nil, status
 end
+
 function library.GetPhysicalDeviceImageFormatProperties(physicalDevice, format, type, tiling, usage, flags)
-	if type(format) == "string" then
-		format = library.e.format[format]
-	end
-	if type(type) == "string" then
-		type = library.e.image_type[type]
-	end
-	if type(tiling) == "string" then
-		tiling = library.e.image_tiling[tiling]
-	end
+	if type(format) == "string" then format = library.e.format[format] end
+
+	if type(type) == "string" then type = library.e.image_type[type] end
+
+	if type(tiling) == "string" then tiling = library.e.image_tiling[tiling] end
+
 	if type(usage) == "table" then
 		usage = library.e.image_usage.make_enums(usage)
 	elseif type(usage) == "string" then
 		usage = library.e.image_usage[usage]
 	end
+
 	if type(flags) == "table" then
 		flags = library.e.image_create.make_enums(flags)
 	elseif type(flags) == "string" then
 		flags = library.e.image_create[flags]
 	end
+
 	local box = ffi.new("struct VkImageFormatProperties [1]")
 	local status = CLIB.vkGetPhysicalDeviceImageFormatProperties(physicalDevice, format, type, tiling, usage, flags, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetPhysicalDeviceFormatProperties2(physicalDevice, format)
-	if type(format) == "string" then
-		format = library.e.format[format]
-	end
+	if type(format) == "string" then format = library.e.format[format] end
+
 	local box = ffi.new("struct VkFormatProperties2 [1]")
 	CLIB.vkGetPhysicalDeviceFormatProperties2(physicalDevice, format, box)
 	return box[0]
 end
+
 function library.GetDisplayPlaneCapabilities(physicalDevice, mode, planeIndex)
 	local box = ffi.new("struct VkDisplayPlaneCapabilitiesKHR [1]")
 	local status = library.GetDisplayPlaneCapabilitiesKHR(physicalDevice, mode, planeIndex, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetImageSparseMemoryRequirements(device, image)
 	local count = ffi.new("uint32_t[1]")
-
 	CLIB.vkGetImageSparseMemoryRequirements(device, image, count, nil)
-
 	local array = ffi.new("struct VkSparseImageMemoryRequirements [?]", count[0])
 	CLIB.vkGetImageSparseMemoryRequirements(device, image, count, array)
-
 	local out = {}
 
 	for i = 0, count[0] - 1 do
@@ -4770,27 +7436,25 @@ function library.GetImageSparseMemoryRequirements(device, image)
 
 	return out
 end
+
 function library.GetEventStatus(device)
 	local box = ffi.new("struct VkEvent_T [1]")
 	local status = CLIB.vkGetEventStatus(device, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetPhysicalDeviceSparseImageFormatProperties2(physicalDevice, pFormatInfo)
 	if type(pFormatInfo) == "table" then
 		pFormatInfo = library.s.PhysicalDeviceSparseImageFormatInfo2(pFormatInfo, false)
 	end
+
 	local count = ffi.new("uint32_t[1]")
-
 	CLIB.vkGetPhysicalDeviceSparseImageFormatProperties2(physicalDevice, pFormatInfo, count, nil)
-
 	local array = ffi.new("struct VkSparseImageFormatProperties2 [?]", count[0])
 	CLIB.vkGetPhysicalDeviceSparseImageFormatProperties2(physicalDevice, pFormatInfo, count, array)
-
 	local out = {}
 
 	for i = 0, count[0] - 1 do
@@ -4799,11 +7463,10 @@ function library.GetPhysicalDeviceSparseImageFormatProperties2(physicalDevice, p
 
 	return out
 end
+
 function library.GetDisplayModeProperties(physicalDevice, display)
 	local count = ffi.new("uint32_t[1]")
-
 	library.GetDisplayModePropertiesKHR(physicalDevice, display, count, nil)
-
 	local array = ffi.new("struct VkDisplayModePropertiesKHR [?]", count[0])
 	local status = library.GetDisplayModePropertiesKHR(physicalDevice, display, count, array)
 
@@ -4816,60 +7479,66 @@ function library.GetDisplayModeProperties(physicalDevice, display)
 
 		return out
 	end
+
 	return nil, status
 end
+
 function library.GetFenceFd(device, pGetFdInfo)
 	if type(pGetFdInfo) == "table" then
 		pGetFdInfo = library.s.FenceGetFdInfoKHR(pGetFdInfo, false)
 	end
+
 	local box = ffi.new("int [1]")
 	local status = library.GetFenceFdKHR(device, pGetFdInfo, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetBufferMemoryRequirements(device, buffer)
 	local box = ffi.new("struct VkMemoryRequirements [1]")
 	CLIB.vkGetBufferMemoryRequirements(device, buffer, box)
 	return box[0]
 end
+
 function library.GetDeviceGroupPeerMemoryFeatures(device, heapIndex, localDeviceIndex, remoteDeviceIndex)
 	local box = ffi.new("unsigned int [1]")
 	library.GetDeviceGroupPeerMemoryFeaturesKHR(device, heapIndex, localDeviceIndex, remoteDeviceIndex, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceGeneratedCommandsProperties(physicalDevice, pFeatures)
 	if type(pFeatures) == "table" then
 		pFeatures = library.s.DeviceGeneratedCommandsFeaturesNVX(pFeatures, false)
 	end
+
 	local box = ffi.new("struct VkDeviceGeneratedCommandsLimitsNVX [1]")
 	library.GetPhysicalDeviceGeneratedCommandsPropertiesNVX(physicalDevice, pFeatures, box)
 	return box[0]
 end
+
 function library.GetRenderAreaGranularity(device, renderPass)
 	local box = ffi.new("struct VkExtent2D [1]")
 	CLIB.vkGetRenderAreaGranularity(device, renderPass, box)
 	return box[0]
 end
+
 function library.GetDeviceQueue2(device, pQueueInfo)
 	if type(pQueueInfo) == "table" then
 		pQueueInfo = library.s.DeviceQueueInfo2(pQueueInfo, false)
 	end
+
 	local box = ffi.new("struct VkQueue_T * [1]")
 	CLIB.vkGetDeviceQueue2(device, pQueueInfo, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceQueueFamilyProperties(physicalDevice)
 	local count = ffi.new("uint32_t[1]")
-
 	CLIB.vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, count, nil)
-
 	local array = ffi.new("struct VkQueueFamilyProperties [?]", count[0])
 	CLIB.vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, count, array)
-
 	local out = {}
 
 	for i = 0, count[0] - 1 do
@@ -4878,70 +7547,71 @@ function library.GetPhysicalDeviceQueueFamilyProperties(physicalDevice)
 
 	return out
 end
+
 function library.GetBufferMemoryRequirements2(device, pInfo)
 	if type(pInfo) == "table" then
 		pInfo = library.s.BufferMemoryRequirementsInfo2(pInfo, false)
 	end
+
 	local box = ffi.new("struct VkMemoryRequirements2 [1]")
 	CLIB.vkGetBufferMemoryRequirements2(device, pInfo, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceSurfaceCapabilities2(physicalDevice, surface)
 	local box = ffi.new("struct VkSurfaceCapabilities2EXT [1]")
 	local status = library.GetPhysicalDeviceSurfaceCapabilities2EXT(physicalDevice, surface, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetPhysicalDeviceMemoryProperties2(physicalDevice)
 	local box = ffi.new("struct VkPhysicalDeviceMemoryProperties2 [1]")
 	CLIB.vkGetPhysicalDeviceMemoryProperties2(physicalDevice, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceImageFormatProperties2(physicalDevice, pImageFormatInfo)
 	if type(pImageFormatInfo) == "table" then
 		pImageFormatInfo = library.s.PhysicalDeviceImageFormatInfo2(pImageFormatInfo, false)
 	end
+
 	local box = ffi.new("struct VkImageFormatProperties2 [1]")
 	local status = library.GetPhysicalDeviceImageFormatProperties2KHR(physicalDevice, pImageFormatInfo, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetSwapchainCounter(device, swapchain, counter)
 	if type(counter) == "table" then
 		counter = library.e.surface_counter.make_enums(counter)
 	elseif type(counter) == "string" then
 		counter = library.e.surface_counter[counter]
 	end
+
 	local box = ffi.new("unsigned long [1]")
 	local status = library.GetSwapchainCounterEXT(device, swapchain, counter, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetDeviceGroupPeerMemoryFeatures(device, heapIndex, localDeviceIndex, remoteDeviceIndex)
 	local box = ffi.new("unsigned int [1]")
 	CLIB.vkGetDeviceGroupPeerMemoryFeatures(device, heapIndex, localDeviceIndex, remoteDeviceIndex, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceQueueFamilyProperties2(physicalDevice)
 	local count = ffi.new("uint32_t[1]")
-
 	library.GetPhysicalDeviceQueueFamilyProperties2KHR(physicalDevice, count, nil)
-
 	local array = ffi.new("struct VkQueueFamilyProperties2 [?]", count[0])
 	library.GetPhysicalDeviceQueueFamilyProperties2KHR(physicalDevice, count, array)
-
 	local out = {}
 
 	for i = 0, count[0] - 1 do
@@ -4950,72 +7620,69 @@ function library.GetPhysicalDeviceQueueFamilyProperties2(physicalDevice)
 
 	return out
 end
+
 function library.GetPhysicalDeviceExternalImageFormatPropertie(physicalDevice, format, type, tiling, usage, flags, externalHandleType)
-	if type(format) == "string" then
-		format = library.e.format[format]
-	end
-	if type(type) == "string" then
-		type = library.e.image_type[type]
-	end
-	if type(tiling) == "string" then
-		tiling = library.e.image_tiling[tiling]
-	end
+	if type(format) == "string" then format = library.e.format[format] end
+
+	if type(type) == "string" then type = library.e.image_type[type] end
+
+	if type(tiling) == "string" then tiling = library.e.image_tiling[tiling] end
+
 	if type(usage) == "table" then
 		usage = library.e.image_usage.make_enums(usage)
 	elseif type(usage) == "string" then
 		usage = library.e.image_usage[usage]
 	end
+
 	if type(flags) == "table" then
 		flags = library.e.image_create.make_enums(flags)
 	elseif type(flags) == "string" then
 		flags = library.e.image_create[flags]
 	end
+
 	if type(externalHandleType) == "table" then
 		externalHandleType = library.e.external_memory_handle_type.make_enums(externalHandleType)
 	elseif type(externalHandleType) == "string" then
 		externalHandleType = library.e.external_memory_handle_type[externalHandleType]
 	end
+
 	local box = ffi.new("struct VkExternalImageFormatPropertiesNV [1]")
 	local status = library.GetPhysicalDeviceExternalImageFormatPropertiesNV(physicalDevice, format, type, tiling, usage, flags, externalHandleType, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetPhysicalDeviceProperties2(physicalDevice)
 	local box = ffi.new("struct VkPhysicalDeviceProperties2 [1]")
 	library.GetPhysicalDeviceProperties2KHR(physicalDevice, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceSparseImageFormatProperties(physicalDevice, format, type, samples, usage, tiling)
-	if type(format) == "string" then
-		format = library.e.format[format]
-	end
-	if type(type) == "string" then
-		type = library.e.image_type[type]
-	end
+	if type(format) == "string" then format = library.e.format[format] end
+
+	if type(type) == "string" then type = library.e.image_type[type] end
+
 	if type(samples) == "table" then
 		samples = library.e.sample_count.make_enums(samples)
 	elseif type(samples) == "string" then
 		samples = library.e.sample_count[samples]
 	end
+
 	if type(usage) == "table" then
 		usage = library.e.image_usage.make_enums(usage)
 	elseif type(usage) == "string" then
 		usage = library.e.image_usage[usage]
 	end
-	if type(tiling) == "string" then
-		tiling = library.e.image_tiling[tiling]
-	end
+
+	if type(tiling) == "string" then tiling = library.e.image_tiling[tiling] end
+
 	local count = ffi.new("uint32_t[1]")
-
 	CLIB.vkGetPhysicalDeviceSparseImageFormatProperties(physicalDevice, format, type, samples, usage, tiling, count, nil)
-
 	local array = ffi.new("struct VkSparseImageFormatProperties [?]", count[0])
 	CLIB.vkGetPhysicalDeviceSparseImageFormatProperties(physicalDevice, format, type, samples, usage, tiling, count, array)
-
 	local out = {}
 
 	for i = 0, count[0] - 1 do
@@ -5024,14 +7691,14 @@ function library.GetPhysicalDeviceSparseImageFormatProperties(physicalDevice, fo
 
 	return out
 end
+
 function library.GetPhysicalDeviceSurfaceFormats2(physicalDevice, pSurfaceInfo)
 	if type(pSurfaceInfo) == "table" then
 		pSurfaceInfo = library.s.PhysicalDeviceSurfaceInfo2KHR(pSurfaceInfo, false)
 	end
+
 	local count = ffi.new("uint32_t[1]")
-
 	library.GetPhysicalDeviceSurfaceFormats2KHR(physicalDevice, pSurfaceInfo, count, nil)
-
 	local array = ffi.new("struct VkSurfaceFormat2KHR [?]", count[0])
 	local status = library.GetPhysicalDeviceSurfaceFormats2KHR(physicalDevice, pSurfaceInfo, count, array)
 
@@ -5044,13 +7711,13 @@ function library.GetPhysicalDeviceSurfaceFormats2(physicalDevice, pSurfaceInfo)
 
 		return out
 	end
+
 	return nil, status
 end
+
 function library.GetPhysicalDeviceSurfaceFormats(physicalDevice, surface)
 	local count = ffi.new("uint32_t[1]")
-
 	library.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, count, nil)
-
 	local array = ffi.new("struct VkSurfaceFormatKHR [?]", count[0])
 	local status = library.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, count, array)
 
@@ -5063,63 +7730,67 @@ function library.GetPhysicalDeviceSurfaceFormats(physicalDevice, surface)
 
 		return out
 	end
+
 	return nil, status
 end
+
 function library.GetImageSubresourceLayout(device, image, pSubresource)
 	if type(pSubresource) == "table" then
 		pSubresource = library.s.ImageSubresource(pSubresource, false)
 	end
+
 	local box = ffi.new("struct VkSubresourceLayout [1]")
 	CLIB.vkGetImageSubresourceLayout(device, image, pSubresource, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceExternalFenceProperties(physicalDevice, pExternalFenceInfo)
 	if type(pExternalFenceInfo) == "table" then
 		pExternalFenceInfo = library.s.PhysicalDeviceExternalFenceInfo(pExternalFenceInfo, false)
 	end
+
 	local box = ffi.new("struct VkExternalFenceProperties [1]")
 	CLIB.vkGetPhysicalDeviceExternalFenceProperties(physicalDevice, pExternalFenceInfo, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceExternalBufferProperties(physicalDevice, pExternalBufferInfo)
 	if type(pExternalBufferInfo) == "table" then
 		pExternalBufferInfo = library.s.PhysicalDeviceExternalBufferInfo(pExternalBufferInfo, false)
 	end
+
 	local box = ffi.new("struct VkExternalBufferProperties [1]")
 	CLIB.vkGetPhysicalDeviceExternalBufferProperties(physicalDevice, pExternalBufferInfo, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceSurfaceCapabilities(physicalDevice, surface)
 	local box = ffi.new("struct VkSurfaceCapabilitiesKHR [1]")
 	local status = library.GetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetPhysicalDeviceSurfaceSupport(physicalDevice, queueFamilyIndex, surface)
 	local box = ffi.new("unsigned int [1]")
 	local status = library.GetPhysicalDeviceSurfaceSupportKHR(physicalDevice, queueFamilyIndex, surface, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetPhysicalDeviceSparseImageFormatProperties2(physicalDevice, pFormatInfo)
 	if type(pFormatInfo) == "table" then
 		pFormatInfo = library.s.PhysicalDeviceSparseImageFormatInfo2(pFormatInfo, false)
 	end
+
 	local count = ffi.new("uint32_t[1]")
-
 	library.GetPhysicalDeviceSparseImageFormatProperties2KHR(physicalDevice, pFormatInfo, count, nil)
-
 	local array = ffi.new("struct VkSparseImageFormatProperties2 [?]", count[0])
 	library.GetPhysicalDeviceSparseImageFormatProperties2KHR(physicalDevice, pFormatInfo, count, array)
-
 	local out = {}
 
 	for i = 0, count[0] - 1 do
@@ -5128,16 +7799,16 @@ function library.GetPhysicalDeviceSparseImageFormatProperties2(physicalDevice, p
 
 	return out
 end
+
 function library.GetPhysicalDeviceFeatures(physicalDevice)
 	local box = ffi.new("struct VkPhysicalDeviceFeatures [1]")
 	CLIB.vkGetPhysicalDeviceFeatures(physicalDevice, box)
 	return box[0]
 end
+
 function library.GetPhysicalDevicePresentRectangles(physicalDevice, surface)
 	local count = ffi.new("uint32_t[1]")
-
 	library.GetPhysicalDevicePresentRectanglesKHR(physicalDevice, surface, count, nil)
-
 	local array = ffi.new("struct VkRect2D [?]", count[0])
 	local status = library.GetPhysicalDevicePresentRectanglesKHR(physicalDevice, surface, count, array)
 
@@ -5150,148 +7821,151 @@ function library.GetPhysicalDevicePresentRectangles(physicalDevice, surface)
 
 		return out
 	end
+
 	return nil, status
 end
+
 function library.GetDeviceMemoryCommitment(device, memory)
 	local box = ffi.new("unsigned long [1]")
 	CLIB.vkGetDeviceMemoryCommitment(device, memory, box)
 	return box[0]
 end
+
 function library.GetMemoryHostPointerProperties(device, handleType, pHostPointer)
 	if type(handleType) == "table" then
 		handleType = library.e.external_memory_handle_type.make_enums(handleType)
 	elseif type(handleType) == "string" then
 		handleType = library.e.external_memory_handle_type[handleType]
 	end
+
 	local box = ffi.new("struct VkMemoryHostPointerPropertiesEXT [1]")
 	local status = library.GetMemoryHostPointerPropertiesEXT(device, handleType, pHostPointer, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetValidationCacheData(device, validationCache, pDataSize)
 	local box = ffi.new("void [1]")
 	local status = library.GetValidationCacheDataEXT(device, validationCache, pDataSize, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetSemaphoreFd(device, pGetFdInfo)
 	if type(pGetFdInfo) == "table" then
 		pGetFdInfo = library.s.SemaphoreGetFdInfoKHR(pGetFdInfo, false)
 	end
+
 	local box = ffi.new("int [1]")
 	local status = library.GetSemaphoreFdKHR(device, pGetFdInfo, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.AcquireNextImage(device, swapchain, timeout, semaphore, fence)
 	local box = ffi.new("unsigned int [1]")
 	local status = library.AcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetImageMemoryRequirements(device, image)
 	local box = ffi.new("struct VkMemoryRequirements [1]")
 	CLIB.vkGetImageMemoryRequirements(device, image, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceMemoryProperties(physicalDevice)
 	local box = ffi.new("struct VkPhysicalDeviceMemoryProperties [1]")
 	CLIB.vkGetPhysicalDeviceMemoryProperties(physicalDevice, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceSurfaceCapabilities2(physicalDevice, pSurfaceInfo)
 	if type(pSurfaceInfo) == "table" then
 		pSurfaceInfo = library.s.PhysicalDeviceSurfaceInfo2KHR(pSurfaceInfo, false)
 	end
+
 	local box = ffi.new("struct VkSurfaceCapabilities2KHR [1]")
 	local status = library.GetPhysicalDeviceSurfaceCapabilities2KHR(physicalDevice, pSurfaceInfo, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetBufferMemoryRequirements2(device, pInfo)
 	if type(pInfo) == "table" then
 		pInfo = library.s.BufferMemoryRequirementsInfo2(pInfo, false)
 	end
+
 	local box = ffi.new("struct VkMemoryRequirements2 [1]")
 	library.GetBufferMemoryRequirements2KHR(device, pInfo, box)
 	return box[0]
 end
+
 function library.GetDeviceQueue(device, queueFamilyIndex, queueIndex)
 	local box = ffi.new("struct VkQueue_T * [1]")
 	CLIB.vkGetDeviceQueue(device, queueFamilyIndex, queueIndex, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceImageFormatProperties2(physicalDevice, pImageFormatInfo)
 	if type(pImageFormatInfo) == "table" then
 		pImageFormatInfo = library.s.PhysicalDeviceImageFormatInfo2(pImageFormatInfo, false)
 	end
+
 	local box = ffi.new("struct VkImageFormatProperties2 [1]")
 	local status = CLIB.vkGetPhysicalDeviceImageFormatProperties2(physicalDevice, pImageFormatInfo, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetMemoryFdProperties(device, handleType, fd)
 	if type(handleType) == "table" then
 		handleType = library.e.external_memory_handle_type.make_enums(handleType)
 	elseif type(handleType) == "string" then
 		handleType = library.e.external_memory_handle_type[handleType]
 	end
+
 	local box = ffi.new("struct VkMemoryFdPropertiesKHR [1]")
 	local status = library.GetMemoryFdPropertiesKHR(device, handleType, fd, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetDeviceGroupPresentCapabilities(device)
 	local box = ffi.new("struct VkDeviceGroupPresentCapabilitiesKHR [1]")
 	local status = library.GetDeviceGroupPresentCapabilitiesKHR(device, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetPhysicalDeviceFormatProperties(physicalDevice, format)
-	if type(format) == "string" then
-		format = library.e.format[format]
-	end
+	if type(format) == "string" then format = library.e.format[format] end
+
 	local box = ffi.new("struct VkFormatProperties [1]")
 	CLIB.vkGetPhysicalDeviceFormatProperties(physicalDevice, format, box)
 	return box[0]
 end
+
 function library.GetSwapchainImages(device, swapchain)
 	local count = ffi.new("uint32_t[1]")
-
 	library.GetSwapchainImagesKHR(device, swapchain, count, nil)
-
 	local array = ffi.new("struct VkImage_T * [?]", count[0])
 	local status = library.GetSwapchainImagesKHR(device, swapchain, count, array)
 
@@ -5304,37 +7978,41 @@ function library.GetSwapchainImages(device, swapchain)
 
 		return out
 	end
+
 	return nil, status
 end
+
 function library.GetDescriptorSetLayoutSupport(device, pCreateInfo)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.DescriptorSetLayoutCreateInfo(pCreateInfo, false)
 	end
+
 	local box = ffi.new("struct VkDescriptorSetLayoutSupport [1]")
 	CLIB.vkGetDescriptorSetLayoutSupport(device, pCreateInfo, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceFeatures2(physicalDevice)
 	local box = ffi.new("struct VkPhysicalDeviceFeatures2 [1]")
 	CLIB.vkGetPhysicalDeviceFeatures2(physicalDevice, box)
 	return box[0]
 end
+
 function library.GetImageMemoryRequirements2(device, pInfo)
 	if type(pInfo) == "table" then
 		pInfo = library.s.ImageMemoryRequirementsInfo2(pInfo, false)
 	end
+
 	local box = ffi.new("struct VkMemoryRequirements2 [1]")
 	CLIB.vkGetImageMemoryRequirements2(device, pInfo, box)
 	return box[0]
 end
+
 function library.GetPhysicalDeviceQueueFamilyProperties2(physicalDevice)
 	local count = ffi.new("uint32_t[1]")
-
 	CLIB.vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, count, nil)
-
 	local array = ffi.new("struct VkQueueFamilyProperties2 [?]", count[0])
 	CLIB.vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, count, array)
-
 	local out = {}
 
 	for i = 0, count[0] - 1 do
@@ -5343,11 +8021,10 @@ function library.GetPhysicalDeviceQueueFamilyProperties2(physicalDevice)
 
 	return out
 end
+
 function library.GetPhysicalDeviceDisplayPlaneProperties(physicalDevice)
 	local count = ffi.new("uint32_t[1]")
-
 	library.GetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice, count, nil)
-
 	local array = ffi.new("struct VkDisplayPlanePropertiesKHR [?]", count[0])
 	local status = library.GetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice, count, array)
 
@@ -5360,13 +8037,13 @@ function library.GetPhysicalDeviceDisplayPlaneProperties(physicalDevice)
 
 		return out
 	end
+
 	return nil, status
 end
+
 function library.GetPhysicalDeviceSurfacePresentModes(physicalDevice, surface)
 	local count = ffi.new("uint32_t[1]")
-
 	library.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, count, nil)
-
 	local array = ffi.new("enum VkPresentModeKHR [?]", count[0])
 	local status = library.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, count, array)
 
@@ -5379,50 +8056,51 @@ function library.GetPhysicalDeviceSurfacePresentModes(physicalDevice, surface)
 
 		return out
 	end
+
 	return nil, status
 end
+
 function library.GetImageMemoryRequirements2(device, pInfo)
 	if type(pInfo) == "table" then
 		pInfo = library.s.ImageMemoryRequirementsInfo2(pInfo, false)
 	end
+
 	local box = ffi.new("struct VkMemoryRequirements2 [1]")
 	library.GetImageMemoryRequirements2KHR(device, pInfo, box)
 	return box[0]
 end
+
 function library.GetDeviceGroupSurfacePresentModes(device, surface)
 	local box = ffi.new("unsigned int [1]")
 	local status = library.GetDeviceGroupSurfacePresentModesKHR(device, surface, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.AcquireNextImage2(device, pAcquireInfo)
 	if type(pAcquireInfo) == "table" then
 		pAcquireInfo = library.s.AcquireNextImageInfoKHR(pAcquireInfo, false)
 	end
+
 	local box = ffi.new("unsigned int [1]")
 	local status = library.AcquireNextImage2KHR(device, pAcquireInfo, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.GetImageSparseMemoryRequirements2(device, pInfo)
 	if type(pInfo) == "table" then
 		pInfo = library.s.ImageSparseMemoryRequirementsInfo2(pInfo, false)
 	end
+
 	local count = ffi.new("uint32_t[1]")
-
 	CLIB.vkGetImageSparseMemoryRequirements2(device, pInfo, count, nil)
-
 	local array = ffi.new("struct VkSparseImageMemoryRequirements2 [?]", count[0])
 	CLIB.vkGetImageSparseMemoryRequirements2(device, pInfo, count, array)
-
 	local out = {}
 
 	for i = 0, count[0] - 1 do
@@ -5431,11 +8109,10 @@ function library.GetImageSparseMemoryRequirements2(device, pInfo)
 
 	return out
 end
+
 function library.GetPhysicalDeviceDisplayProperties(physicalDevice)
 	local count = ffi.new("uint32_t[1]")
-
 	library.GetPhysicalDeviceDisplayPropertiesKHR(physicalDevice, count, nil)
-
 	local array = ffi.new("struct VkDisplayPropertiesKHR [?]", count[0])
 	local status = library.GetPhysicalDeviceDisplayPropertiesKHR(physicalDevice, count, array)
 
@@ -5448,5830 +8125,7768 @@ function library.GetPhysicalDeviceDisplayProperties(physicalDevice)
 
 		return out
 	end
+
 	return nil, status
 end
+
 function library.GetShaderInfo(device, pipeline, shaderStage, infoType, pInfoSize)
 	if type(shaderStage) == "table" then
 		shaderStage = library.e.shader_stage.make_enums(shaderStage)
 	elseif type(shaderStage) == "string" then
 		shaderStage = library.e.shader_stage[shaderStage]
 	end
+
 	if type(infoType) == "string" then
 		infoType = library.e.shader_info_type[infoType]
 	end
+
 	local box = ffi.new("void [1]")
 	local status = library.GetShaderInfoAMD(device, pipeline, shaderStage, infoType, pInfoSize, box)
 
-	if status == "VK_SUCCESS" then
-		return box[0], status
-	end
+	if status == "VK_SUCCESS" then return box[0], status end
 
 	return nil, status
 end
+
 function library.MapMemory(device, memory, a, b, c, type, func)
 	local data = ffi.new("void *[1]")
-
 	local status = CLIB.vkMapMemory(device, memory, a, b, c, data)
 
 	if status == "VK_SUCCESS" then
 		if func then
 			local ptr = func(ffi.cast(type .. " *", data[0]))
-			if ptr then
-				data[0] = ptr
-			end
+
+			if ptr then data[0] = ptr end
+
 			library.UnmapMemory(device, memory)
 		end
+
 		return data[0]
 	end
 
 	return nil, status
 end
-	library.s = {}
+
+library.s = {}
+
 function library.s.ApplicationInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_APPLICATION_INFO"
 	return table_only and tbl or ffi.new("struct VkApplicationInfo", tbl)
 end
+
 function library.s.InstanceCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO"
+
 	if type(tbl.pApplicationInfo) == "table" then
 		tbl.pApplicationInfo = library.s.ApplicationInfo(tbl.pApplicationInfo, false)
 	end
+
 	if type(tbl.ppEnabledLayerNames) == "table" then
 		tbl.enabledLayerCount = #tbl.ppEnabledLayerNames
 		tbl.ppEnabledLayerNames = library.util.StringList(tbl.ppEnabledLayerNames)
 	end
+
 	if type(tbl.ppEnabledExtensionNames) == "table" then
 		tbl.enabledExtensionCount = #tbl.ppEnabledExtensionNames
 		tbl.ppEnabledExtensionNames = library.util.StringList(tbl.ppEnabledExtensionNames)
 	end
+
 	return table_only and tbl or ffi.new("struct VkInstanceCreateInfo", tbl)
 end
+
 function library.s.DeviceQueueCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.device_queue_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.device_queue_create[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDeviceQueueCreateInfo", tbl)
 end
+
 function library.s.DeviceCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO"
+
 	if type(tbl.pQueueCreateInfos) == "table" then
 		if not tbl.queueCreateInfoCount then
 			tbl.queueCreateInfoCount = #tbl.pQueueCreateInfos
 		end
+
 		tbl.pQueueCreateInfos = library.s.DeviceQueueCreateInfoArray(tbl.pQueueCreateInfos, false)
 	end
+
 	if type(tbl.ppEnabledLayerNames) == "table" then
 		tbl.enabledLayerCount = #tbl.ppEnabledLayerNames
 		tbl.ppEnabledLayerNames = library.util.StringList(tbl.ppEnabledLayerNames)
 	end
+
 	if type(tbl.ppEnabledExtensionNames) == "table" then
 		tbl.enabledExtensionCount = #tbl.ppEnabledExtensionNames
 		tbl.ppEnabledExtensionNames = library.util.StringList(tbl.ppEnabledExtensionNames)
 	end
+
 	if type(tbl.pEnabledFeatures) == "table" then
 		tbl.pEnabledFeatures = library.s.PhysicalDeviceFeatures(tbl.pEnabledFeatures, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkDeviceCreateInfo", tbl)
 end
+
 function library.s.SubmitInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SUBMIT_INFO"
+
 	if type(tbl.pWaitSemaphores) == "table" then
 		if not tbl.waitSemaphoreCount then
 			tbl.waitSemaphoreCount = #tbl.pWaitSemaphores
 		end
+
 		tbl.pWaitSemaphores = library.s.SemaphoreArray(tbl.pWaitSemaphores, false)
 	end
+
 	if type(tbl.pCommandBuffers) == "table" then
 		if not tbl.commandBufferCount then
 			tbl.commandBufferCount = #tbl.pCommandBuffers
 		end
+
 		tbl.pCommandBuffers = library.s.CommandBufferArray(tbl.pCommandBuffers, false)
 	end
+
 	if type(tbl.pSignalSemaphores) == "table" then
 		if not tbl.signalSemaphoreCount then
 			tbl.signalSemaphoreCount = #tbl.pSignalSemaphores
 		end
+
 		tbl.pSignalSemaphores = library.s.SemaphoreArray(tbl.pSignalSemaphores, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSubmitInfo", tbl)
 end
+
 function library.s.MemoryAllocateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO"
 	return table_only and tbl or ffi.new("struct VkMemoryAllocateInfo", tbl)
 end
+
 function library.s.MappedMemoryRange(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE"
 	return table_only and tbl or ffi.new("struct VkMappedMemoryRange", tbl)
 end
+
 function library.s.BindSparseInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_BIND_SPARSE_INFO"
+
 	if type(tbl.pWaitSemaphores) == "table" then
 		if not tbl.waitSemaphoreCount then
 			tbl.waitSemaphoreCount = #tbl.pWaitSemaphores
 		end
+
 		tbl.pWaitSemaphores = library.s.SemaphoreArray(tbl.pWaitSemaphores, false)
 	end
+
 	if type(tbl.pBufferBinds) == "table" then
-		if not tbl.bufferBindCount then
-			tbl.bufferBindCount = #tbl.pBufferBinds
-		end
+		if not tbl.bufferBindCount then tbl.bufferBindCount = #tbl.pBufferBinds end
+
 		tbl.pBufferBinds = library.s.SparseBufferMemoryBindInfoArray(tbl.pBufferBinds, false)
 	end
+
 	if type(tbl.pImageOpaqueBinds) == "table" then
 		if not tbl.imageOpaqueBindCount then
 			tbl.imageOpaqueBindCount = #tbl.pImageOpaqueBinds
 		end
+
 		tbl.pImageOpaqueBinds = library.s.SparseImageOpaqueMemoryBindInfoArray(tbl.pImageOpaqueBinds, false)
 	end
+
 	if type(tbl.pImageBinds) == "table" then
-		if not tbl.imageBindCount then
-			tbl.imageBindCount = #tbl.pImageBinds
-		end
+		if not tbl.imageBindCount then tbl.imageBindCount = #tbl.pImageBinds end
+
 		tbl.pImageBinds = library.s.SparseImageMemoryBindInfoArray(tbl.pImageBinds, false)
 	end
+
 	if type(tbl.pSignalSemaphores) == "table" then
 		if not tbl.signalSemaphoreCount then
 			tbl.signalSemaphoreCount = #tbl.pSignalSemaphores
 		end
+
 		tbl.pSignalSemaphores = library.s.SemaphoreArray(tbl.pSignalSemaphores, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkBindSparseInfo", tbl)
 end
+
 function library.s.FenceCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_FENCE_CREATE_INFO"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.fence_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.fence_create[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkFenceCreateInfo", tbl)
 end
+
 function library.s.SemaphoreCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO"
 	return table_only and tbl or ffi.new("struct VkSemaphoreCreateInfo", tbl)
 end
+
 function library.s.EventCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_EVENT_CREATE_INFO"
 	return table_only and tbl or ffi.new("struct VkEventCreateInfo", tbl)
 end
+
 function library.s.QueryPoolCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO"
+
 	if type(tbl.queryType) == "string" then
 		tbl.queryType = library.e.query_type[tbl.queryType]
 	end
+
 	if type(tbl.pipelineStatistics) == "table" then
 		tbl.pipelineStatistics = library.e.query_pipeline_statistic.make_enums(tbl.pipelineStatistics)
 	elseif type(tbl.pipelineStatistics) == "string" then
 		tbl.pipelineStatistics = library.e.query_pipeline_statistic[tbl.pipelineStatistics]
 	end
+
 	return table_only and tbl or ffi.new("struct VkQueryPoolCreateInfo", tbl)
 end
+
 function library.s.BufferCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.buffer_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.buffer_create[tbl.flags]
 	end
+
 	if type(tbl.usage) == "table" then
 		tbl.usage = library.e.buffer_usage.make_enums(tbl.usage)
 	elseif type(tbl.usage) == "string" then
 		tbl.usage = library.e.buffer_usage[tbl.usage]
 	end
+
 	if type(tbl.sharingMode) == "string" then
 		tbl.sharingMode = library.e.sharing_mode[tbl.sharingMode]
 	end
+
 	return table_only and tbl or ffi.new("struct VkBufferCreateInfo", tbl)
 end
+
 function library.s.BufferViewCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO"
+
 	if type(tbl.format) == "string" then
 		tbl.format = library.e.format[tbl.format]
 	end
+
 	return table_only and tbl or ffi.new("struct VkBufferViewCreateInfo", tbl)
 end
+
 function library.s.ImageCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.image_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.image_create[tbl.flags]
 	end
+
 	if type(tbl.imageType) == "string" then
 		tbl.imageType = library.e.image_type[tbl.imageType]
 	end
+
 	if type(tbl.format) == "string" then
 		tbl.format = library.e.format[tbl.format]
 	end
+
 	if type(tbl.extent) == "table" then
 		tbl.extent = library.s.Extent3D(tbl.extent, true)
 	end
+
 	if type(tbl.samples) == "table" then
 		tbl.samples = library.e.sample_count.make_enums(tbl.samples)
 	elseif type(tbl.samples) == "string" then
 		tbl.samples = library.e.sample_count[tbl.samples]
 	end
+
 	if type(tbl.tiling) == "string" then
 		tbl.tiling = library.e.image_tiling[tbl.tiling]
 	end
+
 	if type(tbl.usage) == "table" then
 		tbl.usage = library.e.image_usage.make_enums(tbl.usage)
 	elseif type(tbl.usage) == "string" then
 		tbl.usage = library.e.image_usage[tbl.usage]
 	end
+
 	if type(tbl.sharingMode) == "string" then
 		tbl.sharingMode = library.e.sharing_mode[tbl.sharingMode]
 	end
+
 	if type(tbl.initialLayout) == "string" then
 		tbl.initialLayout = library.e.image_layout[tbl.initialLayout]
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageCreateInfo", tbl)
 end
+
 function library.s.ImageViewCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO"
+
 	if type(tbl.viewType) == "string" then
 		tbl.viewType = library.e.image_view_type[tbl.viewType]
 	end
+
 	if type(tbl.format) == "string" then
 		tbl.format = library.e.format[tbl.format]
 	end
+
 	if type(tbl.components) == "table" then
 		tbl.components = library.s.ComponentMapping(tbl.components, true)
 	end
+
 	if type(tbl.subresourceRange) == "table" then
 		tbl.subresourceRange = library.s.ImageSubresourceRange(tbl.subresourceRange, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageViewCreateInfo", tbl)
 end
+
 function library.s.ShaderModuleCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO"
 	return table_only and tbl or ffi.new("struct VkShaderModuleCreateInfo", tbl)
 end
+
 function library.s.PipelineCacheCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO"
 	return table_only and tbl or ffi.new("struct VkPipelineCacheCreateInfo", tbl)
 end
+
 function library.s.PipelineShaderStageCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO"
+
 	if type(tbl.stage) == "table" then
 		tbl.stage = library.e.shader_stage.make_enums(tbl.stage)
 	elseif type(tbl.stage) == "string" then
 		tbl.stage = library.e.shader_stage[tbl.stage]
 	end
+
 	if type(tbl.pSpecializationInfo) == "table" then
 		tbl.pSpecializationInfo = library.s.SpecializationInfo(tbl.pSpecializationInfo, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPipelineShaderStageCreateInfo", tbl)
 end
+
 function library.s.PipelineVertexInputStateCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO"
+
 	if type(tbl.pVertexBindingDescriptions) == "table" then
 		if not tbl.vertexBindingDescriptionCount then
 			tbl.vertexBindingDescriptionCount = #tbl.pVertexBindingDescriptions
 		end
+
 		tbl.pVertexBindingDescriptions = library.s.VertexInputBindingDescriptionArray(tbl.pVertexBindingDescriptions, false)
 	end
+
 	if type(tbl.pVertexAttributeDescriptions) == "table" then
 		if not tbl.vertexAttributeDescriptionCount then
 			tbl.vertexAttributeDescriptionCount = #tbl.pVertexAttributeDescriptions
 		end
+
 		tbl.pVertexAttributeDescriptions = library.s.VertexInputAttributeDescriptionArray(tbl.pVertexAttributeDescriptions, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPipelineVertexInputStateCreateInfo", tbl)
 end
+
 function library.s.PipelineInputAssemblyStateCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO"
+
 	if type(tbl.topology) == "string" then
 		tbl.topology = library.e.primitive_topology[tbl.topology]
 	end
+
 	tbl.primitiveRestartEnable = tbl.primitiveRestartEnable and 1 or 0
-	return table_only and tbl or ffi.new("struct VkPipelineInputAssemblyStateCreateInfo", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineInputAssemblyStateCreateInfo", tbl)
 end
+
 function library.s.PipelineTessellationStateCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO"
-	return table_only and tbl or ffi.new("struct VkPipelineTessellationStateCreateInfo", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineTessellationStateCreateInfo", tbl)
 end
+
 function library.s.PipelineViewportStateCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO"
+
 	if type(tbl.pViewports) == "table" then
-		if not tbl.viewportCount then
-			tbl.viewportCount = #tbl.pViewports
-		end
+		if not tbl.viewportCount then tbl.viewportCount = #tbl.pViewports end
+
 		tbl.pViewports = library.s.ViewportArray(tbl.pViewports, false)
 	end
+
 	if type(tbl.pScissors) == "table" then
-		if not tbl.scissorCount then
-			tbl.scissorCount = #tbl.pScissors
-		end
+		if not tbl.scissorCount then tbl.scissorCount = #tbl.pScissors end
+
 		tbl.pScissors = library.s.Rect2DArray(tbl.pScissors, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPipelineViewportStateCreateInfo", tbl)
 end
+
 function library.s.PipelineRasterizationStateCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO"
 	tbl.depthClampEnable = tbl.depthClampEnable and 1 or 0
 	tbl.rasterizerDiscardEnable = tbl.rasterizerDiscardEnable and 1 or 0
+
 	if type(tbl.polygonMode) == "string" then
 		tbl.polygonMode = library.e.polygon_mode[tbl.polygonMode]
 	end
+
 	if type(tbl.cullMode) == "table" then
 		tbl.cullMode = library.e.cull_mode.make_enums(tbl.cullMode)
 	elseif type(tbl.cullMode) == "string" then
 		tbl.cullMode = library.e.cull_mode[tbl.cullMode]
 	end
+
 	if type(tbl.frontFace) == "string" then
 		tbl.frontFace = library.e.front_face[tbl.frontFace]
 	end
+
 	tbl.depthBiasEnable = tbl.depthBiasEnable and 1 or 0
-	return table_only and tbl or ffi.new("struct VkPipelineRasterizationStateCreateInfo", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineRasterizationStateCreateInfo", tbl)
 end
+
 function library.s.PipelineMultisampleStateCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO"
+
 	if type(tbl.rasterizationSamples) == "table" then
 		tbl.rasterizationSamples = library.e.sample_count.make_enums(tbl.rasterizationSamples)
 	elseif type(tbl.rasterizationSamples) == "string" then
 		tbl.rasterizationSamples = library.e.sample_count[tbl.rasterizationSamples]
 	end
+
 	tbl.sampleShadingEnable = tbl.sampleShadingEnable and 1 or 0
 	tbl.alphaToCoverageEnable = tbl.alphaToCoverageEnable and 1 or 0
 	tbl.alphaToOneEnable = tbl.alphaToOneEnable and 1 or 0
 	return table_only and tbl or ffi.new("struct VkPipelineMultisampleStateCreateInfo", tbl)
 end
+
 function library.s.PipelineDepthStencilStateCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO"
 	tbl.depthTestEnable = tbl.depthTestEnable and 1 or 0
 	tbl.depthWriteEnable = tbl.depthWriteEnable and 1 or 0
+
 	if type(tbl.depthCompareOp) == "string" then
 		tbl.depthCompareOp = library.e.compare_op[tbl.depthCompareOp]
 	end
+
 	tbl.depthBoundsTestEnable = tbl.depthBoundsTestEnable and 1 or 0
 	tbl.stencilTestEnable = tbl.stencilTestEnable and 1 or 0
+
 	if type(tbl.front) == "table" then
 		tbl.front = library.s.StencilOpState(tbl.front, true)
 	end
+
 	if type(tbl.back) == "table" then
 		tbl.back = library.s.StencilOpState(tbl.back, true)
 	end
-	return table_only and tbl or ffi.new("struct VkPipelineDepthStencilStateCreateInfo", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineDepthStencilStateCreateInfo", tbl)
 end
+
 function library.s.PipelineColorBlendStateCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO"
 	tbl.logicOpEnable = tbl.logicOpEnable and 1 or 0
+
 	if type(tbl.logicOp) == "string" then
 		tbl.logicOp = library.e.logic_op[tbl.logicOp]
 	end
+
 	if type(tbl.pAttachments) == "table" then
-		if not tbl.attachmentCount then
-			tbl.attachmentCount = #tbl.pAttachments
-		end
+		if not tbl.attachmentCount then tbl.attachmentCount = #tbl.pAttachments end
+
 		tbl.pAttachments = library.s.PipelineColorBlendAttachmentStateArray(tbl.pAttachments, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPipelineColorBlendStateCreateInfo", tbl)
 end
+
 function library.s.PipelineDynamicStateCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO"
+
 	if type(tbl.pDynamicStates) == "string" then
 		tbl.pDynamicStates = library.e.dynamic_state[tbl.pDynamicStates]
 	end
+
 	return table_only and tbl or ffi.new("struct VkPipelineDynamicStateCreateInfo", tbl)
 end
+
 function library.s.GraphicsPipelineCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.pipeline_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.pipeline_create[tbl.flags]
 	end
+
 	if type(tbl.pStages) == "table" then
-		if not tbl.stageCount then
-			tbl.stageCount = #tbl.pStages
-		end
+		if not tbl.stageCount then tbl.stageCount = #tbl.pStages end
+
 		tbl.pStages = library.s.PipelineShaderStageCreateInfoArray(tbl.pStages, false)
 	end
+
 	if type(tbl.pVertexInputState) == "table" then
 		tbl.pVertexInputState = library.s.PipelineVertexInputStateCreateInfo(tbl.pVertexInputState, false)
 	end
+
 	if type(tbl.pInputAssemblyState) == "table" then
 		tbl.pInputAssemblyState = library.s.PipelineInputAssemblyStateCreateInfo(tbl.pInputAssemblyState, false)
 	end
+
 	if type(tbl.pTessellationState) == "table" then
 		tbl.pTessellationState = library.s.PipelineTessellationStateCreateInfo(tbl.pTessellationState, false)
 	end
+
 	if type(tbl.pViewportState) == "table" then
 		tbl.pViewportState = library.s.PipelineViewportStateCreateInfo(tbl.pViewportState, false)
 	end
+
 	if type(tbl.pRasterizationState) == "table" then
 		tbl.pRasterizationState = library.s.PipelineRasterizationStateCreateInfo(tbl.pRasterizationState, false)
 	end
+
 	if type(tbl.pMultisampleState) == "table" then
 		tbl.pMultisampleState = library.s.PipelineMultisampleStateCreateInfo(tbl.pMultisampleState, false)
 	end
+
 	if type(tbl.pDepthStencilState) == "table" then
 		tbl.pDepthStencilState = library.s.PipelineDepthStencilStateCreateInfo(tbl.pDepthStencilState, false)
 	end
+
 	if type(tbl.pColorBlendState) == "table" then
 		tbl.pColorBlendState = library.s.PipelineColorBlendStateCreateInfo(tbl.pColorBlendState, false)
 	end
+
 	if type(tbl.pDynamicState) == "table" then
 		tbl.pDynamicState = library.s.PipelineDynamicStateCreateInfo(tbl.pDynamicState, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkGraphicsPipelineCreateInfo", tbl)
 end
+
 function library.s.ComputePipelineCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.pipeline_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.pipeline_create[tbl.flags]
 	end
+
 	if type(tbl.stage) == "table" then
 		tbl.stage = library.s.PipelineShaderStageCreateInfo(tbl.stage, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkComputePipelineCreateInfo", tbl)
 end
+
 function library.s.PipelineLayoutCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO"
+
 	if type(tbl.pSetLayouts) == "table" then
-		if not tbl.setLayoutCount then
-			tbl.setLayoutCount = #tbl.pSetLayouts
-		end
+		if not tbl.setLayoutCount then tbl.setLayoutCount = #tbl.pSetLayouts end
+
 		tbl.pSetLayouts = library.s.DescriptorSetLayoutArray(tbl.pSetLayouts, false)
 	end
+
 	if type(tbl.pPushConstantRanges) == "table" then
 		if not tbl.pushConstantRangeCount then
 			tbl.pushConstantRangeCount = #tbl.pPushConstantRanges
 		end
+
 		tbl.pPushConstantRanges = library.s.PushConstantRangeArray(tbl.pPushConstantRanges, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPipelineLayoutCreateInfo", tbl)
 end
+
 function library.s.SamplerCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO"
+
 	if type(tbl.magFilter) == "string" then
 		tbl.magFilter = library.e.filter[tbl.magFilter]
 	end
+
 	if type(tbl.minFilter) == "string" then
 		tbl.minFilter = library.e.filter[tbl.minFilter]
 	end
+
 	if type(tbl.mipmapMode) == "string" then
 		tbl.mipmapMode = library.e.sampler_mipmap_mode[tbl.mipmapMode]
 	end
+
 	if type(tbl.addressModeU) == "string" then
 		tbl.addressModeU = library.e.sampler_address_mode[tbl.addressModeU]
 	end
+
 	if type(tbl.addressModeV) == "string" then
 		tbl.addressModeV = library.e.sampler_address_mode[tbl.addressModeV]
 	end
+
 	if type(tbl.addressModeW) == "string" then
 		tbl.addressModeW = library.e.sampler_address_mode[tbl.addressModeW]
 	end
+
 	tbl.anisotropyEnable = tbl.anisotropyEnable and 1 or 0
 	tbl.compareEnable = tbl.compareEnable and 1 or 0
+
 	if type(tbl.compareOp) == "string" then
 		tbl.compareOp = library.e.compare_op[tbl.compareOp]
 	end
+
 	if type(tbl.borderColor) == "string" then
 		tbl.borderColor = library.e.border_color[tbl.borderColor]
 	end
+
 	return table_only and tbl or ffi.new("struct VkSamplerCreateInfo", tbl)
 end
+
 function library.s.DescriptorSetLayoutCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.descriptor_set_layout_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.descriptor_set_layout_create[tbl.flags]
 	end
+
 	if type(tbl.pBindings) == "table" then
-		if not tbl.bindingCount then
-			tbl.bindingCount = #tbl.pBindings
-		end
+		if not tbl.bindingCount then tbl.bindingCount = #tbl.pBindings end
+
 		tbl.pBindings = library.s.DescriptorSetLayoutBindingArray(tbl.pBindings, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkDescriptorSetLayoutCreateInfo", tbl)
 end
+
 function library.s.DescriptorPoolCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.descriptor_pool_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.descriptor_pool_create[tbl.flags]
 	end
+
 	if type(tbl.pPoolSizes) == "table" then
-		if not tbl.poolSizeCount then
-			tbl.poolSizeCount = #tbl.pPoolSizes
-		end
+		if not tbl.poolSizeCount then tbl.poolSizeCount = #tbl.pPoolSizes end
+
 		tbl.pPoolSizes = library.s.DescriptorPoolSizeArray(tbl.pPoolSizes, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkDescriptorPoolCreateInfo", tbl)
 end
+
 function library.s.DescriptorSetAllocateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO"
+
 	if type(tbl.pSetLayouts) == "table" then
 		if not tbl.descriptorSetCount then
 			tbl.descriptorSetCount = #tbl.pSetLayouts
 		end
+
 		tbl.pSetLayouts = library.s.DescriptorSetLayoutArray(tbl.pSetLayouts, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkDescriptorSetAllocateInfo", tbl)
 end
+
 function library.s.WriteDescriptorSet(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET"
+
 	if type(tbl.descriptorType) == "string" then
 		tbl.descriptorType = library.e.descriptor_type[tbl.descriptorType]
 	end
+
 	if type(tbl.pImageInfo) == "table" then
-		if not tbl.descriptorCount then
-			tbl.descriptorCount = #tbl.pImageInfo
-		end
+		if not tbl.descriptorCount then tbl.descriptorCount = #tbl.pImageInfo end
+
 		tbl.pImageInfo = library.s.DescriptorImageInfoArray(tbl.pImageInfo)
 	end
+
 	if type(tbl.pBufferInfo) == "table" then
-		if not tbl.descriptorCount then
-			tbl.descriptorCount = #tbl.pBufferInfo
-		end
+		if not tbl.descriptorCount then tbl.descriptorCount = #tbl.pBufferInfo end
+
 		tbl.pBufferInfo = library.s.DescriptorBufferInfoArray(tbl.pBufferInfo)
 	end
+
 	if type(tbl.pTexelBufferView) == "table" then
 		if not tbl.descriptorCount then
 			tbl.descriptorCount = #tbl.pTexelBufferView
 		end
+
 		tbl.pTexelBufferView = library.s.BufferViewArray(tbl.pTexelBufferView)
 	end
+
 	return table_only and tbl or ffi.new("struct VkWriteDescriptorSet", tbl)
 end
+
 function library.s.CopyDescriptorSet(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET"
 	return table_only and tbl or ffi.new("struct VkCopyDescriptorSet", tbl)
 end
+
 function library.s.FramebufferCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO"
+
 	if type(tbl.pAttachments) == "table" then
-		if not tbl.attachmentCount then
-			tbl.attachmentCount = #tbl.pAttachments
-		end
+		if not tbl.attachmentCount then tbl.attachmentCount = #tbl.pAttachments end
+
 		tbl.pAttachments = library.s.ImageViewArray(tbl.pAttachments, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkFramebufferCreateInfo", tbl)
 end
+
 function library.s.RenderPassCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO"
+
 	if type(tbl.pAttachments) == "table" then
-		if not tbl.attachmentCount then
-			tbl.attachmentCount = #tbl.pAttachments
-		end
+		if not tbl.attachmentCount then tbl.attachmentCount = #tbl.pAttachments end
+
 		tbl.pAttachments = library.s.AttachmentDescriptionArray(tbl.pAttachments, false)
 	end
+
 	if type(tbl.pSubpasses) == "table" then
-		if not tbl.subpassCount then
-			tbl.subpassCount = #tbl.pSubpasses
-		end
+		if not tbl.subpassCount then tbl.subpassCount = #tbl.pSubpasses end
+
 		tbl.pSubpasses = library.s.SubpassDescriptionArray(tbl.pSubpasses, false)
 	end
+
 	if type(tbl.pDependencies) == "table" then
-		if not tbl.dependencyCount then
-			tbl.dependencyCount = #tbl.pDependencies
-		end
+		if not tbl.dependencyCount then tbl.dependencyCount = #tbl.pDependencies end
+
 		tbl.pDependencies = library.s.SubpassDependencyArray(tbl.pDependencies, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkRenderPassCreateInfo", tbl)
 end
+
 function library.s.CommandPoolCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.command_pool_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.command_pool_create[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkCommandPoolCreateInfo", tbl)
 end
+
 function library.s.CommandBufferAllocateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO"
+
 	if type(tbl.level) == "string" then
 		tbl.level = library.e.command_buffer_level[tbl.level]
 	end
+
 	return table_only and tbl or ffi.new("struct VkCommandBufferAllocateInfo", tbl)
 end
+
 function library.s.CommandBufferInheritanceInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO"
 	tbl.occlusionQueryEnable = tbl.occlusionQueryEnable and 1 or 0
+
 	if type(tbl.queryFlags) == "table" then
 		tbl.queryFlags = library.e.query_control.make_enums(tbl.queryFlags)
 	elseif type(tbl.queryFlags) == "string" then
 		tbl.queryFlags = library.e.query_control[tbl.queryFlags]
 	end
+
 	if type(tbl.pipelineStatistics) == "table" then
 		tbl.pipelineStatistics = library.e.query_pipeline_statistic.make_enums(tbl.pipelineStatistics)
 	elseif type(tbl.pipelineStatistics) == "string" then
 		tbl.pipelineStatistics = library.e.query_pipeline_statistic[tbl.pipelineStatistics]
 	end
+
 	return table_only and tbl or ffi.new("struct VkCommandBufferInheritanceInfo", tbl)
 end
+
 function library.s.CommandBufferBeginInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.command_buffer_usage.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.command_buffer_usage[tbl.flags]
 	end
+
 	if type(tbl.pInheritanceInfo) == "table" then
 		tbl.pInheritanceInfo = library.s.CommandBufferInheritanceInfo(tbl.pInheritanceInfo, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkCommandBufferBeginInfo", tbl)
 end
+
 function library.s.RenderPassBeginInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO"
+
 	if type(tbl.renderArea) == "table" then
 		tbl.renderArea = library.s.Rect2D(tbl.renderArea, true)
 	end
+
 	if type(tbl.pClearValues) == "table" then
-		if not tbl.clearValueCount then
-			tbl.clearValueCount = #tbl.pClearValues
-		end
+		if not tbl.clearValueCount then tbl.clearValueCount = #tbl.pClearValues end
+
 		tbl.pClearValues = library.s.ClearValueArray(tbl.pClearValues, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkRenderPassBeginInfo", tbl)
 end
+
 function library.s.BufferMemoryBarrier(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER"
+
 	if type(tbl.srcAccessMask) == "table" then
 		tbl.srcAccessMask = library.e.access.make_enums(tbl.srcAccessMask)
 	elseif type(tbl.srcAccessMask) == "string" then
 		tbl.srcAccessMask = library.e.access[tbl.srcAccessMask]
 	end
+
 	if type(tbl.dstAccessMask) == "table" then
 		tbl.dstAccessMask = library.e.access.make_enums(tbl.dstAccessMask)
 	elseif type(tbl.dstAccessMask) == "string" then
 		tbl.dstAccessMask = library.e.access[tbl.dstAccessMask]
 	end
+
 	return table_only and tbl or ffi.new("struct VkBufferMemoryBarrier", tbl)
 end
+
 function library.s.ImageMemoryBarrier(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER"
+
 	if type(tbl.srcAccessMask) == "table" then
 		tbl.srcAccessMask = library.e.access.make_enums(tbl.srcAccessMask)
 	elseif type(tbl.srcAccessMask) == "string" then
 		tbl.srcAccessMask = library.e.access[tbl.srcAccessMask]
 	end
+
 	if type(tbl.dstAccessMask) == "table" then
 		tbl.dstAccessMask = library.e.access.make_enums(tbl.dstAccessMask)
 	elseif type(tbl.dstAccessMask) == "string" then
 		tbl.dstAccessMask = library.e.access[tbl.dstAccessMask]
 	end
+
 	if type(tbl.oldLayout) == "string" then
 		tbl.oldLayout = library.e.image_layout[tbl.oldLayout]
 	end
+
 	if type(tbl.newLayout) == "string" then
 		tbl.newLayout = library.e.image_layout[tbl.newLayout]
 	end
+
 	if type(tbl.subresourceRange) == "table" then
 		tbl.subresourceRange = library.s.ImageSubresourceRange(tbl.subresourceRange, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageMemoryBarrier", tbl)
 end
+
 function library.s.MemoryBarrier(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_MEMORY_BARRIER"
+
 	if type(tbl.srcAccessMask) == "table" then
 		tbl.srcAccessMask = library.e.access.make_enums(tbl.srcAccessMask)
 	elseif type(tbl.srcAccessMask) == "string" then
 		tbl.srcAccessMask = library.e.access[tbl.srcAccessMask]
 	end
+
 	if type(tbl.dstAccessMask) == "table" then
 		tbl.dstAccessMask = library.e.access.make_enums(tbl.dstAccessMask)
 	elseif type(tbl.dstAccessMask) == "string" then
 		tbl.dstAccessMask = library.e.access[tbl.dstAccessMask]
 	end
+
 	return table_only and tbl or ffi.new("struct VkMemoryBarrier", tbl)
 end
+
 function library.s.PhysicalDeviceSubgroupProperties(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES"
+
 	if type(tbl.supportedStages) == "table" then
 		tbl.supportedStages = library.e.shader_stage.make_enums(tbl.supportedStages)
 	elseif type(tbl.supportedStages) == "string" then
 		tbl.supportedStages = library.e.shader_stage[tbl.supportedStages]
 	end
+
 	if type(tbl.supportedOperations) == "table" then
 		tbl.supportedOperations = library.e.subgroup_feature.make_enums(tbl.supportedOperations)
 	elseif type(tbl.supportedOperations) == "string" then
 		tbl.supportedOperations = library.e.subgroup_feature[tbl.supportedOperations]
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceSubgroupProperties", tbl)
 end
+
 function library.s.BindBufferMemoryInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO"
 	return table_only and tbl or ffi.new("struct VkBindBufferMemoryInfo", tbl)
 end
+
 function library.s.BindImageMemoryInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO"
 	return table_only and tbl or ffi.new("struct VkBindImageMemoryInfo", tbl)
 end
+
 function library.s.MemoryDedicatedRequirements(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS"
 	return table_only and tbl or ffi.new("struct VkMemoryDedicatedRequirements", tbl)
 end
+
 function library.s.MemoryDedicatedAllocateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO"
 	return table_only and tbl or ffi.new("struct VkMemoryDedicatedAllocateInfo", tbl)
 end
+
 function library.s.MemoryAllocateFlagsInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.memory_allocate.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.memory_allocate[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkMemoryAllocateFlagsInfo", tbl)
 end
+
 function library.s.DeviceGroupRenderPassBeginInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO"
+
 	if type(tbl.pDeviceRenderAreas) == "table" then
 		if not tbl.deviceRenderAreaCount then
 			tbl.deviceRenderAreaCount = #tbl.pDeviceRenderAreas
 		end
+
 		tbl.pDeviceRenderAreas = library.s.Rect2DArray(tbl.pDeviceRenderAreas, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkDeviceGroupRenderPassBeginInfo", tbl)
 end
+
 function library.s.DeviceGroupCommandBufferBeginInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO"
 	return table_only and tbl or ffi.new("struct VkDeviceGroupCommandBufferBeginInfo", tbl)
 end
+
 function library.s.DeviceGroupSubmitInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO"
 	return table_only and tbl or ffi.new("struct VkDeviceGroupSubmitInfo", tbl)
 end
+
 function library.s.DeviceGroupBindSparseInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_GROUP_BIND_SPARSE_INFO"
 	return table_only and tbl or ffi.new("struct VkDeviceGroupBindSparseInfo", tbl)
 end
+
 function library.s.BindBufferMemoryDeviceGroupInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO"
 	return table_only and tbl or ffi.new("struct VkBindBufferMemoryDeviceGroupInfo", tbl)
 end
+
 function library.s.BindImageMemoryDeviceGroupInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO"
+
 	if type(tbl.pSplitInstanceBindRegions) == "table" then
 		if not tbl.splitInstanceBindRegionCount then
 			tbl.splitInstanceBindRegionCount = #tbl.pSplitInstanceBindRegions
 		end
+
 		tbl.pSplitInstanceBindRegions = library.s.Rect2DArray(tbl.pSplitInstanceBindRegions, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkBindImageMemoryDeviceGroupInfo", tbl)
 end
+
 function library.s.PhysicalDeviceGroupProperties(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES"
+
 	if type(tbl.physicalDevices) == "table" then
 		if not tbl.physicalDeviceCount then
 			tbl.physicalDeviceCount = #tbl.physicalDevices
 		end
+
 		tbl.physicalDevices = library.s.PhysicalDeviceArray(tbl.physicalDevices, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceGroupProperties", tbl)
 end
+
 function library.s.DeviceGroupDeviceCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO"
+
 	if type(tbl.pPhysicalDevices) == "table" then
 		if not tbl.physicalDeviceCount then
 			tbl.physicalDeviceCount = #tbl.pPhysicalDevices
 		end
+
 		tbl.pPhysicalDevices = library.s.PhysicalDeviceArray(tbl.pPhysicalDevices, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkDeviceGroupDeviceCreateInfo", tbl)
 end
+
 function library.s.PhysicalDevicePointClippingProperties(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES"
+
 	if type(tbl.pointClippingBehavior) == "string" then
 		tbl.pointClippingBehavior = library.e.point_clipping_behavior[tbl.pointClippingBehavior]
 	end
-	return table_only and tbl or ffi.new("struct VkPhysicalDevicePointClippingProperties", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDevicePointClippingProperties", tbl)
 end
+
 function library.s.RenderPassInputAttachmentAspectCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO"
+
 	if type(tbl.pAspectReferences) == "table" then
 		if not tbl.aspectReferenceCount then
 			tbl.aspectReferenceCount = #tbl.pAspectReferences
 		end
+
 		tbl.pAspectReferences = library.s.InputAttachmentAspectReferenceArray(tbl.pAspectReferences, false)
 	end
-	return table_only and tbl or ffi.new("struct VkRenderPassInputAttachmentAspectCreateInfo", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkRenderPassInputAttachmentAspectCreateInfo", tbl)
 end
+
 function library.s.ImageViewUsageCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO"
+
 	if type(tbl.usage) == "table" then
 		tbl.usage = library.e.image_usage.make_enums(tbl.usage)
 	elseif type(tbl.usage) == "string" then
 		tbl.usage = library.e.image_usage[tbl.usage]
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageViewUsageCreateInfo", tbl)
 end
+
 function library.s.PipelineTessellationDomainOriginStateCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO"
+
 	if type(tbl.domainOrigin) == "string" then
 		tbl.domainOrigin = library.e.tessellation_domain_origin[tbl.domainOrigin]
 	end
-	return table_only and tbl or ffi.new("struct VkPipelineTessellationDomainOriginStateCreateInfo", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineTessellationDomainOriginStateCreateInfo", tbl)
 end
+
 function library.s.RenderPassMultiviewCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO"
 	return table_only and tbl or ffi.new("struct VkRenderPassMultiviewCreateInfo", tbl)
 end
+
 function library.s.PhysicalDeviceMultiviewFeatures(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES"
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceMultiviewFeatures", tbl)
 end
+
 function library.s.PhysicalDeviceMultiviewProperties(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES"
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceMultiviewProperties", tbl)
 end
+
 function library.s.PhysicalDeviceVariablePointerFeatures(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceVariablePointerFeatures", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceVariablePointerFeatures", tbl)
 end
+
 function library.s.ProtectedSubmitInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PROTECTED_SUBMIT_INFO"
 	return table_only and tbl or ffi.new("struct VkProtectedSubmitInfo", tbl)
 end
+
 function library.s.PhysicalDeviceProtectedMemoryFeatures(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceProtectedMemoryFeatures", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceProtectedMemoryFeatures", tbl)
 end
+
 function library.s.PhysicalDeviceProtectedMemoryProperties(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceProtectedMemoryProperties", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceProtectedMemoryProperties", tbl)
 end
+
 function library.s.SamplerYcbcrConversionCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO"
+
 	if type(tbl.format) == "string" then
 		tbl.format = library.e.format[tbl.format]
 	end
+
 	if type(tbl.ycbcrModel) == "string" then
 		tbl.ycbcrModel = library.e.sampler_ycbcr_model_conversion[tbl.ycbcrModel]
 	end
+
 	if type(tbl.ycbcrRange) == "string" then
 		tbl.ycbcrRange = library.e.sampler_ycbcr_range[tbl.ycbcrRange]
 	end
+
 	if type(tbl.components) == "table" then
 		tbl.components = library.s.ComponentMapping(tbl.components, true)
 	end
+
 	if type(tbl.xChromaOffset) == "string" then
 		tbl.xChromaOffset = library.e.chroma_location[tbl.xChromaOffset]
 	end
+
 	if type(tbl.yChromaOffset) == "string" then
 		tbl.yChromaOffset = library.e.chroma_location[tbl.yChromaOffset]
 	end
+
 	if type(tbl.chromaFilter) == "string" then
 		tbl.chromaFilter = library.e.filter[tbl.chromaFilter]
 	end
+
 	return table_only and tbl or ffi.new("struct VkSamplerYcbcrConversionCreateInfo", tbl)
 end
+
 function library.s.SamplerYcbcrConversionInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO"
 	return table_only and tbl or ffi.new("struct VkSamplerYcbcrConversionInfo", tbl)
 end
+
 function library.s.BindImagePlaneMemoryInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO"
+
 	if type(tbl.planeAspect) == "table" then
 		tbl.planeAspect = library.e.image_aspect.make_enums(tbl.planeAspect)
 	elseif type(tbl.planeAspect) == "string" then
 		tbl.planeAspect = library.e.image_aspect[tbl.planeAspect]
 	end
+
 	return table_only and tbl or ffi.new("struct VkBindImagePlaneMemoryInfo", tbl)
 end
+
 function library.s.ImagePlaneMemoryRequirementsInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO"
+
 	if type(tbl.planeAspect) == "table" then
 		tbl.planeAspect = library.e.image_aspect.make_enums(tbl.planeAspect)
 	elseif type(tbl.planeAspect) == "string" then
 		tbl.planeAspect = library.e.image_aspect[tbl.planeAspect]
 	end
+
 	return table_only and tbl or ffi.new("struct VkImagePlaneMemoryRequirementsInfo", tbl)
 end
+
 function library.s.PhysicalDeviceSamplerYcbcrConversionFeatures(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceSamplerYcbcrConversionFeatures", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceSamplerYcbcrConversionFeatures", tbl)
 end
+
 function library.s.SamplerYcbcrConversionImageFormatProperties(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES"
-	return table_only and tbl or ffi.new("struct VkSamplerYcbcrConversionImageFormatProperties", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkSamplerYcbcrConversionImageFormatProperties", tbl)
 end
+
 function library.s.DescriptorUpdateTemplateCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO"
+
 	if type(tbl.pDescriptorUpdateEntries) == "table" then
 		if not tbl.descriptorUpdateEntryCount then
 			tbl.descriptorUpdateEntryCount = #tbl.pDescriptorUpdateEntries
 		end
+
 		tbl.pDescriptorUpdateEntries = library.s.DescriptorUpdateTemplateEntryArray(tbl.pDescriptorUpdateEntries, false)
 	end
+
 	if type(tbl.templateType) == "string" then
 		tbl.templateType = library.e.descriptor_update_template_type[tbl.templateType]
 	end
+
 	if type(tbl.pipelineBindPoint) == "string" then
 		tbl.pipelineBindPoint = library.e.pipeline_bind_point[tbl.pipelineBindPoint]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDescriptorUpdateTemplateCreateInfo", tbl)
 end
+
 function library.s.PhysicalDeviceExternalImageFormatInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO"
+
 	if type(tbl.handleType) == "table" then
 		tbl.handleType = library.e.external_memory_handle_type.make_enums(tbl.handleType)
 	elseif type(tbl.handleType) == "string" then
 		tbl.handleType = library.e.external_memory_handle_type[tbl.handleType]
 	end
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceExternalImageFormatInfo", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceExternalImageFormatInfo", tbl)
 end
+
 function library.s.ExternalImageFormatProperties(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES"
+
 	if type(tbl.externalMemoryProperties) == "table" then
 		tbl.externalMemoryProperties = library.s.ExternalMemoryProperties(tbl.externalMemoryProperties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkExternalImageFormatProperties", tbl)
 end
+
 function library.s.PhysicalDeviceExternalBufferInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.buffer_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.buffer_create[tbl.flags]
 	end
+
 	if type(tbl.usage) == "table" then
 		tbl.usage = library.e.buffer_usage.make_enums(tbl.usage)
 	elseif type(tbl.usage) == "string" then
 		tbl.usage = library.e.buffer_usage[tbl.usage]
 	end
+
 	if type(tbl.handleType) == "table" then
 		tbl.handleType = library.e.external_memory_handle_type.make_enums(tbl.handleType)
 	elseif type(tbl.handleType) == "string" then
 		tbl.handleType = library.e.external_memory_handle_type[tbl.handleType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceExternalBufferInfo", tbl)
 end
+
 function library.s.ExternalBufferProperties(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_EXTERNAL_BUFFER_PROPERTIES"
+
 	if type(tbl.externalMemoryProperties) == "table" then
 		tbl.externalMemoryProperties = library.s.ExternalMemoryProperties(tbl.externalMemoryProperties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkExternalBufferProperties", tbl)
 end
+
 function library.s.ExternalMemoryBufferCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO"
+
 	if type(tbl.handleTypes) == "table" then
 		tbl.handleTypes = library.e.external_memory_handle_type.make_enums(tbl.handleTypes)
 	elseif type(tbl.handleTypes) == "string" then
 		tbl.handleTypes = library.e.external_memory_handle_type[tbl.handleTypes]
 	end
+
 	return table_only and tbl or ffi.new("struct VkExternalMemoryBufferCreateInfo", tbl)
 end
+
 function library.s.ExternalMemoryImageCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO"
+
 	if type(tbl.handleTypes) == "table" then
 		tbl.handleTypes = library.e.external_memory_handle_type.make_enums(tbl.handleTypes)
 	elseif type(tbl.handleTypes) == "string" then
 		tbl.handleTypes = library.e.external_memory_handle_type[tbl.handleTypes]
 	end
+
 	return table_only and tbl or ffi.new("struct VkExternalMemoryImageCreateInfo", tbl)
 end
+
 function library.s.ExportMemoryAllocateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO"
+
 	if type(tbl.handleTypes) == "table" then
 		tbl.handleTypes = library.e.external_memory_handle_type.make_enums(tbl.handleTypes)
 	elseif type(tbl.handleTypes) == "string" then
 		tbl.handleTypes = library.e.external_memory_handle_type[tbl.handleTypes]
 	end
+
 	return table_only and tbl or ffi.new("struct VkExportMemoryAllocateInfo", tbl)
 end
+
 function library.s.PhysicalDeviceExternalFenceInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO"
+
 	if type(tbl.handleType) == "table" then
 		tbl.handleType = library.e.external_fence_handle_type.make_enums(tbl.handleType)
 	elseif type(tbl.handleType) == "string" then
 		tbl.handleType = library.e.external_fence_handle_type[tbl.handleType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceExternalFenceInfo", tbl)
 end
+
 function library.s.ExternalFenceProperties(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_EXTERNAL_FENCE_PROPERTIES"
+
 	if type(tbl.exportFromImportedHandleTypes) == "table" then
 		tbl.exportFromImportedHandleTypes = library.e.external_fence_handle_type.make_enums(tbl.exportFromImportedHandleTypes)
 	elseif type(tbl.exportFromImportedHandleTypes) == "string" then
 		tbl.exportFromImportedHandleTypes = library.e.external_fence_handle_type[tbl.exportFromImportedHandleTypes]
 	end
+
 	if type(tbl.compatibleHandleTypes) == "table" then
 		tbl.compatibleHandleTypes = library.e.external_fence_handle_type.make_enums(tbl.compatibleHandleTypes)
 	elseif type(tbl.compatibleHandleTypes) == "string" then
 		tbl.compatibleHandleTypes = library.e.external_fence_handle_type[tbl.compatibleHandleTypes]
 	end
+
 	if type(tbl.externalFenceFeatures) == "table" then
 		tbl.externalFenceFeatures = library.e.external_fence_feature.make_enums(tbl.externalFenceFeatures)
 	elseif type(tbl.externalFenceFeatures) == "string" then
 		tbl.externalFenceFeatures = library.e.external_fence_feature[tbl.externalFenceFeatures]
 	end
+
 	return table_only and tbl or ffi.new("struct VkExternalFenceProperties", tbl)
 end
+
 function library.s.ExportFenceCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_EXPORT_FENCE_CREATE_INFO"
+
 	if type(tbl.handleTypes) == "table" then
 		tbl.handleTypes = library.e.external_fence_handle_type.make_enums(tbl.handleTypes)
 	elseif type(tbl.handleTypes) == "string" then
 		tbl.handleTypes = library.e.external_fence_handle_type[tbl.handleTypes]
 	end
+
 	return table_only and tbl or ffi.new("struct VkExportFenceCreateInfo", tbl)
 end
+
 function library.s.ExportSemaphoreCreateInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO"
+
 	if type(tbl.handleTypes) == "table" then
 		tbl.handleTypes = library.e.external_semaphore_handle_type.make_enums(tbl.handleTypes)
 	elseif type(tbl.handleTypes) == "string" then
 		tbl.handleTypes = library.e.external_semaphore_handle_type[tbl.handleTypes]
 	end
+
 	return table_only and tbl or ffi.new("struct VkExportSemaphoreCreateInfo", tbl)
 end
+
 function library.s.PhysicalDeviceExternalSemaphoreInfo(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO"
+
 	if type(tbl.handleType) == "table" then
 		tbl.handleType = library.e.external_semaphore_handle_type.make_enums(tbl.handleType)
 	elseif type(tbl.handleType) == "string" then
 		tbl.handleType = library.e.external_semaphore_handle_type[tbl.handleType]
 	end
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceExternalSemaphoreInfo", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceExternalSemaphoreInfo", tbl)
 end
+
 function library.s.ExternalSemaphoreProperties(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES"
+
 	if type(tbl.exportFromImportedHandleTypes) == "table" then
 		tbl.exportFromImportedHandleTypes = library.e.external_semaphore_handle_type.make_enums(tbl.exportFromImportedHandleTypes)
 	elseif type(tbl.exportFromImportedHandleTypes) == "string" then
 		tbl.exportFromImportedHandleTypes = library.e.external_semaphore_handle_type[tbl.exportFromImportedHandleTypes]
 	end
+
 	if type(tbl.compatibleHandleTypes) == "table" then
 		tbl.compatibleHandleTypes = library.e.external_semaphore_handle_type.make_enums(tbl.compatibleHandleTypes)
 	elseif type(tbl.compatibleHandleTypes) == "string" then
 		tbl.compatibleHandleTypes = library.e.external_semaphore_handle_type[tbl.compatibleHandleTypes]
 	end
+
 	if type(tbl.externalSemaphoreFeatures) == "table" then
 		tbl.externalSemaphoreFeatures = library.e.external_semaphore_feature.make_enums(tbl.externalSemaphoreFeatures)
 	elseif type(tbl.externalSemaphoreFeatures) == "string" then
 		tbl.externalSemaphoreFeatures = library.e.external_semaphore_feature[tbl.externalSemaphoreFeatures]
 	end
+
 	return table_only and tbl or ffi.new("struct VkExternalSemaphoreProperties", tbl)
 end
+
 function library.s.DescriptorSetLayoutSupport(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_SUPPORT"
 	return table_only and tbl or ffi.new("struct VkDescriptorSetLayoutSupport", tbl)
 end
+
 function library.s.PhysicalDeviceShaderDrawParameterFeatures(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETER_FEATURES"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceShaderDrawParameterFeatures", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceShaderDrawParameterFeatures", tbl)
 end
+
 function library.s.SwapchainCreateInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.swapchain_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.swapchain_create[tbl.flags]
 	end
+
 	if type(tbl.imageFormat) == "string" then
 		tbl.imageFormat = library.e.format[tbl.imageFormat]
 	end
+
 	if type(tbl.imageColorSpace) == "string" then
 		tbl.imageColorSpace = library.e.colorspace[tbl.imageColorSpace]
 	end
+
 	if type(tbl.imageExtent) == "table" then
 		tbl.imageExtent = library.s.Extent2D(tbl.imageExtent, true)
 	end
+
 	if type(tbl.imageUsage) == "table" then
 		tbl.imageUsage = library.e.image_usage.make_enums(tbl.imageUsage)
 	elseif type(tbl.imageUsage) == "string" then
 		tbl.imageUsage = library.e.image_usage[tbl.imageUsage]
 	end
+
 	if type(tbl.imageSharingMode) == "string" then
 		tbl.imageSharingMode = library.e.sharing_mode[tbl.imageSharingMode]
 	end
+
 	if type(tbl.preTransform) == "table" then
 		tbl.preTransform = library.e.surface_transform.make_enums(tbl.preTransform)
 	elseif type(tbl.preTransform) == "string" then
 		tbl.preTransform = library.e.surface_transform[tbl.preTransform]
 	end
+
 	if type(tbl.compositeAlpha) == "table" then
 		tbl.compositeAlpha = library.e.composite_alpha.make_enums(tbl.compositeAlpha)
 	elseif type(tbl.compositeAlpha) == "string" then
 		tbl.compositeAlpha = library.e.composite_alpha[tbl.compositeAlpha]
 	end
+
 	if type(tbl.presentMode) == "string" then
 		tbl.presentMode = library.e.present_mode[tbl.presentMode]
 	end
+
 	return table_only and tbl or ffi.new("struct VkSwapchainCreateInfoKHR", tbl)
 end
+
 function library.s.PresentInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PRESENT_INFO_KHR"
+
 	if type(tbl.pWaitSemaphores) == "table" then
 		if not tbl.waitSemaphoreCount then
 			tbl.waitSemaphoreCount = #tbl.pWaitSemaphores
 		end
+
 		tbl.pWaitSemaphores = library.s.SemaphoreArray(tbl.pWaitSemaphores, false)
 	end
+
 	if type(tbl.pSwapchains) == "table" then
-		if not tbl.swapchainCount then
-			tbl.swapchainCount = #tbl.pSwapchains
-		end
+		if not tbl.swapchainCount then tbl.swapchainCount = #tbl.pSwapchains end
+
 		tbl.pSwapchains = library.s.SwapchainKHRArray(tbl.pSwapchains, false)
 	end
+
 	if type(tbl.pResults) == "string" then
 		tbl.pResults = library.e.result[tbl.pResults]
 	end
+
 	return table_only and tbl or ffi.new("struct VkPresentInfoKHR", tbl)
 end
+
 function library.s.DeviceGroupPresentCapabilitiesKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_CAPABILITIES_KHR"
+
 	if type(tbl.modes) == "table" then
 		tbl.modes = library.e.device_group_present_mode.make_enums(tbl.modes)
 	elseif type(tbl.modes) == "string" then
 		tbl.modes = library.e.device_group_present_mode[tbl.modes]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDeviceGroupPresentCapabilitiesKHR", tbl)
 end
+
 function library.s.ImageSwapchainCreateInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_IMAGE_SWAPCHAIN_CREATE_INFO_KHR"
 	return table_only and tbl or ffi.new("struct VkImageSwapchainCreateInfoKHR", tbl)
 end
+
 function library.s.BindImageMemorySwapchainInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR"
 	return table_only and tbl or ffi.new("struct VkBindImageMemorySwapchainInfoKHR", tbl)
 end
+
 function library.s.AcquireNextImageInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_ACQUIRE_NEXT_IMAGE_INFO_KHR"
 	return table_only and tbl or ffi.new("struct VkAcquireNextImageInfoKHR", tbl)
 end
+
 function library.s.DeviceGroupPresentInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_INFO_KHR"
+
 	if type(tbl.mode) == "table" then
 		tbl.mode = library.e.device_group_present_mode.make_enums(tbl.mode)
 	elseif type(tbl.mode) == "string" then
 		tbl.mode = library.e.device_group_present_mode[tbl.mode]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDeviceGroupPresentInfoKHR", tbl)
 end
+
 function library.s.DeviceGroupSwapchainCreateInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR"
+
 	if type(tbl.modes) == "table" then
 		tbl.modes = library.e.device_group_present_mode.make_enums(tbl.modes)
 	elseif type(tbl.modes) == "string" then
 		tbl.modes = library.e.device_group_present_mode[tbl.modes]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDeviceGroupSwapchainCreateInfoKHR", tbl)
 end
+
 function library.s.DisplayModeCreateInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR"
+
 	if type(tbl.parameters) == "table" then
 		tbl.parameters = library.s.DisplayModeParametersKHR(tbl.parameters, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkDisplayModeCreateInfoKHR", tbl)
 end
+
 function library.s.DisplaySurfaceCreateInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR"
+
 	if type(tbl.transform) == "table" then
 		tbl.transform = library.e.surface_transform.make_enums(tbl.transform)
 	elseif type(tbl.transform) == "string" then
 		tbl.transform = library.e.surface_transform[tbl.transform]
 	end
+
 	if type(tbl.alphaMode) == "table" then
 		tbl.alphaMode = library.e.display_plane_alpha.make_enums(tbl.alphaMode)
 	elseif type(tbl.alphaMode) == "string" then
 		tbl.alphaMode = library.e.display_plane_alpha[tbl.alphaMode]
 	end
+
 	if type(tbl.imageExtent) == "table" then
 		tbl.imageExtent = library.s.Extent2D(tbl.imageExtent, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkDisplaySurfaceCreateInfoKHR", tbl)
 end
+
 function library.s.DisplayPresentInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR"
+
 	if type(tbl.srcRect) == "table" then
 		tbl.srcRect = library.s.Rect2D(tbl.srcRect, true)
 	end
+
 	if type(tbl.dstRect) == "table" then
 		tbl.dstRect = library.s.Rect2D(tbl.dstRect, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkDisplayPresentInfoKHR", tbl)
 end
+
 function library.s.DebugReportCallbackCreateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.debug_report.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.debug_report[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDebugReportCallbackCreateInfoEXT", tbl)
 end
+
 function library.s.PipelineRasterizationStateRasterizationOrderAMD(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD"
+
 	if type(tbl.rasterizationOrder) == "string" then
 		tbl.rasterizationOrder = library.e.rasterization_order[tbl.rasterizationOrder]
 	end
-	return table_only and tbl or ffi.new("struct VkPipelineRasterizationStateRasterizationOrderAMD", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineRasterizationStateRasterizationOrderAMD", tbl)
 end
+
 function library.s.DebugMarkerObjectNameInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT"
+
 	if type(tbl.objectType) == "string" then
 		tbl.objectType = library.e.debug_report_object_type[tbl.objectType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDebugMarkerObjectNameInfoEXT", tbl)
 end
+
 function library.s.DebugMarkerObjectTagInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT"
+
 	if type(tbl.objectType) == "string" then
 		tbl.objectType = library.e.debug_report_object_type[tbl.objectType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDebugMarkerObjectTagInfoEXT", tbl)
 end
+
 function library.s.DebugMarkerMarkerInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT"
 	return table_only and tbl or ffi.new("struct VkDebugMarkerMarkerInfoEXT", tbl)
 end
+
 function library.s.DedicatedAllocationImageCreateInfoNV(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV"
-	return table_only and tbl or ffi.new("struct VkDedicatedAllocationImageCreateInfoNV", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkDedicatedAllocationImageCreateInfoNV", tbl)
 end
+
 function library.s.DedicatedAllocationBufferCreateInfoNV(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV"
-	return table_only and tbl or ffi.new("struct VkDedicatedAllocationBufferCreateInfoNV", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkDedicatedAllocationBufferCreateInfoNV", tbl)
 end
+
 function library.s.DedicatedAllocationMemoryAllocateInfoNV(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV"
-	return table_only and tbl or ffi.new("struct VkDedicatedAllocationMemoryAllocateInfoNV", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkDedicatedAllocationMemoryAllocateInfoNV", tbl)
 end
+
 function library.s.ExternalMemoryImageCreateInfoNV(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_NV"
+
 	if type(tbl.handleTypes) == "table" then
 		tbl.handleTypes = library.e.external_memory_handle_type.make_enums(tbl.handleTypes)
 	elseif type(tbl.handleTypes) == "string" then
 		tbl.handleTypes = library.e.external_memory_handle_type[tbl.handleTypes]
 	end
+
 	return table_only and tbl or ffi.new("struct VkExternalMemoryImageCreateInfoNV", tbl)
 end
+
 function library.s.ExportMemoryAllocateInfoNV(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_NV"
+
 	if type(tbl.handleTypes) == "table" then
 		tbl.handleTypes = library.e.external_memory_handle_type.make_enums(tbl.handleTypes)
 	elseif type(tbl.handleTypes) == "string" then
 		tbl.handleTypes = library.e.external_memory_handle_type[tbl.handleTypes]
 	end
+
 	return table_only and tbl or ffi.new("struct VkExportMemoryAllocateInfoNV", tbl)
 end
+
 function library.s.ValidationFlagsEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_VALIDATION_FLAGS_EXT"
+
 	if type(tbl.pDisabledValidationChecks) == "string" then
 		tbl.pDisabledValidationChecks = library.e.validation_check[tbl.pDisabledValidationChecks]
 	end
+
 	return table_only and tbl or ffi.new("struct VkValidationFlagsEXT", tbl)
 end
+
 function library.s.ImportMemoryFdInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR"
+
 	if type(tbl.handleType) == "table" then
 		tbl.handleType = library.e.external_memory_handle_type.make_enums(tbl.handleType)
 	elseif type(tbl.handleType) == "string" then
 		tbl.handleType = library.e.external_memory_handle_type[tbl.handleType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkImportMemoryFdInfoKHR", tbl)
 end
+
 function library.s.MemoryFdPropertiesKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_MEMORY_FD_PROPERTIES_KHR"
 	return table_only and tbl or ffi.new("struct VkMemoryFdPropertiesKHR", tbl)
 end
+
 function library.s.MemoryGetFdInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR"
+
 	if type(tbl.handleType) == "table" then
 		tbl.handleType = library.e.external_memory_handle_type.make_enums(tbl.handleType)
 	elseif type(tbl.handleType) == "string" then
 		tbl.handleType = library.e.external_memory_handle_type[tbl.handleType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkMemoryGetFdInfoKHR", tbl)
 end
+
 function library.s.ImportSemaphoreFdInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_FD_INFO_KHR"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.semaphore_import.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.semaphore_import[tbl.flags]
 	end
+
 	if type(tbl.handleType) == "table" then
 		tbl.handleType = library.e.external_semaphore_handle_type.make_enums(tbl.handleType)
 	elseif type(tbl.handleType) == "string" then
 		tbl.handleType = library.e.external_semaphore_handle_type[tbl.handleType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkImportSemaphoreFdInfoKHR", tbl)
 end
+
 function library.s.SemaphoreGetFdInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR"
+
 	if type(tbl.handleType) == "table" then
 		tbl.handleType = library.e.external_semaphore_handle_type.make_enums(tbl.handleType)
 	elseif type(tbl.handleType) == "string" then
 		tbl.handleType = library.e.external_semaphore_handle_type[tbl.handleType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkSemaphoreGetFdInfoKHR", tbl)
 end
+
 function library.s.PhysicalDevicePushDescriptorPropertiesKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR"
-	return table_only and tbl or ffi.new("struct VkPhysicalDevicePushDescriptorPropertiesKHR", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDevicePushDescriptorPropertiesKHR", tbl)
 end
+
 function library.s.PresentRegionsKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR"
+
 	if type(tbl.pRegions) == "table" then
-		if not tbl.swapchainCount then
-			tbl.swapchainCount = #tbl.pRegions
-		end
+		if not tbl.swapchainCount then tbl.swapchainCount = #tbl.pRegions end
+
 		tbl.pRegions = library.s.PresentRegionKHRArray(tbl.pRegions, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPresentRegionsKHR", tbl)
 end
+
 function library.s.ObjectTableCreateInfoNVX(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_OBJECT_TABLE_CREATE_INFO_NVX"
+
 	if type(tbl.pObjectEntryTypes) == "string" then
 		tbl.pObjectEntryTypes = library.e.object_entry_type[tbl.pObjectEntryTypes]
 	end
+
 	return table_only and tbl or ffi.new("struct VkObjectTableCreateInfoNVX", tbl)
 end
+
 function library.s.IndirectCommandsLayoutCreateInfoNVX(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NVX"
+
 	if type(tbl.pipelineBindPoint) == "string" then
 		tbl.pipelineBindPoint = library.e.pipeline_bind_point[tbl.pipelineBindPoint]
 	end
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.indirect_commands_layout_usage.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.indirect_commands_layout_usage[tbl.flags]
 	end
+
 	if type(tbl.pTokens) == "table" then
-		if not tbl.tokenCount then
-			tbl.tokenCount = #tbl.pTokens
-		end
+		if not tbl.tokenCount then tbl.tokenCount = #tbl.pTokens end
+
 		tbl.pTokens = library.s.IndirectCommandsLayoutTokenNVXArray(tbl.pTokens, false)
 	end
-	return table_only and tbl or ffi.new("struct VkIndirectCommandsLayoutCreateInfoNVX", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkIndirectCommandsLayoutCreateInfoNVX", tbl)
 end
+
 function library.s.CmdProcessCommandsInfoNVX(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_CMD_PROCESS_COMMANDS_INFO_NVX"
+
 	if type(tbl.pIndirectCommandsTokens) == "table" then
 		if not tbl.indirectCommandsTokenCount then
 			tbl.indirectCommandsTokenCount = #tbl.pIndirectCommandsTokens
 		end
+
 		tbl.pIndirectCommandsTokens = library.s.IndirectCommandsTokenNVXArray(tbl.pIndirectCommandsTokens, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkCmdProcessCommandsInfoNVX", tbl)
 end
+
 function library.s.CmdReserveSpaceForCommandsInfoNVX(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_CMD_RESERVE_SPACE_FOR_COMMANDS_INFO_NVX"
 	return table_only and tbl or ffi.new("struct VkCmdReserveSpaceForCommandsInfoNVX", tbl)
 end
+
 function library.s.DeviceGeneratedCommandsLimitsNVX(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_GENERATED_COMMANDS_LIMITS_NVX"
 	return table_only and tbl or ffi.new("struct VkDeviceGeneratedCommandsLimitsNVX", tbl)
 end
+
 function library.s.DeviceGeneratedCommandsFeaturesNVX(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_GENERATED_COMMANDS_FEATURES_NVX"
 	return table_only and tbl or ffi.new("struct VkDeviceGeneratedCommandsFeaturesNVX", tbl)
 end
+
 function library.s.PipelineViewportWScalingStateCreateInfoNV(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV"
 	tbl.viewportWScalingEnable = tbl.viewportWScalingEnable and 1 or 0
+
 	if type(tbl.pViewportWScalings) == "table" then
 		if not tbl.viewportCount then
 			tbl.viewportCount = #tbl.pViewportWScalings
 		end
+
 		tbl.pViewportWScalings = library.s.ViewportWScalingNVArray(tbl.pViewportWScalings, false)
 	end
-	return table_only and tbl or ffi.new("struct VkPipelineViewportWScalingStateCreateInfoNV", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineViewportWScalingStateCreateInfoNV", tbl)
 end
+
 function library.s.DisplayPowerInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DISPLAY_POWER_INFO_EXT"
+
 	if type(tbl.powerState) == "string" then
 		tbl.powerState = library.e.display_power_state[tbl.powerState]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDisplayPowerInfoEXT", tbl)
 end
+
 function library.s.DeviceEventInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_EVENT_INFO_EXT"
+
 	if type(tbl.deviceEvent) == "string" then
 		tbl.deviceEvent = library.e.device_event_type[tbl.deviceEvent]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDeviceEventInfoEXT", tbl)
 end
+
 function library.s.DisplayEventInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DISPLAY_EVENT_INFO_EXT"
+
 	if type(tbl.displayEvent) == "string" then
 		tbl.displayEvent = library.e.display_event_type[tbl.displayEvent]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDisplayEventInfoEXT", tbl)
 end
+
 function library.s.SwapchainCounterCreateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SWAPCHAIN_COUNTER_CREATE_INFO_EXT"
+
 	if type(tbl.surfaceCounters) == "table" then
 		tbl.surfaceCounters = library.e.surface_counter.make_enums(tbl.surfaceCounters)
 	elseif type(tbl.surfaceCounters) == "string" then
 		tbl.surfaceCounters = library.e.surface_counter[tbl.surfaceCounters]
 	end
+
 	return table_only and tbl or ffi.new("struct VkSwapchainCounterCreateInfoEXT", tbl)
 end
+
 function library.s.PresentTimesInfoGOOGLE(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PRESENT_TIMES_INFO_GOOGLE"
+
 	if type(tbl.pTimes) == "table" then
-		if not tbl.swapchainCount then
-			tbl.swapchainCount = #tbl.pTimes
-		end
+		if not tbl.swapchainCount then tbl.swapchainCount = #tbl.pTimes end
+
 		tbl.pTimes = library.s.PresentTimeGOOGLEArray(tbl.pTimes, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPresentTimesInfoGOOGLE", tbl)
 end
+
 function library.s.PhysicalDeviceMultiviewPerViewAttributesPropertiesNVX(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX", tbl)
 end
+
 function library.s.PipelineViewportSwizzleStateCreateInfoNV(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV"
+
 	if type(tbl.pViewportSwizzles) == "table" then
-		if not tbl.viewportCount then
-			tbl.viewportCount = #tbl.pViewportSwizzles
-		end
+		if not tbl.viewportCount then tbl.viewportCount = #tbl.pViewportSwizzles end
+
 		tbl.pViewportSwizzles = library.s.ViewportSwizzleNVArray(tbl.pViewportSwizzles, false)
 	end
-	return table_only and tbl or ffi.new("struct VkPipelineViewportSwizzleStateCreateInfoNV", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineViewportSwizzleStateCreateInfoNV", tbl)
 end
+
 function library.s.PhysicalDeviceDiscardRectanglePropertiesEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceDiscardRectanglePropertiesEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceDiscardRectanglePropertiesEXT", tbl)
 end
+
 function library.s.PipelineDiscardRectangleStateCreateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT"
+
 	if type(tbl.discardRectangleMode) == "string" then
 		tbl.discardRectangleMode = library.e.discard_rectangle_mode[tbl.discardRectangleMode]
 	end
+
 	if type(tbl.pDiscardRectangles) == "table" then
 		if not tbl.discardRectangleCount then
 			tbl.discardRectangleCount = #tbl.pDiscardRectangles
 		end
+
 		tbl.pDiscardRectangles = library.s.Rect2DArray(tbl.pDiscardRectangles, false)
 	end
-	return table_only and tbl or ffi.new("struct VkPipelineDiscardRectangleStateCreateInfoEXT", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineDiscardRectangleStateCreateInfoEXT", tbl)
 end
+
 function library.s.PhysicalDeviceConservativeRasterizationPropertiesEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceConservativeRasterizationPropertiesEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceConservativeRasterizationPropertiesEXT", tbl)
 end
+
 function library.s.PipelineRasterizationConservativeStateCreateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT"
+
 	if type(tbl.conservativeRasterizationMode) == "string" then
 		tbl.conservativeRasterizationMode = library.e.conservative_rasterization_mode[tbl.conservativeRasterizationMode]
 	end
-	return table_only and tbl or ffi.new("struct VkPipelineRasterizationConservativeStateCreateInfoEXT", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineRasterizationConservativeStateCreateInfoEXT", tbl)
 end
+
 function library.s.HdrMetadataEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_HDR_METADATA_EXT"
+
 	if type(tbl.displayPrimaryRed) == "table" then
 		tbl.displayPrimaryRed = library.s.XYColorEXT(tbl.displayPrimaryRed, true)
 	end
+
 	if type(tbl.displayPrimaryGreen) == "table" then
 		tbl.displayPrimaryGreen = library.s.XYColorEXT(tbl.displayPrimaryGreen, true)
 	end
+
 	if type(tbl.displayPrimaryBlue) == "table" then
 		tbl.displayPrimaryBlue = library.s.XYColorEXT(tbl.displayPrimaryBlue, true)
 	end
+
 	if type(tbl.whitePoint) == "table" then
 		tbl.whitePoint = library.s.XYColorEXT(tbl.whitePoint, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkHdrMetadataEXT", tbl)
 end
+
 function library.s.SharedPresentSurfaceCapabilitiesKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR"
+
 	if type(tbl.sharedPresentSupportedUsageFlags) == "table" then
 		tbl.sharedPresentSupportedUsageFlags = library.e.image_usage.make_enums(tbl.sharedPresentSupportedUsageFlags)
 	elseif type(tbl.sharedPresentSupportedUsageFlags) == "string" then
 		tbl.sharedPresentSupportedUsageFlags = library.e.image_usage[tbl.sharedPresentSupportedUsageFlags]
 	end
-	return table_only and tbl or ffi.new("struct VkSharedPresentSurfaceCapabilitiesKHR", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkSharedPresentSurfaceCapabilitiesKHR", tbl)
 end
+
 function library.s.ImportFenceFdInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_IMPORT_FENCE_FD_INFO_KHR"
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.fence_import.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.fence_import[tbl.flags]
 	end
+
 	if type(tbl.handleType) == "table" then
 		tbl.handleType = library.e.external_fence_handle_type.make_enums(tbl.handleType)
 	elseif type(tbl.handleType) == "string" then
 		tbl.handleType = library.e.external_fence_handle_type[tbl.handleType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkImportFenceFdInfoKHR", tbl)
 end
+
 function library.s.FenceGetFdInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_FENCE_GET_FD_INFO_KHR"
+
 	if type(tbl.handleType) == "table" then
 		tbl.handleType = library.e.external_fence_handle_type.make_enums(tbl.handleType)
 	elseif type(tbl.handleType) == "string" then
 		tbl.handleType = library.e.external_fence_handle_type[tbl.handleType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkFenceGetFdInfoKHR", tbl)
 end
+
 function library.s.DebugUtilsObjectNameInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT"
+
 	if type(tbl.objectType) == "string" then
 		tbl.objectType = library.e.object_type[tbl.objectType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDebugUtilsObjectNameInfoEXT", tbl)
 end
+
 function library.s.DebugUtilsObjectTagInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_TAG_INFO_EXT"
+
 	if type(tbl.objectType) == "string" then
 		tbl.objectType = library.e.object_type[tbl.objectType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDebugUtilsObjectTagInfoEXT", tbl)
 end
+
 function library.s.DebugUtilsLabelEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT"
 	return table_only and tbl or ffi.new("struct VkDebugUtilsLabelEXT", tbl)
 end
+
 function library.s.DebugUtilsMessengerCallbackDataEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT"
+
 	if type(tbl.pQueueLabels) == "table" then
-		if not tbl.queueLabelCount then
-			tbl.queueLabelCount = #tbl.pQueueLabels
-		end
+		if not tbl.queueLabelCount then tbl.queueLabelCount = #tbl.pQueueLabels end
+
 		tbl.pQueueLabels = library.s.DebugUtilsLabelEXTArray(tbl.pQueueLabels, false)
 	end
+
 	if type(tbl.pCmdBufLabels) == "table" then
 		if not tbl.cmdBufLabelCount then
 			tbl.cmdBufLabelCount = #tbl.pCmdBufLabels
 		end
+
 		tbl.pCmdBufLabels = library.s.DebugUtilsLabelEXTArray(tbl.pCmdBufLabels, false)
 	end
+
 	if type(tbl.pObjects) == "table" then
-		if not tbl.objectCount then
-			tbl.objectCount = #tbl.pObjects
-		end
+		if not tbl.objectCount then tbl.objectCount = #tbl.pObjects end
+
 		tbl.pObjects = library.s.DebugUtilsObjectNameInfoEXTArray(tbl.pObjects, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkDebugUtilsMessengerCallbackDataEXT", tbl)
 end
+
 function library.s.DebugUtilsMessengerCreateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT"
+
 	if type(tbl.messageSeverity) == "table" then
 		tbl.messageSeverity = library.e.debug_utils_message_severity.make_enums(tbl.messageSeverity)
 	elseif type(tbl.messageSeverity) == "string" then
 		tbl.messageSeverity = library.e.debug_utils_message_severity[tbl.messageSeverity]
 	end
+
 	if type(tbl.messageType) == "table" then
 		tbl.messageType = library.e.debug_utils_message_type.make_enums(tbl.messageType)
 	elseif type(tbl.messageType) == "string" then
 		tbl.messageType = library.e.debug_utils_message_type[tbl.messageType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDebugUtilsMessengerCreateInfoEXT", tbl)
 end
+
 function library.s.PhysicalDeviceSamplerFilterMinmaxPropertiesEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES_EXT"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceSamplerFilterMinmaxPropertiesEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceSamplerFilterMinmaxPropertiesEXT", tbl)
 end
+
 function library.s.SamplerReductionModeCreateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO_EXT"
+
 	if type(tbl.reductionMode) == "string" then
 		tbl.reductionMode = library.e.sampler_reduction_mode[tbl.reductionMode]
 	end
+
 	return table_only and tbl or ffi.new("struct VkSamplerReductionModeCreateInfoEXT", tbl)
 end
+
 function library.s.SampleLocationsInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT"
+
 	if type(tbl.sampleLocationsPerPixel) == "table" then
 		tbl.sampleLocationsPerPixel = library.e.sample_count.make_enums(tbl.sampleLocationsPerPixel)
 	elseif type(tbl.sampleLocationsPerPixel) == "string" then
 		tbl.sampleLocationsPerPixel = library.e.sample_count[tbl.sampleLocationsPerPixel]
 	end
+
 	if type(tbl.sampleLocationGridSize) == "table" then
 		tbl.sampleLocationGridSize = library.s.Extent2D(tbl.sampleLocationGridSize, true)
 	end
+
 	if type(tbl.pSampleLocations) == "table" then
 		if not tbl.sampleLocationsCount then
 			tbl.sampleLocationsCount = #tbl.pSampleLocations
 		end
+
 		tbl.pSampleLocations = library.s.SampleLocationEXTArray(tbl.pSampleLocations, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSampleLocationsInfoEXT", tbl)
 end
+
 function library.s.RenderPassSampleLocationsBeginInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT"
+
 	if type(tbl.pAttachmentInitialSampleLocations) == "table" then
 		if not tbl.attachmentInitialSampleLocationsCount then
 			tbl.attachmentInitialSampleLocationsCount = #tbl.pAttachmentInitialSampleLocations
 		end
+
 		tbl.pAttachmentInitialSampleLocations = library.s.AttachmentSampleLocationsEXTArray(tbl.pAttachmentInitialSampleLocations, false)
 	end
+
 	if type(tbl.pPostSubpassSampleLocations) == "table" then
 		if not tbl.postSubpassSampleLocationsCount then
 			tbl.postSubpassSampleLocationsCount = #tbl.pPostSubpassSampleLocations
 		end
+
 		tbl.pPostSubpassSampleLocations = library.s.SubpassSampleLocationsEXTArray(tbl.pPostSubpassSampleLocations, false)
 	end
-	return table_only and tbl or ffi.new("struct VkRenderPassSampleLocationsBeginInfoEXT", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkRenderPassSampleLocationsBeginInfoEXT", tbl)
 end
+
 function library.s.PipelineSampleLocationsStateCreateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT"
 	tbl.sampleLocationsEnable = tbl.sampleLocationsEnable and 1 or 0
+
 	if type(tbl.sampleLocationsInfo) == "table" then
 		tbl.sampleLocationsInfo = library.s.SampleLocationsInfoEXT(tbl.sampleLocationsInfo, true)
 	end
-	return table_only and tbl or ffi.new("struct VkPipelineSampleLocationsStateCreateInfoEXT", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineSampleLocationsStateCreateInfoEXT", tbl)
 end
+
 function library.s.PhysicalDeviceSampleLocationsPropertiesEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLE_LOCATIONS_PROPERTIES_EXT"
+
 	if type(tbl.sampleLocationSampleCounts) == "table" then
 		tbl.sampleLocationSampleCounts = library.e.sample_count.make_enums(tbl.sampleLocationSampleCounts)
 	elseif type(tbl.sampleLocationSampleCounts) == "string" then
 		tbl.sampleLocationSampleCounts = library.e.sample_count[tbl.sampleLocationSampleCounts]
 	end
+
 	if type(tbl.maxSampleLocationGridSize) == "table" then
 		tbl.maxSampleLocationGridSize = library.s.Extent2D(tbl.maxSampleLocationGridSize, true)
 	end
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceSampleLocationsPropertiesEXT", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceSampleLocationsPropertiesEXT", tbl)
 end
+
 function library.s.MultisamplePropertiesEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_MULTISAMPLE_PROPERTIES_EXT"
+
 	if type(tbl.maxSampleLocationGridSize) == "table" then
 		tbl.maxSampleLocationGridSize = library.s.Extent2D(tbl.maxSampleLocationGridSize, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkMultisamplePropertiesEXT", tbl)
 end
+
 function library.s.ImageFormatListCreateInfoKHR(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO_KHR"
+
 	if type(tbl.pViewFormats) == "string" then
 		tbl.pViewFormats = library.e.format[tbl.pViewFormats]
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageFormatListCreateInfoKHR", tbl)
 end
+
 function library.s.PhysicalDeviceBlendOperationAdvancedFeaturesEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT", tbl)
 end
+
 function library.s.PhysicalDeviceBlendOperationAdvancedPropertiesEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT", tbl)
 end
+
 function library.s.PipelineColorBlendAdvancedStateCreateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT"
+
 	if type(tbl.blendOverlap) == "string" then
 		tbl.blendOverlap = library.e.blend_overlap[tbl.blendOverlap]
 	end
-	return table_only and tbl or ffi.new("struct VkPipelineColorBlendAdvancedStateCreateInfoEXT", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineColorBlendAdvancedStateCreateInfoEXT", tbl)
 end
+
 function library.s.PipelineCoverageToColorStateCreateInfoNV(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV"
 	tbl.coverageToColorEnable = tbl.coverageToColorEnable and 1 or 0
-	return table_only and tbl or ffi.new("struct VkPipelineCoverageToColorStateCreateInfoNV", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineCoverageToColorStateCreateInfoNV", tbl)
 end
+
 function library.s.PipelineCoverageModulationStateCreateInfoNV(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV"
+
 	if type(tbl.coverageModulationMode) == "string" then
 		tbl.coverageModulationMode = library.e.coverage_modulation_mode[tbl.coverageModulationMode]
 	end
+
 	tbl.coverageModulationTableEnable = tbl.coverageModulationTableEnable and 1 or 0
-	return table_only and tbl or ffi.new("struct VkPipelineCoverageModulationStateCreateInfoNV", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineCoverageModulationStateCreateInfoNV", tbl)
 end
+
 function library.s.ValidationCacheCreateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_VALIDATION_CACHE_CREATE_INFO_EXT"
 	return table_only and tbl or ffi.new("struct VkValidationCacheCreateInfoEXT", tbl)
 end
+
 function library.s.ShaderModuleValidationCacheCreateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT"
-	return table_only and tbl or ffi.new("struct VkShaderModuleValidationCacheCreateInfoEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkShaderModuleValidationCacheCreateInfoEXT", tbl)
 end
+
 function library.s.DescriptorSetLayoutBindingFlagsCreateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT"
-	return table_only and tbl or ffi.new("struct VkDescriptorSetLayoutBindingFlagsCreateInfoEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkDescriptorSetLayoutBindingFlagsCreateInfoEXT", tbl)
 end
+
 function library.s.PhysicalDeviceDescriptorIndexingFeaturesEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceDescriptorIndexingFeaturesEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceDescriptorIndexingFeaturesEXT", tbl)
 end
+
 function library.s.PhysicalDeviceDescriptorIndexingPropertiesEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES_EXT"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceDescriptorIndexingPropertiesEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceDescriptorIndexingPropertiesEXT", tbl)
 end
+
 function library.s.DescriptorSetVariableDescriptorCountAllocateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT"
-	return table_only and tbl or ffi.new("struct VkDescriptorSetVariableDescriptorCountAllocateInfoEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkDescriptorSetVariableDescriptorCountAllocateInfoEXT", tbl)
 end
+
 function library.s.DescriptorSetVariableDescriptorCountLayoutSupportEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT_EXT"
-	return table_only and tbl or ffi.new("struct VkDescriptorSetVariableDescriptorCountLayoutSupportEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkDescriptorSetVariableDescriptorCountLayoutSupportEXT", tbl)
 end
+
 function library.s.DeviceQueueGlobalPriorityCreateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO_EXT"
+
 	if type(tbl.globalPriority) == "string" then
 		tbl.globalPriority = library.e.queue_global_priority[tbl.globalPriority]
 	end
-	return table_only and tbl or ffi.new("struct VkDeviceQueueGlobalPriorityCreateInfoEXT", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkDeviceQueueGlobalPriorityCreateInfoEXT", tbl)
 end
+
 function library.s.ImportMemoryHostPointerInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT"
+
 	if type(tbl.handleType) == "table" then
 		tbl.handleType = library.e.external_memory_handle_type.make_enums(tbl.handleType)
 	elseif type(tbl.handleType) == "string" then
 		tbl.handleType = library.e.external_memory_handle_type[tbl.handleType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkImportMemoryHostPointerInfoEXT", tbl)
 end
+
 function library.s.MemoryHostPointerPropertiesEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_MEMORY_HOST_POINTER_PROPERTIES_EXT"
 	return table_only and tbl or ffi.new("struct VkMemoryHostPointerPropertiesEXT", tbl)
 end
+
 function library.s.PhysicalDeviceExternalMemoryHostPropertiesEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceExternalMemoryHostPropertiesEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceExternalMemoryHostPropertiesEXT", tbl)
 end
+
 function library.s.PhysicalDeviceShaderCorePropertiesAMD(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceShaderCorePropertiesAMD", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceShaderCorePropertiesAMD", tbl)
 end
+
 function library.s.PhysicalDeviceVertexAttributeDivisorPropertiesEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT"
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT", tbl)
 end
+
 function library.s.PipelineVertexInputDivisorStateCreateInfoEXT(tbl, table_only)
 	tbl.sType = "VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_EXT"
+
 	if type(tbl.pVertexBindingDivisors) == "table" then
 		if not tbl.vertexBindingDivisorCount then
 			tbl.vertexBindingDivisorCount = #tbl.pVertexBindingDivisors
 		end
+
 		tbl.pVertexBindingDivisors = library.s.VertexInputBindingDivisorDescriptionEXTArray(tbl.pVertexBindingDivisors, false)
 	end
-	return table_only and tbl or ffi.new("struct VkPipelineVertexInputDivisorStateCreateInfoEXT", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPipelineVertexInputDivisorStateCreateInfoEXT", tbl)
 end
+
 function library.s.PhysicalDeviceMultiviewFeaturesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceMultiviewFeatures(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceMultiviewFeatures[?]", #tbl, tbl)
 end
+
 function library.s.DedicatedAllocationMemoryAllocateInfoNVArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DedicatedAllocationMemoryAllocateInfoNV(v)
 	end
+
 	return ffi.new("struct VkDedicatedAllocationMemoryAllocateInfoNV[?]", #tbl, tbl)
 end
-function library.s.DescriptorPoolArray(tbl) return ffi.new("struct VkDescriptorPool_T *[?]", #tbl, tbl) end
+
+function library.s.DescriptorPoolArray(tbl)
+	return ffi.new("struct VkDescriptorPool_T *[?]", #tbl, tbl)
+end
+
 function library.s.ClearDepthStencilValue(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkClearDepthStencilValue", tbl)
 end
+
 function library.s.ClearDepthStencilValueArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ClearDepthStencilValue(v)
 	end
+
 	return ffi.new("struct VkClearDepthStencilValue[?]", #tbl, tbl)
 end
+
 function library.s.SparseBufferMemoryBindInfo(tbl, table_only)
 	if type(tbl.pBinds) == "table" then
-		if not tbl.bindCount then
-			tbl.bindCount = #tbl.pBinds
-		end
+		if not tbl.bindCount then tbl.bindCount = #tbl.pBinds end
+
 		tbl.pBinds = library.s.SparseMemoryBindArray(tbl.pBinds, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSparseBufferMemoryBindInfo", tbl)
 end
+
 function library.s.SparseBufferMemoryBindInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SparseBufferMemoryBindInfo(v)
 	end
+
 	return ffi.new("struct VkSparseBufferMemoryBindInfo[?]", #tbl, tbl)
 end
-function library.s.ImageViewArray(tbl) return ffi.new("struct VkImageView_T *[?]", #tbl, tbl) end
-function library.s.DescriptorSetArray(tbl) return ffi.new("struct VkDescriptorSet_T *[?]", #tbl, tbl) end
+
+function library.s.ImageViewArray(tbl)
+	return ffi.new("struct VkImageView_T *[?]", #tbl, tbl)
+end
+
+function library.s.DescriptorSetArray(tbl)
+	return ffi.new("struct VkDescriptorSet_T *[?]", #tbl, tbl)
+end
+
 function library.s.MemoryDedicatedRequirementsArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryDedicatedRequirements(v)
 	end
+
 	return ffi.new("struct VkMemoryDedicatedRequirements[?]", #tbl, tbl)
 end
+
 function library.s.ComponentMapping(tbl, table_only)
-	if type(tbl.r) == "string" then
-		tbl.r = library.e.component_swizzle[tbl.r]
-	end
-	if type(tbl.g) == "string" then
-		tbl.g = library.e.component_swizzle[tbl.g]
-	end
-	if type(tbl.b) == "string" then
-		tbl.b = library.e.component_swizzle[tbl.b]
-	end
-	if type(tbl.a) == "string" then
-		tbl.a = library.e.component_swizzle[tbl.a]
-	end
+	if type(tbl.r) == "string" then tbl.r = library.e.component_swizzle[tbl.r] end
+
+	if type(tbl.g) == "string" then tbl.g = library.e.component_swizzle[tbl.g] end
+
+	if type(tbl.b) == "string" then tbl.b = library.e.component_swizzle[tbl.b] end
+
+	if type(tbl.a) == "string" then tbl.a = library.e.component_swizzle[tbl.a] end
+
 	return table_only and tbl or ffi.new("struct VkComponentMapping", tbl)
 end
+
 function library.s.ComponentMappingArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ComponentMapping(v)
 	end
+
 	return ffi.new("struct VkComponentMapping[?]", #tbl, tbl)
 end
+
 function library.s.PipelineMultisampleStateCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineMultisampleStateCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineMultisampleStateCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PipelineTessellationDomainOriginStateCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineTessellationDomainOriginStateCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineTessellationDomainOriginStateCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.DebugUtilsObjectTagInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DebugUtilsObjectTagInfoEXT(v)
 	end
+
 	return ffi.new("struct VkDebugUtilsObjectTagInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.SurfaceCapabilities2EXT(tbl, table_only)
 	if type(tbl.currentExtent) == "table" then
 		tbl.currentExtent = library.s.Extent2D(tbl.currentExtent, true)
 	end
+
 	if type(tbl.minImageExtent) == "table" then
 		tbl.minImageExtent = library.s.Extent2D(tbl.minImageExtent, true)
 	end
+
 	if type(tbl.maxImageExtent) == "table" then
 		tbl.maxImageExtent = library.s.Extent2D(tbl.maxImageExtent, true)
 	end
+
 	if type(tbl.supportedTransforms) == "table" then
 		tbl.supportedTransforms = library.e.surface_transform.make_enums(tbl.supportedTransforms)
 	elseif type(tbl.supportedTransforms) == "string" then
 		tbl.supportedTransforms = library.e.surface_transform[tbl.supportedTransforms]
 	end
+
 	if type(tbl.currentTransform) == "table" then
 		tbl.currentTransform = library.e.surface_transform.make_enums(tbl.currentTransform)
 	elseif type(tbl.currentTransform) == "string" then
 		tbl.currentTransform = library.e.surface_transform[tbl.currentTransform]
 	end
+
 	if type(tbl.supportedCompositeAlpha) == "table" then
 		tbl.supportedCompositeAlpha = library.e.composite_alpha.make_enums(tbl.supportedCompositeAlpha)
 	elseif type(tbl.supportedCompositeAlpha) == "string" then
 		tbl.supportedCompositeAlpha = library.e.composite_alpha[tbl.supportedCompositeAlpha]
 	end
+
 	if type(tbl.supportedUsageFlags) == "table" then
 		tbl.supportedUsageFlags = library.e.image_usage.make_enums(tbl.supportedUsageFlags)
 	elseif type(tbl.supportedUsageFlags) == "string" then
 		tbl.supportedUsageFlags = library.e.image_usage[tbl.supportedUsageFlags]
 	end
+
 	if type(tbl.supportedSurfaceCounters) == "table" then
 		tbl.supportedSurfaceCounters = library.e.surface_counter.make_enums(tbl.supportedSurfaceCounters)
 	elseif type(tbl.supportedSurfaceCounters) == "string" then
 		tbl.supportedSurfaceCounters = library.e.surface_counter[tbl.supportedSurfaceCounters]
 	end
+
 	return table_only and tbl or ffi.new("struct VkSurfaceCapabilities2EXT", tbl)
 end
+
 function library.s.SurfaceCapabilities2EXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SurfaceCapabilities2EXT(v)
 	end
+
 	return ffi.new("struct VkSurfaceCapabilities2EXT[?]", #tbl, tbl)
 end
+
 function library.s.DispatchIndirectCommand(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkDispatchIndirectCommand", tbl)
 end
+
 function library.s.DispatchIndirectCommandArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DispatchIndirectCommand(v)
 	end
+
 	return ffi.new("struct VkDispatchIndirectCommand[?]", #tbl, tbl)
 end
+
 function library.s.ExternalMemoryProperties(tbl, table_only)
 	if type(tbl.externalMemoryFeatures) == "table" then
 		tbl.externalMemoryFeatures = library.e.external_memory_feature.make_enums(tbl.externalMemoryFeatures)
 	elseif type(tbl.externalMemoryFeatures) == "string" then
 		tbl.externalMemoryFeatures = library.e.external_memory_feature[tbl.externalMemoryFeatures]
 	end
+
 	if type(tbl.exportFromImportedHandleTypes) == "table" then
 		tbl.exportFromImportedHandleTypes = library.e.external_memory_handle_type.make_enums(tbl.exportFromImportedHandleTypes)
 	elseif type(tbl.exportFromImportedHandleTypes) == "string" then
 		tbl.exportFromImportedHandleTypes = library.e.external_memory_handle_type[tbl.exportFromImportedHandleTypes]
 	end
+
 	if type(tbl.compatibleHandleTypes) == "table" then
 		tbl.compatibleHandleTypes = library.e.external_memory_handle_type.make_enums(tbl.compatibleHandleTypes)
 	elseif type(tbl.compatibleHandleTypes) == "string" then
 		tbl.compatibleHandleTypes = library.e.external_memory_handle_type[tbl.compatibleHandleTypes]
 	end
+
 	return table_only and tbl or ffi.new("struct VkExternalMemoryProperties", tbl)
 end
+
 function library.s.ExternalMemoryPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalMemoryProperties(v)
 	end
+
 	return ffi.new("struct VkExternalMemoryProperties[?]", #tbl, tbl)
 end
+
 function library.s.DebugMarkerObjectTagInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DebugMarkerObjectTagInfoEXT(v)
 	end
+
 	return ffi.new("struct VkDebugMarkerObjectTagInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.PipelineCoverageModulationStateCreateInfoNVArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineCoverageModulationStateCreateInfoNV(v)
 	end
+
 	return ffi.new("struct VkPipelineCoverageModulationStateCreateInfoNV[?]", #tbl, tbl)
 end
-function library.s.DebugReportCallbackEXTArray(tbl) return ffi.new("struct VkDebugReportCallbackEXT_T *[?]", #tbl, tbl) end
+
+function library.s.DebugReportCallbackEXTArray(tbl)
+	return ffi.new("struct VkDebugReportCallbackEXT_T *[?]", #tbl, tbl)
+end
+
 function library.s.PhysicalDeviceMultiviewFeaturesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceMultiviewFeatures(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceMultiviewFeatures[?]", #tbl, tbl)
 end
-function library.s.BufferArray(tbl) return ffi.new("struct VkBuffer_T *[?]", #tbl, tbl) end
+
+function library.s.BufferArray(tbl)
+	return ffi.new("struct VkBuffer_T *[?]", #tbl, tbl)
+end
+
 function library.s.ExternalMemoryImageCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalMemoryImageCreateInfo(v)
 	end
+
 	return ffi.new("struct VkExternalMemoryImageCreateInfo[?]", #tbl, tbl)
 end
-function library.s.PipelineCacheArray(tbl) return ffi.new("struct VkPipelineCache_T *[?]", #tbl, tbl) end
+
+function library.s.PipelineCacheArray(tbl)
+	return ffi.new("struct VkPipelineCache_T *[?]", #tbl, tbl)
+end
+
 function library.s.PhysicalDeviceImageFormatInfo2(tbl, table_only)
 	if type(tbl.format) == "string" then
 		tbl.format = library.e.format[tbl.format]
 	end
+
 	if type(tbl.type) == "string" then
 		tbl.type = library.e.image_type[tbl.type]
 	end
+
 	if type(tbl.tiling) == "string" then
 		tbl.tiling = library.e.image_tiling[tbl.tiling]
 	end
+
 	if type(tbl.usage) == "table" then
 		tbl.usage = library.e.image_usage.make_enums(tbl.usage)
 	elseif type(tbl.usage) == "string" then
 		tbl.usage = library.e.image_usage[tbl.usage]
 	end
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.image_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.image_create[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceImageFormatInfo2", tbl)
 end
+
 function library.s.PhysicalDeviceImageFormatInfo2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceImageFormatInfo2(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceImageFormatInfo2[?]", #tbl, tbl)
 end
-function library.s.ImageArray(tbl) return ffi.new("struct VkImage_T *[?]", #tbl, tbl) end
+
+function library.s.ImageArray(tbl)
+	return ffi.new("struct VkImage_T *[?]", #tbl, tbl)
+end
+
 function library.s.PhysicalDeviceMemoryProperties(tbl, table_only)
 	if type(tbl.memoryTypes) == "table" then
 		tbl.memoryTypes = library.s.MemoryType(tbl.memoryTypes, true)
 	end
+
 	if type(tbl.memoryHeaps) == "table" then
 		tbl.memoryHeaps = library.s.MemoryHeap(tbl.memoryHeaps, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceMemoryProperties", tbl)
 end
+
 function library.s.PhysicalDeviceMemoryPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceMemoryProperties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceMemoryProperties[?]", #tbl, tbl)
 end
+
 function library.s.ApplicationInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ApplicationInfo(v)
 	end
+
 	return ffi.new("struct VkApplicationInfo[?]", #tbl, tbl)
 end
+
 function library.s.SubmitInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SubmitInfo(v)
 	end
+
 	return ffi.new("struct VkSubmitInfo[?]", #tbl, tbl)
 end
+
 function library.s.RenderPassBeginInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.RenderPassBeginInfo(v)
 	end
+
 	return ffi.new("struct VkRenderPassBeginInfo[?]", #tbl, tbl)
 end
+
 function library.s.ExternalImageFormatPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalImageFormatProperties(v)
 	end
+
 	return ffi.new("struct VkExternalImageFormatProperties[?]", #tbl, tbl)
 end
+
 function library.s.ImagePlaneMemoryRequirementsInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImagePlaneMemoryRequirementsInfo(v)
 	end
+
 	return ffi.new("struct VkImagePlaneMemoryRequirementsInfo[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceProperties2(tbl, table_only)
 	if type(tbl.properties) == "table" then
 		tbl.properties = library.s.PhysicalDeviceProperties(tbl.properties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceProperties2", tbl)
 end
+
 function library.s.PhysicalDeviceProperties2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceProperties2(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceProperties2[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceSparseImageFormatInfo2(tbl, table_only)
 	if type(tbl.format) == "string" then
 		tbl.format = library.e.format[tbl.format]
 	end
+
 	if type(tbl.type) == "string" then
 		tbl.type = library.e.image_type[tbl.type]
 	end
+
 	if type(tbl.samples) == "table" then
 		tbl.samples = library.e.sample_count.make_enums(tbl.samples)
 	elseif type(tbl.samples) == "string" then
 		tbl.samples = library.e.sample_count[tbl.samples]
 	end
+
 	if type(tbl.usage) == "table" then
 		tbl.usage = library.e.image_usage.make_enums(tbl.usage)
 	elseif type(tbl.usage) == "string" then
 		tbl.usage = library.e.image_usage[tbl.usage]
 	end
+
 	if type(tbl.tiling) == "string" then
 		tbl.tiling = library.e.image_tiling[tbl.tiling]
 	end
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceSparseImageFormatInfo2", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceSparseImageFormatInfo2", tbl)
 end
+
 function library.s.PhysicalDeviceSparseImageFormatInfo2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceSparseImageFormatInfo2(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceSparseImageFormatInfo2[?]", #tbl, tbl)
 end
+
 function library.s.ObjectTableCreateInfoNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ObjectTableCreateInfoNVX(v)
 	end
+
 	return ffi.new("struct VkObjectTableCreateInfoNVX[?]", #tbl, tbl)
 end
+
 function library.s.ComputePipelineCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ComputePipelineCreateInfo(v)
 	end
+
 	return ffi.new("struct VkComputePipelineCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.StencilOpState(tbl, table_only)
 	if type(tbl.failOp) == "string" then
 		tbl.failOp = library.e.stencil_op[tbl.failOp]
 	end
+
 	if type(tbl.passOp) == "string" then
 		tbl.passOp = library.e.stencil_op[tbl.passOp]
 	end
+
 	if type(tbl.depthFailOp) == "string" then
 		tbl.depthFailOp = library.e.stencil_op[tbl.depthFailOp]
 	end
+
 	if type(tbl.compareOp) == "string" then
 		tbl.compareOp = library.e.compare_op[tbl.compareOp]
 	end
+
 	return table_only and tbl or ffi.new("struct VkStencilOpState", tbl)
 end
+
 function library.s.StencilOpStateArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.StencilOpState(v)
 	end
+
 	return ffi.new("struct VkStencilOpState[?]", #tbl, tbl)
 end
-function library.s.SamplerYcbcrConversionArray(tbl) return ffi.new("struct VkSamplerYcbcrConversion_T *[?]", #tbl, tbl) end
-function library.s.PhysicalDeviceArray(tbl) return ffi.new("struct VkPhysicalDevice_T *[?]", #tbl, tbl) end
+
+function library.s.SamplerYcbcrConversionArray(tbl)
+	return ffi.new("struct VkSamplerYcbcrConversion_T *[?]", #tbl, tbl)
+end
+
+function library.s.PhysicalDeviceArray(tbl)
+	return ffi.new("struct VkPhysicalDevice_T *[?]", #tbl, tbl)
+end
+
 function library.s.PhysicalDeviceSubgroupPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceSubgroupProperties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceSubgroupProperties[?]", #tbl, tbl)
 end
-function library.s.ShaderModuleArray(tbl) return ffi.new("struct VkShaderModule_T *[?]", #tbl, tbl) end
+
+function library.s.ShaderModuleArray(tbl)
+	return ffi.new("struct VkShaderModule_T *[?]", #tbl, tbl)
+end
+
 function library.s.BindBufferMemoryInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BindBufferMemoryInfo(v)
 	end
+
 	return ffi.new("struct VkBindBufferMemoryInfo[?]", #tbl, tbl)
 end
+
 function library.s.CmdProcessCommandsInfoNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.CmdProcessCommandsInfoNVX(v)
 	end
+
 	return ffi.new("struct VkCmdProcessCommandsInfoNVX[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDevice16BitStorageFeatures(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkPhysicalDevice16BitStorageFeatures", tbl)
 end
+
 function library.s.PhysicalDevice16BitStorageFeaturesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDevice16BitStorageFeatures(v)
 	end
+
 	return ffi.new("struct VkPhysicalDevice16BitStorageFeatures[?]", #tbl, tbl)
 end
+
 function library.s.Extent3D(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkExtent3D", tbl)
 end
+
 function library.s.Extent3DArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.Extent3D(v)
 	end
+
 	return ffi.new("struct VkExtent3D[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceDiscardRectanglePropertiesEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceDiscardRectanglePropertiesEXT(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceDiscardRectanglePropertiesEXT[?]", #tbl, tbl)
 end
+
 function library.s.PipelineDepthStencilStateCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineDepthStencilStateCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineDepthStencilStateCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.DebugUtilsMessengerCreateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DebugUtilsMessengerCreateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkDebugUtilsMessengerCreateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.ProtectedSubmitInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ProtectedSubmitInfo(v)
 	end
+
 	return ffi.new("struct VkProtectedSubmitInfo[?]", #tbl, tbl)
 end
+
 function library.s.PipelineTessellationDomainOriginStateCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineTessellationDomainOriginStateCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineTessellationDomainOriginStateCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.ExternalFencePropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalFenceProperties(v)
 	end
+
 	return ffi.new("struct VkExternalFenceProperties[?]", #tbl, tbl)
 end
+
 function library.s.PipelineViewportSwizzleStateCreateInfoNVArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineViewportSwizzleStateCreateInfoNV(v)
 	end
+
 	return ffi.new("struct VkPipelineViewportSwizzleStateCreateInfoNV[?]", #tbl, tbl)
 end
+
 function library.s.AttachmentDescription(tbl, table_only)
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.attachment_description.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.attachment_description[tbl.flags]
 	end
+
 	if type(tbl.format) == "string" then
 		tbl.format = library.e.format[tbl.format]
 	end
+
 	if type(tbl.samples) == "table" then
 		tbl.samples = library.e.sample_count.make_enums(tbl.samples)
 	elseif type(tbl.samples) == "string" then
 		tbl.samples = library.e.sample_count[tbl.samples]
 	end
+
 	if type(tbl.loadOp) == "string" then
 		tbl.loadOp = library.e.attachment_load_op[tbl.loadOp]
 	end
+
 	if type(tbl.storeOp) == "string" then
 		tbl.storeOp = library.e.attachment_store_op[tbl.storeOp]
 	end
+
 	if type(tbl.stencilLoadOp) == "string" then
 		tbl.stencilLoadOp = library.e.attachment_load_op[tbl.stencilLoadOp]
 	end
+
 	if type(tbl.stencilStoreOp) == "string" then
 		tbl.stencilStoreOp = library.e.attachment_store_op[tbl.stencilStoreOp]
 	end
+
 	if type(tbl.initialLayout) == "string" then
 		tbl.initialLayout = library.e.image_layout[tbl.initialLayout]
 	end
+
 	if type(tbl.finalLayout) == "string" then
 		tbl.finalLayout = library.e.image_layout[tbl.finalLayout]
 	end
+
 	return table_only and tbl or ffi.new("struct VkAttachmentDescription", tbl)
 end
+
 function library.s.AttachmentDescriptionArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.AttachmentDescription(v)
 	end
+
 	return ffi.new("struct VkAttachmentDescription[?]", #tbl, tbl)
 end
+
 function library.s.ExportMemoryAllocateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExportMemoryAllocateInfo(v)
 	end
+
 	return ffi.new("struct VkExportMemoryAllocateInfo[?]", #tbl, tbl)
 end
+
 function library.s.RenderPassMultiviewCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.RenderPassMultiviewCreateInfo(v)
 	end
+
 	return ffi.new("struct VkRenderPassMultiviewCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PipelineVertexInputDivisorStateCreateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineVertexInputDivisorStateCreateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkPipelineVertexInputDivisorStateCreateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.AttachmentReference(tbl, table_only)
 	if type(tbl.layout) == "string" then
 		tbl.layout = library.e.image_layout[tbl.layout]
 	end
+
 	return table_only and tbl or ffi.new("struct VkAttachmentReference", tbl)
 end
+
 function library.s.AttachmentReferenceArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.AttachmentReference(v)
 	end
+
 	return ffi.new("struct VkAttachmentReference[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceShaderCorePropertiesAMDArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceShaderCorePropertiesAMD(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceShaderCorePropertiesAMD[?]", #tbl, tbl)
 end
+
 function library.s.SparseImageFormatProperties2(tbl, table_only)
 	if type(tbl.properties) == "table" then
 		tbl.properties = library.s.SparseImageFormatProperties(tbl.properties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSparseImageFormatProperties2", tbl)
 end
+
 function library.s.SparseImageFormatProperties2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SparseImageFormatProperties2(v)
 	end
+
 	return ffi.new("struct VkSparseImageFormatProperties2[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceMultiviewPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceMultiviewProperties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceMultiviewProperties[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceExternalMemoryHostPropertiesEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceExternalMemoryHostPropertiesEXT(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceExternalMemoryHostPropertiesEXT[?]", #tbl, tbl)
 end
+
 function library.s.ClearColorValue(tbl, table_only)
 	return table_only and tbl or ffi.new("union VkClearColorValue", tbl)
 end
+
 function library.s.ClearColorValueArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ClearColorValue(v)
 	end
+
 	return ffi.new("union VkClearColorValue[?]", #tbl, tbl)
 end
+
 function library.s.QueueFamilyProperties2(tbl, table_only)
 	if type(tbl.queueFamilyProperties) == "table" then
 		tbl.queueFamilyProperties = library.s.QueueFamilyProperties(tbl.queueFamilyProperties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkQueueFamilyProperties2", tbl)
 end
+
 function library.s.QueueFamilyProperties2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.QueueFamilyProperties2(v)
 	end
+
 	return ffi.new("struct VkQueueFamilyProperties2[?]", #tbl, tbl)
 end
+
 function library.s.ImportMemoryHostPointerInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImportMemoryHostPointerInfoEXT(v)
 	end
+
 	return ffi.new("struct VkImportMemoryHostPointerInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.DeviceQueueGlobalPriorityCreateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceQueueGlobalPriorityCreateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkDeviceQueueGlobalPriorityCreateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.DescriptorSetVariableDescriptorCountLayoutSupportEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorSetVariableDescriptorCountLayoutSupportEXT(v)
 	end
+
 	return ffi.new("struct VkDescriptorSetVariableDescriptorCountLayoutSupportEXT[?]", #tbl, tbl)
 end
+
 function library.s.IndirectCommandsLayoutTokenNVX(tbl, table_only)
 	if type(tbl.tokenType) == "string" then
 		tbl.tokenType = library.e.indirect_commands_token_type[tbl.tokenType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkIndirectCommandsLayoutTokenNVX", tbl)
 end
+
 function library.s.IndirectCommandsLayoutTokenNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.IndirectCommandsLayoutTokenNVX(v)
 	end
+
 	return ffi.new("struct VkIndirectCommandsLayoutTokenNVX[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceMaintenance3Properties(tbl, table_only)
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceMaintenance3Properties", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceMaintenance3Properties", tbl)
 end
+
 function library.s.PhysicalDeviceMaintenance3PropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceMaintenance3Properties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceMaintenance3Properties[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceDescriptorIndexingPropertiesEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceDescriptorIndexingPropertiesEXT(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceDescriptorIndexingPropertiesEXT[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceDescriptorIndexingFeaturesEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceDescriptorIndexingFeaturesEXT(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceDescriptorIndexingFeaturesEXT[?]", #tbl, tbl)
 end
+
 function library.s.DescriptorSetLayoutBindingFlagsCreateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorSetLayoutBindingFlagsCreateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkDescriptorSetLayoutBindingFlagsCreateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.FenceGetFdInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.FenceGetFdInfoKHR(v)
 	end
+
 	return ffi.new("struct VkFenceGetFdInfoKHR[?]", #tbl, tbl)
 end
-function library.s.SamplerYcbcrConversionArray(tbl) return ffi.new("struct VkSamplerYcbcrConversion_T *[?]", #tbl, tbl) end
+
+function library.s.SamplerYcbcrConversionArray(tbl)
+	return ffi.new("struct VkSamplerYcbcrConversion_T *[?]", #tbl, tbl)
+end
+
 function library.s.ShaderModuleValidationCacheCreateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ShaderModuleValidationCacheCreateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkShaderModuleValidationCacheCreateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.ValidationCacheCreateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ValidationCacheCreateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkValidationCacheCreateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.BufferViewCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BufferViewCreateInfo(v)
 	end
+
 	return ffi.new("struct VkBufferViewCreateInfo[?]", #tbl, tbl)
 end
-function library.s.ValidationCacheEXTArray(tbl) return ffi.new("struct VkValidationCacheEXT_T *[?]", #tbl, tbl) end
+
+function library.s.ValidationCacheEXTArray(tbl)
+	return ffi.new("struct VkValidationCacheEXT_T *[?]", #tbl, tbl)
+end
+
 function library.s.ClearValue(tbl, table_only)
 	if type(tbl.color) == "table" then
 		tbl.color = library.s.ClearColorValue(tbl.color, true)
 	end
+
 	if type(tbl.depthStencil) == "table" then
 		tbl.depthStencil = library.s.ClearDepthStencilValue(tbl.depthStencil, true)
 	end
+
 	return table_only and tbl or ffi.new("union VkClearValue", tbl)
 end
+
 function library.s.ClearValueArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ClearValue(v)
 	end
+
 	return ffi.new("union VkClearValue[?]", #tbl, tbl)
 end
+
 function library.s.SubpassDescription(tbl, table_only)
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.subpass_description.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.subpass_description[tbl.flags]
 	end
+
 	if type(tbl.pipelineBindPoint) == "string" then
 		tbl.pipelineBindPoint = library.e.pipeline_bind_point[tbl.pipelineBindPoint]
 	end
+
 	if type(tbl.pInputAttachments) == "table" then
 		if not tbl.inputAttachmentCount then
 			tbl.inputAttachmentCount = #tbl.pInputAttachments
 		end
+
 		tbl.pInputAttachments = library.s.AttachmentReferenceArray(tbl.pInputAttachments, false)
 	end
+
 	if type(tbl.pColorAttachments) == "table" then
 		if not tbl.colorAttachmentCount then
 			tbl.colorAttachmentCount = #tbl.pColorAttachments
 		end
+
 		tbl.pColorAttachments = library.s.AttachmentReferenceArray(tbl.pColorAttachments, false)
 	end
+
 	if type(tbl.pResolveAttachments) == "table" then
 		tbl.pResolveAttachments = library.s.AttachmentReference(tbl.pResolveAttachments, false)
 	end
+
 	if type(tbl.pDepthStencilAttachment) == "table" then
 		tbl.pDepthStencilAttachment = library.s.AttachmentReference(tbl.pDepthStencilAttachment, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSubpassDescription", tbl)
 end
+
 function library.s.SubpassDescriptionArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SubpassDescription(v)
 	end
+
 	return ffi.new("struct VkSubpassDescription[?]", #tbl, tbl)
 end
+
 function library.s.PipelineCoverageToColorStateCreateInfoNVArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineCoverageToColorStateCreateInfoNV(v)
 	end
+
 	return ffi.new("struct VkPipelineCoverageToColorStateCreateInfoNV[?]", #tbl, tbl)
 end
+
 function library.s.ClearAttachment(tbl, table_only)
 	if type(tbl.aspectMask) == "table" then
 		tbl.aspectMask = library.e.image_aspect.make_enums(tbl.aspectMask)
 	elseif type(tbl.aspectMask) == "string" then
 		tbl.aspectMask = library.e.image_aspect[tbl.aspectMask]
 	end
+
 	if type(tbl.clearValue) == "table" then
 		tbl.clearValue = library.s.ClearValue(tbl.clearValue, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkClearAttachment", tbl)
 end
+
 function library.s.ClearAttachmentArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ClearAttachment(v)
 	end
+
 	return ffi.new("struct VkClearAttachment[?]", #tbl, tbl)
 end
+
 function library.s.DisplayPowerInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DisplayPowerInfoEXT(v)
 	end
+
 	return ffi.new("struct VkDisplayPowerInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.ImageSubresourceLayers(tbl, table_only)
 	if type(tbl.aspectMask) == "table" then
 		tbl.aspectMask = library.e.image_aspect.make_enums(tbl.aspectMask)
 	elseif type(tbl.aspectMask) == "string" then
 		tbl.aspectMask = library.e.image_aspect[tbl.aspectMask]
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageSubresourceLayers", tbl)
 end
+
 function library.s.ImageSubresourceLayersArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageSubresourceLayers(v)
 	end
+
 	return ffi.new("struct VkImageSubresourceLayers[?]", #tbl, tbl)
 end
+
 function library.s.ObjectTableEntryNVX(tbl, table_only)
 	if type(tbl.type) == "string" then
 		tbl.type = library.e.object_entry_type[tbl.type]
 	end
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.object_entry_usage.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.object_entry_usage[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkObjectTableEntryNVX", tbl)
 end
+
 function library.s.ObjectTableEntryNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ObjectTableEntryNVX(v)
 	end
+
 	return ffi.new("struct VkObjectTableEntryNVX[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceVariablePointerFeaturesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceVariablePointerFeatures(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceVariablePointerFeatures[?]", #tbl, tbl)
 end
+
 function library.s.SparseImageFormatProperties(tbl, table_only)
 	if type(tbl.aspectMask) == "table" then
 		tbl.aspectMask = library.e.image_aspect.make_enums(tbl.aspectMask)
 	elseif type(tbl.aspectMask) == "string" then
 		tbl.aspectMask = library.e.image_aspect[tbl.aspectMask]
 	end
+
 	if type(tbl.imageGranularity) == "table" then
 		tbl.imageGranularity = library.s.Extent3D(tbl.imageGranularity, true)
 	end
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.sparse_image_format.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.sparse_image_format[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkSparseImageFormatProperties", tbl)
 end
+
 function library.s.SparseImageFormatPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SparseImageFormatProperties(v)
 	end
+
 	return ffi.new("struct VkSparseImageFormatProperties[?]", #tbl, tbl)
 end
+
 function library.s.PipelineColorBlendAdvancedStateCreateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineColorBlendAdvancedStateCreateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkPipelineColorBlendAdvancedStateCreateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceBlendOperationAdvancedPropertiesEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceBlendOperationAdvancedPropertiesEXT(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGroupDeviceCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGroupDeviceCreateInfo(v)
 	end
+
 	return ffi.new("struct VkDeviceGroupDeviceCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.InputAttachmentAspectReference(tbl, table_only)
 	if type(tbl.aspectMask) == "table" then
 		tbl.aspectMask = library.e.image_aspect.make_enums(tbl.aspectMask)
 	elseif type(tbl.aspectMask) == "string" then
 		tbl.aspectMask = library.e.image_aspect[tbl.aspectMask]
 	end
+
 	return table_only and tbl or ffi.new("struct VkInputAttachmentAspectReference", tbl)
 end
+
 function library.s.InputAttachmentAspectReferenceArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.InputAttachmentAspectReference(v)
 	end
+
 	return ffi.new("struct VkInputAttachmentAspectReference[?]", #tbl, tbl)
 end
+
 function library.s.QueueFamilyProperties(tbl, table_only)
 	if type(tbl.queueFlags) == "table" then
 		tbl.queueFlags = library.e.queue.make_enums(tbl.queueFlags)
 	elseif type(tbl.queueFlags) == "string" then
 		tbl.queueFlags = library.e.queue[tbl.queueFlags]
 	end
+
 	if type(tbl.minImageTransferGranularity) == "table" then
 		tbl.minImageTransferGranularity = library.s.Extent3D(tbl.minImageTransferGranularity, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkQueueFamilyProperties", tbl)
 end
+
 function library.s.QueueFamilyPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.QueueFamilyProperties(v)
 	end
+
 	return ffi.new("struct VkQueueFamilyProperties[?]", #tbl, tbl)
 end
+
 function library.s.ClearRect(tbl, table_only)
 	if type(tbl.rect) == "table" then
 		tbl.rect = library.s.Rect2D(tbl.rect, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkClearRect", tbl)
 end
+
 function library.s.ClearRectArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ClearRect(v)
 	end
+
 	return ffi.new("struct VkClearRect[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceBlendOperationAdvancedFeaturesEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceBlendOperationAdvancedFeaturesEXT(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT[?]", #tbl, tbl)
 end
+
 function library.s.LayerProperties(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkLayerProperties", tbl)
 end
+
 function library.s.LayerPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.LayerProperties(v)
 	end
+
 	return ffi.new("struct VkLayerProperties[?]", #tbl, tbl)
 end
+
 function library.s.MultisamplePropertiesEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MultisamplePropertiesEXT(v)
 	end
+
 	return ffi.new("struct VkMultisamplePropertiesEXT[?]", #tbl, tbl)
 end
+
 function library.s.ImageMemoryRequirementsInfo2(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkImageMemoryRequirementsInfo2", tbl)
 end
+
 function library.s.ImageMemoryRequirementsInfo2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageMemoryRequirementsInfo2(v)
 	end
+
 	return ffi.new("struct VkImageMemoryRequirementsInfo2[?]", #tbl, tbl)
 end
+
 function library.s.IndirectCommandsLayoutCreateInfoNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.IndirectCommandsLayoutCreateInfoNVX(v)
 	end
+
 	return ffi.new("struct VkIndirectCommandsLayoutCreateInfoNVX[?]", #tbl, tbl)
 end
+
 function library.s.PipelineSampleLocationsStateCreateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineSampleLocationsStateCreateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkPipelineSampleLocationsStateCreateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.RenderPassSampleLocationsBeginInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.RenderPassSampleLocationsBeginInfoEXT(v)
 	end
+
 	return ffi.new("struct VkRenderPassSampleLocationsBeginInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.FormatProperties2(tbl, table_only)
 	if type(tbl.formatProperties) == "table" then
 		tbl.formatProperties = library.s.FormatProperties(tbl.formatProperties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkFormatProperties2", tbl)
 end
+
 function library.s.FormatProperties2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.FormatProperties2(v)
 	end
+
 	return ffi.new("struct VkFormatProperties2[?]", #tbl, tbl)
 end
+
 function library.s.BufferMemoryRequirementsInfo2(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkBufferMemoryRequirementsInfo2", tbl)
 end
+
 function library.s.BufferMemoryRequirementsInfo2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BufferMemoryRequirementsInfo2(v)
 	end
+
 	return ffi.new("struct VkBufferMemoryRequirementsInfo2[?]", #tbl, tbl)
 end
+
 function library.s.AttachmentSampleLocationsEXT(tbl, table_only)
 	if type(tbl.sampleLocationsInfo) == "table" then
 		tbl.sampleLocationsInfo = library.s.SampleLocationsInfoEXT(tbl.sampleLocationsInfo, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkAttachmentSampleLocationsEXT", tbl)
 end
+
 function library.s.AttachmentSampleLocationsEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.AttachmentSampleLocationsEXT(v)
 	end
+
 	return ffi.new("struct VkAttachmentSampleLocationsEXT[?]", #tbl, tbl)
 end
+
 function library.s.SampleLocationsInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SampleLocationsInfoEXT(v)
 	end
+
 	return ffi.new("struct VkSampleLocationsInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.SampleLocationEXT(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkSampleLocationEXT", tbl)
 end
+
 function library.s.SampleLocationEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SampleLocationEXT(v)
 	end
+
 	return ffi.new("struct VkSampleLocationEXT[?]", #tbl, tbl)
 end
+
 function library.s.SamplerReductionModeCreateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SamplerReductionModeCreateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkSamplerReductionModeCreateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceExternalSemaphoreInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceExternalSemaphoreInfo(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceExternalSemaphoreInfo[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceConservativeRasterizationPropertiesEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceConservativeRasterizationPropertiesEXT(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceConservativeRasterizationPropertiesEXT[?]", #tbl, tbl)
 end
+
 function library.s.BindImagePlaneMemoryInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BindImagePlaneMemoryInfo(v)
 	end
+
 	return ffi.new("struct VkBindImagePlaneMemoryInfo[?]", #tbl, tbl)
 end
+
 function library.s.MemoryAllocateFlagsInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryAllocateFlagsInfo(v)
 	end
+
 	return ffi.new("struct VkMemoryAllocateFlagsInfo[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGroupPresentInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGroupPresentInfoKHR(v)
 	end
+
 	return ffi.new("struct VkDeviceGroupPresentInfoKHR[?]", #tbl, tbl)
 end
-function library.s.IndirectCommandsLayoutNVXArray(tbl) return ffi.new("struct VkIndirectCommandsLayoutNVX_T *[?]", #tbl, tbl) end
+
+function library.s.IndirectCommandsLayoutNVXArray(tbl)
+	return ffi.new("struct VkIndirectCommandsLayoutNVX_T *[?]", #tbl, tbl)
+end
+
 function library.s.PhysicalDeviceVariablePointerFeaturesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceVariablePointerFeatures(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceVariablePointerFeatures[?]", #tbl, tbl)
 end
+
 function library.s.DebugMarkerObjectNameInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DebugMarkerObjectNameInfoEXT(v)
 	end
+
 	return ffi.new("struct VkDebugMarkerObjectNameInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.DebugUtilsObjectNameInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DebugUtilsObjectNameInfoEXT(v)
 	end
+
 	return ffi.new("struct VkDebugUtilsObjectNameInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.FormatProperties(tbl, table_only)
 	if type(tbl.linearTilingFeatures) == "table" then
 		tbl.linearTilingFeatures = library.e.format_feature.make_enums(tbl.linearTilingFeatures)
 	elseif type(tbl.linearTilingFeatures) == "string" then
 		tbl.linearTilingFeatures = library.e.format_feature[tbl.linearTilingFeatures]
 	end
+
 	if type(tbl.optimalTilingFeatures) == "table" then
 		tbl.optimalTilingFeatures = library.e.format_feature.make_enums(tbl.optimalTilingFeatures)
 	elseif type(tbl.optimalTilingFeatures) == "string" then
 		tbl.optimalTilingFeatures = library.e.format_feature[tbl.optimalTilingFeatures]
 	end
+
 	if type(tbl.bufferFeatures) == "table" then
 		tbl.bufferFeatures = library.e.format_feature.make_enums(tbl.bufferFeatures)
 	elseif type(tbl.bufferFeatures) == "string" then
 		tbl.bufferFeatures = library.e.format_feature[tbl.bufferFeatures]
 	end
+
 	return table_only and tbl or ffi.new("struct VkFormatProperties", tbl)
 end
+
 function library.s.FormatPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.FormatProperties(v)
 	end
+
 	return ffi.new("struct VkFormatProperties[?]", #tbl, tbl)
 end
+
 function library.s.CopyDescriptorSetArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.CopyDescriptorSet(v)
 	end
+
 	return ffi.new("struct VkCopyDescriptorSet[?]", #tbl, tbl)
 end
+
 function library.s.SamplerYcbcrConversionInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SamplerYcbcrConversionInfo(v)
 	end
+
 	return ffi.new("struct VkSamplerYcbcrConversionInfo[?]", #tbl, tbl)
 end
+
 function library.s.DescriptorSetLayoutSupportArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorSetLayoutSupport(v)
 	end
+
 	return ffi.new("struct VkDescriptorSetLayoutSupport[?]", #tbl, tbl)
 end
+
 function library.s.DescriptorSetVariableDescriptorCountAllocateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorSetVariableDescriptorCountAllocateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkDescriptorSetVariableDescriptorCountAllocateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.RectLayerKHR(tbl, table_only)
 	if type(tbl.offset) == "table" then
 		tbl.offset = library.s.Offset2D(tbl.offset, true)
 	end
+
 	if type(tbl.extent) == "table" then
 		tbl.extent = library.s.Extent2D(tbl.extent, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkRectLayerKHR", tbl)
 end
+
 function library.s.RectLayerKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.RectLayerKHR(v)
 	end
+
 	return ffi.new("struct VkRectLayerKHR[?]", #tbl, tbl)
 end
-function library.s.ObjectTableNVXArray(tbl) return ffi.new("struct VkObjectTableNVX_T *[?]", #tbl, tbl) end
+
+function library.s.ObjectTableNVXArray(tbl)
+	return ffi.new("struct VkObjectTableNVX_T *[?]", #tbl, tbl)
+end
+
 function library.s.HdrMetadataEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.HdrMetadataEXT(v)
 	end
+
 	return ffi.new("struct VkHdrMetadataEXT[?]", #tbl, tbl)
 end
+
 function library.s.ShaderStatisticsInfoAMD(tbl, table_only)
 	if type(tbl.shaderStageMask) == "table" then
 		tbl.shaderStageMask = library.e.shader_stage.make_enums(tbl.shaderStageMask)
 	elseif type(tbl.shaderStageMask) == "string" then
 		tbl.shaderStageMask = library.e.shader_stage[tbl.shaderStageMask]
 	end
+
 	if type(tbl.resourceUsage) == "table" then
 		tbl.resourceUsage = library.s.ShaderResourceUsageAMD(tbl.resourceUsage, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkShaderStatisticsInfoAMD", tbl)
 end
+
 function library.s.ShaderStatisticsInfoAMDArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ShaderStatisticsInfoAMD(v)
 	end
+
 	return ffi.new("struct VkShaderStatisticsInfoAMD[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceProperties(tbl, table_only)
 	if type(tbl.deviceType) == "string" then
 		tbl.deviceType = library.e.physical_device_type[tbl.deviceType]
 	end
+
 	if type(tbl.limits) == "table" then
 		tbl.limits = library.s.PhysicalDeviceLimits(tbl.limits, true)
 	end
+
 	if type(tbl.sparseProperties) == "table" then
 		tbl.sparseProperties = library.s.PhysicalDeviceSparseProperties(tbl.sparseProperties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceProperties", tbl)
 end
+
 function library.s.PhysicalDevicePropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceProperties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceProperties[?]", #tbl, tbl)
 end
+
 function library.s.PipelineRasterizationConservativeStateCreateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineRasterizationConservativeStateCreateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkPipelineRasterizationConservativeStateCreateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.ObjectTableVertexBufferEntryNVX(tbl, table_only)
 	if type(tbl.type) == "string" then
 		tbl.type = library.e.object_entry_type[tbl.type]
 	end
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.object_entry_usage.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.object_entry_usage[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkObjectTableVertexBufferEntryNVX", tbl)
 end
+
 function library.s.ObjectTableVertexBufferEntryNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ObjectTableVertexBufferEntryNVX(v)
 	end
+
 	return ffi.new("struct VkObjectTableVertexBufferEntryNVX[?]", #tbl, tbl)
 end
+
 function library.s.PresentInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PresentInfoKHR(v)
 	end
+
 	return ffi.new("struct VkPresentInfoKHR[?]", #tbl, tbl)
 end
-function library.s.PipelineArray(tbl) return ffi.new("struct VkPipeline_T *[?]", #tbl, tbl) end
+
+function library.s.PipelineArray(tbl)
+	return ffi.new("struct VkPipeline_T *[?]", #tbl, tbl)
+end
+
 function library.s.PhysicalDeviceMultiviewPerViewAttributesPropertiesNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceMultiviewPerViewAttributesPropertiesNVX(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX[?]", #tbl, tbl)
 end
+
 function library.s.GraphicsPipelineCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.GraphicsPipelineCreateInfo(v)
 	end
+
 	return ffi.new("struct VkGraphicsPipelineCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.BufferCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BufferCreateInfo(v)
 	end
+
 	return ffi.new("struct VkBufferCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PresentTimesInfoGOOGLEArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PresentTimesInfoGOOGLE(v)
 	end
+
 	return ffi.new("struct VkPresentTimesInfoGOOGLE[?]", #tbl, tbl)
 end
+
 function library.s.PresentTimeGOOGLE(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkPresentTimeGOOGLE", tbl)
 end
+
 function library.s.PresentTimeGOOGLEArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PresentTimeGOOGLE(v)
 	end
+
 	return ffi.new("struct VkPresentTimeGOOGLE[?]", #tbl, tbl)
 end
+
 function library.s.ImportSemaphoreFdInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImportSemaphoreFdInfoKHR(v)
 	end
+
 	return ffi.new("struct VkImportSemaphoreFdInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.PastPresentationTimingGOOGLE(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkPastPresentationTimingGOOGLE", tbl)
 end
+
 function library.s.PastPresentationTimingGOOGLEArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PastPresentationTimingGOOGLE(v)
 	end
+
 	return ffi.new("struct VkPastPresentationTimingGOOGLE[?]", #tbl, tbl)
 end
+
 function library.s.RefreshCycleDurationGOOGLE(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkRefreshCycleDurationGOOGLE", tbl)
 end
+
 function library.s.RefreshCycleDurationGOOGLEArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.RefreshCycleDurationGOOGLE(v)
 	end
+
 	return ffi.new("struct VkRefreshCycleDurationGOOGLE[?]", #tbl, tbl)
 end
+
 function library.s.DescriptorPoolSize(tbl, table_only)
 	if type(tbl.type) == "string" then
 		tbl.type = library.e.descriptor_type[tbl.type]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDescriptorPoolSize", tbl)
 end
+
 function library.s.DescriptorPoolSizeArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorPoolSize(v)
 	end
+
 	return ffi.new("struct VkDescriptorPoolSize[?]", #tbl, tbl)
 end
+
 function library.s.SubpassDependency(tbl, table_only)
 	if type(tbl.srcStageMask) == "table" then
 		tbl.srcStageMask = library.e.pipeline_stage.make_enums(tbl.srcStageMask)
 	elseif type(tbl.srcStageMask) == "string" then
 		tbl.srcStageMask = library.e.pipeline_stage[tbl.srcStageMask]
 	end
+
 	if type(tbl.dstStageMask) == "table" then
 		tbl.dstStageMask = library.e.pipeline_stage.make_enums(tbl.dstStageMask)
 	elseif type(tbl.dstStageMask) == "string" then
 		tbl.dstStageMask = library.e.pipeline_stage[tbl.dstStageMask]
 	end
+
 	if type(tbl.srcAccessMask) == "table" then
 		tbl.srcAccessMask = library.e.access.make_enums(tbl.srcAccessMask)
 	elseif type(tbl.srcAccessMask) == "string" then
 		tbl.srcAccessMask = library.e.access[tbl.srcAccessMask]
 	end
+
 	if type(tbl.dstAccessMask) == "table" then
 		tbl.dstAccessMask = library.e.access.make_enums(tbl.dstAccessMask)
 	elseif type(tbl.dstAccessMask) == "string" then
 		tbl.dstAccessMask = library.e.access[tbl.dstAccessMask]
 	end
+
 	if type(tbl.dependencyFlags) == "table" then
 		tbl.dependencyFlags = library.e.dependency.make_enums(tbl.dependencyFlags)
 	elseif type(tbl.dependencyFlags) == "string" then
 		tbl.dependencyFlags = library.e.dependency[tbl.dependencyFlags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkSubpassDependency", tbl)
 end
+
 function library.s.SubpassDependencyArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SubpassDependency(v)
 	end
+
 	return ffi.new("struct VkSubpassDependency[?]", #tbl, tbl)
 end
+
 function library.s.QueueFamilyProperties2(tbl, table_only)
 	if type(tbl.queueFamilyProperties) == "table" then
 		tbl.queueFamilyProperties = library.s.QueueFamilyProperties(tbl.queueFamilyProperties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkQueueFamilyProperties2", tbl)
 end
+
 function library.s.QueueFamilyProperties2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.QueueFamilyProperties2(v)
 	end
+
 	return ffi.new("struct VkQueueFamilyProperties2[?]", #tbl, tbl)
 end
+
 function library.s.ImageCopy(tbl, table_only)
 	if type(tbl.srcSubresource) == "table" then
 		tbl.srcSubresource = library.s.ImageSubresourceLayers(tbl.srcSubresource, true)
 	end
+
 	if type(tbl.srcOffset) == "table" then
 		tbl.srcOffset = library.s.Offset3D(tbl.srcOffset, true)
 	end
+
 	if type(tbl.dstSubresource) == "table" then
 		tbl.dstSubresource = library.s.ImageSubresourceLayers(tbl.dstSubresource, true)
 	end
+
 	if type(tbl.dstOffset) == "table" then
 		tbl.dstOffset = library.s.Offset3D(tbl.dstOffset, true)
 	end
+
 	if type(tbl.extent) == "table" then
 		tbl.extent = library.s.Extent3D(tbl.extent, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageCopy", tbl)
 end
+
 function library.s.ImageCopyArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageCopy(v)
 	end
+
 	return ffi.new("struct VkImageCopy[?]", #tbl, tbl)
 end
-function library.s.DescriptorSetLayoutArray(tbl) return ffi.new("struct VkDescriptorSetLayout_T *[?]", #tbl, tbl) end
+
+function library.s.DescriptorSetLayoutArray(tbl)
+	return ffi.new("struct VkDescriptorSetLayout_T *[?]", #tbl, tbl)
+end
+
 function library.s.VertexInputAttributeDescription(tbl, table_only)
 	if type(tbl.format) == "string" then
 		tbl.format = library.e.format[tbl.format]
 	end
+
 	return table_only and tbl or ffi.new("struct VkVertexInputAttributeDescription", tbl)
 end
+
 function library.s.VertexInputAttributeDescriptionArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.VertexInputAttributeDescription(v)
 	end
+
 	return ffi.new("struct VkVertexInputAttributeDescription[?]", #tbl, tbl)
 end
+
 function library.s.ImportMemoryFdInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImportMemoryFdInfoKHR(v)
 	end
+
 	return ffi.new("struct VkImportMemoryFdInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.DisplayEventInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DisplayEventInfoEXT(v)
 	end
+
 	return ffi.new("struct VkDisplayEventInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.DeviceEventInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceEventInfoEXT(v)
 	end
+
 	return ffi.new("struct VkDeviceEventInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.FormatProperties2(tbl, table_only)
 	if type(tbl.formatProperties) == "table" then
 		tbl.formatProperties = library.s.FormatProperties(tbl.formatProperties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkFormatProperties2", tbl)
 end
+
 function library.s.FormatProperties2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.FormatProperties2(v)
 	end
+
 	return ffi.new("struct VkFormatProperties2[?]", #tbl, tbl)
 end
+
 function library.s.SamplerYcbcrConversionCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SamplerYcbcrConversionCreateInfo(v)
 	end
+
 	return ffi.new("struct VkSamplerYcbcrConversionCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.ExternalSemaphorePropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalSemaphoreProperties(v)
 	end
+
 	return ffi.new("struct VkExternalSemaphoreProperties[?]", #tbl, tbl)
 end
+
 function library.s.CommandBufferBeginInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.CommandBufferBeginInfo(v)
 	end
+
 	return ffi.new("struct VkCommandBufferBeginInfo[?]", #tbl, tbl)
 end
+
 function library.s.DisplayModeCreateInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DisplayModeCreateInfoKHR(v)
 	end
+
 	return ffi.new("struct VkDisplayModeCreateInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGroupSubmitInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGroupSubmitInfo(v)
 	end
+
 	return ffi.new("struct VkDeviceGroupSubmitInfo[?]", #tbl, tbl)
 end
+
 function library.s.SwapchainCounterCreateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SwapchainCounterCreateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkSwapchainCounterCreateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.PipelineViewportWScalingStateCreateInfoNVArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineViewportWScalingStateCreateInfoNV(v)
 	end
+
 	return ffi.new("struct VkPipelineViewportWScalingStateCreateInfoNV[?]", #tbl, tbl)
 end
+
 function library.s.ViewportWScalingNV(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkViewportWScalingNV", tbl)
 end
+
 function library.s.ViewportWScalingNVArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ViewportWScalingNV(v)
 	end
+
 	return ffi.new("struct VkViewportWScalingNV[?]", #tbl, tbl)
 end
+
 function library.s.Offset3D(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkOffset3D", tbl)
 end
+
 function library.s.Offset3DArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.Offset3D(v)
 	end
+
 	return ffi.new("struct VkOffset3D[?]", #tbl, tbl)
 end
+
 function library.s.DisplaySurfaceCreateInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DisplaySurfaceCreateInfoKHR(v)
 	end
+
 	return ffi.new("struct VkDisplaySurfaceCreateInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGroupCommandBufferBeginInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGroupCommandBufferBeginInfo(v)
 	end
+
 	return ffi.new("struct VkDeviceGroupCommandBufferBeginInfo[?]", #tbl, tbl)
 end
+
 function library.s.ViewportSwizzleNV(tbl, table_only)
 	if type(tbl.x) == "string" then
 		tbl.x = library.e.viewport_coordinate_swizzle[tbl.x]
 	end
+
 	if type(tbl.y) == "string" then
 		tbl.y = library.e.viewport_coordinate_swizzle[tbl.y]
 	end
+
 	if type(tbl.z) == "string" then
 		tbl.z = library.e.viewport_coordinate_swizzle[tbl.z]
 	end
+
 	if type(tbl.w) == "string" then
 		tbl.w = library.e.viewport_coordinate_swizzle[tbl.w]
 	end
+
 	return table_only and tbl or ffi.new("struct VkViewportSwizzleNV", tbl)
 end
+
 function library.s.ViewportSwizzleNVArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ViewportSwizzleNV(v)
 	end
+
 	return ffi.new("struct VkViewportSwizzleNV[?]", #tbl, tbl)
 end
+
 function library.s.ImageMemoryRequirementsInfo2(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkImageMemoryRequirementsInfo2", tbl)
 end
+
 function library.s.ImageMemoryRequirementsInfo2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageMemoryRequirementsInfo2(v)
 	end
+
 	return ffi.new("struct VkImageMemoryRequirementsInfo2[?]", #tbl, tbl)
 end
+
 function library.s.ExportFenceCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExportFenceCreateInfo(v)
 	end
+
 	return ffi.new("struct VkExportFenceCreateInfo[?]", #tbl, tbl)
 end
-function library.s.QueueArray(tbl) return ffi.new("struct VkQueue_T *[?]", #tbl, tbl) end
+
+function library.s.QueueArray(tbl)
+	return ffi.new("struct VkQueue_T *[?]", #tbl, tbl)
+end
+
 function library.s.SparseImageFormatProperties2(tbl, table_only)
 	if type(tbl.properties) == "table" then
 		tbl.properties = library.s.SparseImageFormatProperties(tbl.properties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSparseImageFormatProperties2", tbl)
 end
+
 function library.s.SparseImageFormatProperties2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SparseImageFormatProperties2(v)
 	end
+
 	return ffi.new("struct VkSparseImageFormatProperties2[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDevice16BitStorageFeatures(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkPhysicalDevice16BitStorageFeatures", tbl)
 end
+
 function library.s.PhysicalDevice16BitStorageFeaturesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDevice16BitStorageFeatures(v)
 	end
+
 	return ffi.new("struct VkPhysicalDevice16BitStorageFeatures[?]", #tbl, tbl)
 end
+
 function library.s.SparseImageMemoryBind(tbl, table_only)
 	if type(tbl.subresource) == "table" then
 		tbl.subresource = library.s.ImageSubresource(tbl.subresource, true)
 	end
+
 	if type(tbl.offset) == "table" then
 		tbl.offset = library.s.Offset3D(tbl.offset, true)
 	end
+
 	if type(tbl.extent) == "table" then
 		tbl.extent = library.s.Extent3D(tbl.extent, true)
 	end
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.sparse_memory_bind.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.sparse_memory_bind[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkSparseImageMemoryBind", tbl)
 end
+
 function library.s.SparseImageMemoryBindArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SparseImageMemoryBind(v)
 	end
+
 	return ffi.new("struct VkSparseImageMemoryBind[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceMemoryProperties2(tbl, table_only)
 	if type(tbl.memoryProperties) == "table" then
 		tbl.memoryProperties = library.s.PhysicalDeviceMemoryProperties(tbl.memoryProperties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceMemoryProperties2", tbl)
 end
+
 function library.s.PhysicalDeviceMemoryProperties2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceMemoryProperties2(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceMemoryProperties2[?]", #tbl, tbl)
 end
+
 function library.s.ObjectTablePushConstantEntryNVX(tbl, table_only)
 	if type(tbl.type) == "string" then
 		tbl.type = library.e.object_entry_type[tbl.type]
 	end
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.object_entry_usage.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.object_entry_usage[tbl.flags]
 	end
+
 	if type(tbl.stageFlags) == "table" then
 		tbl.stageFlags = library.e.shader_stage.make_enums(tbl.stageFlags)
 	elseif type(tbl.stageFlags) == "string" then
 		tbl.stageFlags = library.e.shader_stage[tbl.stageFlags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkObjectTablePushConstantEntryNVX", tbl)
 end
+
 function library.s.ObjectTablePushConstantEntryNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ObjectTablePushConstantEntryNVX(v)
 	end
+
 	return ffi.new("struct VkObjectTablePushConstantEntryNVX[?]", #tbl, tbl)
 end
+
 function library.s.ObjectTableIndexBufferEntryNVX(tbl, table_only)
 	if type(tbl.type) == "string" then
 		tbl.type = library.e.object_entry_type[tbl.type]
 	end
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.object_entry_usage.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.object_entry_usage[tbl.flags]
 	end
+
 	if type(tbl.indexType) == "string" then
 		tbl.indexType = library.e.index_type[tbl.indexType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkObjectTableIndexBufferEntryNVX", tbl)
 end
+
 function library.s.ObjectTableIndexBufferEntryNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ObjectTableIndexBufferEntryNVX(v)
 	end
+
 	return ffi.new("struct VkObjectTableIndexBufferEntryNVX[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGeneratedCommandsLimitsNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGeneratedCommandsLimitsNVX(v)
 	end
+
 	return ffi.new("struct VkDeviceGeneratedCommandsLimitsNVX[?]", #tbl, tbl)
 end
+
 function library.s.ObjectTableDescriptorSetEntryNVX(tbl, table_only)
 	if type(tbl.type) == "string" then
 		tbl.type = library.e.object_entry_type[tbl.type]
 	end
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.object_entry_usage.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.object_entry_usage[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkObjectTableDescriptorSetEntryNVX", tbl)
 end
+
 function library.s.ObjectTableDescriptorSetEntryNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ObjectTableDescriptorSetEntryNVX(v)
 	end
+
 	return ffi.new("struct VkObjectTableDescriptorSetEntryNVX[?]", #tbl, tbl)
 end
+
 function library.s.ObjectTablePipelineEntryNVX(tbl, table_only)
 	if type(tbl.type) == "string" then
 		tbl.type = library.e.object_entry_type[tbl.type]
 	end
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.object_entry_usage.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.object_entry_usage[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkObjectTablePipelineEntryNVX", tbl)
 end
+
 function library.s.ObjectTablePipelineEntryNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ObjectTablePipelineEntryNVX(v)
 	end
+
 	return ffi.new("struct VkObjectTablePipelineEntryNVX[?]", #tbl, tbl)
 end
+
 function library.s.IndirectCommandsTokenNVX(tbl, table_only)
 	if type(tbl.tokenType) == "string" then
 		tbl.tokenType = library.e.indirect_commands_token_type[tbl.tokenType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkIndirectCommandsTokenNVX", tbl)
 end
+
 function library.s.IndirectCommandsTokenNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.IndirectCommandsTokenNVX(v)
 	end
+
 	return ffi.new("struct VkIndirectCommandsTokenNVX[?]", #tbl, tbl)
 end
+
 function library.s.InstanceCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.InstanceCreateInfo(v)
 	end
+
 	return ffi.new("struct VkInstanceCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PipelineDynamicStateCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineDynamicStateCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineDynamicStateCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGeneratedCommandsFeaturesNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGeneratedCommandsFeaturesNVX(v)
 	end
+
 	return ffi.new("struct VkDeviceGeneratedCommandsFeaturesNVX[?]", #tbl, tbl)
 end
+
 function library.s.ImageBlit(tbl, table_only)
 	if type(tbl.srcSubresource) == "table" then
 		tbl.srcSubresource = library.s.ImageSubresourceLayers(tbl.srcSubresource, true)
 	end
+
 	if type(tbl.srcOffsets) == "table" then
 		tbl.srcOffsets = library.s.Offset3D(tbl.srcOffsets, true)
 	end
+
 	if type(tbl.dstSubresource) == "table" then
 		tbl.dstSubresource = library.s.ImageSubresourceLayers(tbl.dstSubresource, true)
 	end
+
 	if type(tbl.dstOffsets) == "table" then
 		tbl.dstOffsets = library.s.Offset3D(tbl.dstOffsets, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageBlit", tbl)
 end
+
 function library.s.ImageBlitArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageBlit(v)
 	end
+
 	return ffi.new("struct VkImageBlit[?]", #tbl, tbl)
 end
+
 function library.s.CommandPoolCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.CommandPoolCreateInfo(v)
 	end
+
 	return ffi.new("struct VkCommandPoolCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.ImageMemoryBarrierArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageMemoryBarrier(v)
 	end
+
 	return ffi.new("struct VkImageMemoryBarrier[?]", #tbl, tbl)
 end
+
 function library.s.ImageFormatProperties2(tbl, table_only)
 	if type(tbl.imageFormatProperties) == "table" then
 		tbl.imageFormatProperties = library.s.ImageFormatProperties(tbl.imageFormatProperties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageFormatProperties2", tbl)
 end
+
 function library.s.ImageFormatProperties2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageFormatProperties2(v)
 	end
+
 	return ffi.new("struct VkImageFormatProperties2[?]", #tbl, tbl)
 end
+
 function library.s.DisplayModePropertiesKHR(tbl, table_only)
 	if type(tbl.parameters) == "table" then
 		tbl.parameters = library.s.DisplayModeParametersKHR(tbl.parameters, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkDisplayModePropertiesKHR", tbl)
 end
+
 function library.s.DisplayModePropertiesKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DisplayModePropertiesKHR(v)
 	end
+
 	return ffi.new("struct VkDisplayModePropertiesKHR[?]", #tbl, tbl)
 end
+
 function library.s.DebugUtilsLabelEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DebugUtilsLabelEXT(v)
 	end
+
 	return ffi.new("struct VkDebugUtilsLabelEXT[?]", #tbl, tbl)
 end
-function library.s.DebugUtilsMessengerEXTArray(tbl) return ffi.new("struct VkDebugUtilsMessengerEXT_T *[?]", #tbl, tbl) end
+
+function library.s.DebugUtilsMessengerEXTArray(tbl)
+	return ffi.new("struct VkDebugUtilsMessengerEXT_T *[?]", #tbl, tbl)
+end
+
 function library.s.ValidationFlagsEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ValidationFlagsEXT(v)
 	end
+
 	return ffi.new("struct VkValidationFlagsEXT[?]", #tbl, tbl)
 end
-function library.s.FenceArray(tbl) return ffi.new("struct VkFence_T *[?]", #tbl, tbl) end
+
+function library.s.FenceArray(tbl)
+	return ffi.new("struct VkFence_T *[?]", #tbl, tbl)
+end
+
 function library.s.PhysicalDeviceSamplerFilterMinmaxPropertiesEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceSamplerFilterMinmaxPropertiesEXT(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceSamplerFilterMinmaxPropertiesEXT[?]", #tbl, tbl)
 end
+
 function library.s.ExportMemoryAllocateInfoNVArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExportMemoryAllocateInfoNV(v)
 	end
+
 	return ffi.new("struct VkExportMemoryAllocateInfoNV[?]", #tbl, tbl)
 end
+
 function library.s.ExternalMemoryImageCreateInfoNVArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalMemoryImageCreateInfoNV(v)
 	end
+
 	return ffi.new("struct VkExternalMemoryImageCreateInfoNV[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDevicePushDescriptorPropertiesKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDevicePushDescriptorPropertiesKHR(v)
 	end
+
 	return ffi.new("struct VkPhysicalDevicePushDescriptorPropertiesKHR[?]", #tbl, tbl)
 end
-function library.s.EventArray(tbl) return ffi.new("struct VkEvent_T *[?]", #tbl, tbl) end
+
+function library.s.EventArray(tbl)
+	return ffi.new("struct VkEvent_T *[?]", #tbl, tbl)
+end
+
 function library.s.ExternalBufferPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalBufferProperties(v)
 	end
+
 	return ffi.new("struct VkExternalBufferProperties[?]", #tbl, tbl)
 end
+
 function library.s.SamplerYcbcrConversionImageFormatPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SamplerYcbcrConversionImageFormatProperties(v)
 	end
+
 	return ffi.new("struct VkSamplerYcbcrConversionImageFormatProperties[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceSampleLocationsPropertiesEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceSampleLocationsPropertiesEXT(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceSampleLocationsPropertiesEXT[?]", #tbl, tbl)
 end
+
 function library.s.TextureLODGatherFormatPropertiesAMD(tbl, table_only)
-	return table_only and tbl or ffi.new("struct VkTextureLODGatherFormatPropertiesAMD", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkTextureLODGatherFormatPropertiesAMD", tbl)
 end
+
 function library.s.TextureLODGatherFormatPropertiesAMDArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.TextureLODGatherFormatPropertiesAMD(v)
 	end
+
 	return ffi.new("struct VkTextureLODGatherFormatPropertiesAMD[?]", #tbl, tbl)
 end
+
 function library.s.DedicatedAllocationBufferCreateInfoNVArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DedicatedAllocationBufferCreateInfoNV(v)
 	end
+
 	return ffi.new("struct VkDedicatedAllocationBufferCreateInfoNV[?]", #tbl, tbl)
 end
+
 function library.s.ExternalMemoryBufferCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalMemoryBufferCreateInfo(v)
 	end
+
 	return ffi.new("struct VkExternalMemoryBufferCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.ImageSwapchainCreateInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageSwapchainCreateInfoKHR(v)
 	end
+
 	return ffi.new("struct VkImageSwapchainCreateInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.ImageViewCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageViewCreateInfo(v)
 	end
+
 	return ffi.new("struct VkImageViewCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.Viewport(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkViewport", tbl)
 end
+
 function library.s.ViewportArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.Viewport(v)
 	end
+
 	return ffi.new("struct VkViewport[?]", #tbl, tbl)
 end
+
 function library.s.PresentRegionsKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PresentRegionsKHR(v)
 	end
+
 	return ffi.new("struct VkPresentRegionsKHR[?]", #tbl, tbl)
 end
+
 function library.s.PipelineTessellationStateCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineTessellationStateCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineTessellationStateCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.DebugReportCallbackCreateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DebugReportCallbackCreateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkDebugReportCallbackCreateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceSamplerYcbcrConversionFeaturesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceSamplerYcbcrConversionFeatures(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceSamplerYcbcrConversionFeatures[?]", #tbl, tbl)
 end
-function library.s.InstanceArray(tbl) return ffi.new("struct VkInstance_T *[?]", #tbl, tbl) end
+
+function library.s.InstanceArray(tbl)
+	return ffi.new("struct VkInstance_T *[?]", #tbl, tbl)
+end
+
 function library.s.ImageSparseMemoryRequirementsInfo2(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkImageSparseMemoryRequirementsInfo2", tbl)
 end
+
 function library.s.ImageSparseMemoryRequirementsInfo2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageSparseMemoryRequirementsInfo2(v)
 	end
+
 	return ffi.new("struct VkImageSparseMemoryRequirementsInfo2[?]", #tbl, tbl)
 end
+
 function library.s.BindImageMemoryInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BindImageMemoryInfo(v)
 	end
+
 	return ffi.new("struct VkBindImageMemoryInfo[?]", #tbl, tbl)
 end
+
 function library.s.BindBufferMemoryInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BindBufferMemoryInfo(v)
 	end
+
 	return ffi.new("struct VkBindBufferMemoryInfo[?]", #tbl, tbl)
 end
+
 function library.s.SamplerYcbcrConversionImageFormatPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SamplerYcbcrConversionImageFormatProperties(v)
 	end
+
 	return ffi.new("struct VkSamplerYcbcrConversionImageFormatProperties[?]", #tbl, tbl)
 end
+
 function library.s.ImagePlaneMemoryRequirementsInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImagePlaneMemoryRequirementsInfo(v)
 	end
+
 	return ffi.new("struct VkImagePlaneMemoryRequirementsInfo[?]", #tbl, tbl)
 end
+
 function library.s.ImageFormatListCreateInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageFormatListCreateInfoKHR(v)
 	end
+
 	return ffi.new("struct VkImageFormatListCreateInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.DisplayPlanePropertiesKHR(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkDisplayPlanePropertiesKHR", tbl)
 end
+
 function library.s.DisplayPlanePropertiesKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DisplayPlanePropertiesKHR(v)
 	end
+
 	return ffi.new("struct VkDisplayPlanePropertiesKHR[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceProperties2(tbl, table_only)
 	if type(tbl.properties) == "table" then
 		tbl.properties = library.s.PhysicalDeviceProperties(tbl.properties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceProperties2", tbl)
 end
+
 function library.s.PhysicalDeviceProperties2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceProperties2(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceProperties2[?]", #tbl, tbl)
 end
+
 function library.s.SparseImageMemoryRequirements2(tbl, table_only)
 	if type(tbl.memoryRequirements) == "table" then
 		tbl.memoryRequirements = library.s.SparseImageMemoryRequirements(tbl.memoryRequirements, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSparseImageMemoryRequirements2", tbl)
 end
+
 function library.s.SparseImageMemoryRequirements2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SparseImageMemoryRequirements2(v)
 	end
+
 	return ffi.new("struct VkSparseImageMemoryRequirements2[?]", #tbl, tbl)
 end
+
 function library.s.MemoryRequirements2(tbl, table_only)
 	if type(tbl.memoryRequirements) == "table" then
 		tbl.memoryRequirements = library.s.MemoryRequirements(tbl.memoryRequirements, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkMemoryRequirements2", tbl)
 end
+
 function library.s.MemoryRequirements2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryRequirements2(v)
 	end
+
 	return ffi.new("struct VkMemoryRequirements2[?]", #tbl, tbl)
 end
+
 function library.s.ImageSparseMemoryRequirementsInfo2(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkImageSparseMemoryRequirementsInfo2", tbl)
 end
+
 function library.s.ImageSparseMemoryRequirementsInfo2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageSparseMemoryRequirementsInfo2(v)
 	end
+
 	return ffi.new("struct VkImageSparseMemoryRequirementsInfo2[?]", #tbl, tbl)
 end
+
 function library.s.BufferMemoryRequirementsInfo2(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkBufferMemoryRequirementsInfo2", tbl)
 end
+
 function library.s.BufferMemoryRequirementsInfo2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BufferMemoryRequirementsInfo2(v)
 	end
+
 	return ffi.new("struct VkBufferMemoryRequirementsInfo2[?]", #tbl, tbl)
 end
+
 function library.s.MemoryDedicatedAllocateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryDedicatedAllocateInfo(v)
 	end
+
 	return ffi.new("struct VkMemoryDedicatedAllocateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDevicePointClippingPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDevicePointClippingProperties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDevicePointClippingProperties[?]", #tbl, tbl)
 end
-function library.s.SurfaceKHRArray(tbl) return ffi.new("struct VkSurfaceKHR_T *[?]", #tbl, tbl) end
+
+function library.s.SurfaceKHRArray(tbl)
+	return ffi.new("struct VkSurfaceKHR_T *[?]", #tbl, tbl)
+end
+
 function library.s.ImageFormatProperties2(tbl, table_only)
 	if type(tbl.imageFormatProperties) == "table" then
 		tbl.imageFormatProperties = library.s.ImageFormatProperties(tbl.imageFormatProperties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageFormatProperties2", tbl)
 end
+
 function library.s.ImageFormatProperties2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageFormatProperties2(v)
 	end
+
 	return ffi.new("struct VkImageFormatProperties2[?]", #tbl, tbl)
 end
+
 function library.s.DescriptorSetLayoutBinding(tbl, table_only)
 	if type(tbl.descriptorType) == "string" then
 		tbl.descriptorType = library.e.descriptor_type[tbl.descriptorType]
 	end
+
 	if type(tbl.stageFlags) == "table" then
 		tbl.stageFlags = library.e.shader_stage.make_enums(tbl.stageFlags)
 	elseif type(tbl.stageFlags) == "string" then
 		tbl.stageFlags = library.e.shader_stage[tbl.stageFlags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDescriptorSetLayoutBinding", tbl)
 end
+
 function library.s.DescriptorSetLayoutBindingArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorSetLayoutBinding(v)
 	end
+
 	return ffi.new("struct VkDescriptorSetLayoutBinding[?]", #tbl, tbl)
 end
-function library.s.DeviceMemoryArray(tbl) return ffi.new("struct VkDeviceMemory_T *[?]", #tbl, tbl) end
+
+function library.s.DeviceMemoryArray(tbl)
+	return ffi.new("struct VkDeviceMemory_T *[?]", #tbl, tbl)
+end
+
 function library.s.PhysicalDeviceIDProperties(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceIDProperties", tbl)
 end
+
 function library.s.PhysicalDeviceIDPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceIDProperties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceIDProperties[?]", #tbl, tbl)
 end
+
 function library.s.DescriptorUpdateTemplateEntry(tbl, table_only)
 	if type(tbl.descriptorType) == "string" then
 		tbl.descriptorType = library.e.descriptor_type[tbl.descriptorType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDescriptorUpdateTemplateEntry", tbl)
 end
+
 function library.s.DescriptorUpdateTemplateEntryArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorUpdateTemplateEntry(v)
 	end
+
 	return ffi.new("struct VkDescriptorUpdateTemplateEntry[?]", #tbl, tbl)
 end
+
 function library.s.WriteDescriptorSetArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.WriteDescriptorSet(v)
 	end
+
 	return ffi.new("struct VkWriteDescriptorSet[?]", #tbl, tbl)
 end
+
 function library.s.SurfaceFormat2KHR(tbl, table_only)
 	if type(tbl.surfaceFormat) == "table" then
 		tbl.surfaceFormat = library.s.SurfaceFormatKHR(tbl.surfaceFormat, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSurfaceFormat2KHR", tbl)
 end
+
 function library.s.SurfaceFormat2KHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SurfaceFormat2KHR(v)
 	end
+
 	return ffi.new("struct VkSurfaceFormat2KHR[?]", #tbl, tbl)
 end
+
 function library.s.SurfaceCapabilities2KHR(tbl, table_only)
 	if type(tbl.surfaceCapabilities) == "table" then
 		tbl.surfaceCapabilities = library.s.SurfaceCapabilitiesKHR(tbl.surfaceCapabilities, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSurfaceCapabilities2KHR", tbl)
 end
+
 function library.s.SurfaceCapabilities2KHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SurfaceCapabilities2KHR(v)
 	end
+
 	return ffi.new("struct VkSurfaceCapabilities2KHR[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceSurfaceInfo2KHR(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceSurfaceInfo2KHR", tbl)
 end
+
 function library.s.PhysicalDeviceSurfaceInfo2KHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceSurfaceInfo2KHR(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceSurfaceInfo2KHR[?]", #tbl, tbl)
 end
+
 function library.s.ImageViewUsageCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageViewUsageCreateInfo(v)
 	end
+
 	return ffi.new("struct VkImageViewUsageCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.InputAttachmentAspectReference(tbl, table_only)
 	if type(tbl.aspectMask) == "table" then
 		tbl.aspectMask = library.e.image_aspect.make_enums(tbl.aspectMask)
 	elseif type(tbl.aspectMask) == "string" then
 		tbl.aspectMask = library.e.image_aspect[tbl.aspectMask]
 	end
+
 	return table_only and tbl or ffi.new("struct VkInputAttachmentAspectReference", tbl)
 end
+
 function library.s.InputAttachmentAspectReferenceArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.InputAttachmentAspectReference(v)
 	end
+
 	return ffi.new("struct VkInputAttachmentAspectReference[?]", #tbl, tbl)
 end
+
 function library.s.RenderPassInputAttachmentAspectCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.RenderPassInputAttachmentAspectCreateInfo(v)
 	end
+
 	return ffi.new("struct VkRenderPassInputAttachmentAspectCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PipelineDiscardRectangleStateCreateInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineDiscardRectangleStateCreateInfoEXT(v)
 	end
+
 	return ffi.new("struct VkPipelineDiscardRectangleStateCreateInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.ImportFenceFdInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImportFenceFdInfoKHR(v)
 	end
+
 	return ffi.new("struct VkImportFenceFdInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.ExportFenceCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExportFenceCreateInfo(v)
 	end
+
 	return ffi.new("struct VkExportFenceCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.QueryPoolCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.QueryPoolCreateInfo(v)
 	end
+
 	return ffi.new("struct VkQueryPoolCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PipelineShaderStageCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineShaderStageCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineShaderStageCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PipelineVertexInputStateCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineVertexInputStateCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineVertexInputStateCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.Rect2D(tbl, table_only)
 	if type(tbl.offset) == "table" then
 		tbl.offset = library.s.Offset2D(tbl.offset, true)
 	end
+
 	if type(tbl.extent) == "table" then
 		tbl.extent = library.s.Extent2D(tbl.extent, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkRect2D", tbl)
 end
+
 function library.s.Rect2DArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.Rect2D(v)
 	end
+
 	return ffi.new("struct VkRect2D[?]", #tbl, tbl)
 end
+
 function library.s.SparseImageOpaqueMemoryBindInfo(tbl, table_only)
 	if type(tbl.pBinds) == "table" then
-		if not tbl.bindCount then
-			tbl.bindCount = #tbl.pBinds
-		end
+		if not tbl.bindCount then tbl.bindCount = #tbl.pBinds end
+
 		tbl.pBinds = library.s.SparseMemoryBindArray(tbl.pBinds, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSparseImageOpaqueMemoryBindInfo", tbl)
 end
+
 function library.s.SparseImageOpaqueMemoryBindInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SparseImageOpaqueMemoryBindInfo(v)
 	end
+
 	return ffi.new("struct VkSparseImageOpaqueMemoryBindInfo[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceExternalFenceInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceExternalFenceInfo(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceExternalFenceInfo[?]", #tbl, tbl)
 end
+
 function library.s.BufferMemoryBarrierArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BufferMemoryBarrier(v)
 	end
+
 	return ffi.new("struct VkBufferMemoryBarrier[?]", #tbl, tbl)
 end
-function library.s.DescriptorUpdateTemplateArray(tbl) return ffi.new("struct VkDescriptorUpdateTemplate_T *[?]", #tbl, tbl) end
+
+function library.s.DescriptorUpdateTemplateArray(tbl)
+	return ffi.new("struct VkDescriptorUpdateTemplate_T *[?]", #tbl, tbl)
+end
+
 function library.s.BindBufferMemoryDeviceGroupInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BindBufferMemoryDeviceGroupInfo(v)
 	end
+
 	return ffi.new("struct VkBindBufferMemoryDeviceGroupInfo[?]", #tbl, tbl)
 end
+
 function library.s.SharedPresentSurfaceCapabilitiesKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SharedPresentSurfaceCapabilitiesKHR(v)
 	end
+
 	return ffi.new("struct VkSharedPresentSurfaceCapabilitiesKHR[?]", #tbl, tbl)
 end
+
 function library.s.DescriptorUpdateTemplateCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorUpdateTemplateCreateInfo(v)
 	end
+
 	return ffi.new("struct VkDescriptorUpdateTemplateCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.MemoryDedicatedAllocateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryDedicatedAllocateInfo(v)
 	end
+
 	return ffi.new("struct VkMemoryDedicatedAllocateInfo[?]", #tbl, tbl)
 end
+
 function library.s.ExternalMemoryBufferCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalMemoryBufferCreateInfo(v)
 	end
+
 	return ffi.new("struct VkExternalMemoryBufferCreateInfo[?]", #tbl, tbl)
 end
-function library.s.PipelineLayoutArray(tbl) return ffi.new("struct VkPipelineLayout_T *[?]", #tbl, tbl) end
+
+function library.s.PipelineLayoutArray(tbl)
+	return ffi.new("struct VkPipelineLayout_T *[?]", #tbl, tbl)
+end
+
 function library.s.MemoryAllocateFlagsInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryAllocateFlagsInfo(v)
 	end
+
 	return ffi.new("struct VkMemoryAllocateFlagsInfo[?]", #tbl, tbl)
 end
-function library.s.DescriptorUpdateTemplateArray(tbl) return ffi.new("struct VkDescriptorUpdateTemplate_T *[?]", #tbl, tbl) end
+
+function library.s.DescriptorUpdateTemplateArray(tbl)
+	return ffi.new("struct VkDescriptorUpdateTemplate_T *[?]", #tbl, tbl)
+end
+
 function library.s.ImageCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageCreateInfo(v)
 	end
+
 	return ffi.new("struct VkImageCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.SparseMemoryBind(tbl, table_only)
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.sparse_memory_bind.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.sparse_memory_bind[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkSparseMemoryBind", tbl)
 end
+
 function library.s.SparseMemoryBindArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SparseMemoryBind(v)
 	end
+
 	return ffi.new("struct VkSparseMemoryBind[?]", #tbl, tbl)
 end
+
 function library.s.AllocationCallbacks(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkAllocationCallbacks", tbl)
 end
+
 function library.s.AllocationCallbacksArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.AllocationCallbacks(v)
 	end
+
 	return ffi.new("struct VkAllocationCallbacks[?]", #tbl, tbl)
 end
+
 function library.s.DescriptorSetLayoutCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorSetLayoutCreateInfo(v)
 	end
+
 	return ffi.new("struct VkDescriptorSetLayoutCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceSparseProperties(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceSparseProperties", tbl)
 end
+
 function library.s.PhysicalDeviceSparsePropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceSparseProperties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceSparseProperties[?]", #tbl, tbl)
 end
+
 function library.s.DebugUtilsMessengerCallbackDataEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DebugUtilsMessengerCallbackDataEXT(v)
 	end
+
 	return ffi.new("struct VkDebugUtilsMessengerCallbackDataEXT[?]", #tbl, tbl)
 end
+
 function library.s.PipelineColorBlendAttachmentState(tbl, table_only)
 	tbl.blendEnable = tbl.blendEnable and 1 or 0
+
 	if type(tbl.srcColorBlendFactor) == "string" then
 		tbl.srcColorBlendFactor = library.e.blend_factor[tbl.srcColorBlendFactor]
 	end
+
 	if type(tbl.dstColorBlendFactor) == "string" then
 		tbl.dstColorBlendFactor = library.e.blend_factor[tbl.dstColorBlendFactor]
 	end
+
 	if type(tbl.colorBlendOp) == "string" then
 		tbl.colorBlendOp = library.e.blend_op[tbl.colorBlendOp]
 	end
+
 	if type(tbl.srcAlphaBlendFactor) == "string" then
 		tbl.srcAlphaBlendFactor = library.e.blend_factor[tbl.srcAlphaBlendFactor]
 	end
+
 	if type(tbl.dstAlphaBlendFactor) == "string" then
 		tbl.dstAlphaBlendFactor = library.e.blend_factor[tbl.dstAlphaBlendFactor]
 	end
+
 	if type(tbl.alphaBlendOp) == "string" then
 		tbl.alphaBlendOp = library.e.blend_op[tbl.alphaBlendOp]
 	end
+
 	if type(tbl.colorWriteMask) == "table" then
 		tbl.colorWriteMask = library.e.color_component.make_enums(tbl.colorWriteMask)
 	elseif type(tbl.colorWriteMask) == "string" then
 		tbl.colorWriteMask = library.e.color_component[tbl.colorWriteMask]
 	end
+
 	return table_only and tbl or ffi.new("struct VkPipelineColorBlendAttachmentState", tbl)
 end
+
 function library.s.PipelineColorBlendAttachmentStateArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineColorBlendAttachmentState(v)
 	end
+
 	return ffi.new("struct VkPipelineColorBlendAttachmentState[?]", #tbl, tbl)
 end
+
 function library.s.ExternalSemaphorePropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalSemaphoreProperties(v)
 	end
+
 	return ffi.new("struct VkExternalSemaphoreProperties[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceExternalSemaphoreInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceExternalSemaphoreInfo(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceExternalSemaphoreInfo[?]", #tbl, tbl)
 end
+
 function library.s.Extent2D(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkExtent2D", tbl)
 end
+
 function library.s.Extent2DArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.Extent2D(v)
 	end
+
 	return ffi.new("struct VkExtent2D[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceImageFormatInfo2(tbl, table_only)
 	if type(tbl.format) == "string" then
 		tbl.format = library.e.format[tbl.format]
 	end
+
 	if type(tbl.type) == "string" then
 		tbl.type = library.e.image_type[tbl.type]
 	end
+
 	if type(tbl.tiling) == "string" then
 		tbl.tiling = library.e.image_tiling[tbl.tiling]
 	end
+
 	if type(tbl.usage) == "table" then
 		tbl.usage = library.e.image_usage.make_enums(tbl.usage)
 	elseif type(tbl.usage) == "string" then
 		tbl.usage = library.e.image_usage[tbl.usage]
 	end
+
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.image_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.image_create[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceImageFormatInfo2", tbl)
 end
+
 function library.s.PhysicalDeviceImageFormatInfo2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceImageFormatInfo2(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceImageFormatInfo2[?]", #tbl, tbl)
 end
+
 function library.s.MemoryRequirements2(tbl, table_only)
 	if type(tbl.memoryRequirements) == "table" then
 		tbl.memoryRequirements = library.s.MemoryRequirements(tbl.memoryRequirements, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkMemoryRequirements2", tbl)
 end
+
 function library.s.MemoryRequirements2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryRequirements2(v)
 	end
+
 	return ffi.new("struct VkMemoryRequirements2[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGroupCommandBufferBeginInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGroupCommandBufferBeginInfo(v)
 	end
+
 	return ffi.new("struct VkDeviceGroupCommandBufferBeginInfo[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceIDProperties(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceIDProperties", tbl)
 end
+
 function library.s.PhysicalDeviceIDPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceIDProperties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceIDProperties[?]", #tbl, tbl)
 end
+
 function library.s.MemoryFdPropertiesKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryFdPropertiesKHR(v)
 	end
+
 	return ffi.new("struct VkMemoryFdPropertiesKHR[?]", #tbl, tbl)
 end
+
 function library.s.ExportMemoryAllocateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExportMemoryAllocateInfo(v)
 	end
+
 	return ffi.new("struct VkExportMemoryAllocateInfo[?]", #tbl, tbl)
 end
+
 function library.s.BindImageMemoryDeviceGroupInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BindImageMemoryDeviceGroupInfo(v)
 	end
+
 	return ffi.new("struct VkBindImageMemoryDeviceGroupInfo[?]", #tbl, tbl)
 end
+
 function library.s.ImageFormatProperties(tbl, table_only)
 	if type(tbl.maxExtent) == "table" then
 		tbl.maxExtent = library.s.Extent3D(tbl.maxExtent, true)
 	end
+
 	if type(tbl.sampleCounts) == "table" then
 		tbl.sampleCounts = library.e.sample_count.make_enums(tbl.sampleCounts)
 	elseif type(tbl.sampleCounts) == "string" then
 		tbl.sampleCounts = library.e.sample_count[tbl.sampleCounts]
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageFormatProperties", tbl)
 end
+
 function library.s.ImageFormatPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageFormatProperties(v)
 	end
+
 	return ffi.new("struct VkImageFormatProperties[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceMaintenance3Properties(tbl, table_only)
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceMaintenance3Properties", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceMaintenance3Properties", tbl)
 end
+
 function library.s.PhysicalDeviceMaintenance3PropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceMaintenance3Properties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceMaintenance3Properties[?]", #tbl, tbl)
 end
+
 function library.s.ExternalBufferPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalBufferProperties(v)
 	end
+
 	return ffi.new("struct VkExternalBufferProperties[?]", #tbl, tbl)
 end
+
 function library.s.ExternalImageFormatPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalImageFormatProperties(v)
 	end
+
 	return ffi.new("struct VkExternalImageFormatProperties[?]", #tbl, tbl)
 end
+
 function library.s.SpecializationInfo(tbl, table_only)
 	if type(tbl.pMapEntries) == "table" then
-		if not tbl.mapEntryCount then
-			tbl.mapEntryCount = #tbl.pMapEntries
-		end
+		if not tbl.mapEntryCount then tbl.mapEntryCount = #tbl.pMapEntries end
+
 		tbl.pMapEntries = library.s.SpecializationMapEntryArray(tbl.pMapEntries, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSpecializationInfo", tbl)
 end
+
 function library.s.SpecializationInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SpecializationInfo(v)
 	end
+
 	return ffi.new("struct VkSpecializationInfo[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceFeatures2(tbl, table_only)
 	if type(tbl.features) == "table" then
 		tbl.features = library.s.PhysicalDeviceFeatures(tbl.features, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceFeatures2", tbl)
 end
+
 function library.s.PhysicalDeviceFeatures2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceFeatures2(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceFeatures2[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceExternalImageFormatInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceExternalImageFormatInfo(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceExternalImageFormatInfo[?]", #tbl, tbl)
 end
+
 function library.s.FramebufferCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.FramebufferCreateInfo(v)
 	end
+
 	return ffi.new("struct VkFramebufferCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.ExternalMemoryProperties(tbl, table_only)
 	if type(tbl.externalMemoryFeatures) == "table" then
 		tbl.externalMemoryFeatures = library.e.external_memory_feature.make_enums(tbl.externalMemoryFeatures)
 	elseif type(tbl.externalMemoryFeatures) == "string" then
 		tbl.externalMemoryFeatures = library.e.external_memory_feature[tbl.externalMemoryFeatures]
 	end
+
 	if type(tbl.exportFromImportedHandleTypes) == "table" then
 		tbl.exportFromImportedHandleTypes = library.e.external_memory_handle_type.make_enums(tbl.exportFromImportedHandleTypes)
 	elseif type(tbl.exportFromImportedHandleTypes) == "string" then
 		tbl.exportFromImportedHandleTypes = library.e.external_memory_handle_type[tbl.exportFromImportedHandleTypes]
 	end
+
 	if type(tbl.compatibleHandleTypes) == "table" then
 		tbl.compatibleHandleTypes = library.e.external_memory_handle_type.make_enums(tbl.compatibleHandleTypes)
 	elseif type(tbl.compatibleHandleTypes) == "string" then
 		tbl.compatibleHandleTypes = library.e.external_memory_handle_type[tbl.compatibleHandleTypes]
 	end
+
 	return table_only and tbl or ffi.new("struct VkExternalMemoryProperties", tbl)
 end
+
 function library.s.ExternalMemoryPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalMemoryProperties(v)
 	end
+
 	return ffi.new("struct VkExternalMemoryProperties[?]", #tbl, tbl)
 end
+
 function library.s.DrawIndirectCommand(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkDrawIndirectCommand", tbl)
 end
+
 function library.s.DrawIndirectCommandArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DrawIndirectCommand(v)
 	end
+
 	return ffi.new("struct VkDrawIndirectCommand[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGroupDeviceCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGroupDeviceCreateInfo(v)
 	end
+
 	return ffi.new("struct VkDeviceGroupDeviceCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceGroupPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceGroupProperties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceGroupProperties[?]", #tbl, tbl)
 end
+
 function library.s.SparseImageMemoryBindInfo(tbl, table_only)
 	if type(tbl.pBinds) == "table" then
-		if not tbl.bindCount then
-			tbl.bindCount = #tbl.pBinds
-		end
+		if not tbl.bindCount then tbl.bindCount = #tbl.pBinds end
+
 		tbl.pBinds = library.s.SparseImageMemoryBindArray(tbl.pBinds, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSparseImageMemoryBindInfo", tbl)
 end
+
 function library.s.SparseImageMemoryBindInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SparseImageMemoryBindInfo(v)
 	end
+
 	return ffi.new("struct VkSparseImageMemoryBindInfo[?]", #tbl, tbl)
 end
-function library.s.SamplerArray(tbl) return ffi.new("struct VkSampler_T *[?]", #tbl, tbl) end
+
+function library.s.SamplerArray(tbl)
+	return ffi.new("struct VkSampler_T *[?]", #tbl, tbl)
+end
+
 function library.s.DebugMarkerMarkerInfoEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DebugMarkerMarkerInfoEXT(v)
 	end
+
 	return ffi.new("struct VkDebugMarkerMarkerInfoEXT[?]", #tbl, tbl)
 end
+
 function library.s.ImageResolve(tbl, table_only)
 	if type(tbl.srcSubresource) == "table" then
 		tbl.srcSubresource = library.s.ImageSubresourceLayers(tbl.srcSubresource, true)
 	end
+
 	if type(tbl.srcOffset) == "table" then
 		tbl.srcOffset = library.s.Offset3D(tbl.srcOffset, true)
 	end
+
 	if type(tbl.dstSubresource) == "table" then
 		tbl.dstSubresource = library.s.ImageSubresourceLayers(tbl.dstSubresource, true)
 	end
+
 	if type(tbl.dstOffset) == "table" then
 		tbl.dstOffset = library.s.Offset3D(tbl.dstOffset, true)
 	end
+
 	if type(tbl.extent) == "table" then
 		tbl.extent = library.s.Extent3D(tbl.extent, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageResolve", tbl)
 end
+
 function library.s.ImageResolveArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageResolve(v)
 	end
+
 	return ffi.new("struct VkImageResolve[?]", #tbl, tbl)
 end
+
 function library.s.BindImageMemoryDeviceGroupInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BindImageMemoryDeviceGroupInfo(v)
 	end
+
 	return ffi.new("struct VkBindImageMemoryDeviceGroupInfo[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceProtectedMemoryPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceProtectedMemoryProperties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceProtectedMemoryProperties[?]", #tbl, tbl)
 end
+
 function library.s.BindBufferMemoryDeviceGroupInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BindBufferMemoryDeviceGroupInfo(v)
 	end
+
 	return ffi.new("struct VkBindBufferMemoryDeviceGroupInfo[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGroupBindSparseInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGroupBindSparseInfo(v)
 	end
+
 	return ffi.new("struct VkDeviceGroupBindSparseInfo[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGroupRenderPassBeginInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGroupRenderPassBeginInfo(v)
 	end
+
 	return ffi.new("struct VkDeviceGroupRenderPassBeginInfo[?]", #tbl, tbl)
 end
+
 function library.s.SamplerYcbcrConversionInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SamplerYcbcrConversionInfo(v)
 	end
+
 	return ffi.new("struct VkSamplerYcbcrConversionInfo[?]", #tbl, tbl)
 end
+
 function library.s.DescriptorSetAllocateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorSetAllocateInfo(v)
 	end
+
 	return ffi.new("struct VkDescriptorSetAllocateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PipelineRasterizationStateCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineRasterizationStateCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineRasterizationStateCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PipelineCacheCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineCacheCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineCacheCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.CmdReserveSpaceForCommandsInfoNVXArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.CmdReserveSpaceForCommandsInfoNVX(v)
 	end
+
 	return ffi.new("struct VkCmdReserveSpaceForCommandsInfoNVX[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceSparseImageFormatInfo2(tbl, table_only)
 	if type(tbl.format) == "string" then
 		tbl.format = library.e.format[tbl.format]
 	end
+
 	if type(tbl.type) == "string" then
 		tbl.type = library.e.image_type[tbl.type]
 	end
+
 	if type(tbl.samples) == "table" then
 		tbl.samples = library.e.sample_count.make_enums(tbl.samples)
 	elseif type(tbl.samples) == "string" then
 		tbl.samples = library.e.sample_count[tbl.samples]
 	end
+
 	if type(tbl.usage) == "table" then
 		tbl.usage = library.e.image_usage.make_enums(tbl.usage)
 	elseif type(tbl.usage) == "string" then
 		tbl.usage = library.e.image_usage[tbl.usage]
 	end
+
 	if type(tbl.tiling) == "string" then
 		tbl.tiling = library.e.image_tiling[tbl.tiling]
 	end
-	return table_only and tbl or ffi.new("struct VkPhysicalDeviceSparseImageFormatInfo2", tbl)
+
+	return table_only and
+		tbl or
+		ffi.new("struct VkPhysicalDeviceSparseImageFormatInfo2", tbl)
 end
+
 function library.s.PhysicalDeviceSparseImageFormatInfo2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceSparseImageFormatInfo2(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceSparseImageFormatInfo2[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceMemoryProperties2(tbl, table_only)
 	if type(tbl.memoryProperties) == "table" then
 		tbl.memoryProperties = library.s.PhysicalDeviceMemoryProperties(tbl.memoryProperties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceMemoryProperties2", tbl)
 end
+
 function library.s.PhysicalDeviceMemoryProperties2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceMemoryProperties2(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceMemoryProperties2[?]", #tbl, tbl)
 end
+
 function library.s.SubpassSampleLocationsEXT(tbl, table_only)
 	if type(tbl.sampleLocationsInfo) == "table" then
 		tbl.sampleLocationsInfo = library.s.SampleLocationsInfoEXT(tbl.sampleLocationsInfo, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSubpassSampleLocationsEXT", tbl)
 end
+
 function library.s.SubpassSampleLocationsEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SubpassSampleLocationsEXT(v)
 	end
+
 	return ffi.new("struct VkSubpassSampleLocationsEXT[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceFeatures2(tbl, table_only)
 	if type(tbl.features) == "table" then
 		tbl.features = library.s.PhysicalDeviceFeatures(tbl.features, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceFeatures2", tbl)
 end
+
 function library.s.PhysicalDeviceFeatures2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceFeatures2(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceFeatures2[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceMultiviewPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceMultiviewProperties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceMultiviewProperties[?]", #tbl, tbl)
 end
+
 function library.s.RenderPassMultiviewCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.RenderPassMultiviewCreateInfo(v)
 	end
+
 	return ffi.new("struct VkRenderPassMultiviewCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGroupBindSparseInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGroupBindSparseInfo(v)
 	end
+
 	return ffi.new("struct VkDeviceGroupBindSparseInfo[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceExternalFenceInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceExternalFenceInfo(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceExternalFenceInfo[?]", #tbl, tbl)
 end
+
 function library.s.DisplayPresentInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DisplayPresentInfoKHR(v)
 	end
+
 	return ffi.new("struct VkDisplayPresentInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.DescriptorUpdateTemplateEntry(tbl, table_only)
 	if type(tbl.descriptorType) == "string" then
 		tbl.descriptorType = library.e.descriptor_type[tbl.descriptorType]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDescriptorUpdateTemplateEntry", tbl)
 end
+
 function library.s.DescriptorUpdateTemplateEntryArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorUpdateTemplateEntry(v)
 	end
+
 	return ffi.new("struct VkDescriptorUpdateTemplateEntry[?]", #tbl, tbl)
 end
+
 function library.s.DisplayPlaneCapabilitiesKHR(tbl, table_only)
 	if type(tbl.supportedAlpha) == "table" then
 		tbl.supportedAlpha = library.e.display_plane_alpha.make_enums(tbl.supportedAlpha)
 	elseif type(tbl.supportedAlpha) == "string" then
 		tbl.supportedAlpha = library.e.display_plane_alpha[tbl.supportedAlpha]
 	end
+
 	if type(tbl.minSrcPosition) == "table" then
 		tbl.minSrcPosition = library.s.Offset2D(tbl.minSrcPosition, true)
 	end
+
 	if type(tbl.maxSrcPosition) == "table" then
 		tbl.maxSrcPosition = library.s.Offset2D(tbl.maxSrcPosition, true)
 	end
+
 	if type(tbl.minSrcExtent) == "table" then
 		tbl.minSrcExtent = library.s.Extent2D(tbl.minSrcExtent, true)
 	end
+
 	if type(tbl.maxSrcExtent) == "table" then
 		tbl.maxSrcExtent = library.s.Extent2D(tbl.maxSrcExtent, true)
 	end
+
 	if type(tbl.minDstPosition) == "table" then
 		tbl.minDstPosition = library.s.Offset2D(tbl.minDstPosition, true)
 	end
+
 	if type(tbl.maxDstPosition) == "table" then
 		tbl.maxDstPosition = library.s.Offset2D(tbl.maxDstPosition, true)
 	end
+
 	if type(tbl.minDstExtent) == "table" then
 		tbl.minDstExtent = library.s.Extent2D(tbl.minDstExtent, true)
 	end
+
 	if type(tbl.maxDstExtent) == "table" then
 		tbl.maxDstExtent = library.s.Extent2D(tbl.maxDstExtent, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkDisplayPlaneCapabilitiesKHR", tbl)
 end
+
 function library.s.DisplayPlaneCapabilitiesKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DisplayPlaneCapabilitiesKHR(v)
 	end
+
 	return ffi.new("struct VkDisplayPlaneCapabilitiesKHR[?]", #tbl, tbl)
 end
+
 function library.s.PipelineViewportStateCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineViewportStateCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineViewportStateCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.XYColorEXT(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkXYColorEXT", tbl)
 end
+
 function library.s.XYColorEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.XYColorEXT(v)
 	end
+
 	return ffi.new("struct VkXYColorEXT[?]", #tbl, tbl)
 end
-function library.s.CommandBufferArray(tbl) return ffi.new("struct VkCommandBuffer_T *[?]", #tbl, tbl) end
+
+function library.s.CommandBufferArray(tbl)
+	return ffi.new("struct VkCommandBuffer_T *[?]", #tbl, tbl)
+end
+
 function library.s.DescriptorImageInfo(tbl, table_only)
 	if type(tbl.imageLayout) == "string" then
 		tbl.imageLayout = library.e.image_layout[tbl.imageLayout]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDescriptorImageInfo", tbl)
 end
+
 function library.s.DescriptorImageInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorImageInfo(v)
 	end
+
 	return ffi.new("struct VkDescriptorImageInfo[?]", #tbl, tbl)
 end
-function library.s.DisplayModeKHRArray(tbl) return ffi.new("struct VkDisplayModeKHR_T *[?]", #tbl, tbl) end
-function library.s.DisplayKHRArray(tbl) return ffi.new("struct VkDisplayKHR_T *[?]", #tbl, tbl) end
+
+function library.s.DisplayModeKHRArray(tbl)
+	return ffi.new("struct VkDisplayModeKHR_T *[?]", #tbl, tbl)
+end
+
+function library.s.DisplayKHRArray(tbl)
+	return ffi.new("struct VkDisplayKHR_T *[?]", #tbl, tbl)
+end
+
 function library.s.DescriptorSetLayoutSupportArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorSetLayoutSupport(v)
 	end
+
 	return ffi.new("struct VkDescriptorSetLayoutSupport[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGroupSwapchainCreateInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGroupSwapchainCreateInfoKHR(v)
 	end
+
 	return ffi.new("struct VkDeviceGroupSwapchainCreateInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.ExportSemaphoreCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExportSemaphoreCreateInfo(v)
 	end
+
 	return ffi.new("struct VkExportSemaphoreCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGroupPresentCapabilitiesKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGroupPresentCapabilitiesKHR(v)
 	end
+
 	return ffi.new("struct VkDeviceGroupPresentCapabilitiesKHR[?]", #tbl, tbl)
 end
+
 function library.s.BindSparseInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BindSparseInfo(v)
 	end
+
 	return ffi.new("struct VkBindSparseInfo[?]", #tbl, tbl)
 end
+
 function library.s.BindImageMemorySwapchainInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BindImageMemorySwapchainInfoKHR(v)
 	end
+
 	return ffi.new("struct VkBindImageMemorySwapchainInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.SwapchainCreateInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SwapchainCreateInfoKHR(v)
 	end
+
 	return ffi.new("struct VkSwapchainCreateInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.ExternalImageFormatPropertiesNV(tbl, table_only)
 	if type(tbl.imageFormatProperties) == "table" then
 		tbl.imageFormatProperties = library.s.ImageFormatProperties(tbl.imageFormatProperties, true)
 	end
+
 	if type(tbl.externalMemoryFeatures) == "table" then
 		tbl.externalMemoryFeatures = library.e.external_memory_feature.make_enums(tbl.externalMemoryFeatures)
 	elseif type(tbl.externalMemoryFeatures) == "string" then
 		tbl.externalMemoryFeatures = library.e.external_memory_feature[tbl.externalMemoryFeatures]
 	end
+
 	if type(tbl.exportFromImportedHandleTypes) == "table" then
 		tbl.exportFromImportedHandleTypes = library.e.external_memory_handle_type.make_enums(tbl.exportFromImportedHandleTypes)
 	elseif type(tbl.exportFromImportedHandleTypes) == "string" then
 		tbl.exportFromImportedHandleTypes = library.e.external_memory_handle_type[tbl.exportFromImportedHandleTypes]
 	end
+
 	if type(tbl.compatibleHandleTypes) == "table" then
 		tbl.compatibleHandleTypes = library.e.external_memory_handle_type.make_enums(tbl.compatibleHandleTypes)
 	elseif type(tbl.compatibleHandleTypes) == "string" then
 		tbl.compatibleHandleTypes = library.e.external_memory_handle_type[tbl.compatibleHandleTypes]
 	end
+
 	return table_only and tbl or ffi.new("struct VkExternalImageFormatPropertiesNV", tbl)
 end
+
 function library.s.ExternalImageFormatPropertiesNVArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalImageFormatPropertiesNV(v)
 	end
+
 	return ffi.new("struct VkExternalImageFormatPropertiesNV[?]", #tbl, tbl)
 end
-function library.s.SwapchainKHRArray(tbl) return ffi.new("struct VkSwapchainKHR_T *[?]", #tbl, tbl) end
+
+function library.s.SwapchainKHRArray(tbl)
+	return ffi.new("struct VkSwapchainKHR_T *[?]", #tbl, tbl)
+end
+
 function library.s.PhysicalDeviceProtectedMemoryFeaturesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceProtectedMemoryFeatures(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceProtectedMemoryFeatures[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceShaderDrawParameterFeaturesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceShaderDrawParameterFeatures(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceShaderDrawParameterFeatures[?]", #tbl, tbl)
 end
+
 function library.s.DisplayModeParametersKHR(tbl, table_only)
 	if type(tbl.visibleRegion) == "table" then
 		tbl.visibleRegion = library.s.Extent2D(tbl.visibleRegion, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkDisplayModeParametersKHR", tbl)
 end
+
 function library.s.DisplayModeParametersKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DisplayModeParametersKHR(v)
 	end
+
 	return ffi.new("struct VkDisplayModeParametersKHR[?]", #tbl, tbl)
 end
+
 function library.s.ExtensionProperties(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkExtensionProperties", tbl)
 end
+
 function library.s.ExtensionPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExtensionProperties(v)
 	end
+
 	return ffi.new("struct VkExtensionProperties[?]", #tbl, tbl)
 end
+
 function library.s.BindImageMemoryInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BindImageMemoryInfo(v)
 	end
+
 	return ffi.new("struct VkBindImageMemoryInfo[?]", #tbl, tbl)
 end
+
 function library.s.SurfaceFormatKHR(tbl, table_only)
 	if type(tbl.format) == "string" then
 		tbl.format = library.e.format[tbl.format]
 	end
+
 	if type(tbl.colorSpace) == "string" then
 		tbl.colorSpace = library.e.colorspace[tbl.colorSpace]
 	end
+
 	return table_only and tbl or ffi.new("struct VkSurfaceFormatKHR", tbl)
 end
+
 function library.s.SurfaceFormatKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SurfaceFormatKHR(v)
 	end
+
 	return ffi.new("struct VkSurfaceFormatKHR[?]", #tbl, tbl)
 end
+
 function library.s.SurfaceCapabilitiesKHR(tbl, table_only)
 	if type(tbl.currentExtent) == "table" then
 		tbl.currentExtent = library.s.Extent2D(tbl.currentExtent, true)
 	end
+
 	if type(tbl.minImageExtent) == "table" then
 		tbl.minImageExtent = library.s.Extent2D(tbl.minImageExtent, true)
 	end
+
 	if type(tbl.maxImageExtent) == "table" then
 		tbl.maxImageExtent = library.s.Extent2D(tbl.maxImageExtent, true)
 	end
+
 	if type(tbl.supportedTransforms) == "table" then
 		tbl.supportedTransforms = library.e.surface_transform.make_enums(tbl.supportedTransforms)
 	elseif type(tbl.supportedTransforms) == "string" then
 		tbl.supportedTransforms = library.e.surface_transform[tbl.supportedTransforms]
 	end
+
 	if type(tbl.currentTransform) == "table" then
 		tbl.currentTransform = library.e.surface_transform.make_enums(tbl.currentTransform)
 	elseif type(tbl.currentTransform) == "string" then
 		tbl.currentTransform = library.e.surface_transform[tbl.currentTransform]
 	end
+
 	if type(tbl.supportedCompositeAlpha) == "table" then
 		tbl.supportedCompositeAlpha = library.e.composite_alpha.make_enums(tbl.supportedCompositeAlpha)
 	elseif type(tbl.supportedCompositeAlpha) == "string" then
 		tbl.supportedCompositeAlpha = library.e.composite_alpha[tbl.supportedCompositeAlpha]
 	end
+
 	if type(tbl.supportedUsageFlags) == "table" then
 		tbl.supportedUsageFlags = library.e.image_usage.make_enums(tbl.supportedUsageFlags)
 	elseif type(tbl.supportedUsageFlags) == "string" then
 		tbl.supportedUsageFlags = library.e.image_usage[tbl.supportedUsageFlags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkSurfaceCapabilitiesKHR", tbl)
 end
+
 function library.s.SurfaceCapabilitiesKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SurfaceCapabilitiesKHR(v)
 	end
+
 	return ffi.new("struct VkSurfaceCapabilitiesKHR[?]", #tbl, tbl)
 end
+
 function library.s.ExternalMemoryImageCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalMemoryImageCreateInfo(v)
 	end
+
 	return ffi.new("struct VkExternalMemoryImageCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.EventCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.EventCreateInfo(v)
 	end
+
 	return ffi.new("struct VkEventCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.VertexInputBindingDescription(tbl, table_only)
 	if type(tbl.inputRate) == "string" then
 		tbl.inputRate = library.e.vertex_input_rate[tbl.inputRate]
 	end
+
 	return table_only and tbl or ffi.new("struct VkVertexInputBindingDescription", tbl)
 end
+
 function library.s.VertexInputBindingDescriptionArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.VertexInputBindingDescription(v)
 	end
+
 	return ffi.new("struct VkVertexInputBindingDescription[?]", #tbl, tbl)
 end
+
 function library.s.MemoryRequirements(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkMemoryRequirements", tbl)
 end
+
 function library.s.MemoryRequirementsArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryRequirements(v)
 	end
+
 	return ffi.new("struct VkMemoryRequirements[?]", #tbl, tbl)
 end
+
 function library.s.DeviceQueueInfo2(tbl, table_only)
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.device_queue_create.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.device_queue_create[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDeviceQueueInfo2", tbl)
 end
+
 function library.s.DeviceQueueInfo2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceQueueInfo2(v)
 	end
+
 	return ffi.new("struct VkDeviceQueueInfo2[?]", #tbl, tbl)
 end
+
 function library.s.ExternalFencePropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExternalFenceProperties(v)
 	end
+
 	return ffi.new("struct VkExternalFenceProperties[?]", #tbl, tbl)
 end
+
 function library.s.DedicatedAllocationImageCreateInfoNVArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DedicatedAllocationImageCreateInfoNV(v)
 	end
+
 	return ffi.new("struct VkDedicatedAllocationImageCreateInfoNV[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceExternalBufferInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceExternalBufferInfo(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceExternalBufferInfo[?]", #tbl, tbl)
 end
+
 function library.s.CommandBufferInheritanceInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.CommandBufferInheritanceInfo(v)
 	end
+
 	return ffi.new("struct VkCommandBufferInheritanceInfo[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGroupRenderPassBeginInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGroupRenderPassBeginInfo(v)
 	end
+
 	return ffi.new("struct VkDeviceGroupRenderPassBeginInfo[?]", #tbl, tbl)
 end
+
 function library.s.MemoryHostPointerPropertiesEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryHostPointerPropertiesEXT(v)
 	end
+
 	return ffi.new("struct VkMemoryHostPointerPropertiesEXT[?]", #tbl, tbl)
 end
+
 function library.s.BindImagePlaneMemoryInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BindImagePlaneMemoryInfo(v)
 	end
+
 	return ffi.new("struct VkBindImagePlaneMemoryInfo[?]", #tbl, tbl)
 end
+
 function library.s.PushConstantRange(tbl, table_only)
 	if type(tbl.stageFlags) == "table" then
 		tbl.stageFlags = library.e.shader_stage.make_enums(tbl.stageFlags)
 	elseif type(tbl.stageFlags) == "string" then
 		tbl.stageFlags = library.e.shader_stage[tbl.stageFlags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkPushConstantRange", tbl)
 end
+
 function library.s.PushConstantRangeArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PushConstantRange(v)
 	end
+
 	return ffi.new("struct VkPushConstantRange[?]", #tbl, tbl)
 end
+
 function library.s.DescriptorBufferInfo(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkDescriptorBufferInfo", tbl)
 end
+
 function library.s.DescriptorBufferInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorBufferInfo(v)
 	end
+
 	return ffi.new("struct VkDescriptorBufferInfo[?]", #tbl, tbl)
 end
+
 function library.s.MemoryDedicatedRequirementsArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryDedicatedRequirements(v)
 	end
+
 	return ffi.new("struct VkMemoryDedicatedRequirements[?]", #tbl, tbl)
 end
+
 function library.s.ShaderResourceUsageAMD(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkShaderResourceUsageAMD", tbl)
 end
+
 function library.s.ShaderResourceUsageAMDArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ShaderResourceUsageAMD(v)
 	end
+
 	return ffi.new("struct VkShaderResourceUsageAMD[?]", #tbl, tbl)
 end
+
 function library.s.SparseImageMemoryRequirements(tbl, table_only)
 	if type(tbl.formatProperties) == "table" then
 		tbl.formatProperties = library.s.SparseImageFormatProperties(tbl.formatProperties, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSparseImageMemoryRequirements", tbl)
 end
+
 function library.s.SparseImageMemoryRequirementsArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SparseImageMemoryRequirements(v)
 	end
+
 	return ffi.new("struct VkSparseImageMemoryRequirements[?]", #tbl, tbl)
 end
+
 function library.s.DisplayPropertiesKHR(tbl, table_only)
 	if type(tbl.physicalDimensions) == "table" then
 		tbl.physicalDimensions = library.s.Extent2D(tbl.physicalDimensions, true)
 	end
+
 	if type(tbl.physicalResolution) == "table" then
 		tbl.physicalResolution = library.s.Extent2D(tbl.physicalResolution, true)
 	end
+
 	if type(tbl.supportedTransforms) == "table" then
 		tbl.supportedTransforms = library.e.surface_transform.make_enums(tbl.supportedTransforms)
 	elseif type(tbl.supportedTransforms) == "string" then
 		tbl.supportedTransforms = library.e.surface_transform[tbl.supportedTransforms]
 	end
+
 	return table_only and tbl or ffi.new("struct VkDisplayPropertiesKHR", tbl)
 end
+
 function library.s.DisplayPropertiesKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DisplayPropertiesKHR(v)
 	end
+
 	return ffi.new("struct VkDisplayPropertiesKHR[?]", #tbl, tbl)
 end
-function library.s.CommandPoolArray(tbl) return ffi.new("struct VkCommandPool_T *[?]", #tbl, tbl) end
+
+function library.s.CommandPoolArray(tbl)
+	return ffi.new("struct VkCommandPool_T *[?]", #tbl, tbl)
+end
+
 function library.s.PhysicalDeviceVertexAttributeDivisorPropertiesEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceVertexAttributeDivisorPropertiesEXT(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT[?]", #tbl, tbl)
 end
+
 function library.s.Offset2D(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkOffset2D", tbl)
 end
+
 function library.s.Offset2DArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.Offset2D(v)
 	end
+
 	return ffi.new("struct VkOffset2D[?]", #tbl, tbl)
 end
+
 function library.s.AcquireNextImageInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.AcquireNextImageInfoKHR(v)
 	end
+
 	return ffi.new("struct VkAcquireNextImageInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.SemaphoreGetFdInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SemaphoreGetFdInfoKHR(v)
 	end
+
 	return ffi.new("struct VkSemaphoreGetFdInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceFeatures(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceFeatures", tbl)
 end
+
 function library.s.PhysicalDeviceFeaturesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceFeatures(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceFeatures[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDevicePointClippingPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDevicePointClippingProperties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDevicePointClippingProperties[?]", #tbl, tbl)
 end
+
 function library.s.ImageViewUsageCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageViewUsageCreateInfo(v)
 	end
+
 	return ffi.new("struct VkImageViewUsageCreateInfo[?]", #tbl, tbl)
 end
-function library.s.SemaphoreArray(tbl) return ffi.new("struct VkSemaphore_T *[?]", #tbl, tbl) end
+
+function library.s.SemaphoreArray(tbl)
+	return ffi.new("struct VkSemaphore_T *[?]", #tbl, tbl)
+end
+
 function library.s.RenderPassCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.RenderPassCreateInfo(v)
 	end
+
 	return ffi.new("struct VkRenderPassCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.SemaphoreCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SemaphoreCreateInfo(v)
 	end
+
 	return ffi.new("struct VkSemaphoreCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PresentRegionKHR(tbl, table_only)
 	if type(tbl.pRectangles) == "table" then
-		if not tbl.rectangleCount then
-			tbl.rectangleCount = #tbl.pRectangles
-		end
+		if not tbl.rectangleCount then tbl.rectangleCount = #tbl.pRectangles end
+
 		tbl.pRectangles = library.s.RectLayerKHRArray(tbl.pRectangles, false)
 	end
+
 	return table_only and tbl or ffi.new("struct VkPresentRegionKHR", tbl)
 end
+
 function library.s.PresentRegionKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PresentRegionKHR(v)
 	end
+
 	return ffi.new("struct VkPresentRegionKHR[?]", #tbl, tbl)
 end
-function library.s.BufferViewArray(tbl) return ffi.new("struct VkBufferView_T *[?]", #tbl, tbl) end
-function library.s.FramebufferArray(tbl) return ffi.new("struct VkFramebuffer_T *[?]", #tbl, tbl) end
+
+function library.s.BufferViewArray(tbl)
+	return ffi.new("struct VkBufferView_T *[?]", #tbl, tbl)
+end
+
+function library.s.FramebufferArray(tbl)
+	return ffi.new("struct VkFramebuffer_T *[?]", #tbl, tbl)
+end
+
 function library.s.PhysicalDeviceSamplerYcbcrConversionFeaturesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceSamplerYcbcrConversionFeatures(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceSamplerYcbcrConversionFeatures[?]", #tbl, tbl)
 end
+
 function library.s.VertexInputBindingDivisorDescriptionEXT(tbl, table_only)
-	return table_only and tbl or ffi.new("struct VkVertexInputBindingDivisorDescriptionEXT", tbl)
+	return table_only and
+		tbl or
+		ffi.new("struct VkVertexInputBindingDivisorDescriptionEXT", tbl)
 end
+
 function library.s.VertexInputBindingDivisorDescriptionEXTArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.VertexInputBindingDivisorDescriptionEXT(v)
 	end
+
 	return ffi.new("struct VkVertexInputBindingDivisorDescriptionEXT[?]", #tbl, tbl)
 end
+
 function library.s.DeviceQueueCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceQueueCreateInfo(v)
 	end
+
 	return ffi.new("struct VkDeviceQueueCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.FenceCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.FenceCreateInfo(v)
 	end
+
 	return ffi.new("struct VkFenceCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.MemoryAllocateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryAllocateInfo(v)
 	end
+
 	return ffi.new("struct VkMemoryAllocateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PipelineColorBlendStateCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineColorBlendStateCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineColorBlendStateCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PipelineLayoutCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineLayoutCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineLayoutCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.MemoryType(tbl, table_only)
 	if type(tbl.propertyFlags) == "table" then
 		tbl.propertyFlags = library.e.memory_property.make_enums(tbl.propertyFlags)
 	elseif type(tbl.propertyFlags) == "string" then
 		tbl.propertyFlags = library.e.memory_property[tbl.propertyFlags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkMemoryType", tbl)
 end
+
 function library.s.MemoryTypeArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryType(v)
 	end
+
 	return ffi.new("struct VkMemoryType[?]", #tbl, tbl)
 end
+
 function library.s.PipelineInputAssemblyStateCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineInputAssemblyStateCreateInfo(v)
 	end
+
 	return ffi.new("struct VkPipelineInputAssemblyStateCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.DrawIndexedIndirectCommand(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkDrawIndexedIndirectCommand", tbl)
 end
+
 function library.s.DrawIndexedIndirectCommandArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DrawIndexedIndirectCommand(v)
 	end
+
 	return ffi.new("struct VkDrawIndexedIndirectCommand[?]", #tbl, tbl)
 end
+
 function library.s.PipelineRasterizationStateRasterizationOrderAMDArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PipelineRasterizationStateRasterizationOrderAMD(v)
 	end
+
 	return ffi.new("struct VkPipelineRasterizationStateRasterizationOrderAMD[?]", #tbl, tbl)
 end
+
 function library.s.MemoryGetFdInfoKHRArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryGetFdInfoKHR(v)
 	end
+
 	return ffi.new("struct VkMemoryGetFdInfoKHR[?]", #tbl, tbl)
 end
+
 function library.s.SamplerYcbcrConversionCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SamplerYcbcrConversionCreateInfo(v)
 	end
+
 	return ffi.new("struct VkSamplerYcbcrConversionCreateInfo[?]", #tbl, tbl)
 end
-function library.s.QueryPoolArray(tbl) return ffi.new("struct VkQueryPool_T *[?]", #tbl, tbl) end
+
+function library.s.QueryPoolArray(tbl)
+	return ffi.new("struct VkQueryPool_T *[?]", #tbl, tbl)
+end
+
 function library.s.DeviceCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceCreateInfo(v)
 	end
+
 	return ffi.new("struct VkDeviceCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceLimits(tbl, table_only)
 	if type(tbl.framebufferColorSampleCounts) == "table" then
 		tbl.framebufferColorSampleCounts = library.e.sample_count.make_enums(tbl.framebufferColorSampleCounts)
 	elseif type(tbl.framebufferColorSampleCounts) == "string" then
 		tbl.framebufferColorSampleCounts = library.e.sample_count[tbl.framebufferColorSampleCounts]
 	end
+
 	if type(tbl.framebufferDepthSampleCounts) == "table" then
 		tbl.framebufferDepthSampleCounts = library.e.sample_count.make_enums(tbl.framebufferDepthSampleCounts)
 	elseif type(tbl.framebufferDepthSampleCounts) == "string" then
 		tbl.framebufferDepthSampleCounts = library.e.sample_count[tbl.framebufferDepthSampleCounts]
 	end
+
 	if type(tbl.framebufferStencilSampleCounts) == "table" then
 		tbl.framebufferStencilSampleCounts = library.e.sample_count.make_enums(tbl.framebufferStencilSampleCounts)
 	elseif type(tbl.framebufferStencilSampleCounts) == "string" then
 		tbl.framebufferStencilSampleCounts = library.e.sample_count[tbl.framebufferStencilSampleCounts]
 	end
+
 	if type(tbl.framebufferNoAttachmentsSampleCounts) == "table" then
 		tbl.framebufferNoAttachmentsSampleCounts = library.e.sample_count.make_enums(tbl.framebufferNoAttachmentsSampleCounts)
 	elseif type(tbl.framebufferNoAttachmentsSampleCounts) == "string" then
 		tbl.framebufferNoAttachmentsSampleCounts = library.e.sample_count[tbl.framebufferNoAttachmentsSampleCounts]
 	end
+
 	if type(tbl.sampledImageColorSampleCounts) == "table" then
 		tbl.sampledImageColorSampleCounts = library.e.sample_count.make_enums(tbl.sampledImageColorSampleCounts)
 	elseif type(tbl.sampledImageColorSampleCounts) == "string" then
 		tbl.sampledImageColorSampleCounts = library.e.sample_count[tbl.sampledImageColorSampleCounts]
 	end
+
 	if type(tbl.sampledImageIntegerSampleCounts) == "table" then
 		tbl.sampledImageIntegerSampleCounts = library.e.sample_count.make_enums(tbl.sampledImageIntegerSampleCounts)
 	elseif type(tbl.sampledImageIntegerSampleCounts) == "string" then
 		tbl.sampledImageIntegerSampleCounts = library.e.sample_count[tbl.sampledImageIntegerSampleCounts]
 	end
+
 	if type(tbl.sampledImageDepthSampleCounts) == "table" then
 		tbl.sampledImageDepthSampleCounts = library.e.sample_count.make_enums(tbl.sampledImageDepthSampleCounts)
 	elseif type(tbl.sampledImageDepthSampleCounts) == "string" then
 		tbl.sampledImageDepthSampleCounts = library.e.sample_count[tbl.sampledImageDepthSampleCounts]
 	end
+
 	if type(tbl.sampledImageStencilSampleCounts) == "table" then
 		tbl.sampledImageStencilSampleCounts = library.e.sample_count.make_enums(tbl.sampledImageStencilSampleCounts)
 	elseif type(tbl.sampledImageStencilSampleCounts) == "string" then
 		tbl.sampledImageStencilSampleCounts = library.e.sample_count[tbl.sampledImageStencilSampleCounts]
 	end
+
 	if type(tbl.storageImageSampleCounts) == "table" then
 		tbl.storageImageSampleCounts = library.e.sample_count.make_enums(tbl.storageImageSampleCounts)
 	elseif type(tbl.storageImageSampleCounts) == "string" then
 		tbl.storageImageSampleCounts = library.e.sample_count[tbl.storageImageSampleCounts]
 	end
+
 	return table_only and tbl or ffi.new("struct VkPhysicalDeviceLimits", tbl)
 end
+
 function library.s.PhysicalDeviceLimitsArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceLimits(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceLimits[?]", #tbl, tbl)
 end
+
 function library.s.ExportSemaphoreCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ExportSemaphoreCreateInfo(v)
 	end
+
 	return ffi.new("struct VkExportSemaphoreCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.BufferCopy(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkBufferCopy", tbl)
 end
+
 function library.s.BufferCopyArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BufferCopy(v)
 	end
+
 	return ffi.new("struct VkBufferCopy[?]", #tbl, tbl)
 end
+
 function library.s.ShaderModuleCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ShaderModuleCreateInfo(v)
 	end
+
 	return ffi.new("struct VkShaderModuleCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.ImageSubresource(tbl, table_only)
 	if type(tbl.aspectMask) == "table" then
 		tbl.aspectMask = library.e.image_aspect.make_enums(tbl.aspectMask)
 	elseif type(tbl.aspectMask) == "string" then
 		tbl.aspectMask = library.e.image_aspect[tbl.aspectMask]
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageSubresource", tbl)
 end
+
 function library.s.ImageSubresourceArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageSubresource(v)
 	end
+
 	return ffi.new("struct VkImageSubresource[?]", #tbl, tbl)
 end
+
 function library.s.CommandBufferAllocateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.CommandBufferAllocateInfo(v)
 	end
+
 	return ffi.new("struct VkCommandBufferAllocateInfo[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceExternalImageFormatInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceExternalImageFormatInfo(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceExternalImageFormatInfo[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceGroupPropertiesArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceGroupProperties(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceGroupProperties[?]", #tbl, tbl)
 end
+
 function library.s.SparseImageMemoryRequirements2(tbl, table_only)
 	if type(tbl.memoryRequirements) == "table" then
 		tbl.memoryRequirements = library.s.SparseImageMemoryRequirements(tbl.memoryRequirements, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkSparseImageMemoryRequirements2", tbl)
 end
+
 function library.s.SparseImageMemoryRequirements2Array(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SparseImageMemoryRequirements2(v)
 	end
+
 	return ffi.new("struct VkSparseImageMemoryRequirements2[?]", #tbl, tbl)
 end
+
 function library.s.SpecializationMapEntry(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkSpecializationMapEntry", tbl)
 end
+
 function library.s.SpecializationMapEntryArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SpecializationMapEntry(v)
 	end
+
 	return ffi.new("struct VkSpecializationMapEntry[?]", #tbl, tbl)
 end
+
 function library.s.MappedMemoryRangeArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MappedMemoryRange(v)
 	end
+
 	return ffi.new("struct VkMappedMemoryRange[?]", #tbl, tbl)
 end
+
 function library.s.DescriptorUpdateTemplateCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorUpdateTemplateCreateInfo(v)
 	end
+
 	return ffi.new("struct VkDescriptorUpdateTemplateCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.MemoryHeap(tbl, table_only)
 	if type(tbl.flags) == "table" then
 		tbl.flags = library.e.memory_heap.make_enums(tbl.flags)
 	elseif type(tbl.flags) == "string" then
 		tbl.flags = library.e.memory_heap[tbl.flags]
 	end
+
 	return table_only and tbl or ffi.new("struct VkMemoryHeap", tbl)
 end
+
 function library.s.MemoryHeapArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryHeap(v)
 	end
+
 	return ffi.new("struct VkMemoryHeap[?]", #tbl, tbl)
 end
+
 function library.s.PhysicalDeviceExternalBufferInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.PhysicalDeviceExternalBufferInfo(v)
 	end
+
 	return ffi.new("struct VkPhysicalDeviceExternalBufferInfo[?]", #tbl, tbl)
 end
-function library.s.DeviceArray(tbl) return ffi.new("struct VkDevice_T *[?]", #tbl, tbl) end
+
+function library.s.DeviceArray(tbl)
+	return ffi.new("struct VkDevice_T *[?]", #tbl, tbl)
+end
+
 function library.s.SubresourceLayout(tbl, table_only)
 	return table_only and tbl or ffi.new("struct VkSubresourceLayout", tbl)
 end
+
 function library.s.SubresourceLayoutArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SubresourceLayout(v)
 	end
+
 	return ffi.new("struct VkSubresourceLayout[?]", #tbl, tbl)
 end
+
 function library.s.SamplerCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.SamplerCreateInfo(v)
 	end
+
 	return ffi.new("struct VkSamplerCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.RenderPassInputAttachmentAspectCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.RenderPassInputAttachmentAspectCreateInfo(v)
 	end
+
 	return ffi.new("struct VkRenderPassInputAttachmentAspectCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.ImageSubresourceRange(tbl, table_only)
 	if type(tbl.aspectMask) == "table" then
 		tbl.aspectMask = library.e.image_aspect.make_enums(tbl.aspectMask)
 	elseif type(tbl.aspectMask) == "string" then
 		tbl.aspectMask = library.e.image_aspect[tbl.aspectMask]
 	end
+
 	return table_only and tbl or ffi.new("struct VkImageSubresourceRange", tbl)
 end
+
 function library.s.ImageSubresourceRangeArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.ImageSubresourceRange(v)
 	end
+
 	return ffi.new("struct VkImageSubresourceRange[?]", #tbl, tbl)
 end
-function library.s.RenderPassArray(tbl) return ffi.new("struct VkRenderPass_T *[?]", #tbl, tbl) end
+
+function library.s.RenderPassArray(tbl)
+	return ffi.new("struct VkRenderPass_T *[?]", #tbl, tbl)
+end
+
 function library.s.DescriptorPoolCreateInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DescriptorPoolCreateInfo(v)
 	end
+
 	return ffi.new("struct VkDescriptorPoolCreateInfo[?]", #tbl, tbl)
 end
+
 function library.s.BufferImageCopy(tbl, table_only)
 	if type(tbl.imageSubresource) == "table" then
 		tbl.imageSubresource = library.s.ImageSubresourceLayers(tbl.imageSubresource, true)
 	end
+
 	if type(tbl.imageOffset) == "table" then
 		tbl.imageOffset = library.s.Offset3D(tbl.imageOffset, true)
 	end
+
 	if type(tbl.imageExtent) == "table" then
 		tbl.imageExtent = library.s.Extent3D(tbl.imageExtent, true)
 	end
+
 	return table_only and tbl or ffi.new("struct VkBufferImageCopy", tbl)
 end
+
 function library.s.BufferImageCopyArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.BufferImageCopy(v)
 	end
+
 	return ffi.new("struct VkBufferImageCopy[?]", #tbl, tbl)
 end
+
 function library.s.MemoryBarrierArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.MemoryBarrier(v)
 	end
+
 	return ffi.new("struct VkMemoryBarrier[?]", #tbl, tbl)
 end
+
 function library.s.DeviceGroupSubmitInfoArray(tbl)
 	for i, v in ipairs(tbl) do
 		tbl[i] = library.s.DeviceGroupSubmitInfo(v)
 	end
+
 	return ffi.new("struct VkDeviceGroupSubmitInfo[?]", #tbl, tbl)
 end
+
 function library.CreateBufferView(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.BufferViewCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkBufferView_T * [1]")
 	local status = CLIB.vkCreateBufferView(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateGraphicsPipelines(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator)
 	if type(pCreateInfos) == "table" then
-		if not createInfoCount then
-			createInfoCount = #pCreateInfos
-		end
+		if not createInfoCount then createInfoCount = #pCreateInfos end
+
 		pCreateInfos = library.s.GraphicsPipelineCreateInfoArray(pCreateInfos, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkPipeline_T * [1]")
 	local status = CLIB.vkCreateGraphicsPipelines(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfos
+		library.struct_gc[box] = pCreateInfos
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateFramebuffer(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.FramebufferCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkFramebuffer_T * [1]")
 	local status = CLIB.vkCreateFramebuffer(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateValidationCache(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.ValidationCacheCreateInfoEXT(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkValidationCacheEXT_T * [1]")
 	local status = library.CreateValidationCacheEXT(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateDebugUtilsMessenger(instance, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.DebugUtilsMessengerCreateInfoEXT(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkDebugUtilsMessengerEXT_T * [1]")
 	local status = library.CreateDebugUtilsMessengerEXT(instance, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateComputePipelines(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator)
 	if type(pCreateInfos) == "table" then
-		if not createInfoCount then
-			createInfoCount = #pCreateInfos
-		end
+		if not createInfoCount then createInfoCount = #pCreateInfos end
+
 		pCreateInfos = library.s.ComputePipelineCreateInfoArray(pCreateInfos, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkPipeline_T * [1]")
 	local status = CLIB.vkCreateComputePipelines(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfos
+		library.struct_gc[box] = pCreateInfos
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateDescriptorSetLayout(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.DescriptorSetLayoutCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkDescriptorSetLayout_T * [1]")
 	local status = CLIB.vkCreateDescriptorSetLayout(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateQueryPool(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.QueryPoolCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkQueryPool_T * [1]")
 	local status = CLIB.vkCreateQueryPool(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateObjectTable(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.ObjectTableCreateInfoNVX(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkObjectTableNVX_T * [1]")
 	local status = library.CreateObjectTableNVX(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateSampler(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.SamplerCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkSampler_T * [1]")
 	local status = CLIB.vkCreateSampler(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateImage(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.ImageCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkImage_T * [1]")
 	local status = CLIB.vkCreateImage(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.AllocateMemory(device, pAllocateInfo, pAllocator)
 	if type(pAllocateInfo) == "table" then
 		pAllocateInfo = library.s.MemoryAllocateInfo(pAllocateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkDeviceMemory_T * [1]")
 	local status = CLIB.vkAllocateMemory(device, pAllocateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pAllocateInfo
+		library.struct_gc[box] = pAllocateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateDisplayMode(physicalDevice, display, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.DisplayModeCreateInfoKHR(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkDisplayModeKHR_T * [1]")
 	local status = library.CreateDisplayModeKHR(physicalDevice, display, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateDescriptorUpdateTemplate(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.DescriptorUpdateTemplateCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkDescriptorUpdateTemplate_T * [1]")
 	local status = library.CreateDescriptorUpdateTemplateKHR(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateCommandPool(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.CommandPoolCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkCommandPool_T * [1]")
 	local status = CLIB.vkCreateCommandPool(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateIndirectCommandsLayout(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.IndirectCommandsLayoutCreateInfoNVX(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkIndirectCommandsLayoutNVX_T * [1]")
 	local status = library.CreateIndirectCommandsLayoutNVX(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreatePipelineLayout(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.PipelineLayoutCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkPipelineLayout_T * [1]")
 	local status = CLIB.vkCreatePipelineLayout(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateSamplerYcbcrConversion(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.SamplerYcbcrConversionCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkSamplerYcbcrConversion_T * [1]")
 	local status = CLIB.vkCreateSamplerYcbcrConversion(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateShaderModule(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.ShaderModuleCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkShaderModule_T * [1]")
 	local status = CLIB.vkCreateShaderModule(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateEvent(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.EventCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkEvent_T * [1]")
 	local status = CLIB.vkCreateEvent(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.AllocateCommandBuffers(device, pAllocateInfo)
 	if type(pAllocateInfo) == "table" then
 		pAllocateInfo = library.s.CommandBufferAllocateInfo(pAllocateInfo, false)
 	end
+
 	local box = ffi.new("struct VkCommandBuffer_T * [1]")
 	local status = CLIB.vkAllocateCommandBuffers(device, pAllocateInfo, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pAllocateInfo
+		library.struct_gc[box] = pAllocateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateDescriptorPool(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.DescriptorPoolCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkDescriptorPool_T * [1]")
 	local status = CLIB.vkCreateDescriptorPool(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateSemaphore(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.SemaphoreCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkSemaphore_T * [1]")
 	local status = CLIB.vkCreateSemaphore(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreatePipelineCache(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.PipelineCacheCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkPipelineCache_T * [1]")
 	local status = CLIB.vkCreatePipelineCache(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateDebugReportCallback(instance, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.DebugReportCallbackCreateInfoEXT(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkDebugReportCallbackEXT_T * [1]")
 	local status = library.CreateDebugReportCallbackEXT(instance, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateSamplerYcbcrConversion(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.SamplerYcbcrConversionCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkSamplerYcbcrConversion_T * [1]")
 	local status = library.CreateSamplerYcbcrConversionKHR(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateDisplayPlaneSurface(instance, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.DisplaySurfaceCreateInfoKHR(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkSurfaceKHR_T * [1]")
 	local status = library.CreateDisplayPlaneSurfaceKHR(instance, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateBuffer(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.BufferCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkBuffer_T * [1]")
 	local status = CLIB.vkCreateBuffer(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateInstance(pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.InstanceCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkInstance_T * [1]")
 	local status = CLIB.vkCreateInstance(pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateRenderPass(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.RenderPassCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkRenderPass_T * [1]")
 	local status = CLIB.vkCreateRenderPass(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateImageView(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.ImageViewCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkImageView_T * [1]")
 	local status = CLIB.vkCreateImageView(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateDescriptorUpdateTemplate(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.DescriptorUpdateTemplateCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkDescriptorUpdateTemplate_T * [1]")
 	local status = CLIB.vkCreateDescriptorUpdateTemplate(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateSwapchain(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.SwapchainCreateInfoKHR(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkSwapchainKHR_T * [1]")
 	local status = library.CreateSwapchainKHR(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateFence(device, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.FenceCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkFence_T * [1]")
 	local status = CLIB.vkCreateFence(device, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateDevice(physicalDevice, pCreateInfo, pAllocator)
 	if type(pCreateInfo) == "table" then
 		pCreateInfo = library.s.DeviceCreateInfo(pCreateInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkDevice_T * [1]")
 	local status = CLIB.vkCreateDevice(physicalDevice, pCreateInfo, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfo
+		library.struct_gc[box] = pCreateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CreateSharedSwapchains(device, swapchainCount, pCreateInfos, pAllocator)
 	if type(pCreateInfos) == "table" then
-		if not swapchainCount then
-			swapchainCount = #pCreateInfos
-		end
+		if not swapchainCount then swapchainCount = #pCreateInfos end
+
 		pCreateInfos = library.s.SwapchainCreateInfoKHRArray(pCreateInfos, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	local box = ffi.new("struct VkSwapchainKHR_T * [1]")
 	local status = library.CreateSharedSwapchainsKHR(device, swapchainCount, pCreateInfos, pAllocator, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pCreateInfos
+		library.struct_gc[box] = pCreateInfos
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.AllocateDescriptorSets(device, pAllocateInfo)
 	if type(pAllocateInfo) == "table" then
 		pAllocateInfo = library.s.DescriptorSetAllocateInfo(pAllocateInfo, false)
 	end
+
 	local box = ffi.new("struct VkDescriptorSet_T * [1]")
 	local status = CLIB.vkAllocateDescriptorSets(device, pAllocateInfo, box)
 
 	if status == "VK_SUCCESS" then
-		library.struct_gc[ box ] = pAllocateInfo
+		library.struct_gc[box] = pAllocateInfo
 		return box[0], status
 	end
 
 	return nil, status
 end
+
 function library.CmdCopyImageToBuffer(commandBuffer, srcImage, srcImageLayout, dstBuffer, regionCount, pRegions)
 	if type(srcImageLayout) == "string" then
 		srcImageLayout = library.e.image_layout[srcImageLayout]
 	end
+
 	if type(pRegions) == "table" then
-		if not regionCount then
-			regionCount = #pRegions
-		end
+		if not regionCount then regionCount = #pRegions end
+
 		pRegions = library.s.BufferImageCopyArray(pRegions, false)
 	end
+
 	return CLIB.vkCmdCopyImageToBuffer(commandBuffer, srcImage, srcImageLayout, dstBuffer, regionCount, pRegions)
 end
 
-function library.CmdResolveImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions)
+function library.CmdResolveImage(
+	commandBuffer,
+	srcImage,
+	srcImageLayout,
+	dstImage,
+	dstImageLayout,
+	regionCount,
+	pRegions
+)
 	if type(srcImageLayout) == "string" then
 		srcImageLayout = library.e.image_layout[srcImageLayout]
 	end
+
 	if type(dstImageLayout) == "string" then
 		dstImageLayout = library.e.image_layout[dstImageLayout]
 	end
+
 	if type(pRegions) == "table" then
-		if not regionCount then
-			regionCount = #pRegions
-		end
+		if not regionCount then regionCount = #pRegions end
+
 		pRegions = library.s.ImageResolveArray(pRegions, false)
 	end
-	return CLIB.vkCmdResolveImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions)
+
+	return CLIB.vkCmdResolveImage(
+		commandBuffer,
+		srcImage,
+		srcImageLayout,
+		dstImage,
+		dstImageLayout,
+		regionCount,
+		pRegions
+	)
 end
 
 function library.DestroyObjectTable(device, objectTable, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return library.DestroyObjectTableNVX(device, objectTable, pAllocator)
 end
 
@@ -11283,6 +15898,7 @@ function library.SetDebugUtilsObjectTag(device, pTagInfo)
 	if type(pTagInfo) == "table" then
 		pTagInfo = library.s.DebugUtilsObjectTagInfoEXT(pTagInfo, false)
 	end
+
 	return library.SetDebugUtilsObjectTagEXT(device, pTagInfo)
 end
 
@@ -11294,9 +15910,11 @@ function library.RegisterDisplayEvent(device, display, pDisplayEventInfo, pAlloc
 	if type(pDisplayEventInfo) == "table" then
 		pDisplayEventInfo = library.s.DisplayEventInfoEXT(pDisplayEventInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return library.RegisterDisplayEventEXT(device, display, pDisplayEventInfo, pAllocator, pFence)
 end
 
@@ -11304,16 +15922,17 @@ function library.ImportFenceFd(device, pImportFenceFdInfo)
 	if type(pImportFenceFdInfo) == "table" then
 		pImportFenceFdInfo = library.s.ImportFenceFdInfoKHR(pImportFenceFdInfo, false)
 	end
+
 	return library.ImportFenceFdKHR(device, pImportFenceFdInfo)
 end
 
 function library.ResetFences(device, fenceCount, pFences)
 	if type(pFences) == "table" then
-		if not fenceCount then
-			fenceCount = #pFences
-		end
+		if not fenceCount then fenceCount = #pFences end
+
 		pFences = library.s.FenceArray(pFences, false)
 	end
+
 	return CLIB.vkResetFences(device, fenceCount, pFences)
 end
 
@@ -11321,16 +15940,17 @@ function library.SetDebugUtilsObjectName(device, pNameInfo)
 	if type(pNameInfo) == "table" then
 		pNameInfo = library.s.DebugUtilsObjectNameInfoEXT(pNameInfo, false)
 	end
+
 	return library.SetDebugUtilsObjectNameEXT(device, pNameInfo)
 end
 
 function library.BindBufferMemory2(device, bindInfoCount, pBindInfos)
 	if type(pBindInfos) == "table" then
-		if not bindInfoCount then
-			bindInfoCount = #pBindInfos
-		end
+		if not bindInfoCount then bindInfoCount = #pBindInfos end
+
 		pBindInfos = library.s.BindBufferMemoryInfoArray(pBindInfos, false)
 	end
+
 	return library.BindBufferMemory2KHR(device, bindInfoCount, pBindInfos)
 end
 
@@ -11340,6 +15960,7 @@ function library.CmdResetEvent(commandBuffer, event, stageMask)
 	elseif type(stageMask) == "string" then
 		stageMask = library.e.pipeline_stage[stageMask]
 	end
+
 	return CLIB.vkCmdResetEvent(commandBuffer, event, stageMask)
 end
 
@@ -11359,16 +15980,17 @@ function library.CmdNextSubpass(commandBuffer, contents)
 	if type(contents) == "string" then
 		contents = library.e.subpass_contents[contents]
 	end
+
 	return CLIB.vkCmdNextSubpass(commandBuffer, contents)
 end
 
 function library.CmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, regionCount, pRegions)
 	if type(pRegions) == "table" then
-		if not regionCount then
-			regionCount = #pRegions
-		end
+		if not regionCount then regionCount = #pRegions end
+
 		pRegions = library.s.BufferCopyArray(pRegions, false)
 	end
+
 	return CLIB.vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, regionCount, pRegions)
 end
 
@@ -11377,17 +15999,35 @@ function library.RegisterObjects(device, objectTable, objectCount, ppObjectTable
 		objectCount = #ppObjectTableEntries
 		ppObjectTableEntries = library.util.StringList(ppObjectTableEntries)
 	end
+
 	return library.RegisterObjectsNVX(device, objectTable, objectCount, ppObjectTableEntries, pObjectIndices)
 end
 
-function library.CmdDrawIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride)
-	return library.CmdDrawIndirectCountAMD(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride)
+function library.CmdDrawIndirectCount(
+	commandBuffer,
+	buffer,
+	offset,
+	countBuffer,
+	countBufferOffset,
+	maxDrawCount,
+	stride
+)
+	return library.CmdDrawIndirectCountAMD(
+		commandBuffer,
+		buffer,
+		offset,
+		countBuffer,
+		countBufferOffset,
+		maxDrawCount,
+		stride
+	)
 end
 
 function library.DestroyIndirectCommandsLayout(device, indirectCommandsLayout, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return library.DestroyIndirectCommandsLayoutNVX(device, indirectCommandsLayout, pAllocator)
 end
 
@@ -11395,6 +16035,7 @@ function library.DestroyQueryPool(device, queryPool, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyQueryPool(device, queryPool, pAllocator)
 end
 
@@ -11408,6 +16049,7 @@ function library.CmdSetStencilReference(commandBuffer, faceMask, reference)
 	elseif type(faceMask) == "string" then
 		faceMask = library.e.stencil_face[faceMask]
 	end
+
 	return CLIB.vkCmdSetStencilReference(commandBuffer, faceMask, reference)
 end
 
@@ -11419,6 +16061,7 @@ function library.DestroyDebugReportCallback(instance, callback, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return library.DestroyDebugReportCallbackEXT(instance, callback, pAllocator)
 end
 
@@ -11428,6 +16071,7 @@ function library.CmdBeginQuery(commandBuffer, queryPool, query, flags)
 	elseif type(flags) == "string" then
 		flags = library.e.query_control[flags]
 	end
+
 	return CLIB.vkCmdBeginQuery(commandBuffer, queryPool, query, flags)
 end
 
@@ -11435,36 +16079,56 @@ function library.CmdProcessCommands(commandBuffer, pProcessCommandsInfo)
 	if type(pProcessCommandsInfo) == "table" then
 		pProcessCommandsInfo = library.s.CmdProcessCommandsInfoNVX(pProcessCommandsInfo, false)
 	end
+
 	return library.CmdProcessCommandsNVX(commandBuffer, pProcessCommandsInfo)
 end
 
 function library.QueueSubmit(queue, submitCount, pSubmits, fence)
 	if type(pSubmits) == "table" then
-		if not submitCount then
-			submitCount = #pSubmits
-		end
+		if not submitCount then submitCount = #pSubmits end
+
 		pSubmits = library.s.SubmitInfoArray(pSubmits, false)
 	end
+
 	return CLIB.vkQueueSubmit(queue, submitCount, pSubmits, fence)
 end
 
-function library.CmdBlitImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions, filter)
+function library.CmdBlitImage(
+	commandBuffer,
+	srcImage,
+	srcImageLayout,
+	dstImage,
+	dstImageLayout,
+	regionCount,
+	pRegions,
+	filter
+)
 	if type(srcImageLayout) == "string" then
 		srcImageLayout = library.e.image_layout[srcImageLayout]
 	end
+
 	if type(dstImageLayout) == "string" then
 		dstImageLayout = library.e.image_layout[dstImageLayout]
 	end
+
 	if type(pRegions) == "table" then
-		if not regionCount then
-			regionCount = #pRegions
-		end
+		if not regionCount then regionCount = #pRegions end
+
 		pRegions = library.s.ImageBlitArray(pRegions, false)
 	end
-	if type(filter) == "string" then
-		filter = library.e.filter[filter]
-	end
-	return CLIB.vkCmdBlitImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions, filter)
+
+	if type(filter) == "string" then filter = library.e.filter[filter] end
+
+	return CLIB.vkCmdBlitImage(
+		commandBuffer,
+		srcImage,
+		srcImageLayout,
+		dstImage,
+		dstImageLayout,
+		regionCount,
+		pRegions,
+		filter
+	)
 end
 
 function library.CmdSetDepthBias(commandBuffer, depthBiasConstantFactor, depthBiasClamp, depthBiasSlopeFactor)
@@ -11475,6 +16139,7 @@ function library.CmdSetSampleLocations(commandBuffer, pSampleLocationsInfo)
 	if type(pSampleLocationsInfo) == "table" then
 		pSampleLocationsInfo = library.s.SampleLocationsInfoEXT(pSampleLocationsInfo, false)
 	end
+
 	return library.CmdSetSampleLocationsEXT(commandBuffer, pSampleLocationsInfo)
 end
 
@@ -11484,6 +16149,7 @@ function library.CmdPushConstants(commandBuffer, layout, stageFlags, offset, siz
 	elseif type(stageFlags) == "string" then
 		stageFlags = library.e.shader_stage[stageFlags]
 	end
+
 	return CLIB.vkCmdPushConstants(commandBuffer, layout, stageFlags, offset, size, pValues)
 end
 
@@ -11491,22 +16157,23 @@ function library.CmdCopyBufferToImage(commandBuffer, srcBuffer, dstImage, dstIma
 	if type(dstImageLayout) == "string" then
 		dstImageLayout = library.e.image_layout[dstImageLayout]
 	end
+
 	if type(pRegions) == "table" then
-		if not regionCount then
-			regionCount = #pRegions
-		end
+		if not regionCount then regionCount = #pRegions end
+
 		pRegions = library.s.BufferImageCopyArray(pRegions, false)
 	end
+
 	return CLIB.vkCmdCopyBufferToImage(commandBuffer, srcBuffer, dstImage, dstImageLayout, regionCount, pRegions)
 end
 
 function library.CmdBindVertexBuffers(commandBuffer, firstBinding, bindingCount, pBuffers, pOffsets)
 	if type(pBuffers) == "table" then
-		if not bindingCount then
-			bindingCount = #pBuffers
-		end
+		if not bindingCount then bindingCount = #pBuffers end
+
 		pBuffers = library.s.BufferArray(pBuffers, false)
 	end
+
 	return CLIB.vkCmdBindVertexBuffers(commandBuffer, firstBinding, bindingCount, pBuffers, pOffsets)
 end
 
@@ -11514,6 +16181,7 @@ function library.DestroyCommandPool(device, commandPool, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyCommandPool(device, commandPool, pAllocator)
 end
 
@@ -11525,6 +16193,7 @@ function library.DestroyImageView(device, imageView, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyImageView(device, imageView, pAllocator)
 end
 
@@ -11540,6 +16209,7 @@ function library.CmdDebugMarkerInsert(commandBuffer, pMarkerInfo)
 	if type(pMarkerInfo) == "table" then
 		pMarkerInfo = library.s.DebugMarkerMarkerInfoEXT(pMarkerInfo, false)
 	end
+
 	return library.CmdDebugMarkerInsertEXT(commandBuffer, pMarkerInfo)
 end
 
@@ -11551,6 +16221,7 @@ function library.CmdReserveSpaceForCommands(commandBuffer, pReserveSpaceInfo)
 	if type(pReserveSpaceInfo) == "table" then
 		pReserveSpaceInfo = library.s.CmdReserveSpaceForCommandsInfoNVX(pReserveSpaceInfo, false)
 	end
+
 	return library.CmdReserveSpaceForCommandsNVX(commandBuffer, pReserveSpaceInfo)
 end
 
@@ -11558,15 +16229,17 @@ function library.CmdClearColorImage(commandBuffer, image, imageLayout, pColor, r
 	if type(imageLayout) == "string" then
 		imageLayout = library.e.image_layout[imageLayout]
 	end
+
 	if type(pColor) == "table" then
 		pColor = library.s.ClearColorValue(pColor, false)
 	end
+
 	if type(pRanges) == "table" then
-		if not rangeCount then
-			rangeCount = #pRanges
-		end
+		if not rangeCount then rangeCount = #pRanges end
+
 		pRanges = library.s.ImageSubresourceRangeArray(pRanges, false)
 	end
+
 	return CLIB.vkCmdClearColorImage(commandBuffer, image, imageLayout, pColor, rangeCount, pRanges)
 end
 
@@ -11574,6 +16247,7 @@ function library.CmdBeginDebugUtilsLabel(commandBuffer, pLabelInfo)
 	if type(pLabelInfo) == "table" then
 		pLabelInfo = library.s.DebugUtilsLabelEXT(pLabelInfo, false)
 	end
+
 	return library.CmdBeginDebugUtilsLabelEXT(commandBuffer, pLabelInfo)
 end
 
@@ -11581,6 +16255,7 @@ function library.CmdDebugMarkerBegin(commandBuffer, pMarkerInfo)
 	if type(pMarkerInfo) == "table" then
 		pMarkerInfo = library.s.DebugMarkerMarkerInfoEXT(pMarkerInfo, false)
 	end
+
 	return library.CmdDebugMarkerBeginEXT(commandBuffer, pMarkerInfo)
 end
 
@@ -11588,6 +16263,7 @@ function library.DebugMarkerSetObjectName(device, pNameInfo)
 	if type(pNameInfo) == "table" then
 		pNameInfo = library.s.DebugMarkerObjectNameInfoEXT(pNameInfo, false)
 	end
+
 	return library.DebugMarkerSetObjectNameEXT(device, pNameInfo)
 end
 
@@ -11595,6 +16271,7 @@ function library.DestroyImage(device, image, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyImage(device, image, pAllocator)
 end
 
@@ -11602,6 +16279,7 @@ function library.DebugMarkerSetObjectTag(device, pTagInfo)
 	if type(pTagInfo) == "table" then
 		pTagInfo = library.s.DebugMarkerObjectTagInfoEXT(pTagInfo, false)
 	end
+
 	return library.DebugMarkerSetObjectTagEXT(device, pTagInfo)
 end
 
@@ -11613,17 +16291,34 @@ function library.ResetDescriptorPool(device, descriptorPool, flags)
 	return CLIB.vkResetDescriptorPool(device, descriptorPool, flags)
 end
 
-function library.CmdPushDescriptorSet(commandBuffer, pipelineBindPoint, layout, set, descriptorWriteCount, pDescriptorWrites)
+function library.CmdPushDescriptorSet(
+	commandBuffer,
+	pipelineBindPoint,
+	layout,
+	set,
+	descriptorWriteCount,
+	pDescriptorWrites
+)
 	if type(pipelineBindPoint) == "string" then
 		pipelineBindPoint = library.e.pipeline_bind_point[pipelineBindPoint]
 	end
+
 	if type(pDescriptorWrites) == "table" then
 		if not descriptorWriteCount then
 			descriptorWriteCount = #pDescriptorWrites
 		end
+
 		pDescriptorWrites = library.s.WriteDescriptorSetArray(pDescriptorWrites, false)
 	end
-	return library.CmdPushDescriptorSetKHR(commandBuffer, pipelineBindPoint, layout, set, descriptorWriteCount, pDescriptorWrites)
+
+	return library.CmdPushDescriptorSetKHR(
+		commandBuffer,
+		pipelineBindPoint,
+		layout,
+		set,
+		descriptorWriteCount,
+		pDescriptorWrites
+	)
 end
 
 function library.UpdateDescriptorSetWithTemplate(device, descriptorSet, descriptorUpdateTemplate, pData)
@@ -11634,6 +16329,7 @@ function library.DestroyDevice(device, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyDevice(device, pAllocator)
 end
 
@@ -11647,6 +16343,7 @@ function library.ResetCommandPool(device, commandPool, flags)
 	elseif type(flags) == "string" then
 		flags = library.e.command_pool_reset[flags]
 	end
+
 	return CLIB.vkResetCommandPool(device, commandPool, flags)
 end
 
@@ -11656,11 +16353,11 @@ end
 
 function library.BindImageMemory2(device, bindInfoCount, pBindInfos)
 	if type(pBindInfos) == "table" then
-		if not bindInfoCount then
-			bindInfoCount = #pBindInfos
-		end
+		if not bindInfoCount then bindInfoCount = #pBindInfos end
+
 		pBindInfos = library.s.BindImageMemoryInfoArray(pBindInfos, false)
 	end
+
 	return library.BindImageMemory2KHR(device, bindInfoCount, pBindInfos)
 end
 
@@ -11670,6 +16367,7 @@ function library.CmdSetStencilCompareMask(commandBuffer, faceMask, compareMask)
 	elseif type(faceMask) == "string" then
 		faceMask = library.e.stencil_face[faceMask]
 	end
+
 	return CLIB.vkCmdSetStencilCompareMask(commandBuffer, faceMask, compareMask)
 end
 
@@ -11677,6 +16375,7 @@ function library.DestroySamplerYcbcrConversion(device, ycbcrConversion, pAllocat
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return library.DestroySamplerYcbcrConversionKHR(device, ycbcrConversion, pAllocator)
 end
 
@@ -11684,6 +16383,7 @@ function library.DestroyInstance(instance, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyInstance(instance, pAllocator)
 end
 
@@ -11691,6 +16391,7 @@ function library.QueueInsertDebugUtilsLabel(queue, pLabelInfo)
 	if type(pLabelInfo) == "table" then
 		pLabelInfo = library.s.DebugUtilsLabelEXT(pLabelInfo, false)
 	end
+
 	return library.QueueInsertDebugUtilsLabelEXT(queue, pLabelInfo)
 end
 
@@ -11704,16 +16405,17 @@ function library.CmdWriteTimestamp(commandBuffer, pipelineStage, queryPool, quer
 	elseif type(pipelineStage) == "string" then
 		pipelineStage = library.e.pipeline_stage[pipelineStage]
 	end
+
 	return CLIB.vkCmdWriteTimestamp(commandBuffer, pipelineStage, queryPool, query)
 end
 
 function library.CmdSetViewportWScalin(commandBuffer, firstViewport, viewportCount, pViewportWScalings)
 	if type(pViewportWScalings) == "table" then
-		if not viewportCount then
-			viewportCount = #pViewportWScalings
-		end
+		if not viewportCount then viewportCount = #pViewportWScalings end
+
 		pViewportWScalings = library.s.ViewportWScalingNVArray(pViewportWScalings, false)
 	end
+
 	return library.CmdSetViewportWScalingNV(commandBuffer, firstViewport, viewportCount, pViewportWScalings)
 end
 
@@ -11721,25 +16423,45 @@ function library.DestroySurface(instance, surface, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return library.DestroySurfaceKHR(instance, surface, pAllocator)
 end
 
-function library.CmdCopyQueryPoolResults(commandBuffer, queryPool, firstQuery, queryCount, dstBuffer, dstOffset, stride, flags)
+function library.CmdCopyQueryPoolResults(
+	commandBuffer,
+	queryPool,
+	firstQuery,
+	queryCount,
+	dstBuffer,
+	dstOffset,
+	stride,
+	flags
+)
 	if type(flags) == "table" then
 		flags = library.e.query_result.make_enums(flags)
 	elseif type(flags) == "string" then
 		flags = library.e.query_result[flags]
 	end
-	return CLIB.vkCmdCopyQueryPoolResults(commandBuffer, queryPool, firstQuery, queryCount, dstBuffer, dstOffset, stride, flags)
+
+	return CLIB.vkCmdCopyQueryPoolResults(
+		commandBuffer,
+		queryPool,
+		firstQuery,
+		queryCount,
+		dstBuffer,
+		dstOffset,
+		stride,
+		flags
+	)
 end
 
 function library.MergePipelineCaches(device, dstCache, srcCacheCount, pSrcCaches)
 	if type(pSrcCaches) == "table" then
-		if not srcCacheCount then
-			srcCacheCount = #pSrcCaches
-		end
+		if not srcCacheCount then srcCacheCount = #pSrcCaches end
+
 		pSrcCaches = library.s.PipelineCacheArray(pSrcCaches, false)
 	end
+
 	return CLIB.vkMergePipelineCaches(device, dstCache, srcCacheCount, pSrcCaches)
 end
 
@@ -11749,6 +16471,7 @@ function library.CmdSetStencilWriteMask(commandBuffer, faceMask, writeMask)
 	elseif type(faceMask) == "string" then
 		faceMask = library.e.stencil_face[faceMask]
 	end
+
 	return CLIB.vkCmdSetStencilWriteMask(commandBuffer, faceMask, writeMask)
 end
 
@@ -11756,6 +16479,7 @@ function library.DestroyDescriptorUpdateTemplate(device, descriptorUpdateTemplat
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return library.DestroyDescriptorUpdateTemplateKHR(device, descriptorUpdateTemplate, pAllocator)
 end
 
@@ -11763,24 +16487,60 @@ function library.ImportSemaphoreFd(device, pImportSemaphoreFdInfo)
 	if type(pImportSemaphoreFdInfo) == "table" then
 		pImportSemaphoreFdInfo = library.s.ImportSemaphoreFdInfoKHR(pImportSemaphoreFdInfo, false)
 	end
+
 	return library.ImportSemaphoreFdKHR(device, pImportSemaphoreFdInfo)
 end
 
-function library.CmdBindDescriptorSets(commandBuffer, pipelineBindPoint, layout, firstSet, descriptorSetCount, pDescriptorSets, dynamicOffsetCount, pDynamicOffsets)
+function library.CmdBindDescriptorSets(
+	commandBuffer,
+	pipelineBindPoint,
+	layout,
+	firstSet,
+	descriptorSetCount,
+	pDescriptorSets,
+	dynamicOffsetCount,
+	pDynamicOffsets
+)
 	if type(pipelineBindPoint) == "string" then
 		pipelineBindPoint = library.e.pipeline_bind_point[pipelineBindPoint]
 	end
+
 	if type(pDescriptorSets) == "table" then
-		if not descriptorSetCount then
-			descriptorSetCount = #pDescriptorSets
-		end
+		if not descriptorSetCount then descriptorSetCount = #pDescriptorSets end
+
 		pDescriptorSets = library.s.DescriptorSetArray(pDescriptorSets, false)
 	end
-	return CLIB.vkCmdBindDescriptorSets(commandBuffer, pipelineBindPoint, layout, firstSet, descriptorSetCount, pDescriptorSets, dynamicOffsetCount, pDynamicOffsets)
+
+	return CLIB.vkCmdBindDescriptorSets(
+		commandBuffer,
+		pipelineBindPoint,
+		layout,
+		firstSet,
+		descriptorSetCount,
+		pDescriptorSets,
+		dynamicOffsetCount,
+		pDynamicOffsets
+	)
 end
 
-function library.CmdDispatchBase(commandBuffer, baseGroupX, baseGroupY, baseGroupZ, groupCountX, groupCountY, groupCountZ)
-	return CLIB.vkCmdDispatchBase(commandBuffer, baseGroupX, baseGroupY, baseGroupZ, groupCountX, groupCountY, groupCountZ)
+function library.CmdDispatchBase(
+	commandBuffer,
+	baseGroupX,
+	baseGroupY,
+	baseGroupZ,
+	groupCountX,
+	groupCountY,
+	groupCountZ
+)
+	return CLIB.vkCmdDispatchBase(
+		commandBuffer,
+		baseGroupX,
+		baseGroupY,
+		baseGroupZ,
+		groupCountX,
+		groupCountY,
+		groupCountZ
+	)
 end
 
 function library.CmdSetDepthBounds(commandBuffer, minDepthBounds, maxDepthBounds)
@@ -11791,16 +16551,17 @@ function library.DestroyEvent(device, event, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyEvent(device, event, pAllocator)
 end
 
 function library.BindBufferMemory2(device, bindInfoCount, pBindInfos)
 	if type(pBindInfos) == "table" then
-		if not bindInfoCount then
-			bindInfoCount = #pBindInfos
-		end
+		if not bindInfoCount then bindInfoCount = #pBindInfos end
+
 		pBindInfos = library.s.BindBufferMemoryInfoArray(pBindInfos, false)
 	end
+
 	return CLIB.vkBindBufferMemory2(device, bindInfoCount, pBindInfos)
 end
 
@@ -11808,6 +16569,7 @@ function library.DestroyBuffer(device, buffer, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyBuffer(device, buffer, pAllocator)
 end
 
@@ -11815,6 +16577,7 @@ function library.DestroyDebugUtilsMessenger(instance, messenger, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return library.DestroyDebugUtilsMessengerEXT(instance, messenger, pAllocator)
 end
 
@@ -11824,14 +16587,17 @@ function library.SubmitDebugUtilsMessage(instance, messageSeverity, messageTypes
 	elseif type(messageSeverity) == "string" then
 		messageSeverity = library.e.debug_utils_message_severity[messageSeverity]
 	end
+
 	if type(messageTypes) == "table" then
 		messageTypes = library.e.debug_utils_message_type.make_enums(messageTypes)
 	elseif type(messageTypes) == "string" then
 		messageTypes = library.e.debug_utils_message_type[messageTypes]
 	end
+
 	if type(pCallbackData) == "table" then
 		pCallbackData = library.s.DebugUtilsMessengerCallbackDataEXT(pCallbackData, false)
 	end
+
 	return library.SubmitDebugUtilsMessageEXT(instance, messageSeverity, messageTypes, pCallbackData)
 end
 
@@ -11841,11 +16607,11 @@ end
 
 function library.FreeCommandBuffers(device, commandPool, commandBufferCount, pCommandBuffers)
 	if type(pCommandBuffers) == "table" then
-		if not commandBufferCount then
-			commandBufferCount = #pCommandBuffers
-		end
+		if not commandBufferCount then commandBufferCount = #pCommandBuffers end
+
 		pCommandBuffers = library.s.CommandBufferArray(pCommandBuffers, false)
 	end
+
 	return CLIB.vkFreeCommandBuffers(device, commandPool, commandBufferCount, pCommandBuffers)
 end
 
@@ -11853,6 +16619,7 @@ function library.DestroyPipeline(device, pipeline, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyPipeline(device, pipeline, pAllocator)
 end
 
@@ -11868,6 +16635,7 @@ function library.DestroyShaderModule(device, shaderModule, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyShaderModule(device, shaderModule, pAllocator)
 end
 
@@ -11875,6 +16643,7 @@ function library.DestroyPipelineLayout(device, pipelineLayout, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyPipelineLayout(device, pipelineLayout, pAllocator)
 end
 
@@ -11882,6 +16651,7 @@ function library.DestroySampler(device, sampler, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroySampler(device, sampler, pAllocator)
 end
 
@@ -11889,6 +16659,7 @@ function library.DestroyFramebuffer(device, framebuffer, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyFramebuffer(device, framebuffer, pAllocator)
 end
 
@@ -11898,6 +16669,7 @@ function library.CmdWriteBufferMarker(commandBuffer, pipelineStage, dstBuffer, d
 	elseif type(pipelineStage) == "string" then
 		pipelineStage = library.e.pipeline_stage[pipelineStage]
 	end
+
 	return library.CmdWriteBufferMarkerAMD(commandBuffer, pipelineStage, dstBuffer, dstOffset, marker)
 end
 
@@ -11909,6 +16681,7 @@ function library.CmdBindIndexBuffer(commandBuffer, buffer, offset, indexType)
 	if type(indexType) == "string" then
 		indexType = library.e.index_type[indexType]
 	end
+
 	return CLIB.vkCmdBindIndexBuffer(commandBuffer, buffer, offset, indexType)
 end
 
@@ -11916,6 +16689,7 @@ function library.DestroyValidationCache(device, validationCache, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return library.DestroyValidationCacheEXT(device, validationCache, pAllocator)
 end
 
@@ -11923,6 +16697,7 @@ function library.CmdInsertDebugUtilsLabel(commandBuffer, pLabelInfo)
 	if type(pLabelInfo) == "table" then
 		pLabelInfo = library.s.DebugUtilsLabelEXT(pLabelInfo, false)
 	end
+
 	return library.CmdInsertDebugUtilsLabelEXT(commandBuffer, pLabelInfo)
 end
 
@@ -11938,6 +16713,7 @@ function library.DestroyBufferView(device, bufferView, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyBufferView(device, bufferView, pAllocator)
 end
 
@@ -11947,6 +16723,7 @@ function library.ResetCommandBuffer(commandBuffer, flags)
 	elseif type(flags) == "string" then
 		flags = library.e.command_buffer_reset[flags]
 	end
+
 	return CLIB.vkResetCommandBuffer(commandBuffer, flags)
 end
 
@@ -11956,11 +16733,11 @@ end
 
 function library.CmdSetViewport(commandBuffer, firstViewport, viewportCount, pViewports)
 	if type(pViewports) == "table" then
-		if not viewportCount then
-			viewportCount = #pViewports
-		end
+		if not viewportCount then viewportCount = #pViewports end
+
 		pViewports = library.s.ViewportArray(pViewports, false)
 	end
+
 	return CLIB.vkCmdSetViewport(commandBuffer, firstViewport, viewportCount, pViewports)
 end
 
@@ -11970,6 +16747,7 @@ function library.CmdSetEvent(commandBuffer, event, stageMask)
 	elseif type(stageMask) == "string" then
 		stageMask = library.e.pipeline_stage[stageMask]
 	end
+
 	return CLIB.vkCmdSetEvent(commandBuffer, event, stageMask)
 end
 
@@ -11977,11 +16755,28 @@ function library.DestroyDescriptorUpdateTemplate(device, descriptorUpdateTemplat
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyDescriptorUpdateTemplate(device, descriptorUpdateTemplate, pAllocator)
 end
 
-function library.CmdDispatchBase(commandBuffer, baseGroupX, baseGroupY, baseGroupZ, groupCountX, groupCountY, groupCountZ)
-	return library.CmdDispatchBaseKHR(commandBuffer, baseGroupX, baseGroupY, baseGroupZ, groupCountX, groupCountY, groupCountZ)
+function library.CmdDispatchBase(
+	commandBuffer,
+	baseGroupX,
+	baseGroupY,
+	baseGroupZ,
+	groupCountX,
+	groupCountY,
+	groupCountZ
+)
+	return library.CmdDispatchBaseKHR(
+		commandBuffer,
+		baseGroupX,
+		baseGroupY,
+		baseGroupZ,
+		groupCountX,
+		groupCountY,
+		groupCountZ
+	)
 end
 
 function library.CmdResetQueryPool(commandBuffer, queryPool, firstQuery, queryCount)
@@ -11990,11 +16785,11 @@ end
 
 function library.QueueBindSparse(queue, bindInfoCount, pBindInfo, fence)
 	if type(pBindInfo) == "table" then
-		if not bindInfoCount then
-			bindInfoCount = #pBindInfo
-		end
+		if not bindInfoCount then bindInfoCount = #pBindInfo end
+
 		pBindInfo = library.s.BindSparseInfoArray(pBindInfo, false)
 	end
+
 	return CLIB.vkQueueBindSparse(queue, bindInfoCount, pBindInfo, fence)
 end
 
@@ -12004,11 +16799,11 @@ end
 
 function library.CmdSetScissor(commandBuffer, firstScissor, scissorCount, pScissors)
 	if type(pScissors) == "table" then
-		if not scissorCount then
-			scissorCount = #pScissors
-		end
+		if not scissorCount then scissorCount = #pScissors end
+
 		pScissors = library.s.Rect2DArray(pScissors, false)
 	end
+
 	return CLIB.vkCmdSetScissor(commandBuffer, firstScissor, scissorCount, pScissors)
 end
 
@@ -12020,15 +16815,17 @@ function library.CmdClearDepthStencilImage(commandBuffer, image, imageLayout, pD
 	if type(imageLayout) == "string" then
 		imageLayout = library.e.image_layout[imageLayout]
 	end
+
 	if type(pDepthStencil) == "table" then
 		pDepthStencil = library.s.ClearDepthStencilValue(pDepthStencil, false)
 	end
+
 	if type(pRanges) == "table" then
-		if not rangeCount then
-			rangeCount = #pRanges
-		end
+		if not rangeCount then rangeCount = #pRanges end
+
 		pRanges = library.s.ImageSubresourceRangeArray(pRanges, false)
 	end
+
 	return CLIB.vkCmdClearDepthStencilImage(commandBuffer, image, imageLayout, pDepthStencil, rangeCount, pRanges)
 end
 
@@ -12040,6 +16837,7 @@ function library.DestroySwapchain(device, swapchain, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return library.DestroySwapchainKHR(device, swapchain, pAllocator)
 end
 
@@ -12049,11 +16847,11 @@ end
 
 function library.FreeDescriptorSets(device, descriptorPool, descriptorSetCount, pDescriptorSets)
 	if type(pDescriptorSets) == "table" then
-		if not descriptorSetCount then
-			descriptorSetCount = #pDescriptorSets
-		end
+		if not descriptorSetCount then descriptorSetCount = #pDescriptorSets end
+
 		pDescriptorSets = library.s.DescriptorSetArray(pDescriptorSets, false)
 	end
+
 	return CLIB.vkFreeDescriptorSets(device, descriptorPool, descriptorSetCount, pDescriptorSets)
 end
 
@@ -12061,45 +16859,76 @@ function library.DestroyDescriptorSetLayout(device, descriptorSetLayout, pAlloca
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyDescriptorSetLayout(device, descriptorSetLayout, pAllocator)
 end
 
-function library.CmdWaitEvents(commandBuffer, eventCount, pEvents, srcStageMask, dstStageMask, memoryBarrierCount, pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers)
+function library.CmdWaitEvents(
+	commandBuffer,
+	eventCount,
+	pEvents,
+	srcStageMask,
+	dstStageMask,
+	memoryBarrierCount,
+	pMemoryBarriers,
+	bufferMemoryBarrierCount,
+	pBufferMemoryBarriers,
+	imageMemoryBarrierCount,
+	pImageMemoryBarriers
+)
 	if type(pEvents) == "table" then
-		if not eventCount then
-			eventCount = #pEvents
-		end
+		if not eventCount then eventCount = #pEvents end
+
 		pEvents = library.s.EventArray(pEvents, false)
 	end
+
 	if type(srcStageMask) == "table" then
 		srcStageMask = library.e.pipeline_stage.make_enums(srcStageMask)
 	elseif type(srcStageMask) == "string" then
 		srcStageMask = library.e.pipeline_stage[srcStageMask]
 	end
+
 	if type(dstStageMask) == "table" then
 		dstStageMask = library.e.pipeline_stage.make_enums(dstStageMask)
 	elseif type(dstStageMask) == "string" then
 		dstStageMask = library.e.pipeline_stage[dstStageMask]
 	end
+
 	if type(pMemoryBarriers) == "table" then
-		if not memoryBarrierCount then
-			memoryBarrierCount = #pMemoryBarriers
-		end
+		if not memoryBarrierCount then memoryBarrierCount = #pMemoryBarriers end
+
 		pMemoryBarriers = library.s.MemoryBarrierArray(pMemoryBarriers, false)
 	end
+
 	if type(pBufferMemoryBarriers) == "table" then
 		if not bufferMemoryBarrierCount then
 			bufferMemoryBarrierCount = #pBufferMemoryBarriers
 		end
+
 		pBufferMemoryBarriers = library.s.BufferMemoryBarrierArray(pBufferMemoryBarriers, false)
 	end
+
 	if type(pImageMemoryBarriers) == "table" then
 		if not imageMemoryBarrierCount then
 			imageMemoryBarrierCount = #pImageMemoryBarriers
 		end
+
 		pImageMemoryBarriers = library.s.ImageMemoryBarrierArray(pImageMemoryBarriers, false)
 	end
-	return CLIB.vkCmdWaitEvents(commandBuffer, eventCount, pEvents, srcStageMask, dstStageMask, memoryBarrierCount, pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers)
+
+	return CLIB.vkCmdWaitEvents(
+		commandBuffer,
+		eventCount,
+		pEvents,
+		srcStageMask,
+		dstStageMask,
+		memoryBarrierCount,
+		pMemoryBarriers,
+		bufferMemoryBarrierCount,
+		pBufferMemoryBarriers,
+		imageMemoryBarrierCount,
+		pImageMemoryBarriers
+	)
 end
 
 function library.CmdEndRenderPass(commandBuffer)
@@ -12110,6 +16939,7 @@ function library.DestroyDescriptorPool(device, descriptorPool, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyDescriptorPool(device, descriptorPool, pAllocator)
 end
 
@@ -12117,6 +16947,7 @@ function library.DestroyFence(device, fence, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyFence(device, fence, pAllocator)
 end
 
@@ -12124,6 +16955,7 @@ function library.CmdBindPipeline(commandBuffer, pipelineBindPoint, pipeline)
 	if type(pipelineBindPoint) == "string" then
 		pipelineBindPoint = library.e.pipeline_bind_point[pipelineBindPoint]
 	end
+
 	return CLIB.vkCmdBindPipeline(commandBuffer, pipelineBindPoint, pipeline)
 end
 
@@ -12131,6 +16963,7 @@ function library.DestroyRenderPass(device, renderPass, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyRenderPass(device, renderPass, pAllocator)
 end
 
@@ -12138,52 +16971,53 @@ function library.QueueBeginDebugUtilsLabel(queue, pLabelInfo)
 	if type(pLabelInfo) == "table" then
 		pLabelInfo = library.s.DebugUtilsLabelEXT(pLabelInfo, false)
 	end
+
 	return library.QueueBeginDebugUtilsLabelEXT(queue, pLabelInfo)
 end
 
 function library.MergeValidationCaches(device, dstCache, srcCacheCount, pSrcCaches)
 	if type(pSrcCaches) == "table" then
-		if not srcCacheCount then
-			srcCacheCount = #pSrcCaches
-		end
+		if not srcCacheCount then srcCacheCount = #pSrcCaches end
+
 		pSrcCaches = library.s.ValidationCacheEXTArray(pSrcCaches, false)
 	end
+
 	return library.MergeValidationCachesEXT(device, dstCache, srcCacheCount, pSrcCaches)
 end
 
 function library.BindImageMemory2(device, bindInfoCount, pBindInfos)
 	if type(pBindInfos) == "table" then
-		if not bindInfoCount then
-			bindInfoCount = #pBindInfos
-		end
+		if not bindInfoCount then bindInfoCount = #pBindInfos end
+
 		pBindInfos = library.s.BindImageMemoryInfoArray(pBindInfos, false)
 	end
+
 	return CLIB.vkBindImageMemory2(device, bindInfoCount, pBindInfos)
 end
 
 function library.CmdClearAttachments(commandBuffer, attachmentCount, pAttachments, rectCount, pRects)
 	if type(pAttachments) == "table" then
-		if not attachmentCount then
-			attachmentCount = #pAttachments
-		end
+		if not attachmentCount then attachmentCount = #pAttachments end
+
 		pAttachments = library.s.ClearAttachmentArray(pAttachments, false)
 	end
+
 	if type(pRects) == "table" then
-		if not rectCount then
-			rectCount = #pRects
-		end
+		if not rectCount then rectCount = #pRects end
+
 		pRects = library.s.ClearRectArray(pRects, false)
 	end
+
 	return CLIB.vkCmdClearAttachments(commandBuffer, attachmentCount, pAttachments, rectCount, pRects)
 end
 
 function library.CmdExecuteCommands(commandBuffer, commandBufferCount, pCommandBuffers)
 	if type(pCommandBuffers) == "table" then
-		if not commandBufferCount then
-			commandBufferCount = #pCommandBuffers
-		end
+		if not commandBufferCount then commandBufferCount = #pCommandBuffers end
+
 		pCommandBuffers = library.s.CommandBufferArray(pCommandBuffers, false)
 	end
+
 	return CLIB.vkCmdExecuteCommands(commandBuffer, commandBufferCount, pCommandBuffers)
 end
 
@@ -12191,9 +17025,11 @@ function library.CmdBeginRenderPass(commandBuffer, pRenderPassBegin, contents)
 	if type(pRenderPassBegin) == "table" then
 		pRenderPassBegin = library.s.RenderPassBeginInfo(pRenderPassBegin, false)
 	end
+
 	if type(contents) == "string" then
 		contents = library.e.subpass_contents[contents]
 	end
+
 	return CLIB.vkCmdBeginRenderPass(commandBuffer, pRenderPassBegin, contents)
 end
 
@@ -12205,17 +17041,35 @@ function library.UnregisterObjects(device, objectTable, objectCount, pObjectEntr
 	if type(pObjectEntryTypes) == "string" then
 		pObjectEntryTypes = library.e.object_entry_type[pObjectEntryTypes]
 	end
+
 	return library.UnregisterObjectsNVX(device, objectTable, objectCount, pObjectEntryTypes, pObjectIndices)
 end
 
-function library.CmdDrawIndexedIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride)
-	return library.CmdDrawIndexedIndirectCountAMD(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride)
+function library.CmdDrawIndexedIndirectCount(
+	commandBuffer,
+	buffer,
+	offset,
+	countBuffer,
+	countBufferOffset,
+	maxDrawCount,
+	stride
+)
+	return library.CmdDrawIndexedIndirectCountAMD(
+		commandBuffer,
+		buffer,
+		offset,
+		countBuffer,
+		countBufferOffset,
+		maxDrawCount,
+		stride
+	)
 end
 
 function library.BeginCommandBuffer(commandBuffer, pBeginInfo)
 	if type(pBeginInfo) == "table" then
 		pBeginInfo = library.s.CommandBufferBeginInfo(pBeginInfo, false)
 	end
+
 	return CLIB.vkBeginCommandBuffer(commandBuffer, pBeginInfo)
 end
 
@@ -12235,39 +17089,41 @@ function library.QueuePresent(queue, pPresentInfo)
 	if type(pPresentInfo) == "table" then
 		pPresentInfo = library.s.PresentInfoKHR(pPresentInfo, false)
 	end
+
 	return library.QueuePresentKHR(queue, pPresentInfo)
 end
 
 function library.SetHdrMetadata(device, swapchainCount, pSwapchains, pMetadata)
 	if type(pSwapchains) == "table" then
-		if not swapchainCount then
-			swapchainCount = #pSwapchains
-		end
+		if not swapchainCount then swapchainCount = #pSwapchains end
+
 		pSwapchains = library.s.SwapchainKHRArray(pSwapchains, false)
 	end
+
 	if type(pMetadata) == "table" then
 		pMetadata = library.s.HdrMetadataEXT(pMetadata, false)
 	end
+
 	return library.SetHdrMetadataEXT(device, swapchainCount, pSwapchains, pMetadata)
 end
 
 function library.InvalidateMappedMemoryRanges(device, memoryRangeCount, pMemoryRanges)
 	if type(pMemoryRanges) == "table" then
-		if not memoryRangeCount then
-			memoryRangeCount = #pMemoryRanges
-		end
+		if not memoryRangeCount then memoryRangeCount = #pMemoryRanges end
+
 		pMemoryRanges = library.s.MappedMemoryRangeArray(pMemoryRanges, false)
 	end
+
 	return CLIB.vkInvalidateMappedMemoryRanges(device, memoryRangeCount, pMemoryRanges)
 end
 
 function library.WaitForFences(device, fenceCount, pFences, waitAll, timeout)
 	if type(pFences) == "table" then
-		if not fenceCount then
-			fenceCount = #pFences
-		end
+		if not fenceCount then fenceCount = #pFences end
+
 		pFences = library.s.FenceArray(pFences, false)
 	end
+
 	tbl.waitAll = waitAll and 1 or 0
 	return CLIB.vkWaitForFences(device, fenceCount, pFences, waitAll, timeout)
 end
@@ -12281,8 +17137,10 @@ function library.CmdSetDiscardRectangle(commandBuffer, firstDiscardRectangle, di
 		if not discardRectangleCount then
 			discardRectangleCount = #pDiscardRectangles
 		end
+
 		pDiscardRectangles = library.s.Rect2DArray(pDiscardRectangles, false)
 	end
+
 	return library.CmdSetDiscardRectangleEXT(commandBuffer, firstDiscardRectangle, discardRectangleCount, pDiscardRectangles)
 end
 
@@ -12290,16 +17148,17 @@ function library.FreeMemory(device, memory, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkFreeMemory(device, memory, pAllocator)
 end
 
 function library.FlushMappedMemoryRanges(device, memoryRangeCount, pMemoryRanges)
 	if type(pMemoryRanges) == "table" then
-		if not memoryRangeCount then
-			memoryRangeCount = #pMemoryRanges
-		end
+		if not memoryRangeCount then memoryRangeCount = #pMemoryRanges end
+
 		pMemoryRanges = library.s.MappedMemoryRangeArray(pMemoryRanges, false)
 	end
+
 	return CLIB.vkFlushMappedMemoryRanges(device, memoryRangeCount, pMemoryRanges)
 end
 
@@ -12307,6 +17166,7 @@ function library.DestroySamplerYcbcrConversion(device, ycbcrConversion, pAllocat
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroySamplerYcbcrConversion(device, ycbcrConversion, pAllocator)
 end
 
@@ -12314,6 +17174,7 @@ function library.DestroyPipelineCache(device, pipelineCache, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroyPipelineCache(device, pipelineCache, pAllocator)
 end
 
@@ -12321,9 +17182,11 @@ function library.RegisterDeviceEvent(device, pDeviceEventInfo, pAllocator, pFenc
 	if type(pDeviceEventInfo) == "table" then
 		pDeviceEventInfo = library.s.DeviceEventInfoEXT(pDeviceEventInfo, false)
 	end
+
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return library.RegisterDeviceEventEXT(device, pDeviceEventInfo, pAllocator, pFence)
 end
 
@@ -12331,39 +17194,72 @@ function library.DestroySemaphore(device, semaphore, pAllocator)
 	if type(pAllocator) == "table" then
 		pAllocator = library.s.AllocationCallbacks(pAllocator, false)
 	end
+
 	return CLIB.vkDestroySemaphore(device, semaphore, pAllocator)
 end
 
-function library.CmdCopyImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions)
+function library.CmdCopyImage(
+	commandBuffer,
+	srcImage,
+	srcImageLayout,
+	dstImage,
+	dstImageLayout,
+	regionCount,
+	pRegions
+)
 	if type(srcImageLayout) == "string" then
 		srcImageLayout = library.e.image_layout[srcImageLayout]
 	end
+
 	if type(dstImageLayout) == "string" then
 		dstImageLayout = library.e.image_layout[dstImageLayout]
 	end
+
 	if type(pRegions) == "table" then
-		if not regionCount then
-			regionCount = #pRegions
-		end
+		if not regionCount then regionCount = #pRegions end
+
 		pRegions = library.s.ImageCopyArray(pRegions, false)
 	end
-	return CLIB.vkCmdCopyImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions)
+
+	return CLIB.vkCmdCopyImage(
+		commandBuffer,
+		srcImage,
+		srcImageLayout,
+		dstImage,
+		dstImageLayout,
+		regionCount,
+		pRegions
+	)
 end
 
-function library.UpdateDescriptorSets(device, descriptorWriteCount, pDescriptorWrites, descriptorCopyCount, pDescriptorCopies)
+function library.UpdateDescriptorSets(
+	device,
+	descriptorWriteCount,
+	pDescriptorWrites,
+	descriptorCopyCount,
+	pDescriptorCopies
+)
 	if type(pDescriptorWrites) == "table" then
 		if not descriptorWriteCount then
 			descriptorWriteCount = #pDescriptorWrites
 		end
+
 		pDescriptorWrites = library.s.WriteDescriptorSetArray(pDescriptorWrites, false)
 	end
+
 	if type(pDescriptorCopies) == "table" then
-		if not descriptorCopyCount then
-			descriptorCopyCount = #pDescriptorCopies
-		end
+		if not descriptorCopyCount then descriptorCopyCount = #pDescriptorCopies end
+
 		pDescriptorCopies = library.s.CopyDescriptorSetArray(pDescriptorCopies, false)
 	end
-	return CLIB.vkUpdateDescriptorSets(device, descriptorWriteCount, pDescriptorWrites, descriptorCopyCount, pDescriptorCopies)
+
+	return CLIB.vkUpdateDescriptorSets(
+		device,
+		descriptorWriteCount,
+		pDescriptorWrites,
+		descriptorCopyCount,
+		pDescriptorCopies
+	)
 end
 
 function library.GetQueryPoolResults(device, queryPool, firstQuery, queryCount, dataSize, pData, stride, flags)
@@ -12372,62 +17268,113 @@ function library.GetQueryPoolResults(device, queryPool, firstQuery, queryCount, 
 	elseif type(flags) == "string" then
 		flags = library.e.query_result[flags]
 	end
+
 	return CLIB.vkGetQueryPoolResults(device, queryPool, firstQuery, queryCount, dataSize, pData, stride, flags)
 end
 
-function library.CmdPipelineBarrier(commandBuffer, srcStageMask, dstStageMask, dependencyFlags, memoryBarrierCount, pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers)
+function library.CmdPipelineBarrier(
+	commandBuffer,
+	srcStageMask,
+	dstStageMask,
+	dependencyFlags,
+	memoryBarrierCount,
+	pMemoryBarriers,
+	bufferMemoryBarrierCount,
+	pBufferMemoryBarriers,
+	imageMemoryBarrierCount,
+	pImageMemoryBarriers
+)
 	if type(srcStageMask) == "table" then
 		srcStageMask = library.e.pipeline_stage.make_enums(srcStageMask)
 	elseif type(srcStageMask) == "string" then
 		srcStageMask = library.e.pipeline_stage[srcStageMask]
 	end
+
 	if type(dstStageMask) == "table" then
 		dstStageMask = library.e.pipeline_stage.make_enums(dstStageMask)
 	elseif type(dstStageMask) == "string" then
 		dstStageMask = library.e.pipeline_stage[dstStageMask]
 	end
+
 	if type(dependencyFlags) == "table" then
 		dependencyFlags = library.e.dependency.make_enums(dependencyFlags)
 	elseif type(dependencyFlags) == "string" then
 		dependencyFlags = library.e.dependency[dependencyFlags]
 	end
+
 	if type(pMemoryBarriers) == "table" then
-		if not memoryBarrierCount then
-			memoryBarrierCount = #pMemoryBarriers
-		end
+		if not memoryBarrierCount then memoryBarrierCount = #pMemoryBarriers end
+
 		pMemoryBarriers = library.s.MemoryBarrierArray(pMemoryBarriers, false)
 	end
+
 	if type(pBufferMemoryBarriers) == "table" then
 		if not bufferMemoryBarrierCount then
 			bufferMemoryBarrierCount = #pBufferMemoryBarriers
 		end
+
 		pBufferMemoryBarriers = library.s.BufferMemoryBarrierArray(pBufferMemoryBarriers, false)
 	end
+
 	if type(pImageMemoryBarriers) == "table" then
 		if not imageMemoryBarrierCount then
 			imageMemoryBarrierCount = #pImageMemoryBarriers
 		end
+
 		pImageMemoryBarriers = library.s.ImageMemoryBarrierArray(pImageMemoryBarriers, false)
 	end
-	return CLIB.vkCmdPipelineBarrier(commandBuffer, srcStageMask, dstStageMask, dependencyFlags, memoryBarrierCount, pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers)
+
+	return CLIB.vkCmdPipelineBarrier(
+		commandBuffer,
+		srcStageMask,
+		dstStageMask,
+		dependencyFlags,
+		memoryBarrierCount,
+		pMemoryBarriers,
+		bufferMemoryBarrierCount,
+		pBufferMemoryBarriers,
+		imageMemoryBarrierCount,
+		pImageMemoryBarriers
+	)
 end
 
-function library.DebugReportMessage(instance, flags, objectType, object, location, messageCode, pLayerPrefix, pMessage)
+function library.DebugReportMessage(
+	instance,
+	flags,
+	objectType,
+	object,
+	location,
+	messageCode,
+	pLayerPrefix,
+	pMessage
+)
 	if type(flags) == "table" then
 		flags = library.e.debug_report.make_enums(flags)
 	elseif type(flags) == "string" then
 		flags = library.e.debug_report[flags]
 	end
+
 	if type(objectType) == "string" then
 		objectType = library.e.debug_report_object_type[objectType]
 	end
-	return library.DebugReportMessageEXT(instance, flags, objectType, object, location, messageCode, pLayerPrefix, pMessage)
+
+	return library.DebugReportMessageEXT(
+		instance,
+		flags,
+		objectType,
+		object,
+		location,
+		messageCode,
+		pLayerPrefix,
+		pMessage
+	)
 end
 
 function library.DisplayPowerControl(device, display, pDisplayPowerInfo)
 	if type(pDisplayPowerInfo) == "table" then
 		pDisplayPowerInfo = library.s.DisplayPowerInfoEXT(pDisplayPowerInfo, false)
 	end
+
 	return library.DisplayPowerControlEXT(device, display, pDisplayPowerInfo)
 end
 
@@ -12444,6 +17391,7 @@ do
 	META.__index = META
 	ffi.metatype("struct VkQueue_T", META)
 end
+
 do
 	local META = {
 		CreateBufferView = library.CreateBufferView,
@@ -12574,6 +17522,7 @@ do
 	META.__index = META
 	ffi.metatype("struct VkDevice_T", META)
 end
+
 do
 	local META = {
 		GetDisplayPlaneProperties = library.GetPhysicalDeviceDisplayPlaneProperties,
@@ -12617,6 +17566,7 @@ do
 	META.__index = META
 	ffi.metatype("struct VkPhysicalDevice_T", META)
 end
+
 do
 	local META = {
 		DestroySurface = library.DestroySurface,
@@ -12636,6 +17586,7 @@ do
 	META.__index = META
 	ffi.metatype("struct VkInstance_T", META)
 end
+
 do
 	local META = {
 		CopyBufferToImage = library.CmdCopyBufferToImage,
@@ -12707,5 +17658,6 @@ do
 	META.__index = META
 	ffi.metatype("struct VkCommandBuffer_T", META)
 end
+
 library.clib = CLIB
 return library

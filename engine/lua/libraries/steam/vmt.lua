@@ -1,5 +1,4 @@
 local steam = ... or steam
-
 local textures = {
 	basetexture = true,
 	basetexture2 = true,
@@ -12,7 +11,6 @@ local textures = {
 	blendmodulatetexture = true,
 	selfillummask = true,
 }
-
 local special_textures = {
 	_rt_fullframefb = "error",
 	[1] = "error", -- huh
@@ -20,6 +18,7 @@ local special_textures = {
 
 function steam.LoadVMT(path, on_property, on_error, on_shader)
 	on_error = on_error or logn
+
 	resource.Download(path, nil, true):Then(function(path)
 		if path:endswith(".vtf") then
 			on_property("basetexture", path, path, {})
@@ -27,14 +26,16 @@ function steam.LoadVMT(path, on_property, on_error, on_shader)
 			return
 		end
 
-		local vmt, err = utility.VDFToTable(vfs.Read(path), function(key) return (key:lower():gsub("%$", "")) end)
+		local vmt, err = utility.VDFToTable(vfs.Read(path), function(key)
+			return (key:lower():gsub("%$", ""))
+		end)
 
 		if err then
 			on_error(path .. " utility.VDFToTable : " .. err)
 			return
 		end
 
-		local k,v = next(vmt)
+		local k, v = next(vmt)
 
 		if type(k) ~= "string" or type(v) ~= "table" then
 			on_error("bad material " .. path)
@@ -42,23 +43,23 @@ function steam.LoadVMT(path, on_property, on_error, on_shader)
 			return
 		end
 
-		if on_shader then
-			on_shader(k)
-		end
+		if on_shader then on_shader(k) end
 
 		if k == "patch" then
 			if not vfs.IsFile(v.include) then
 				v.include = vfs.FindMixedCasePath(v.include) or v.include
 			end
 
-			local vmt2, err2 = utility.VDFToTable(vfs.Read(v.include), function(key) return (key:lower():gsub("%$", "")) end)
+			local vmt2, err2 = utility.VDFToTable(vfs.Read(v.include), function(key)
+				return (key:lower():gsub("%$", ""))
+			end)
 
 			if err2 then
 				on_error(err2)
 				return
 			end
 
-			local k2,v2 = next(vmt2)
+			local k2, v2 = next(vmt2)
 
 			if type(k2) ~= "string" or type(v2) ~= "table" then
 				on_error("bad material " .. path)
@@ -67,7 +68,6 @@ function steam.LoadVMT(path, on_property, on_error, on_shader)
 			end
 
 			table.merge(v2, v.replace or v.insert)
-
 			vmt = vmt2
 			v = v2
 			k = k2
@@ -84,31 +84,40 @@ function steam.LoadVMT(path, on_property, on_error, on_shader)
 
 		if not vmt.bumpmap and vmt.basetexture and not special_textures[vmt.basetexture] then
 			local new_path = vfs.FixPathSlashes(vmt.basetexture)
-			if not new_path:endswith(".vtf") then
-				new_path = new_path .. ".vtf"
-			end
+
+			if not new_path:endswith(".vtf") then new_path = new_path .. ".vtf" end
+
 			new_path = new_path:gsub("%.vtf", "_normal.vtf")
+
 			if vfs.IsFile("materials/" .. new_path) then
 				vmt.bumpmap = new_path
 			else
 				new_path = new_path:lower()
-				if vfs.IsFile("materials/" .. new_path) then
-					vmt.bumpmap = new_path
-				end
+
+				if vfs.IsFile("materials/" .. new_path) then vmt.bumpmap = new_path end
 			end
 		end
 
-		for k,v in pairs(vmt) do
-			if type(v) == "string" and textures[k] and (not special_textures[v] and not special_textures[v:lower()]) then
-
+		for k, v in pairs(vmt) do
+			if
+				type(v) == "string" and
+				textures[k] and
+				(
+					not special_textures[v] and
+					not special_textures[v:lower()]
+				)
+			then
 				if v == "black" or v == "white" then
 					on_property(k, v, v, vmt)
 				else
 					local new_path = vfs.FixPathSlashes("materials/" .. v)
+
 					if not new_path:endswith(".vtf") then new_path = new_path .. ".vtf" end
+
 					local cb = resource.Download(new_path, nil, true):Then(function(path)
 						on_property(k, path, fullpath, vmt)
 					end)
+
 					if on_error then
 						cb:Catch(function(reason)
 							on_error("texture " .. k .. " " .. new_path .. " not found: " .. reason)
@@ -120,6 +129,6 @@ function steam.LoadVMT(path, on_property, on_error, on_shader)
 			end
 		end
 	end):Catch(function(reason)
-		on_error("material "..path.." not found: " .. reason)
+		on_error("material " .. path .. " not found: " .. reason)
 	end)
 end

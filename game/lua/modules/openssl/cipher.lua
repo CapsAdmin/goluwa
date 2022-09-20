@@ -1,3 +1,2 @@
-local ctx = require"_openssl.cipher"
-
+local ctx = require("_openssl.cipher")
 return ctx

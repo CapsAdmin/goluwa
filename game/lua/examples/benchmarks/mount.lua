@@ -1,3 +1,3 @@
-S""
+S("")
 steam.MountSourceGame("gmod")
-S""
+S("")

@@ -8,6 +8,7 @@ function chatsounds.BuildFromSoundDirectory(where)
 	for realm in vfs.Iterate(where) do
 		tree[realm] = {}
 		list[realm] = {}
+
 		for trigger in vfs.Iterate(where .. realm .. "/") do
 			local path = where .. realm .. "/" .. trigger
 			trigger = trigger:match("(.+)%.")
@@ -17,6 +18,7 @@ function chatsounds.BuildFromSoundDirectory(where)
 				list[realm][trigger] = path
 			else
 				tree[realm][trigger] = {}
+
 				for file_name in vfs.Iterate(path .. "/") do
 					table.insert(tree[realm][trigger], path .. "/" .. file_name)
 					list[realm][trigger] = path .. "/" .. file_name
@@ -27,11 +29,9 @@ function chatsounds.BuildFromSoundDirectory(where)
 
 	chatsounds.list = chatsounds.list or {}
 	table.merge(chatsounds.list, list, true)
-
 	tree = chatsounds.TableToTree(tree)
 	chatsounds.tree = chatsounds.tree or {}
 	table.merge(chatsounds.tree, tree)
-
 	local list = {}
 
 	for _, val in pairs(chatsounds.list) do
@@ -40,7 +40,9 @@ function chatsounds.BuildFromSoundDirectory(where)
 		end
 	end
 
-	table.sort(list, function(a, b) return #a < #b end)
+	table.sort(list, function(a, b)
+		return #a < #b
+	end)
 
 	autocomplete.AddList("chatsounds", list)
 end
@@ -59,20 +61,18 @@ function chatsounds.GenerateAutocomplete()
 			end
 		end
 
-		table.sort(list, function(a, b) return #a < #b end)
+		table.sort(list, function(a, b)
+			return #a < #b
+		end)
 
 		autocomplete.AddList(id, list)
 	end
 
-	if chatsounds.list then
-		build(chatsounds.list, "chatsounds")
-	end
+	if chatsounds.list then build(chatsounds.list, "chatsounds") end
 
 	if chatsounds.custom then
 		for id, data in pairs(chatsounds.custom) do
-			if data.list then
-				build(data.list, "chatsounds_custom_" .. id)
-			end
+			if data.list then build(data.list, "chatsounds_custom_" .. id) end
 		end
 	end
 end
@@ -80,35 +80,40 @@ end
 function chatsounds.ListToTable(data)
 	local list = {}
 	local realm = "misc"
+
 	for path, trigger in data:gmatch("(.-)=(.-)\n") do
 		if path == "realm" then
 			realm = trigger
 		else
-			if not list[realm] then
-				list[realm] = {}
-			end
+			if not list[realm] then list[realm] = {} end
 
-			if not list[realm][trigger] then
-				list[realm][trigger] = {}
-			end
+			if not list[realm][trigger] then list[realm][trigger] = {} end
 
 			table.insert(list[realm][trigger], {path = path})
 		end
 	end
+
 	return list
 end
 
+local sort = function(a, b)
+	return a.key < b.key
+end
+local sort2 = function(a, b)
+	return a.val.path < b.val.path
+end
 
-local sort = function(a, b) return a.key < b.key end
-local sort2 = function(a, b) return a.val.path < b.val.path end
 function chatsounds.TableToList(tbl)
 	local str = {}
+
 	for realm, list in table.sortedpairs(tbl, sort) do
-		str[#str + 1] = "realm="..realm
+		str[#str + 1] = "realm=" .. realm
 		local done = {}
+
 		for trigger, sounds in pairs(list) do
 			for _, data in table.sortedpairs(sounds, sort2) do
 				local val = data.path .. "=" .. trigger
+
 				if not done[val] then
 					str[#str + 1] = val
 					done[val] = true
@@ -116,6 +121,7 @@ function chatsounds.TableToList(tbl)
 			end
 		end
 	end
+
 	return table.concat(str, "\n")
 end
 
@@ -134,12 +140,11 @@ function chatsounds.TableToTree(tbl)
 			local max = #words
 
 			for i, word in ipairs(words) do
-				if not next[word] then
-					next[word] = {}
-				end
+				if not next[word] then next[word] = {} end
 
 				if i == max then
 					next[word].SOUND_DATA = next[word].SOUND_DATA or {trigger = trigger, realms = {}}
+
 					if next[word].SOUND_DATA.realms then
 						next[word].SOUND_DATA.realms[realm] = {sounds = sounds, realm = realm}
 					else
@@ -157,9 +162,8 @@ end
 
 function chatsounds.LoadListFromAppID(name)
 	name = tostring(name)
-
-	local list_path = "data/chatsounds/lists/"..name..".txt"
-	local tree_path = "data/chatsounds/trees/"..name..".dat"
+	local list_path = "data/chatsounds/lists/" .. name .. ".txt"
+	local tree_path = "data/chatsounds/trees/" .. name .. ".dat"
 
 	resource.Download(list_path, nil, nil, true):Then(function(list_path)
 		local list
@@ -185,14 +189,17 @@ function chatsounds.LoadListFromAppID(name)
 
 		chatsounds.list = chatsounds.list or {}
 		table.merge(chatsounds.list, list, true)
-
 		chatsounds.tree = chatsounds.tree or {}
 		table.merge(chatsounds.tree, tree)
 
 		if autocomplete then
-			event.Delay(0.1, function()
-				chatsounds.GenerateAutocomplete()
-			end, "chatsounds_autocomplete")
+			event.Delay(
+				0.1,
+				function()
+					chatsounds.GenerateAutocomplete()
+				end,
+				"chatsounds_autocomplete"
+			)
 		end
 	end)
 end
@@ -207,24 +214,26 @@ function chatsounds.AddSound(trigger, realm, ...)
 	chatsounds.list = chatsounds.list or {}
 	chatsounds.list[realm] = chatsounds.list[realm] or {}
 	chatsounds.list[realm][trigger] = data
-
 	local words = trigger:explode(" ")
-
 	local next = chatsounds.tree
 	local max = #words
+
 	for i, word in ipairs(words) do
 		if not next[word] then next[word] = {} end
 
 		if i == max then
 			next[word].SOUND_DATA = next[word].SOUND_DATA or {trigger = trigger, realms = {}}
-
 			next[word].SOUND_DATA.realms[realm] = {sounds = data, realm = realm}
 		end
 
 		next = next[word]
 	end
 
-	event.Delay(0.1, function()
+	event.Delay(
+		0.1,
+		function()
 			chatsounds.GenerateAutocomplete()
-		end, "chatsounds_autocomplete")
+		end,
+		"chatsounds_autocomplete"
+	)
 end

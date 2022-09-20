@@ -1,25 +1,34 @@
 local serializer = ... or _G.serializer
 local luadata = _G.luadata or {}
 local encode_table
-
 local env = {}
-
 luadata.Types = {}
 
 function luadata.SetModifier(type, callback, func, func_name)
 	luadata.Types[type] = callback
 
-	if func_name then
-		env[func_name] = func
-	end
+	if func_name then env[func_name] = func end
 end
 
-luadata.SetModifier("cdata", function(var) return tostring(var) end)
-luadata.SetModifier("cdata", function(var) return tostring(var) end)
+luadata.SetModifier("cdata", function(var)
+	return tostring(var)
+end)
 
-luadata.SetModifier("number", function(var) return ("%s"):format(var) end)
-luadata.SetModifier("string", function(var) return ("%q"):format(var) end)
-luadata.SetModifier("boolean", function(var) return var and "true" or "false" end)
+luadata.SetModifier("cdata", function(var)
+	return tostring(var)
+end)
+
+luadata.SetModifier("number", function(var)
+	return ("%s"):format(var)
+end)
+
+luadata.SetModifier("string", function(var)
+	return ("%q"):format(var)
+end)
+
+luadata.SetModifier("boolean", function(var)
+	return var and "true" or "false"
+end)
 
 luadata.SetModifier("table", function(tbl, context)
 	local str
@@ -32,23 +41,20 @@ luadata.SetModifier("table", function(tbl, context)
 		if context.done[tbl] then
 			return ("{--[=[%s already serialized]=]}"):format(tostring(tbl))
 		end
+
 		context.done[tbl] = true
 	end
 
 	context.tab = context.tab + 1
 
-	if context.tab == 0 then
-		str = {}
-	else
-		str = {"{\n"}
-	end
+	if context.tab == 0 then str = {} else str = {"{\n"} end
 
 	if table.isarray(tbl) then
 		if #tbl == 0 then
 			str = {"{"}
 		else
 			for i = 1, #tbl do
-				str[#str+1] = ("%s%s,\n"):format(("\t"):rep(context.tab), luadata.ToString(tbl[i], context))
+				str[#str + 1] = ("%s%s,\n"):format(("\t"):rep(context.tab), luadata.ToString(tbl[i], context))
 
 				if context.thread then thread:Wait() end
 			end
@@ -59,12 +65,12 @@ luadata.SetModifier("table", function(tbl, context)
 
 			if value then
 				if type(key) == "string" and key:find("^[%w_]+$") and not tonumber(key) then
-					str[#str+1] = ("%s%s = %s,\n"):format(("\t"):rep(context.tab), key, value)
+					str[#str + 1] = ("%s%s = %s,\n"):format(("\t"):rep(context.tab), key, value)
 				else
 					key = luadata.ToString(key, context)
 
 					if key then
-						str[#str+1] = ("%s[%s] = %s,\n"):format(("\t"):rep(context.tab), key, value)
+						str[#str + 1] = ("%s[%s] = %s,\n"):format(("\t"):rep(context.tab), key, value)
 					end
 				end
 			end
@@ -75,24 +81,25 @@ luadata.SetModifier("table", function(tbl, context)
 
 	if context.tab == 0 then
 		if str[1] == "{" then
-			str[#str+1] = "}" -- empty table
+			str[#str + 1] = "}" -- empty table
 		else
-			str[#str+1] = "\n"
+			str[#str + 1] = "\n"
 		end
 	else
 		if str[1] == "{" then
-			str[#str+1] = "}" -- empty table
+			str[#str + 1] = "}" -- empty table
 		else
-			str[#str+1] = ("%s}"):format(("\t"):rep(context.tab - 1))
+			str[#str + 1] = ("%s}"):format(("\t"):rep(context.tab - 1))
 		end
 	end
 
 	context.tab = context.tab - 1
-
 	return table.concat(str, "")
 end)
 
-local idx = function(var) return var.LuaDataType end
+local idx = function(var)
+	return var.LuaDataType
+end
 
 function luadata.Type(var)
 	local t = typex(var)
@@ -100,9 +107,7 @@ function luadata.Type(var)
 	if t == "table" then
 		local ok, res = pcall(idx, var)
 
-		if ok and res then
-			return res
-		end
+		if ok and res then return res end
 	end
 
 	return t
@@ -112,11 +117,12 @@ function luadata.ToString(var, context)
 	context = context or {}
 	context.tab = context.tab or -1
 	context.out = context.out or {}
-
 	local func = luadata.Types[luadata.Type(var)]
+
 	if not func and luadata.Types.fallback then
 		return luadata.Types.fallback(var, context)
 	end
+
 	return func and func(var, context)
 end
 
@@ -153,23 +159,17 @@ function luadata.Decode(str)
 
 	local func, err = loadstring("return {\n" .. str .. "\n}", "luadata")
 
-	if not func then
-		return nil, "luadata syntax error: " .. err
-	end
+	if not func then return nil, "luadata syntax error: " .. err end
 
 	setfenv(func, env)
-
 	local ok, err = pcall(func)
 
-	if not ok then
-		return nil, "luadata runtime error: " .. err
-	end
+	if not ok then return nil, "luadata runtime error: " .. err end
 
 	return err
 end
 
 do -- vfs extension
-
 	function luadata.WriteFile(path, tbl, ...)
 		vfs.Write(path, luadata.Encode(tbl), ...)
 	end
@@ -193,12 +193,15 @@ do -- vfs extension
 		table.insert(tbl, value)
 		luadata.WriteFile(path, tbl)
 	end
-
 end
 
 serializer.AddLibrary(
 	"luadata",
-	function(luadata, ...) return luadata.Encode(...) end,
-	function(luadata, ...) return luadata.Decode(...) end,
+	function(luadata, ...)
+		return luadata.Encode(...)
+	end,
+	function(luadata, ...)
+		return luadata.Decode(...)
+	end,
 	luadata
 )

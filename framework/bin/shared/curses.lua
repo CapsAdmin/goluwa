@@ -1,7 +1,6 @@
 local ffi = require("ffi")
 local lib = assert(ffi.load(jit.os == "Windows" and "pdcurses" or "ncurses"))
-
-local header =  [[
+local header = [[
 typedef void * FILE;
 typedef uint64_t chtype;
 typedef chtype attr_t;
@@ -433,10 +432,8 @@ void PDC_set_resize_limits( const int new_min_lines,
 WINDOW *Xinitscr(int, char **);
 int COLOR_PAIR(int);
 ]]
-
 ffi.cdef("typedef uint64_t chtype;")
 ffi.cdef(header)
-
 local curses = {
 	lib = lib,
 }
@@ -450,19 +447,14 @@ end
 
 if jit.os == "Windows" then
 	-- use pdcurses for real windows!
-
 	curses.COLOR_BLACK = 0
-
 	curses.COLOR_RED = 4
 	curses.COLOR_GREEN = 2
 	curses.COLOR_YELLOW = 6
-
 	curses.COLOR_BLUE = 1
 	curses.COLOR_MAGENTA = 5
 	curses.COLOR_CYAN = 3
-
 	curses.COLOR_WHITE = 7
-
 	curses.A_REVERSE = 67108864
 	curses.A_BOLD = 268435456
 	curses.A_DIM = 2147483648
@@ -480,37 +472,39 @@ else
 	curses.COLOR_MAGENTA = 5
 	curses.COLOR_CYAN = 6
 	curses.COLOR_WHITE = 7
-
 	curses.A_DIM = 2 ^ 12
 	curses.A_BOLD = 2 ^ 13
 	curses.A_STANDOUT = 2 ^ 8
 end
 
 -- lua curses compat
-
 setmetatable(curses, {__index = lib})
-
 curses.color_pair = curses.COLOR_PAIR
-
 local window_meta = {}
 window_meta.__index = window_meta
-window_meta.__call = function(s) return s end
+window_meta.__call = function(s)
+	return s
+end
 
 for line in header:gmatch("(.-);") do
 	if line:find("WINDOW", nil, true) then
 		local func = line:match(" (.+)%(")
+
 		if func then
 			local name = func
-			if name:sub(1,1) == "w" then
+
+			if name:sub(1, 1) == "w" then
 				name = name:sub(2)
-			elseif func:sub(1,3) == "mvw" then
+			elseif func:sub(1, 3) == "mvw" then
 				name = "mv" .. name:sub(4)
 			end
-			pcall(function() window_meta[name] = lib[func] end)
+
+			pcall(function()
+				window_meta[name] = lib[func]
+			end)
 		end
 	end
 end
 
 ffi.metatype(ffi.typeof("WINDOW"), window_meta)
-
 return curses

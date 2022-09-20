@@ -1,10 +1,10 @@
-do return end
+do
+	return
+end
+
 local vfs = (...) or _G.vfs
-
 local CONTEXT = {}
-
 CONTEXT.Name = "memory"
-
 local file_tree = {is_folder = true}
 
 function CONTEXT:VFSOpened()
@@ -18,19 +18,15 @@ end
 
 local function get_folder(path_info, remove_last)
 	local next = file_tree
-
 	local folders = path_info:GetFolders()
 
 	-- when creating a folder the folder doesn't exist
 	-- so remove it
-	if remove_last then
-		table.remove(folders)
-	end
+	if remove_last then table.remove(folders) end
 
 	for _, folder in ipairs(folders) do
-		if not next[folder] then
-			error("folder not found", 2)
-		end
+		if not next[folder] then error("folder not found", 2) end
+
 		next = next[folder]
 	end
 
@@ -39,6 +35,7 @@ end
 
 function CONTEXT:IsFile(path_info)
 	local folder = get_folder(path_info, true)
+
 	if folder and folder[path_info.file_name] and folder[path_info.file_name].is_file then
 		return true
 	end
@@ -46,18 +43,21 @@ end
 
 function CONTEXT:IsFolder(path_info)
 	local folder = get_folder(path_info, true)
-	if folder and folder[path_info.folder_name] and folder[path_info.folder_name].is_folder then
+
+	if
+		folder and
+		folder[path_info.folder_name] and
+		folder[path_info.folder_name].is_folder
+	then
 		return true
 	end
 end
 
 function CONTEXT:CreateFolder(path_info)
 	local folder = get_folder(path_info, true)
-
 	folder[path_info.folder_name] = folder[path_info.folder_name] or {
 		is_folder = true,
 	}
-
 	event.Delay(0.5, CONTEXT.VFSClosed, nil, CONTEXT.VFSClosed)
 end
 
@@ -65,9 +65,7 @@ function CONTEXT:GetFiles(path_info)
 	local out = {}
 
 	for file_name, var in pairs(get_folder(path_info)) do
-		if type(var) == "table" then
-			table.insert(out, file_name)
-		end
+		if type(var) == "table" then table.insert(out, file_name) end
 	end
 
 	return out
@@ -82,20 +80,16 @@ function CONTEXT:Open(path_info, mode, ...)
 		file.last_accessed = os.time()
 	elseif self:GetMode() == "write" then
 		local folder = get_folder(path_info)
-
 		file = folder[path_info.file_name] or {
 			is_file = true,
 			data = "",
 		}
-
 		file.buffer = packet.CreateBuffer()
 		file.last_accessed = os.time()
-
 		folder[path_info.file_name] = file
 	end
 
 	file.buffer:SetPosition(0)
-
 	self.file = file
 end
 
@@ -104,11 +98,9 @@ local function save_file(self)
 end
 
 function CONTEXT:Write(str)
-
 	-- save 0.5 seconds after a write
 	event.Delay(0.5, CONTEXT.VFSClosed, nil, CONTEXT.VFSClosed)
 	event.Delay(0.1, save_file, self, save_file)
-
 	self.file.last_modified = os.time()
 	return self.file.buffer:WriteBytes(str)
 end
@@ -134,8 +126,7 @@ function CONTEXT:GetPosition()
 	return self.file.buffer:GetPosition()
 end
 
-function CONTEXT:OnRemove()
-	-- hmm
+function CONTEXT:OnRemove() -- hmm
 end
 
 function CONTEXT:GetSize()

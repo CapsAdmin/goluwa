@@ -1,5 +1,4 @@
 local prototype = (...) or _G.prototype
-
 local __store = false
 local __meta
 
@@ -19,15 +18,18 @@ end
 
 function prototype.DelegateProperties(meta, from, var_name, callback)
 	meta[var_name] = NULL
+
 	for _, info in pairs(prototype.GetStorableVariables(from)) do
 		if not meta[info.var_name] then
-			 prototype.SetupProperty({
-				meta = meta,
-				var_name = info.var_name,
-				default = info.default,
-				set_name = info.set_name,
-				get_name = info.get_name,
-			})
+			prototype.SetupProperty(
+				{
+					meta = meta,
+					var_name = info.var_name,
+					default = info.default,
+					set_name = info.set_name,
+					get_name = info.get_name,
+				}
+			)
 
 			if callback then
 				meta[info.set_name] = function(self, var)
@@ -74,32 +76,69 @@ function prototype.SetupProperty(info)
 
 	if type(default) == "number" then
 		if callback then
-			meta[set_name] = meta[set_name] or function(self, var) self[name] = tonumber(var) or default self[callback](self) end
+			meta[set_name] = meta[set_name] or
+				function(self, var)
+					self[name] = tonumber(var) or default
+					self[callback](self)
+				end
 		else
-			meta[set_name] = meta[set_name] or function(self, var) self[name] = tonumber(var) or default end
+			meta[set_name] = meta[set_name] or function(self, var)
+				self[name] = tonumber(var) or default
+			end
 		end
-		meta[get_name] = meta[get_name] or function(self) return self[name] or default end
+
+		meta[get_name] = meta[get_name] or function(self)
+			return self[name] or default
+		end
 	elseif type(default) == "string" then
 		if callback then
-			meta[set_name] = meta[set_name] or function(self, var) self[name] = tostring(var) self[callback](self) end
+			meta[set_name] = meta[set_name] or
+				function(self, var)
+					self[name] = tostring(var)
+					self[callback](self)
+				end
 		else
-			meta[set_name] = meta[set_name] or function(self, var) self[name] = tostring(var) end
+			meta[set_name] = meta[set_name] or function(self, var)
+				self[name] = tostring(var)
+			end
 		end
-		meta[get_name] = meta[get_name] or function(self) if self[name] ~= nil then return self[name] end return default end
+
+		meta[get_name] = meta[get_name] or
+			function(self)
+				if self[name] ~= nil then return self[name] end
+
+				return default
+			end
 	else
 		if callback then
-			meta[set_name] = meta[set_name] or function(self, var) if var == nil then var = default end self[name] = var self[callback](self) end
+			meta[set_name] = meta[set_name] or
+				function(self, var)
+					if var == nil then var = default end
+
+					self[name] = var
+					self[callback](self)
+				end
 		else
-			meta[set_name] = meta[set_name] or function(self, var) if var == nil then var = default end self[name] = var end
+			meta[set_name] = meta[set_name] or
+				function(self, var)
+					if var == nil then var = default end
+
+					self[name] = var
+				end
 		end
-		meta[get_name] = meta[get_name] or function(self) if self[name] ~= nil then return self[name] end return default end
+
+		meta[get_name] = meta[get_name] or
+			function(self)
+				if self[name] ~= nil then return self[name] end
+
+				return default
+			end
 	end
 
-    meta[name] = default
+	meta[name] = default
 
 	if __store then
 		info.type = typex(default)
-
 		meta.storable_variables = meta.storable_variables or {}
 		table.insert(meta.storable_variables, info)
 	end
@@ -141,6 +180,7 @@ local function add(meta, name, default, extra_info, get)
 		if table.isarray(extra_info) and #extra_info > 1 then
 			extra_info = {enums = extra_info}
 		end
+
 		table.merge(info, extra_info)
 	end
 
@@ -182,8 +222,7 @@ end
 
 function prototype.RemoveField(meta, name)
 	meta["Set" .. name] = nil
-    meta["Get" .. name] = nil
-    meta["Is" .. name] = nil
-
-    meta[name] = nil
+	meta["Get" .. name] = nil
+	meta["Is" .. name] = nil
+	meta[name] = nil
 end

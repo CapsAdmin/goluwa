@@ -1,22 +1,20 @@
 local gui = ... or _G.gui
-
 local META = prototype.CreateTemplate("divider")
-
 META:GetSet("DividerHeight", 0)
 META:GetSet("DividerWidth", 0)
 META:GetSet("HideDivider", false)
 
 local function create_horizontal_divider(self)
 	if self.horizontal_divider then return end
+
 	local divider = self:CreatePanel("button", "horizontal_divider")
-	divider:SetX(self:GetWidth() - self.DividerWidth/2)
+	divider:SetX(self:GetWidth() - self.DividerWidth / 2)
 	divider:SetCursor("sizewe")
 	divider:SetDraggable(true)
 	divider.OnPositionChanged = function(_, pos)
 		pos.x = math.clamp(pos.x, 0, self:GetWidth() - self.DividerWidth)
 		pos.y = 0
 		self:Layout()
-
 		self:OnDividerPositionChanged(pos)
 	end
 	self.horizontal_divider = divider
@@ -24,21 +22,21 @@ end
 
 local function create_vertical_divider(self)
 	if self.vertical_divider then return end
+
 	local divider = self:CreatePanel("button", "vertical_divider")
-	divider:SetY(self:GetHeight() - self.DividerWidth/2)
+	divider:SetY(self:GetHeight() - self.DividerWidth / 2)
 	divider:SetCursor("sizens")
 	divider:SetDraggable(true)
 	divider.OnPositionChanged = function(_, pos)
 		pos.x = 0
 		pos.y = math.clamp(pos.y, 0, self:GetHeight() - self.DividerWidth)
 		self:Layout()
-
 		self:OnDividerPositionChanged(pos)
 	end
 end
 
 function META:Initialize()
-	self.DividerWidth = gui.skin:GetScale()*2
+	self.DividerWidth = gui.skin:GetScale() * 2
 	self:SetNoDraw(true)
 	self.top = NULL
 	self.bottom = NULL
@@ -50,8 +48,9 @@ function META:OnLayout()
 	if self.horizontal_divider then
 		self.horizontal_divider:SetNoDraw(self.HideDivider)
 		self.horizontal_divider:BringToFront()
-
-		self.horizontal_divider:SetSize(Vec2(self.DividerWidth, self.DividerHeight == 0 and self:GetHeight() or self.DividerHeight))
+		self.horizontal_divider:SetSize(
+			Vec2(self.DividerWidth, self.DividerHeight == 0 and self:GetHeight() or self.DividerHeight)
+		)
 
 		if self.left:IsValid() then
 			self.left:SetSize(Vec2(self.horizontal_divider:GetX(), self:GetHeight()))
@@ -59,15 +58,21 @@ function META:OnLayout()
 
 		if self.right:IsValid() then
 			self.right:SetX(self.horizontal_divider:GetX() + self.DividerWidth)
-			self.right:SetSize(Vec2(self:GetWidth() - self.horizontal_divider:GetX() - self.DividerWidth,  self:GetHeight()))
+			self.right:SetSize(
+				Vec2(
+					self:GetWidth() - self.horizontal_divider:GetX() - self.DividerWidth,
+					self:GetHeight()
+				)
+			)
 		end
 	end
 
 	if self.vertical_divider then
 		self.vertical_divider:SetNoDraw(self.HideDivider)
 		self.vertical_divider:BringToFront()
-
-		self.vertical_divider:SetSize(Vec2(self.DividerHeight == 0 and self:GetWidth() or self.DividerHeight, self.DividerWidth))
+		self.vertical_divider:SetSize(
+			Vec2(self.DividerHeight == 0 and self:GetWidth() or self.DividerHeight, self.DividerWidth)
+		)
 
 		if self.top:IsValid() then
 			self.top:SetSize(Vec2(self:GetWidth(), self.vertical_divider:GetY()))
@@ -75,7 +80,12 @@ function META:OnLayout()
 
 		if self.bottom:IsValid() then
 			self.bottom:SetY(self.vertical_divider:GetY() + self.DividerHeight)
-			self.bottom:SetSize(Vec2(self:GetWidth(), self:GetHeight() - self.vertical_divider:GetY() - self.DividerHeight))
+			self.bottom:SetSize(
+				Vec2(
+					self:GetWidth(),
+					self:GetHeight() - self.vertical_divider:GetY() - self.DividerHeight
+				)
+			)
 		end
 	end
 end
@@ -115,20 +125,28 @@ end
 function META:SetDividerPosition(x, y)
 	if self.horizontal_divider then
 		self.horizontal_divider:SetX(x)
+
 		if self.left:IsValid() then self.left:Layout() end
+
 		if self.right:IsValid() then self.right:Layout() end
 	end
+
 	if self.vertical_divider then
 		self.vertical_divider:SetY(y or x)
+
 		if self.top:IsValid() then self.top:Layout() end
+
 		if self.bottom:IsValid() then self.bottom:Layout() end
 	end
 end
 
 function META:GetDividerPosition()
 	local x, y = 0, 0
+
 	if self.horizontal_divider then x = self.horizontal_divider:GetX() end
+
 	if self.vertical_divider then y = self.vertical_divider:GetX() end
+
 	return x, y
 end
 

@@ -1,8 +1,8 @@
 local soundfile = desire("libsndfile")
 
 if not soundfile then return end
-local ffi = require("ffi")
 
+local ffi = require("ffi")
 local files = {}
 
 local function get_file(ptr)
@@ -10,53 +10,59 @@ local function get_file(ptr)
 end
 
 local lol = function(tbl)
-	for k,v in pairs(tbl) do
-		tbl[k] = function(...) local ret = v(...) print(k, ":", ret, " = ", ...) return ret end
+	for k, v in pairs(tbl) do
+		tbl[k] = function(...)
+			local ret = v(...)
+			print(k, ":", ret, " = ", ...)
+			return ret
+		end
 	end
+
 	return tbl
 end
+local file_io_data = ffi.new(
+	"struct SF_VIRTUAL_IO[1]",
+	{
+		{
+			get_filelen = function(udata)
+				local file = get_file(udata)
+				return file:GetSize()
+			end,
+			seek = function(pos, whence, udata)
+				local file = get_file(udata)
+				pos = tonumber(pos)
 
-local file_io_data = ffi.new("struct SF_VIRTUAL_IO[1]", {{
-	get_filelen = function(udata)
-		local file = get_file(udata)
+				if whence == 0 then -- set
+					file:SetPosition(pos)
+				elseif whence == 1 then -- cur
+					file:SetPosition(file:GetPosition() + pos)
+				elseif whence == 2 then -- end
+					file:SetPosition(file:GetSize() + pos)
+				end
 
-		return file:GetSize()
-	end,
-	seek = function(pos, whence, udata)
-		local file = get_file(udata)
-		pos = tonumber(pos)
+				return file:GetPosition()
+			end,
+			read = function(ptr, count, udata)
+				local file = get_file(udata)
+				count = tonumber(count)
 
-		if whence == 0 then -- set
-			file:SetPosition(pos)
-		elseif whence == 1 then -- cur
-			file:SetPosition(file:GetPosition() + pos)
-		elseif whence == 2 then -- end
-			file:SetPosition(file:GetSize() + pos)
-		end
+				if file:TheEnd() then return 0 end
 
-		return file:GetPosition()
-	end,
-	read = function(ptr, count, udata)
-		local file = get_file(udata)
-		count = tonumber(count)
-
-		if file:TheEnd() then return 0 end
-
-		local str = file:ReadBytes(count)
-
-		ffi.copy(ptr, str, #str)
-
-		return #str
-	end,
-	write = function(ptr, count, udata)
-		local file = get_file(udata)
-		return file:Write(ffi.string(ptr, count))
-	end,
-	tell = function(udata)
-		local file = get_file(udata)
-		return file:GetPosition()
-	end
-}})
+				local str = file:ReadBytes(count)
+				ffi.copy(ptr, str, #str)
+				return #str
+			end,
+			write = function(ptr, count, udata)
+				local file = get_file(udata)
+				return file:Write(ffi.string(ptr, count))
+			end,
+			tell = function(udata)
+				local file = get_file(udata)
+				return file:GetPosition()
+			end,
+		},
+	}
+)
 
 local function on_remove(file)
 	table.removevalue(files, file)

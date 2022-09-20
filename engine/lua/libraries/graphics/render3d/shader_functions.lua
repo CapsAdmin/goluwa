@@ -4,20 +4,17 @@ float handle_roughness(float x)
 	return x;
 }
 ]])
-
 render.AddGlobalShaderCode([[
 float handle_metallic(float x)
 {
 	return x;
 }
 ]])
-
 render.AddGlobalShaderCode([[
 float random(vec2 co)
 {
 	return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }]])
-
 render.AddGlobalShaderCode([[
 vec2 get_noise2(vec2 uv)
 {
@@ -26,7 +23,6 @@ vec2 get_noise2(vec2 uv)
 
 	return vec2(x,y) * 2 - 1;
 }]])
-
 render.AddGlobalShaderCode([[
 vec3 get_noise3(vec2 uv)
 {
@@ -36,14 +32,11 @@ vec3 get_noise3(vec2 uv)
 
 	return vec3(x,y,z) * 2 - 1;
 }]])
-
-
 render.AddGlobalShaderCode([[
 vec4 get_noise(vec2 uv)
 {
 	return texture(g_noise_texture, uv);
 }]])
-
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 {
@@ -60,7 +53,6 @@ vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 
 	return color;
 }]])
-
 render.AddGlobalShaderCode([[
 float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)
 {
@@ -84,7 +76,6 @@ float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, 
 	return attenuation;
 }
 ]])
-
 render.AddGlobalShaderCode([[
 vec2 _raycast_project(vec3 coord)
 {
@@ -115,7 +106,6 @@ vec2 g_raycast(vec2 uv, const float step_size, const float max_steps)
 	return vec2(0.0, 0.0);
 }
 ]])
-
 render.AddGlobalShaderCode([[
 float g_ssao(vec2 uv) {
 	const vec2 KERNEL[16] = vec2[](vec2(0.53812504, 0.18565957), vec2(0.13790712, 0.24864247), vec2(0.33715037, 0.56794053), vec2(-0.6999805, -0.04511441), vec2(0.06896307, -0.15983082), vec2(0.056099437, 0.006954967), vec2(-0.014653638, 0.14027752), vec2(0.010019933, -0.1924225), vec2(-0.35775623, -0.5301969), vec2(-0.3169221, 0.106360726), vec2(0.010350345, -0.58698344), vec2(-0.08972908, -0.49408212), vec2(0.7119986, -0.0154690035), vec2(-0.053382345, 0.059675813), vec2(0.035267662, -0.063188605), vec2(-0.47761092, 0.2847911));
@@ -149,7 +139,6 @@ float g_ssao(vec2 uv) {
 	return pow(max((1.0 - (occlusion / weight)), 0), 10);
 }
 ]])
-
 render.AddGlobalShaderCode([[
 float g_ssao2(vec2 uv)
 {
@@ -229,23 +218,25 @@ function render3d.AddBilateralBlurPass(PASS, amount, discard_threshold, format, 
 				Vec2(0.7119986, -0.0154690035),
 				Vec2(-0.053382345, 0.059675813),
 				Vec2(0.035267662, -0.063188605),
-				Vec2(-0.47761092, 0.2847911)
+				Vec2(-0.47761092, 0.2847911),
 			}
 
-			for i,v in ipairs(weights) do
+			for i, v in ipairs(weights) do
 				weights[i] = {
 					dir = ("vec2(%s, %s)"):format(v.x, v.y),
 					weight = math.lerp(math.sin((i / #weights) * math.pi), 0, 0.25),
 				}
 			end
 
-			table.insert(PASS.Source, {
-				buffer = {
-					size_divider = size_divider,
-					internal_format = format,
-					filter = "nearest",
-				},
-				source = [[
+			table.insert(
+				PASS.Source,
+				{
+					buffer = {
+						size_divider = size_divider,
+						internal_format = format,
+						filter = "nearest",
+					},
+					source = [[
 					out vec3 out_color;
 
 					vec3 blur(vec2 dir, float amount)
@@ -258,33 +249,39 @@ function render3d.AddBilateralBlurPass(PASS, amount, discard_threshold, format, 
 						vec2 offset;
 						vec2 jitter;
 
-						]] ..(function()
-							local str = ""
-							for i, weight in ipairs(weights) do
-								str = str .. "jitter = get_noise2(offset)*0.0025*amount;\n"
-								str = str .. "offset = uv + " ..weight.dir.." * step + jitter;\n"
-								str = str .. "if(dot(get_view_normal(offset), normal) > " .. discard_threshold .. depth_check .. ") {\n"
-								str = str .."total_weight += 1;\n"
-								str = str .. "res += texture(tex_stage_"..#PASS.Source..", offset).rgb;\n"
-								str = str .. "}"
+						]] .. (
+							function()
+								local str = ""
+
+								for i, weight in ipairs(weights) do
+									str = str .. "jitter = get_noise2(offset)*0.0025*amount;\n"
+									str = str .. "offset = uv + " .. weight.dir .. " * step + jitter;\n"
+									str = str .. "if(dot(get_view_normal(offset), normal) > " .. discard_threshold .. depth_check .. ") {\n"
+									str = str .. "total_weight += 1;\n"
+									str = str .. "res += texture(tex_stage_" .. #PASS.Source .. ", offset).rgb;\n"
+									str = str .. "}"
+								end
+
+								return str
 							end
-							return str
-						end)()..[[
+						)() .. [[
 
 						res /= total_weight;
 						res *= 1.125;
 
-						res = max(res, texture(tex_stage_]]..#PASS.Source..[[, uv).rgb/1.25);
+						res = max(res, texture(tex_stage_]] .. #PASS.Source .. [[, uv).rgb/1.25);
 
 						return res;
 					}
 
 					void main()
 					{
-						out_color = blur(vec2(]]..x..","..y..[[), ]]..amount..[[);
+						out_color = blur(vec2(]] .. x .. "," .. y .. [[), ]] .. amount .. [[);
 					}
-				]]
-			})
+				]],
+				}
+			)
+
 			::continue::
 		end
 	end
@@ -292,12 +289,14 @@ end
 
 --https://www.shadertoy.com/view/MdyXRt
 function render3d.AddDenoisePass(PASS)
-	table.insert(PASS.Source, {
-		buffer = {
-			size_divider = 1,
-			internal_format = "rgba8",
-		},
-		source = [[
+	table.insert(
+		PASS.Source,
+		{
+			buffer = {
+				size_divider = 1,
+				internal_format = "rgba8",
+			},
+			source = [[
 			float vec3_float_flat( in vec3 t )
 			{
 				const vec3 coeffs = vec3( 1.0/3.0, 1.0/3.0, 1.0/3.0 );
@@ -316,7 +315,9 @@ function render3d.AddDenoisePass(PASS)
 
 				vec3 means = vec3(0.0);
 				vec3 deviations = vec3(0.0);
-				vec2 res = textureSize(tex_stage_]]..(#PASS.Source)..[[, 0).xy;
+				vec2 res = textureSize(tex_stage_]] .. (
+					#PASS.Source
+				) .. [[, 0).xy;
 
 				for( int i = 0; i < kernel_size; i++ )
 				{
@@ -326,7 +327,9 @@ function render3d.AddDenoisePass(PASS)
 						uv += vec2( i,j);
 						uv += vec2( -1.0, -1.0 );
 						uv /= res;
-						vec3 sample = texture2D(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
+						vec3 sample = texture2D(tex_stage_]] .. (
+					#PASS.Source
+				) .. [[, uv).rgb;
 						means += sample / kernel_sq;
 
 						deviations += sample*sample / kernel_sq;
@@ -344,15 +347,17 @@ function render3d.AddDenoisePass(PASS)
 				//out_color.rgb = deviations;
 
 			}
-		]]
-	})
-
-	table.insert(PASS.Source, {
-		buffer = {
-			size_divider = 1,
-			internal_format = "rgba8",
-		},
-		source = [[
+		]],
+		}
+	)
+	table.insert(
+		PASS.Source,
+		{
+			buffer = {
+				size_divider = 1,
+				internal_format = "rgba8",
+			},
+			source = [[
 			#define denoise0(tex, pix, res)  texture2D( tex, (pix) / res )
 
 			vec4 denoise1(sampler2D tex, vec2 pix, vec2 res)
@@ -379,7 +384,9 @@ function render3d.AddDenoisePass(PASS)
 
 				for( int quad = 0; quad < 4; quad++)
 				{
-					vec4 sample = texture(tex_stage_]]..(#PASS.Source)..[[, (pix+offset));
+					vec4 sample = texture(tex_stage_]] .. (
+					#PASS.Source
+				) .. [[, (pix+offset));
 					offset = vec2(-offset.y,offset);
 
 					if( sample.a < cur_dev )
@@ -396,10 +403,15 @@ function render3d.AddDenoisePass(PASS)
 
 			void main()
 			{
-				out_color = denoise2(tex_stage_]]..(#PASS.Source)..[[, uv, textureSize(tex_stage_]]..(#PASS.Source)..[[, 0));
+				out_color = denoise2(tex_stage_]] .. (
+					#PASS.Source
+				) .. [[, uv, textureSize(tex_stage_]] .. (
+					#PASS.Source
+				) .. [[, 0));
 			}
-		]]
-	})
+		]],
+		}
+	)
 end
 
 if RELOAD then

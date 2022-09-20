@@ -16,13 +16,11 @@ local function read_list(base_url, sounds, list_id, skip_list)
 		else
 			tree[realm] = tree[realm] or {}
 			list[realm] = list[realm] or {}
-
 			tree[realm][trigger] = tree[realm][trigger] or {}
 			table.insert(tree[realm][trigger], {
 				path = path,
 				base_path = base_url,
 			})
-
 			list[realm][trigger] = path
 		end
 	end
@@ -38,7 +36,6 @@ local function read_list(base_url, sounds, list_id, skip_list)
 	else
 		chatsounds.tree = chatsounds.tree or {}
 		table.merge(chatsounds.tree, tree)
-
 		chatsounds.list = chatsounds.list or {}
 		table.merge(chatsounds.list, list, true)
 	end
@@ -52,7 +49,6 @@ end
 
 function chatsounds.BuildFromGithub(repo, location, list_id)
 	location = location or "sounds/chatsounds"
-
 	local base_url = "https://raw.githubusercontent.com/" .. repo .. "/master/" .. location .. "/"
 
 	resource.Download(base_url .. "list.msgpack", nil, nil, true, "msgpack"):Then(function(path)
@@ -61,8 +57,9 @@ function chatsounds.BuildFromGithub(repo, location, list_id)
 		read_list(base_url, val, list_id)
 	end):Catch(function(reason)
 		if list_id then
-			--llog(repo, ": unable to find list.msgpack from \"", location, "\"")
-			--llog(repo, ": parsing with github api instead (slower)")
+
+		--llog(repo, ": unable to find list.msgpack from \"", location, "\"")
+		--llog(repo, ": parsing with github api instead (slower)")
 		end
 
 		local url = "https://api.github.com/repos/" .. repo .. "/git/trees/master?recursive=1"
@@ -76,26 +73,23 @@ function chatsounds.BuildFromGithub(repo, location, list_id)
 					read_list(base_url, sounds, list_id)
 					return
 				else
-				 	llog("found cached list but format doesn't look right, regenerating.")
+					llog("found cached list but format doesn't look right, regenerating.")
 				end
 			end
 
 			llog("change detected ", base_url)
-
 			local sounds = {}
 			local str = assert(io.open(path, "rb"):read("*all"))
 			local i = 1
-			for path in str:gmatch('"path":%s?"(.-)"[\n,}]') do
+
+			for path in str:gmatch("\"path\":%s?\"(.-)\"[\n,}]") do
 				if path:startswith(location) and path:endswith(".ogg") then
 					path = path:sub(#location + 2) -- start character after location, and another /
-
 					local tbl = path:split("/")
 					local realm = tbl[1]
 					local trigger = tbl[2]
 
-					if not tbl[3] then
-						trigger = trigger:sub(1, -#".ogg" - 1)
-					end
+					if not tbl[3] then trigger = trigger:sub(1, -#".ogg" - 1) end
 
 					sounds[i] = {
 						realm,

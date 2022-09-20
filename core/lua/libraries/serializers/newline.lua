@@ -13,13 +13,10 @@ end
 
 function newline.Decode(str)
 	local out = {}
-
 	str = str:gsub("\r\n", "\n") .. "\n"
 
 	for v in str:gmatch("(.-)\n") do
-		if v ~= "" then
-			table.insert(out, fromstring(v))
-		end
+		if v ~= "" then table.insert(out, fromstring(v)) end
 	end
 
 	return out
@@ -27,7 +24,11 @@ end
 
 serializer.AddLibrary(
 	"newline",
-	function(simple, ...) return newline.Encode(...) end,
-	function(simple, ...) return newline.Decode(...) end,
+	function(simple, ...)
+		return newline.Encode(...)
+	end,
+	function(simple, ...)
+		return newline.Decode(...)
+	end,
 	newline
 )

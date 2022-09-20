@@ -1,15 +1,31 @@
 --print(entities.active_entities[129].model.sub_meshes[1].vertex_buffer.Vertices[1].pos[1])
-
 --entities.active_entities[129].model.sub_meshes[1].material.AlbedoTexture:Download()
 --render3d.scene[1].sub_meshes[1].material.AlbedoTexture:Download()
 --include("C:\\Users\\Leandro\\Desktop\\GoluwaExportingTools\\exporting_tools.lua")
 --local JSON = include("F:\\Backup Outubro 2017\\GoluwaExportingTools\\DKJSON.lua")
 local AbsolutePath = vfs.GetAbsolutePath("")
-
 local BumpBasis = {
-	{(2 ^ 0.5) / (3 ^ 0.5), 0, 1 / (3 ^ 0.5)},
-	{-1 / (6 ^ 0.5), 1 / (2 ^ 0.5), 1 / (3 ^ 0.5)},
-	{-1 / (6 ^ 0.5), -1 / (2 ^ 0.5), 1 / (3 ^ 0.5)},
+	{(
+		2 ^ 0.5
+	) / (
+		3 ^ 0.5
+	), 0, 1 / (
+		3 ^ 0.5
+	)},
+	{-1 / (
+		6 ^ 0.5
+	), 1 / (
+		2 ^ 0.5
+	), 1 / (
+		3 ^ 0.5
+	)},
+	{-1 / (
+		6 ^ 0.5
+	), -1 / (
+		2 ^ 0.5
+	), 1 / (
+		3 ^ 0.5
+	)},
 }
 
 local function Mix(X, Y, A)
@@ -23,7 +39,6 @@ local Absolute = math.abs
 local Maximum = math.max
 local Minimum = math.min
 local Format = string.format
-
 local Vertex = FFI.typeof([[
 	struct {
 		float position[3];
@@ -34,7 +49,6 @@ local Vertex = FFI.typeof([[
 	}
 ]])
 local Vertices = FFI.typeof("$[?]", Vertex)
-
 local Pixel = FFI.typeof([[
 	struct {
 		uint8_t color[4];
@@ -44,9 +58,7 @@ local Pixels = FFI.typeof("$[?]", Pixel)
 
 local function RemoveExtension(Path)
 	for I = #Path, 1, -1 do
-		if Path:sub(I, I) == "." then
-			return Path:sub(1, I - 1)
-		end
+		if Path:sub(I, I) == "." then return Path:sub(1, I - 1) end
 	end
 
 	return Path
@@ -78,12 +90,33 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 			print("materials/" .. VMT.basetexture2:lower() .. " not found.")
 		end
 	end
-	]]
-
-	local Channels = #Texture.format
+	]] local Channels = #Texture.format
 	local IsGreyscale = Channels == 1
 	local HasAlpha = Channels == 4
-	local Header = { 0, 0, IsGreyscale and 3 or 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, BIT.band(Texture.width, 0xff), BIT.band((BIT.rshift(Texture.width, 8)), 0xff), BIT.band(Texture.height, 0xff), BIT.band((BIT.rshift(Texture.height, 8)), 0xff), 8 * Channels, HasAlpha and 8 or 0 }
+	local Header = {
+		0,
+		0,
+		IsGreyscale and
+		3 or
+		2,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		BIT.band(Texture.width, 0xff),
+		BIT.band((BIT.rshift(Texture.width, 8)), 0xff),
+		BIT.band(Texture.height, 0xff),
+		BIT.band((BIT.rshift(Texture.height, 8)), 0xff),
+		8 * Channels,
+		HasAlpha and
+		8 or
+		0,
+	}
 	local StringHeader = ""
 
 	for Key, Char in ipairs(Header) do
@@ -95,9 +128,7 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 	--		print(tostring(k), tostring(v))
 	--	end
 	--end
-
 	if Type == "Normal" then
-
 		--[[
 		local Average = 0
 
@@ -125,52 +156,47 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 			IsSSBUMP = true
 			print("IS SSBUMP! Average: " .. Average)
 		end
-		]]
-
-		--print("SSBump: " .. tostring(StorableTable.SSBump) .. " FlipXNormal: " .. tostring(StorableTable.FlipXNormal) .. " FlipYNormal: " .. tostring(StorableTable.FlipYNormal))
-
+		]] --print("SSBump: " .. tostring(StorableTable.SSBump) .. " FlipXNormal: " .. tostring(StorableTable.FlipXNormal) .. " FlipYNormal: " .. tostring(StorableTable.FlipYNormal))
 		for I = 0, Texture.size / Channels do
 			local Normal_X, Normal_Y, Normal_Z = Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b
 
 			if StorableTable.SSBump then
 				Normal_X, Normal_Y, Normal_Z = (Normal_X / 255), (Normal_Y / 255), (Normal_Z / 255)
-
-				Normal_X = Maximum(Minimum(BumpBasis[1][1] * Normal_X + BumpBasis[2][1] * Normal_Y + BumpBasis[3][1] * Normal_Z, 1.0), -1.0)
-				Normal_Y = Maximum(Minimum(BumpBasis[1][2] * Normal_X + BumpBasis[2][2] * Normal_Y + BumpBasis[3][2] * Normal_Z, 1.0), -1.0)
-				Normal_Z = Maximum(Minimum(BumpBasis[1][3] * Normal_X + BumpBasis[2][3] * Normal_Y + BumpBasis[3][3] * Normal_Z, 1.0), -1.0)
-
+				Normal_X = Maximum(
+					Minimum(BumpBasis[1][1] * Normal_X + BumpBasis[2][1] * Normal_Y + BumpBasis[3][1] * Normal_Z, 1.0),
+					-1.0
+				)
+				Normal_Y = Maximum(
+					Minimum(BumpBasis[1][2] * Normal_X + BumpBasis[2][2] * Normal_Y + BumpBasis[3][2] * Normal_Z, 1.0),
+					-1.0
+				)
+				Normal_Z = Maximum(
+					Minimum(BumpBasis[1][3] * Normal_X + BumpBasis[2][3] * Normal_Y + BumpBasis[3][3] * Normal_Z, 1.0),
+					-1.0
+				)
 				local Length = ((Normal_X * Normal_X + Normal_Y * Normal_Y + Normal_Z * Normal_Z) ^ 0.5)
 
 				if Length > 0 then
 					Normal_X, Normal_Y, Normal_Z = Normal_X / Length, Normal_Y / Length, Normal_Z / Length
 				end
 
-				if not StorableTable.FlipYNormal then
-					Normal_Y = -Normal_Y
-				end
+				if not StorableTable.FlipYNormal then Normal_Y = -Normal_Y end
 
-				if StorableTable.FlipXNormal then
-					Normal_X = -Normal_X
-				end
+				if StorableTable.FlipXNormal then Normal_X = -Normal_X end
 
 				--Make it Y up.
 				Normal_Y = -Normal_Y
-				
 				Normal_X, Normal_Y, Normal_Z = Normal_X * 0.5 + 0.5, Normal_Y * 0.5 + 0.5, Normal_Z * 0.5 + 0.5
-
-				Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b = Floor(Normal_X * 255 + 0.5), Floor(Normal_Y * 255 + 0.5), Floor(Normal_Z * 255 + 0.5)
+				Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b = Floor(Normal_X * 255 + 0.5),
+				Floor(Normal_Y * 255 + 0.5),
+				Floor(Normal_Z * 255 + 0.5)
 			else
-				if StorableTable.FlipYNormal then
-					Normal_Y = 255 - Normal_Y
-				end
+				if StorableTable.FlipYNormal then Normal_Y = 255 - Normal_Y end
 
-				if StorableTable.FlipXNormal then
-					Normal_X = 255 - Normal_X
-				end
-				
+				if StorableTable.FlipXNormal then Normal_X = 255 - Normal_X end
+
 				--Make it Y up.
 				Normal_Y = 255 - Normal_Y
-
 				Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b = Normal_X, Normal_Y, Normal_Z
 			end
 		end
@@ -184,14 +210,19 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 
 			Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b, Texture.buffer[I].a = Floor(Color_R * 255 + 0.5), Floor(Color_G * 255 + 0.5), Floor(Color_B * 255 + 0.5), 255
 		end
-	]]
-	end
+	]] end
 
 	if VMT.basetexture2 or Material.Albedo2Texture then
 		local Texture2
 		local Pass = false
 
-		if MergeMaterial and (MergeMaterial[Type .. "Texture"].Path and MergeMaterial[Type .. "Texture"].Path:find("materials/")) then
+		if
+			MergeMaterial and
+			(
+				MergeMaterial[Type .. "Texture"].Path and
+				MergeMaterial[Type .. "Texture"].Path:find("materials/")
+			)
+		then
 			Texture2 = MergeMaterial[Type .. "Texture"]:Download()
 			Pass = true
 		elseif Type == "Albedo" and Material.Albedo2Texture then
@@ -206,12 +237,18 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 						for X = 0, Texture.width - 1 do
 							local I = Y * Texture.height + X
 							local I2 = Floor((Y / Texture.height) * Texture2.height) * Texture2.height + Floor((X / Texture.width) * Texture2.width)
-							local Color_R, Color_G, Color_B, Merge = Texture.buffer[I].r / 255, Texture.buffer[I].g / 255, Texture.buffer[I].b / 255, Texture.buffer[I].a / 255
+							local Color_R, Color_G, Color_B, Merge = Texture.buffer[I].r / 255,
+							Texture.buffer[I].g / 255,
+							Texture.buffer[I].b / 255,
+							Texture.buffer[I].a / 255
 							local Color_R2, Color_G2, Color_B2 = Texture2.buffer[I2].r / 255, Texture2.buffer[I2].g / 255, Texture2.buffer[I2].b / 255
-
-							Color_R, Color_G, Color_B = Mix(Color_R2, Color_R, Merge), Mix(Color_G2, Color_G, Merge), Mix(Color_B2, Color_B, Merge)
-
-							Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b, Texture.buffer[I].a = Floor(Color_R * 255 + 0.5), Floor(Color_G * 255 + 0.5), Floor(Color_B * 255 + 0.5), 255
+							Color_R, Color_G, Color_B = Mix(Color_R2, Color_R, Merge),
+							Mix(Color_G2, Color_G, Merge),
+							Mix(Color_B2, Color_B, Merge)
+							Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b, Texture.buffer[I].a = Floor(Color_R * 255 + 0.5),
+							Floor(Color_G * 255 + 0.5),
+							Floor(Color_B * 255 + 0.5),
+							255
 						end
 					end
 				else
@@ -227,12 +264,17 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 							local I = Y * Texture.height + X
 							local I2 = Floor((Y / Texture.height) * Texture2.height) * Texture2.height + Floor((X / Texture.width) * Texture2.width)
 							local I3 = Floor((Y / Texture.height) * MergeMap.height) * MergeMap.height + Floor((X / Texture.width) * MergeMap.width)
-							local Color_R, Color_G, Color_B, Merge = Texture.buffer[I].r / 255, Texture.buffer[I].g / 255, Texture.buffer[I].b / 255, MergeMap.buffer[I3].a / 255
+							local Color_R, Color_G, Color_B, Merge = Texture.buffer[I].r / 255,
+							Texture.buffer[I].g / 255,
+							Texture.buffer[I].b / 255,
+							MergeMap.buffer[I3].a / 255
 							local Color_R2, Color_G2, Color_B2 = Texture2.buffer[I2].r / 255, Texture2.buffer[I2].g / 255, Texture2.buffer[I2].b / 255
-
-							Color_R, Color_G, Color_B = Mix(Color_R2, Color_R, Merge), Mix(Color_G2, Color_G, Merge), Mix(Color_B2, Color_B, Merge)
-
-							Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b = Floor(Color_R * 255 + 0.5), Floor(Color_G * 255 + 0.5), Floor(Color_B * 255 + 0.5)
+							Color_R, Color_G, Color_B = Mix(Color_R2, Color_R, Merge),
+							Mix(Color_G2, Color_G, Merge),
+							Mix(Color_B2, Color_B, Merge)
+							Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b = Floor(Color_R * 255 + 0.5),
+							Floor(Color_G * 255 + 0.5),
+							Floor(Color_B * 255 + 0.5)
 						end
 					end
 				else
@@ -265,7 +307,30 @@ local function ConvertReflectionMap(Texture, VMT, StorableTable, Type)
 	local Channels = 1
 	local IsGreyscale = Channels == 1
 	local HasAlpha = Channels == 4
-	local Header = { 0, 0, IsGreyscale and 3 or 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, BIT.band(Texture.width, 0xff), BIT.band((BIT.rshift(Texture.width, 8)), 0xff), BIT.band(Texture.height, 0xff), BIT.band((BIT.rshift(Texture.height, 8)), 0xff), 8 * Channels, HasAlpha and 8 or 0 }
+	local Header = {
+		0,
+		0,
+		IsGreyscale and
+		3 or
+		2,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		BIT.band(Texture.width, 0xff),
+		BIT.band((BIT.rshift(Texture.width, 8)), 0xff),
+		BIT.band(Texture.height, 0xff),
+		BIT.band((BIT.rshift(Texture.height, 8)), 0xff),
+		8 * Channels,
+		HasAlpha and
+		8 or
+		0,
+	}
 	local StringHeader = ""
 
 	for Key, Char in ipairs(Header) do
@@ -305,7 +370,7 @@ end
 local function ConvertTexture(Material, Texture, VMT, StorableTable, Type, Path2)
 	local Path = VMT.fullpath
 	local PathNoExt = ""
-	
+
 	if Path then
 		local SRGB = Texture.SRGB and "srgb" or "rgba8"
 
@@ -313,11 +378,14 @@ local function ConvertTexture(Material, Texture, VMT, StorableTable, Type, Path2
 			if not Path2 then
 				Path = RemoveExtension(Path:sub(select(1, Path:find("materials/"), #Path)))
 				PathNoExt = Path
-
 				local Texture = Texture:Download()
 				Path = "data/asset_export/" .. Path
 
-				if VMT.basealphaenvmapmask and Type == "Albedo" and not vfs.Exists(Path .. "_REFLECT.tga") then
+				if
+					VMT.basealphaenvmapmask and
+					Type == "Albedo" and
+					not vfs.Exists(Path .. "_REFLECT.tga")
+				then
 					print("Storing texture data in " .. Path .. "_REFLECT.tga")
 					vfs.Write(Path .. "_REFLECT.tga", ConvertReflectionMap(Texture, VMT, StorableTable, Type))
 				end
@@ -325,39 +393,55 @@ local function ConvertTexture(Material, Texture, VMT, StorableTable, Type, Path2
 				if VMT.basemapalphaphongmask and Type == "Albedo" then
 					print("Storing texture data in " .. Path .. "_ROUGH.tga")
 					vfs.Write(Path .. "_ROUGH.tga", ConvertReflectionMap(Texture, VMT, StorableTable, Type))
-				end 
+				end
 
-				if VMT.blendtintbybasealpha and Type == "Albedo" and not vfs.Exists(Path .. "_TINT.tga") then
+				if
+					VMT.blendtintbybasealpha and
+					Type == "Albedo" and
+					not vfs.Exists(Path .. "_TINT.tga")
+				then
 					print("Storing texture data in " .. Path .. "_TINT.tga")
 					vfs.Write(Path .. "_TINT.tga", ConvertReflectionMap(Texture, VMT, StorableTable, Type))
 				end
 
 				if not vfs.Exists(Path .. ".tga") then
 					print("Storing texture data in " .. Path .. ".tga")
-					vfs.Write(Path .. ".tga", ConvertTextureToString(Material, Texture, VMT, StorableTable, Type))
+					vfs.Write(
+						Path .. ".tga",
+						ConvertTextureToString(Material, Texture, VMT, StorableTable, Type)
+					)
 				end
 			else
 				PathNoExt = Path2
-
 				local Texture = Texture:Download()
 				Path = "data/asset_export/" .. Path2
-
 				local OriginalPath = Path:sub(1, #Path - 4)
-				if VMT.normalmapalphaenvmapmask and Type == "Normal" and not vfs.Exists(OriginalPath .. "_REFLECT.tga") then
+
+				if
+					VMT.normalmapalphaenvmapmask and
+					Type == "Normal" and
+					not vfs.Exists(OriginalPath .. "_REFLECT.tga")
+				then
 					print("Storing texture data in " .. OriginalPath .. "_REFLECT.tga")
-					vfs.Write(OriginalPath .. "_REFLECT.tga", ConvertReflectionMap(Texture, VMT, StorableTable, Type))
+					vfs.Write(
+						OriginalPath .. "_REFLECT.tga",
+						ConvertReflectionMap(Texture, VMT, StorableTable, Type)
+					)
 				end
 
 				if not vfs.Exists(Path .. ".tga") then
 					print("Storing texture data in " .. Path .. ".tga")
 
 					if Type ~= "Metallic" then
-						vfs.Write(Path .. ".tga", ConvertTextureToString(Material, Texture, VMT, StorableTable, Type))
+						vfs.Write(
+							Path .. ".tga",
+							ConvertTextureToString(Material, Texture, VMT, StorableTable, Type)
+						)
 					else
 						local StringData = ConvertTextureToString(Material, Texture, VMT, StorableTable, Type)
 						vfs.Write(Path .. ".tga", StringData)
-
 						local OriginalPath = Path:sub(1, #Path - 5)
+
 						if not vfs.Exists(OriginalPath .. "_REFLECT.tga") then
 							print("Storing texture data in " .. OriginalPath .. "_REFLECT.tga")
 							vfs.Write(OriginalPath .. "_REFLECT.tga", StringData)
@@ -378,7 +462,30 @@ function GenerateReflection(SpecularTexture, VMT, StorableTable, Type, Path2)
 		local Channels = 1
 		local IsGreyscale = Channels == 1
 		local HasAlpha = Channels == 4
-		local Header = { 0, 0, IsGreyscale and 3 or 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, BIT.band(1, 0xff), BIT.band((BIT.rshift(1, 8)), 0xff), BIT.band(1, 0xff), BIT.band((BIT.rshift(1, 8)), 0xff), 8 * Channels, HasAlpha and 8 or 0 }
+		local Header = {
+			0,
+			0,
+			IsGreyscale and
+			3 or
+			2,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			BIT.band(1, 0xff),
+			BIT.band((BIT.rshift(1, 8)), 0xff),
+			BIT.band(1, 0xff),
+			BIT.band((BIT.rshift(1, 8)), 0xff),
+			8 * Channels,
+			HasAlpha and
+			8 or
+			0,
+		}
 		local StringHeader = ""
 
 		for Key, Char in ipairs(Header) do
@@ -400,7 +507,30 @@ function GenerateRoughness(SpecularTexture, VMT, StorableTable, Type, Path2)
 		local Channels = 1
 		local IsGreyscale = Channels == 1
 		local HasAlpha = Channels == 4
-		local Header = { 0, 0, IsGreyscale and 3 or 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, BIT.band(SpecularTexture.width, 0xff), BIT.band((BIT.rshift(SpecularTexture.width, 8)), 0xff), BIT.band(SpecularTexture.height, 0xff), BIT.band((BIT.rshift(SpecularTexture.height, 8)), 0xff), 8 * Channels, HasAlpha and 8 or 0 }
+		local Header = {
+			0,
+			0,
+			IsGreyscale and
+			3 or
+			2,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			BIT.band(SpecularTexture.width, 0xff),
+			BIT.band((BIT.rshift(SpecularTexture.width, 8)), 0xff),
+			BIT.band(SpecularTexture.height, 0xff),
+			BIT.band((BIT.rshift(SpecularTexture.height, 8)), 0xff),
+			8 * Channels,
+			HasAlpha and
+			8 or
+			0,
+		}
 		local StringHeader = ""
 
 		for Key, Char in ipairs(Header) do
@@ -418,7 +548,30 @@ function GenerateRoughness(SpecularTexture, VMT, StorableTable, Type, Path2)
 			local Channels = 1
 			local IsGreyscale = Channels == 1
 			local HasAlpha = Channels == 4
-			local Header = { 0, 0, IsGreyscale and 3 or 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, BIT.band(1, 0xff), BIT.band((BIT.rshift(1, 8)), 0xff), BIT.band(1, 0xff), BIT.band((BIT.rshift(1, 8)), 0xff), 8 * Channels, HasAlpha and 8 or 0 }
+			local Header = {
+				0,
+				0,
+				IsGreyscale and
+				3 or
+				2,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				BIT.band(1, 0xff),
+				BIT.band((BIT.rshift(1, 8)), 0xff),
+				BIT.band(1, 0xff),
+				BIT.band((BIT.rshift(1, 8)), 0xff),
+				8 * Channels,
+				HasAlpha and
+				8 or
+				0,
+			}
 			local StringHeader = ""
 
 			for Key, Char in ipairs(Header) do
@@ -439,7 +592,6 @@ end
 -- @return #string
 function table.tostring(Object, Index)
 	Index = Index or 0
-
 	local Tabbing = ""
 	local Output = ""
 
@@ -456,16 +608,34 @@ function table.tostring(Object, Index)
 	for Key, Value in pairs(Object) do
 		if type(Value) == "table" then
 			if type(Key) == "number" then
-				Output = Format("%s\n%s\t[%s] = %s, ", Output, Tabbing, tostring(Key), table.tostring(Value, Index + 1))
+				Output = Format(
+					"%s\n%s\t[%s] = %s, ",
+					Output,
+					Tabbing,
+					tostring(Key),
+					table.tostring(Value, Index + 1)
+				)
 			else
-				Output = Format("%s\n%s\t['%s'] = %s, ", Output, Tabbing, tostring(Key):replace("\\", "\\\\"):replace("'", "\\'"):replace("\"", "\\\""), table.tostring(Value, Index + 1))
+				Output = Format(
+					"%s\n%s\t['%s'] = %s, ",
+					Output,
+					Tabbing,
+					tostring(Key):replace("\\", "\\\\"):replace("'", "\\'"):replace("\"", "\\\""),
+					table.tostring(Value, Index + 1)
+				)
 			end
 		else
 			if type(Value) == "number" or type(Value) == "boolean" then
 				if type(Key) == "number" or type(Key) == "boolean" then
 					Output = Format("%s\n%s\t[%s] = %s, ", Output, Tabbing, tostring(Key), tostring(Value))
 				elseif type(Key) == "string" then
-					Output = Format("%s\n%s\t['%s'] = %s, ", Output, Tabbing, tostring(Key):replace("\\", "\\\\"):replace("'", "\\'"):replace("\"", "\\\""), tostring(Value))
+					Output = Format(
+						"%s\n%s\t['%s'] = %s, ",
+						Output,
+						Tabbing,
+						tostring(Key):replace("\\", "\\\\"):replace("'", "\\'"):replace("\"", "\\\""),
+						tostring(Value)
+					)
 				else
 					Output = Format("%s\n%t\t%s = %s, ", Output, Tabbing, tostring(Key), tostring(Value))
 				end
@@ -474,25 +644,61 @@ function table.tostring(Object, Index)
 					local Value = tostring(Value)
 
 					if Value:find("\n") or Value:find("\r") then
-						Output = Format("%s\n%s\t[%s] = [=[%s]=], ", Output, Tabbing, tostring(Key), Value:replace("=", "\\61"))
+						Output = Format(
+							"%s\n%s\t[%s] = [=[%s]=], ",
+							Output,
+							Tabbing,
+							tostring(Key),
+							Value:replace("=", "\\61")
+						)
 					else
-						Output = Format("%s\n%s\t[%s] = '%s', ", Output, Tabbing, tostring(Key), Value:replace("\\", "\\\\"):replace("'", "\\'"):replace("\"", "\\\""))
+						Output = Format(
+							"%s\n%s\t[%s] = '%s', ",
+							Output,
+							Tabbing,
+							tostring(Key),
+							Value:replace("\\", "\\\\"):replace("'", "\\'"):replace("\"", "\\\"")
+						)
 					end
 				elseif type(Key) == "string" then
 					local Value = tostring(Value)
 
 					if Value:find("\n") or Value:find("\r") then
-						Output = Format("%s\n%s\t['%s'] = [=[%s]=], ", Output, Tabbing, tostring(Key):replace("\\", "\\\\"):replace("'", "\\'"):replace("\"", "\\\""), Value:replace("=", "\\61"))
+						Output = Format(
+							"%s\n%s\t['%s'] = [=[%s]=], ",
+							Output,
+							Tabbing,
+							tostring(Key):replace("\\", "\\\\"):replace("'", "\\'"):replace("\"", "\\\""),
+							Value:replace("=", "\\61")
+						)
 					else
-						Output = Format("%s\n%s\t['%s'] = '%s', ", Output, Tabbing, tostring(Key):replace("\\", "\\\\"):replace("'", "\\'"):replace("\"", "\\\""), Value:replace("'", "\\'"):replace("\"", "\\\""))
+						Output = Format(
+							"%s\n%s\t['%s'] = '%s', ",
+							Output,
+							Tabbing,
+							tostring(Key):replace("\\", "\\\\"):replace("'", "\\'"):replace("\"", "\\\""),
+							Value:replace("'", "\\'"):replace("\"", "\\\"")
+						)
 					end
 				else
 					local Value = tostring(Value)
 
 					if Value:find("\n") or Value:find("\r") then
-						Output = Format("%s\n%s\t%s = [=[%s]=]", Output, Tabbing, tostring(Key), Value:replace("=", "\\61"))
+						Output = Format(
+							"%s\n%s\t%s = [=[%s]=]",
+							Output,
+							Tabbing,
+							tostring(Key),
+							Value:replace("=", "\\61")
+						)
 					else
-						Output = Format("%s\n%s\t%s = '%s', ", Output, Tabbing, tostring(Key), Value:replace("\\", "\\\\"):replace("'", "\\'"):replace("\"", "\\\""))
+						Output = Format(
+							"%s\n%s\t%s = '%s', ",
+							Output,
+							Tabbing,
+							tostring(Key),
+							Value:replace("\\", "\\\\"):replace("'", "\\'"):replace("\"", "\\\"")
+						)
 					end
 				end
 			end
@@ -500,23 +706,17 @@ function table.tostring(Object, Index)
 	end
 
 	Output = Format("{%s\n%s}", string.sub(Output, 0, #Output - 1), Tabbing)
-
 	return Output
 end
 
 local function ConvertModel(Model)
 	local Path = Model.ModelPath
-
 	local IsMap = false
 	local IsModel = false
 
-	if Path:find("models/") then
-		IsModel = true
-	end
+	if Path:find("models/") then IsModel = true end
 
-	if Path:find("maps/") then
-		IsMap = true
-	end
+	if Path:find("maps/") then IsMap = true end
 
 	if IsModel or IsMap then
 		if IsModel then
@@ -531,54 +731,42 @@ local function ConvertModel(Model)
 		Path = "data/asset_export/" .. Path .. ".obj"
 
 		--print(table.tostring(Model.sub_meshes))
-		if not vfs.Exists(Path) then
-			vfs.Write(Path, Model:ToOBJ())
-		end
+		if not vfs.Exists(Path) then vfs.Write(Path, Model:ToOBJ()) end
 	end
 end
 
 function ExportLevel()
 	local MapData = {}
-
 	local SunDirection = entities.GetWorld():GetSunAngles()
-
 	MapData[1] = {
 		AngleX = SunDirection.x,
 		AngleY = SunDirection.y,
-		AngleZ = SunDirection.z
+		AngleZ = SunDirection.z,
 	}
-
 	local MapPath = ""
+
 	for Key, Entity in ipairs(entities.GetAll()) do
 		if Entity.model then
 			local Path = Entity.model.ModelPath
-
 			local IsMap = false
 			local IsModel = false
 
-			if Path:find("models/") then
-				IsModel = true
-			end
+			if Path:find("models/") then IsModel = true end
 
 			if Path:find("maps/") then
 				MapPath = RemoveExtension(Path)
 				IsMap = true
 			end
-			
+
 			local EntityData = {}
-
 			local Color = Entity:GetColor()
-
 			EntityData.ColorR = Color.r
 			EntityData.ColorG = Color.g
 			EntityData.ColorB = Color.b
-
 			local Position = Entity:GetPosition()
-
 			EntityData.PositionX = Position.x
 			EntityData.PositionY = Position.y
 			EntityData.PositionZ = Position.z
-
 			local Angle = Entity:GetAngles()
 
 			if Angle.x == Angle.x then
@@ -600,7 +788,6 @@ function ExportLevel()
 			end
 
 			local Size = Entity:GetSize()
-
 			EntityData.ScaleX = Size
 			EntityData.ScaleY = Size
 			EntityData.ScaleZ = Size
@@ -618,6 +805,7 @@ function ExportLevel()
 
 			for Key, SubModel in pairs(Entity.model.sub_meshes) do
 				local MaterialOrData = SubModel.material or SubModel.data
+
 				if MaterialOrData then
 					local MaterialStorage = MaterialOrData:GetStorableTable()
 
@@ -637,30 +825,63 @@ function ExportLevel()
 							Material.Albedo = PathNoExt .. ".tga"
 
 							if not VMT.basemapalphaphongmask then
-								if MaterialStorage.RoughnessTexture and  MaterialStorage.RoughnessTexture.Path:find("materials/") then
-									ConvertTexture(MaterialStorage, MaterialStorage.RoughnessTexture, VMT, MaterialStorage, "Roughness", PathNoExt .. "_ROUGH")
+								if
+									MaterialStorage.RoughnessTexture and
+									MaterialStorage.RoughnessTexture.Path:find("materials/")
+								then
+									ConvertTexture(
+										MaterialStorage,
+										MaterialStorage.RoughnessTexture,
+										VMT,
+										MaterialStorage,
+										"Roughness",
+										PathNoExt .. "_ROUGH"
+									)
 								else
 									GenerateRoughness(MaterialStorage.MetallicTexture, VMT, MaterialStorage, "Roughness", PathNoExt .. "_ROUGH")
 								end
+
 								Material.Roughness = PathNoExt .. "_ROUGH.tga"
 							end
 
 							if MaterialStorage.NormalTexture then
-								ConvertTexture(MaterialStorage, MaterialStorage.NormalTexture, VMT, MaterialStorage, "Normal", PathNoExt .. "_NRM")
+								ConvertTexture(
+									MaterialStorage,
+									MaterialStorage.NormalTexture,
+									VMT,
+									MaterialStorage,
+									"Normal",
+									PathNoExt .. "_NRM"
+								)
 								Material.Normal = PathNoExt .. "_NRM.tga"
 							end
 
 							if MaterialStorage.SkyTexture then
-								ConvertTexture(MaterialStorage, MaterialStorage.SkyTexture, VMT, MaterialStorage, "Sky", PathNoExt .. "_SKY")
+								ConvertTexture(
+									MaterialStorage,
+									MaterialStorage.SkyTexture,
+									VMT,
+									MaterialStorage,
+									"Sky",
+									PathNoExt .. "_SKY"
+								)
 								Material.Sky = PathNoExt .. "_SKY.tga"
 							end
 
 							if MaterialStorage.MetallicTexture and not VMT.basemapalphaphongmask then
 								if MaterialStorage.RoughnessTexture.Path:find("materials/") then
-									ConvertTexture(MaterialStorage, MaterialStorage.MetallicTexture, VMT, MaterialStorage, "Metallic", PathNoExt .. "_SPEC")
+									ConvertTexture(
+										MaterialStorage,
+										MaterialStorage.MetallicTexture,
+										VMT,
+										MaterialStorage,
+										"Metallic",
+										PathNoExt .. "_SPEC"
+									)
 								else
 									GenerateReflection(MaterialStorage.MetallicTexture, VMT, MaterialStorage, "Metallic", PathNoExt .. "_SPEC")
 								end
+
 								Material.Specular = PathNoExt .. "_SPEC.tga"
 							end
 						end
@@ -674,7 +895,7 @@ function ExportLevel()
 			pcall(ConvertModel, Entity.model)
 		end
 	end
-	
+
 	if not vfs.Exists("data/asset_export/" .. MapPath .. ".txt") then
 		print("Storing map data in data/asset_export/" .. MapPath .. ".txt")
 		--serializer.WriteFile("json", "data/asset_export/" .. MapPath .. ".txt", MapData)

@@ -1,11 +1,8 @@
 local love = ... or _G.love
 local ENV = love._line_env
-
 love.timer = love.timer or {}
 
-function love.timer.step()
-
-end
+function love.timer.step() end
 
 function love.timer.getDelta()
 	return system.GetFrameTime()
@@ -35,8 +32,6 @@ function love.timer.sleep(ms)
 	local thread = love.thread.getThread()
 
 	if thread then
-		if tasks.coroutine_lookup[thread.thread] then
-			thread.thread:Wait(ms)
-		end
+		if tasks.coroutine_lookup[thread.thread] then thread.thread:Wait(ms) end
 	end
 end

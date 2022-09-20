@@ -1,4 +1,8 @@
-local ffi = require("ffi");local CLIB = assert(ffi.load("openal"));ffi.cdef([[void(alGetBufferSamplesSOFT)(unsigned int,int,int,int,int,void*);
+local ffi = require("ffi")
+
+local CLIB = assert(ffi.load("openal"))
+
+ffi.cdef([[void(alGetBufferSamplesSOFT)(unsigned int,int,int,int,int,void*);
 void(alGetEffectfv)(unsigned int,int,float*);
 void(alEffectf)(unsigned int,int,float);
 void(alBufferi)(unsigned int,int,int);
@@ -137,14 +141,18 @@ void(alSourcePausev)(int,const unsigned int*);
 void(alFilteri)(unsigned int,int,int);
 ]])
 local library = {}
-		local function get_proc_address(func, cast)
-			local ptr = CLIB.alGetProcAddress(func)
-			if ptr ~= nil then
-				return ffi.cast(cast, ptr)
-			end
-		end
-		library = {
-	GetBufferSamplesSOFT = get_proc_address("alGetBufferSamplesSOFT", "void(* )( unsigned int , int , int , int , int , void * )"),
+
+local function get_proc_address(func, cast)
+	local ptr = CLIB.alGetProcAddress(func)
+
+	if ptr ~= nil then return ffi.cast(cast, ptr) end
+end
+
+library = {
+	GetBufferSamplesSOFT = get_proc_address(
+		"alGetBufferSamplesSOFT",
+		"void(* )( unsigned int , int , int , int , int , void * )"
+	),
 	GetEffectfv = get_proc_address("alGetEffectfv", "void(* )( unsigned int , int , float * )"),
 	Effectf = get_proc_address("alEffectf", "void(* )( unsigned int , int , float )"),
 	Bufferi = get_proc_address("alBufferi", "void(* )( unsigned int , int , int )"),
@@ -168,7 +176,10 @@ local library = {}
 	Listener3i = get_proc_address("alListener3i", "void(* )( int , int , int , int )"),
 	GetBuffer3i = get_proc_address("alGetBuffer3i", "void(* )( unsigned int , int , int * , int * , int * )"),
 	Listener3f = get_proc_address("alListener3f", "void(* )( int , float , float , float )"),
-	BufferSamplesSOFT = get_proc_address("alBufferSamplesSOFT", "void(* )( unsigned int , unsigned int , int , int , int , int , const void * )"),
+	BufferSamplesSOFT = get_proc_address(
+		"alBufferSamplesSOFT",
+		"void(* )( unsigned int , unsigned int , int , int , int , int , const void * )"
+	),
 	Effectfv = get_proc_address("alEffectfv", "void(* )( unsigned int , int , const float * )"),
 	Sourcefv = get_proc_address("alSourcefv", "void(* )( unsigned int , int , const float * )"),
 	GetEffectf = get_proc_address("alGetEffectf", "void(* )( unsigned int , int , float * )"),
@@ -183,10 +194,16 @@ local library = {}
 	GetAuxiliaryEffectSlotiv = get_proc_address("alGetAuxiliaryEffectSlotiv", "void(* )( unsigned int , int , int * )"),
 	GetListenerf = get_proc_address("alGetListenerf", "void(* )( int , float * )"),
 	GetFilterfv = get_proc_address("alGetFilterfv", "void(* )( unsigned int , int , float * )"),
-	Source3i64SOFT = get_proc_address("alSource3i64SOFT", "void(* )( unsigned int , int , signed long , signed long , signed long )"),
+	Source3i64SOFT = get_proc_address(
+		"alSource3i64SOFT",
+		"void(* )( unsigned int , int , signed long , signed long , signed long )"
+	),
 	GetListener3i = get_proc_address("alGetListener3i", "void(* )( int , int * , int * , int * )"),
 	GetInteger = get_proc_address("alGetInteger", "int(* )( int )"),
-	GetSource3i64SOFT = get_proc_address("alGetSource3i64SOFT", "void(* )( unsigned int , int , signed long * , signed long * , signed long * )"),
+	GetSource3i64SOFT = get_proc_address(
+		"alGetSource3i64SOFT",
+		"void(* )( unsigned int , int , signed long * , signed long * , signed long * )"
+	),
 	SourcePlayv = get_proc_address("alSourcePlayv", "void(* )( int , const unsigned int * )"),
 	GetPointerSOFT = get_proc_address("alGetPointerSOFT", "void *(* )( int )"),
 	SourceRewindv = get_proc_address("alSourceRewindv", "void(* )( int , const unsigned int * )"),
@@ -198,7 +215,10 @@ local library = {}
 	DistanceModel = get_proc_address("alDistanceModel", "void(* )( int )"),
 	BufferDataStatic = get_proc_address("alBufferDataStatic", "void(* )( const int , int , void * , int , int )"),
 	AuxiliaryEffectSlotfv = get_proc_address("alAuxiliaryEffectSlotfv", "void(* )( unsigned int , int , const float * )"),
-	RequestFoldbackStart = get_proc_address("alRequestFoldbackStart", "void(* )( int , int , int , float * , void(* callback)( int , int ) )"),
+	RequestFoldbackStart = get_proc_address(
+		"alRequestFoldbackStart",
+		"void(* )( int , int , int , float * , void(* callback)( int , int ) )"
+	),
 	GetBuffer3f = get_proc_address("alGetBuffer3f", "void(* )( unsigned int , int , float * , float * , float * )"),
 	IsBufferFormatSupportedSOFT = get_proc_address("alIsBufferFormatSupportedSOFT", "char(* )( int )"),
 	IsBuffer = get_proc_address("alIsBuffer", "char(* )( unsigned int )"),
@@ -211,15 +231,24 @@ local library = {}
 	GetSourcedSOFT = get_proc_address("alGetSourcedSOFT", "void(* )( unsigned int , int , double * )"),
 	GetDouble = get_proc_address("alGetDouble", "double(* )( int )"),
 	GetIntegerv = get_proc_address("alGetIntegerv", "void(* )( int , int * )"),
-	BufferCallbackSOFT = get_proc_address("alBufferCallbackSOFT", "void(* )( unsigned int , int , int , int(* callback)( void * , void * , int ) , void * )"),
-	EventCallbackSOFT = get_proc_address("alEventCallbackSOFT", "void(* )( void(* callback)( int , unsigned int , unsigned int , int , const char * , void * ) , void * )"),
+	BufferCallbackSOFT = get_proc_address(
+		"alBufferCallbackSOFT",
+		"void(* )( unsigned int , int , int , int(* callback)( void * , void * , int ) , void * )"
+	),
+	EventCallbackSOFT = get_proc_address(
+		"alEventCallbackSOFT",
+		"void(* )( void(* callback)( int , unsigned int , unsigned int , int , const char * , void * ) , void * )"
+	),
 	GenFilters = get_proc_address("alGenFilters", "void(* )( int , unsigned int * )"),
 	AuxiliaryEffectSlotf = get_proc_address("alAuxiliaryEffectSlotf", "void(* )( unsigned int , int , float )"),
 	EventControlSOFT = get_proc_address("alEventControlSOFT", "void(* )( int , const int * , char )"),
 	GetStringiSOFT = get_proc_address("alGetStringiSOFT", "const char *(* )( int , int )"),
 	GetError = get_proc_address("alGetError", "int(* )(  )"),
 	Source3i = get_proc_address("alSource3i", "void(* )( unsigned int , int , int , int , int )"),
-	BufferSubDataSOFT = get_proc_address("alBufferSubDataSOFT", "void(* )( unsigned int , int , const void * , int , int )"),
+	BufferSubDataSOFT = get_proc_address(
+		"alBufferSubDataSOFT",
+		"void(* )( unsigned int , int , const void * , int , int )"
+	),
 	Filteriv = get_proc_address("alFilteriv", "void(* )( unsigned int , int , const int * )"),
 	GetSourcei64vSOFT = get_proc_address("alGetSourcei64vSOFT", "void(* )( unsigned int , int , signed long * )"),
 	IsEnabled = get_proc_address("alIsEnabled", "char(* )( int )"),
@@ -229,15 +258,24 @@ local library = {}
 	Disable = get_proc_address("alDisable", "void(* )( int )"),
 	SourceStop = get_proc_address("alSourceStop", "void(* )( unsigned int )"),
 	GetSourcedvSOFT = get_proc_address("alGetSourcedvSOFT", "void(* )( unsigned int , int , double * )"),
-	GetSource3dSOFT = get_proc_address("alGetSource3dSOFT", "void(* )( unsigned int , int , double * , double * , double * )"),
-	GetBuffer3PtrSOFT = get_proc_address("alGetBuffer3PtrSOFT", "void(* )( unsigned int , int , void * * , void * * , void * * )"),
+	GetSource3dSOFT = get_proc_address(
+		"alGetSource3dSOFT",
+		"void(* )( unsigned int , int , double * , double * , double * )"
+	),
+	GetBuffer3PtrSOFT = get_proc_address(
+		"alGetBuffer3PtrSOFT",
+		"void(* )( unsigned int , int , void * * , void * * , void * * )"
+	),
 	SourcedvSOFT = get_proc_address("alSourcedvSOFT", "void(* )( unsigned int , int , const double * )"),
 	Source3dSOFT = get_proc_address("alSource3dSOFT", "void(* )( unsigned int , int , double , double , double )"),
 	IsEffect = get_proc_address("alIsEffect", "char(* )( unsigned int )"),
 	GetDoublev = get_proc_address("alGetDoublev", "void(* )( int , double * )"),
 	IsAuxiliaryEffectSlot = get_proc_address("alIsAuxiliaryEffectSlot", "char(* )( unsigned int )"),
 	SourceQueueBuffers = get_proc_address("alSourceQueueBuffers", "void(* )( unsigned int , int , const unsigned int * )"),
-	BufferSubSamplesSOFT = get_proc_address("alBufferSubSamplesSOFT", "void(* )( unsigned int , int , int , int , int , const void * )"),
+	BufferSubSamplesSOFT = get_proc_address(
+		"alBufferSubSamplesSOFT",
+		"void(* )( unsigned int , int , int , int , int , const void * )"
+	),
 	Filterf = get_proc_address("alFilterf", "void(* )( unsigned int , int , float )"),
 	SourceStopv = get_proc_address("alSourceStopv", "void(* )( int , const unsigned int * )"),
 	DopplerVelocity = get_proc_address("alDopplerVelocity", "void(* )( float )"),
@@ -1280,13 +1318,11 @@ library.EffectParams = {
 	},
 	dedicated_dialogue = {
 		enum = 36865,
-		params = {
-		},
+		params = {},
 	},
 	dedicated_low_frequency_effect = {
 		enum = 36864,
-		params = {
-		},
+		params = {},
 	},
 	distortion = {
 		enum = 3,
@@ -1585,19 +1621,19 @@ library.EffectParams = {
 		},
 	},
 }
+
 function library.GetAvailableEffects()
 	return library.EffectParams
 end
+
 library.FilterParams = {
 	gainhf_auto = {
 		enum = 131082,
-		params = {
-		},
+		params = {},
 	},
 	gain_auto = {
 		enum = 131083,
-		params = {
-		},
+		params = {},
 	},
 	lowpass = {
 		enum = 1,
@@ -1620,49 +1656,58 @@ library.FilterParams = {
 		},
 	},
 }
+
 function library.GetAvailableFilters()
 	return library.FilterParams
 end
+
 function library.GenEffect()
-			local id = ffi.new("unsigned int[1]")
-			library.GenEffects(1, id)
-			return id[0]
-		end
-		function library.GenSource()
-			local id = ffi.new("unsigned int[1]")
-			library.GenSources(1, id)
-			return id[0]
-		end
-		function library.GenFilter()
-			local id = ffi.new("unsigned int[1]")
-			library.GenFilters(1, id)
-			return id[0]
-		end
-		function library.GenBuffer()
-			local id = ffi.new("unsigned int[1]")
-			library.GenBuffers(1, id)
-			return id[0]
-		end
-		function library.GenAuxiliaryEffectSlot()
-			local id = ffi.new("unsigned int[1]")
-			library.GenAuxiliaryEffectSlots(1, id)
-			return id[0]
-		end
-				function library.GetErrorString()
-			local num = library.GetError()
-			if num == library.e.NO_ERROR then
-				return "no error"
-			elseif num == library.e.INVALID_NAME then
-				return "invalid name"
-			elseif num == library.e.INVALID_ENUM then
-				return "invalid enum"
-			elseif num == library.e.INVALID_VALUE then
-				return "invalid value"
-			elseif num == library.e.INVALID_OPERATION then
-				return "invalid operation"
-			elseif num == library.e.OUT_OF_MEMORY then
-				return "out of memory"
-			end
-		end
-		library.clib = CLIB
+	local id = ffi.new("unsigned int[1]")
+	library.GenEffects(1, id)
+	return id[0]
+end
+
+function library.GenSource()
+	local id = ffi.new("unsigned int[1]")
+	library.GenSources(1, id)
+	return id[0]
+end
+
+function library.GenFilter()
+	local id = ffi.new("unsigned int[1]")
+	library.GenFilters(1, id)
+	return id[0]
+end
+
+function library.GenBuffer()
+	local id = ffi.new("unsigned int[1]")
+	library.GenBuffers(1, id)
+	return id[0]
+end
+
+function library.GenAuxiliaryEffectSlot()
+	local id = ffi.new("unsigned int[1]")
+	library.GenAuxiliaryEffectSlots(1, id)
+	return id[0]
+end
+
+function library.GetErrorString()
+	local num = library.GetError()
+
+	if num == library.e.NO_ERROR then
+		return "no error"
+	elseif num == library.e.INVALID_NAME then
+		return "invalid name"
+	elseif num == library.e.INVALID_ENUM then
+		return "invalid enum"
+	elseif num == library.e.INVALID_VALUE then
+		return "invalid value"
+	elseif num == library.e.INVALID_OPERATION then
+		return "invalid operation"
+	elseif num == library.e.OUT_OF_MEMORY then
+		return "out of memory"
+	end
+end
+
+library.clib = CLIB
 return library

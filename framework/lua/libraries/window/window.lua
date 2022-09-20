@@ -1,10 +1,8 @@
 local window = _G.window or {}
-
 window.active = window.active or {}
 
 do
 	local META = prototype.CreateTemplate("window")
-
 	META:GetSet("Title", "no title")
 	META:GetSet("Position", Vec2())
 	META:GetSet("Size", Vec2())
@@ -15,7 +13,6 @@ do
 	META:GetSet("Flags")
 	META:GetSet("Cursor", "arrow")
 	META:IsSet("Focused", false)
-
 	META.Cursors = {
 		hand = true,
 		arrow = true,
@@ -25,26 +22,16 @@ do
 		text_input = true,
 		vertical_resize = true,
 		horizontal_resize = true,
-
 		horizontal_resize = true,
 		vertical_resize = true,
-
-		top_right_resize =  true,
-		bottom_left_resize =  true,
-
-		top_left_resize =  true,
-		bottom_right_resize =  true,
-
-		all_resize =  true,
+		top_right_resize = true,
+		bottom_left_resize = true,
+		top_left_resize = true,
+		bottom_right_resize = true,
+		all_resize = true,
 	}
-
-	META.Keys = {
-
-	}
-
-	META.Buttons = {
-
-}
+	META.Keys = {}
+	META.Buttons = {}
 
 	function META:SetMouseTrapped(b)
 		self:SetCursor(b and "trapped" or "arrow")
@@ -56,6 +43,7 @@ do
 
 	local function nyi()
 		local func = debug.getinfo(2).func
+
 		for k, v in pairs(META) do
 			if v == func then
 				local msg = "function Window:" .. k .. "() is not implemented"
@@ -68,54 +56,82 @@ do
 		return false
 	end
 
-	function META:Initialize() nyi() end
-	function META:PreWindowSetup() nyi() end
-	function META:PostWindowSetup() nyi() end
+	function META:Initialize()
+		nyi()
+	end
+
+	function META:PreWindowSetup()
+		nyi()
+	end
+
+	function META:PostWindowSetup()
+		nyi()
+	end
+
 	function META:OnRemove() end
 
-	function META:Maximize() nyi() end
-	function META:Minimize() nyi() end
-	function META:Restore() nyi() end
+	function META:Maximize()
+		nyi()
+	end
 
-	function META:GetFramebufferSize() nyi() end
+	function META:Minimize()
+		nyi()
+	end
+
+	function META:Restore()
+		nyi()
+	end
+
+	function META:GetFramebufferSize()
+		nyi()
+	end
 
 	function META:OnUpdate(dt) end
 
 	function META:OnMinimize() end
+
 	function META:OnMaximize() end
 
 	function META:OnGainedFocus() end
+
 	function META:OnLostFocus() end
 
 	function META:OnPositionChanged(pos) end
+
 	function META:OnSizeChanged(size) end
+
 	function META:OnFramebufferResized(size) end
 
 	function META:OnCursorEnter() end
+
 	function META:OnCursorLeave() end
 
 	function META:OnClose() end
+
 	function META:SwapInterval() end
 
 	function META:OnCursorPosition(x, y) end
+
 	function META:OnDrop(paths) end
 
 	function META:OnCharInput(str) end
 
 	function META:OnKeyInput(key, press) end
+
 	function META:OnKeyInputRepeat(key, press) end
+
 	function META:OnMouseInput(key, press) end
+
 	function META:OnMouseScroll(x, y) end
 
 	function META:BindContext() end
+
 	function META:SwapBuffers() end
 
 	function META:UpdateMouseDelta()
 		local pos = self:GetMousePosition()
 
-		if self.last_mpos then
-			self:SetMouseDelta(pos - self.last_mpos)
-		end
+		if self.last_mpos then self:SetMouseDelta(pos - self.last_mpos) end
 
 		self.last_mpos = pos
 
@@ -127,9 +143,7 @@ do
 	function META:CallEvent(name, ...)
 		local b = self["On" .. name](self, ...)
 
-		if b ~= false then
-			b = event.Call("Window" .. name, self, ...)
-		end
+		if b ~= false then b = event.Call("Window" .. name, self, ...) end
 
 		return b
 	end
@@ -137,32 +151,26 @@ do
 	function META:OnPostUpdate()
 		render.PushWindow(self)
 		render.PushViewport(0, 0, self:GetSize():Unpack())
+		local dt = system.GetFrameTime()
+		local fb = render.GetScreenFrameBuffer()
+		fb:Begin()
+		fb:ClearAll()
+		event.Call("Draw3D", dt)
 
-			local dt = system.GetFrameTime()
-			local fb = render.GetScreenFrameBuffer()
+		if render2d.IsReady() then
+			render2d.Start()
+			render2d.SetColor(1, 1, 1, 1)
+			render.SetCullMode("none")
+			render.SetDepth(false)
+			render.SetPresetBlendMode("alpha")
+			event.Call("PreDrawGUI", dt)
+			event.Call("DrawGUI", dt)
+			event.Call("PostDrawGUI", dt)
+			render2d.End()
+			event.Call("PostDrawScene")
+		end
 
-			fb:Begin()
-			fb:ClearAll()
-
-			event.Call("Draw3D", dt)
-
-			if render2d.IsReady() then
-				render2d.Start()
-				render2d.SetColor(1,1,1,1)
-				render.SetCullMode("none")
-				render.SetDepth(false)
-				render.SetPresetBlendMode("alpha")
-
-				event.Call("PreDrawGUI", dt)
-				event.Call("DrawGUI", dt)
-				event.Call("PostDrawGUI", dt)
-
-				render2d.End()
-
-				event.Call("PostDrawScene")
-			end
-
-			fb:End()
+		fb:End()
 		render.PopWindow()
 		render.PopViewport()
 	end
@@ -182,19 +190,17 @@ do
 
 	function window.CreateWindow(width, height, title, flags)
 		local self = META:CreateObject()
-
 		local ok, err = self:Initialize()
-		if ok == false then
-			return ok, err
-		end
+
+		if ok == false then return ok, err end
 
 		if NULL_OPENGL then
 			local gl = require("opengl")
 
-			for k,v in pairs(gl) do
-				if type(v) == "cdata" then
-					gl[k] = function() return 0 end
-				end
+			for k, v in pairs(gl) do
+				if type(v) == "cdata" then gl[k] = function()
+					return 0
+				end end
 			end
 
 			function gl.CheckNamedFramebufferStatus()
@@ -208,13 +214,10 @@ do
 
 		self:SetTitle(title)
 
-		if width and height then
-			self:SetSize(Vec2(width, height))
-		end
+		if width and height then self:SetSize(Vec2(width, height)) end
+
 		self:SetFlags(flags)
-
 		table.insert(window.active, self)
-
 		return self
 	end
 
@@ -238,7 +241,10 @@ function window.Open(...)
 
 	local ok, wnd = pcall(window.CreateWindow, ...)
 
-	if not ok then wlog(wnd) return ok, wnd end
+	if not ok then
+		wlog(wnd)
+		return ok, wnd
+	end
 
 	wnd:BindContext()
 
@@ -255,10 +261,10 @@ function window.Open(...)
 
 		event.AddListener(name, "window_events", function(_wnd, ...)
 			--if _wnd == render.GetWindow() then
-				if not callback or callback(...) ~= false then
-					return event.Call(nice, ...)
-				end
-			--end
+			if not callback or callback(...) ~= false then
+				return event.Call(nice, ...)
+			end
+		--end
 		end)
 	end
 
@@ -266,11 +272,13 @@ function window.Open(...)
 	ADD_EVENT("WindowKeyInput", key_trigger)
 	ADD_EVENT("WindowMouseInput", mouse_trigger)
 	ADD_EVENT("WindowKeyInputRepeat")
-
-	local mouse_trigger = function(key, press) mouse_trigger(key, press) event.Call("MouseInput", key, press) end
+	local mouse_trigger = function(key, press)
+		mouse_trigger(key, press)
+		event.Call("MouseInput", key, press)
+	end
 
 	ADD_EVENT("WindowMouseScroll", function(dir)
-		local x,y = dir:Unpack()
+		local x, y = dir:Unpack()
 
 		if y ~= 0 then
 			for _ = 1, math.abs(y) do
@@ -298,6 +306,7 @@ function window.Open(...)
 					mouse_trigger("mwheel_right", true)
 				end
 			end
+
 			event.Delay(function()
 				if x > 0 then
 					mouse_trigger("mwheel_left", false)
@@ -309,7 +318,6 @@ function window.Open(...)
 	end)
 
 	event.Call("WindowOpened", wnd)
-
 	return wnd
 end
 
@@ -318,9 +326,7 @@ function window.IsOpen()
 end
 
 function window.Close()
-	if window.IsOpen() then
-		render.GetWindow():Remove()
-	end
+	if window.IsOpen() then render.GetWindow():Remove() end
 end
 
 return window

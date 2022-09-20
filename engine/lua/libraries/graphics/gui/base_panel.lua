@@ -1,13 +1,10 @@
 local gui = ... or _G.gui
-
 local META = prototype.CreateTemplate("panel", "base")
-
 runfile("lua/libraries/prototype/parenting_template.lua", META)
-
 META:GetSet("MousePosition", Vec2(0, 0))
 META:IsSet("Visible", true)
 META:GetSet("Clipping", false)
-META:GetSet("Color", Color(1,1,1,1))
+META:GetSet("Color", Color(1, 1, 1, 1))
 META:GetSet("Cursor", "arrow")
 META:GetSet("TrapChildren", false)
 META:GetSet("Texture", render.GetWhiteTexture())
@@ -19,7 +16,7 @@ META:GetSet("LayoutWhenInvisible", true)
 META:GetSet("VisibilityPanel", NULL)
 META:GetSet("NoDraw", false)
 META:GetSet("GreyedOut", false)
-META:GetSet("UpdateRate", 1/33)
+META:GetSet("UpdateRate", 1 / 33)
 META:GetSet("MouseZPos", nil)
 
 function META:CreatePanel(name, store_in_self)
@@ -27,7 +24,9 @@ function META:CreatePanel(name, store_in_self)
 end
 
 function META:__tostring2()
-	return ("[%s %s %s %s][%s]"):format(self.Position.x, self.Position.y, self.Size.x, self.Size.y, self.layout_count)
+	return (
+		"[%s %s %s %s][%s]"
+	):format(self.Position.x, self.Position.y, self.Size.x, self.Size.y, self.layout_count)
 end
 
 function META:IsWorld()
@@ -35,84 +34,73 @@ function META:IsWorld()
 end
 
 function META:GetSizeOfChildren()
-
 	if #self.Children == 0 then return self:GetSize() end
 
-	if self.last_children_size then
-		return self.last_children_size:Copy()
-	end
+	if self.last_children_size then return self.last_children_size:Copy() end
 
 	self:DoLayout()
-
 	local total_size = Vec2()
+
 	for _, v in ipairs(self:GetVisibleChildren()) do
 		local pos = v:GetPosition() + v:GetSize() + v.Padding:GetPosition()
 
-		if pos.x > total_size.x then
-			total_size.x = pos.x
-		end
+		if pos.x > total_size.x then total_size.x = pos.x end
 
-		if pos.y > total_size.y then
-			total_size.y = pos.y
-		end
+		if pos.y > total_size.y then total_size.y = pos.y end
 	end
-	self.last_children_size = total_size
 
+	self.last_children_size = total_size
 	return total_size
 end
 
 function META:SizeToChildrenHeight()
 	if #self.Children == 0 then return end
+
 	self.last_children_size = nil
 	self.real_size = self.Size:Copy()
 	self.Size.y = math.huge
 	self.Size.y = self:GetSizeOfChildren().y
-
 	local min_pos = self.Size.y
 	local max_pos = 0
 
-	for i,v in ipairs(self:GetVisibleChildren()) do
+	for i, v in ipairs(self:GetVisibleChildren()) do
 		min_pos = math.min(min_pos, v.Position.y - v.Padding.y - v:GetParentMargin().y)
 	end
 
-	for i,v in ipairs(self:GetVisibleChildren()) do
+	for i, v in ipairs(self:GetVisibleChildren()) do
 		local pos_y = v.Position.y - min_pos
-
 		max_pos = math.max(max_pos, pos_y + v.Size.y + v.Padding.h)
 	end
 
 	self.Size.y = max_pos + self.Margin:GetSize().y
 	self.LayoutSize = self.Size:Copy()
 	--self:SetY(0)
-
 	self.laid_out_y = true
 	self.real_size = nil
 end
 
 function META:SizeToChildrenWidth()
 	if #self.Children == 0 then return end
+
 	self.last_children_size = nil
 	self.real_size = self.Size:Copy()
 	self.Size.x = math.huge
 	self.Size.x = self:GetSizeOfChildren().x
-
 	local min_pos = self.Size.x
 	local max_pos = 0
 
-	for i,v in ipairs(self:GetVisibleChildren()) do
+	for i, v in ipairs(self:GetVisibleChildren()) do
 		min_pos = math.min(min_pos, v.Position.x - v.Padding.x - v:GetParentMargin().x)
 	end
 
-	for i,v in ipairs(self:GetVisibleChildren()) do
+	for i, v in ipairs(self:GetVisibleChildren()) do
 		local pos_x = v.Position.x - min_pos
-
 		max_pos = math.max(max_pos, pos_x + v.Size.x + v.Padding.w)
 	end
 
 	self.Size.x = max_pos + self.Margin:GetSize().x
 	self.LayoutSize = self.Size:Copy()
 	--self:SetX(0)
-
 	self.laid_out_x = true
 	self.real_size = nil
 end
@@ -124,28 +112,24 @@ function META:SizeToChildren()
 	self.real_size = self.Size:Copy()
 	self.Size = Vec2() + math.huge
 	self.Size = self:GetSizeOfChildren()
-
 	local min_pos = self.Size:Copy()
 	local max_pos = Vec2()
 
-	for i,v in ipairs(self:GetVisibleChildren()) do
+	for i, v in ipairs(self:GetVisibleChildren()) do
 		min_pos.x = math.min(min_pos.x, v.Position.x - v.Padding.x - self.Margin.x)
 		min_pos.y = math.min(min_pos.y, v.Position.y - v.Padding.y - self.Margin.y)
 	end
 
-	for i,v in ipairs(self:GetVisibleChildren()) do
+	for i, v in ipairs(self:GetVisibleChildren()) do
 		local pos_x = v.Position.x - min_pos.x
 		local pos_y = v.Position.y - min_pos.y
-
 		max_pos.x = math.max(max_pos.x, pos_x + v.Size.x + v.Padding.w)
 		max_pos.y = math.max(max_pos.y, pos_y + v.Size.y + v.Padding.h)
 	end
 
 	self.Size = max_pos + self.Margin:GetSize()
 	self.LayoutSize = self.Size:Copy()
-
 	--self:SetPosition(Vec2())
-
 	self.laid_out_x = true
 	self.laid_out_y = true
 	self.real_size = nil
@@ -155,9 +139,7 @@ function META:GetVisibleChildren()
 	local tbl = {}
 
 	for _, v in ipairs(self:GetChildren()) do
-		if v.Visible then
-			table.insert(tbl, v)
-		end
+		if v.Visible then table.insert(tbl, v) end
 	end
 
 	return tbl
@@ -173,6 +155,7 @@ function META:IsInsideParent()
 	if not override:IsValid() then return true end
 
 	if override.VisibilityPanel:IsValid() then
+
 	--	override = override.VisibilityPanel
 	end
 
@@ -218,30 +201,27 @@ do -- focus
 			self.ChildOrder = pos
 
 			if self:HasParent() then
-				table.sort(self.Parent.Children, function(a, b) return a.ChildOrder > b.ChildOrder end)
+				table.sort(self.Parent.Children, function(a, b)
+					return a.ChildOrder > b.ChildOrder
+				end)
 			end
 		end
 	end
 
 	do -- focus
 		function META:RequestFocus()
-			if self.RedirectFocus:IsValid() then
-				self = self.RedirectFocus
-			end
+			if self.RedirectFocus:IsValid() then self = self.RedirectFocus end
 
 			if gui.focus_panel:IsValid() and gui.focus_panel ~= self then
 				gui.focus_panel:OnUnfocus()
 			end
 
 			self:OnFocus()
-
 			gui.focus_panel = self
 		end
 
 		function META:Unfocus()
-			if self.RedirectFocus:IsValid() then
-				self = self.RedirectFocus
-			end
+			if self.RedirectFocus:IsValid() then self = self.RedirectFocus end
 
 			if gui.focus_panel:IsValid() and gui.focus_panel == self then
 				self:OnUnfocus()
@@ -250,9 +230,7 @@ do -- focus
 
 			self.popup = nil
 
-			if gui.popup_panel == self then
-				gui.popup_panel = NULL
-			end
+			if gui.popup_panel == self then gui.popup_panel = NULL end
 		end
 
 		function META:IsFocused()
@@ -268,12 +246,10 @@ end
 
 do -- call on hide
 	function META:IsVisible()
-		if not self.Visible then
-			return false
-		end
-		if self.visible == false then
-			return false
-		end
+		if not self.Visible then return false end
+
+		if self.visible == false then return false end
+
 		return self.Visible
 	end
 
@@ -281,21 +257,20 @@ do -- call on hide
 		self.call_on_visible = self.call_on_visible or {}
 
 		for _, v in pairs(self.call_on_visible) do
-			if v(bool) == false then
-				return false
-			end
+			if v(bool) == false then return false end
 		end
 
 		self.Visible = not not bool -- nil would make self.Visible be the default which is true
-
 		if bool then
 			self:OnShow()
+
 			if self.visible_was_focused then
 				self:RequestFocus()
 				self.visible_was_focused = nil
 			end
 		else
 			self:OnHide()
+
 			if self:IsFocused() then
 				self:Unfocus()
 				self.visible_was_focused = true
@@ -313,28 +288,23 @@ do -- call on hide
 
 	function META:CallOnVisibilityChanged(callback, id)
 		self.call_on_visible = self.call_on_visible or {}
-
 		id = id or callback
-
 		self.call_on_visible[id] = callback
 	end
 end
 
 do -- drawing
-
 	function META:PreDraw(from_cache)
-		if self.GreyedOut then render2d.PushHSV(1,0,0.5) end
+		if self.GreyedOut then render2d.PushHSV(1, 0, 0.5) end
+
 		render2d.PushAlphaMultiplier(self.DrawAlpha)
 
 		if self.ThreeDee then render2d.Start3D2D() end
 
 		local no_draw = self:HasParent() and self.Parent.draw_no_draw
-
 		self:CalcResizing()
-
 		self:InvalidateMatrix()
 		self:RebuildMatrix()
-
 		render2d.SetWorldMatrix(self.Matrix)
 
 		if not from_cache then
@@ -352,7 +322,6 @@ do -- drawing
 			no_draw = true
 		end
 
-
 		do
 			local time = system.GetElapsedTime()
 			self.next_update = self.next_update or time
@@ -368,7 +337,6 @@ do -- drawing
 				self:OnPreDraw()
 				self:OnDraw()
 				self:OnPostDraw()
-
 				self:DrawDebug()
 
 				if gui.keyboard_selected_panel == self then
@@ -390,7 +358,7 @@ do -- drawing
 		if not no_draw and self.Clipping then
 			--render2d.PushClipFunction(self.DrawClippingStencil, self)
 			render2d.PushStencilRect(0, 0, self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
-			--render2d.EnableClipRect(0, 0, self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
+		--render2d.EnableClipRect(0, 0, self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
 		end
 
 		if from_cache then
@@ -405,7 +373,7 @@ do -- drawing
 		local tex = render2d.GetTexture()
 		render2d.SetTexture()
 		--render2d.SetTexture(self.Texture)
-		render2d.PushColor(1,1,1,0.1)
+		render2d.PushColor(1, 1, 1, 0.1)
 		self:DrawRect()
 		render2d.PopColor()
 		render2d.SetTexture(tex)
@@ -413,13 +381,19 @@ do -- drawing
 
 	function META:Draw(from_cache)
 		if not self.Visible then return end
+
 		if self.SetupShadows then self:SetupShadows() end
+
 		self:PreDraw(from_cache)
+
 		if self.DrawShadows then self:DrawShadows() end
-			for _, v in ipairs(self:GetChildren()) do
-				if self.DrawChild then self:DrawChild(v) end
-				v:Draw(from_cache)
-			end
+
+		for _, v in ipairs(self:GetChildren()) do
+			if self.DrawChild then self:DrawChild(v) end
+
+			v:Draw(from_cache)
+		end
+
 		self:PostDraw(from_cache)
 	end
 
@@ -427,57 +401,58 @@ do -- drawing
 		if not self.draw_no_draw and self.Clipping then
 			--render2d.PopClipFunction()
 			render2d.PopStencilRect()
-			--render2d.DisableClipRect()
-			--render.PopViewport()
+		--render2d.DisableClipRect()
+		--render.PopViewport()
 		end
 
 		if self.ThreeDee then render2d.End3D2D() end
 
 		if self.GreyedOut then render2d.PopHSV() end
+
 		render2d.PopAlphaMultiplier()
 	end
 
 	function META:DrawDebug()
-
 		if self.debug_mp then
-			local x,y = self.Margin.x, self.Margin.y
-			local w,h = self.Size.x - self.Margin.w - self.Margin.x, self.Size.y - self.Margin.h - self.Margin.y
-
-			gfx.DrawOutlinedRect(x,y,w,h, 1, 1,0,0,1)
-			gfx.DrawOutlinedRect(x,y,w,h, self.Margin, 1,0,0,0.25)
-
-			local x,y = -self.Padding.x, -self.Padding.y
-			local w,h = self.Size.x + self.Padding.w + self.Padding.x, self.Size.y + self.Padding.h + self.Padding.y
-
-			gfx.DrawOutlinedRect(0,0,self.Size.x,self.Size.y, 1, 0.25,0.5,1, 1)
-			gfx.DrawOutlinedRect(x,y,w,h, 1, 0.25,0.5,1, 1)
-			gfx.DrawOutlinedRect(x,y,w,h, -self.Padding, 0.25,0.5,1, 0.25)
+			local x, y = self.Margin.x, self.Margin.y
+			local w, h = self.Size.x - self.Margin.w - self.Margin.x, self.Size.y - self.Margin.h - self.Margin.y
+			gfx.DrawOutlinedRect(x, y, w, h, 1, 1, 0, 0, 1)
+			gfx.DrawOutlinedRect(x, y, w, h, self.Margin, 1, 0, 0, 0.25)
+			local x, y = -self.Padding.x, -self.Padding.y
+			local w, h = self.Size.x + self.Padding.w + self.Padding.x,
+			self.Size.y + self.Padding.h + self.Padding.y
+			gfx.DrawOutlinedRect(0, 0, self.Size.x, self.Size.y, 1, 0.25, 0.5, 1, 1)
+			gfx.DrawOutlinedRect(x, y, w, h, 1, 0.25, 0.5, 1, 1)
+			gfx.DrawOutlinedRect(x, y, w, h, -self.Padding, 0.25, 0.5, 1, 0.25)
 		end
 
 		if self.debug_flash and self.debug_flash > system.GetElapsedTime() then
 			render2d.SetTexture()
-			render2d.SetColor(1,0,0,(system.GetElapsedTime()*4)%1 > 0.5 and 0.5 or 0)
+			render2d.SetColor(1, 0, 0, (system.GetElapsedTime() * 4) % 1 > 0.5 and 0.5 or 0)
 			render2d.DrawRect(0, 0, self.Size.x, self.Size.y)
 		end
 
 		if gui.debug then
-
 			if self.layout_count then
 				gfx.SetFont()
 				render2d.SetColor(1, 1, 1, 1)
 				gfx.DrawText("layout count " .. self.layout_count, 0, 0)
-				--render2d.SetTexture()
-				--render2d.SetColor(1,0,0,1)
-				--render2d.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
+			--render2d.SetTexture()
+			--render2d.SetColor(1,0,0,1)
+			--render2d.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
 			end
 
 			if self.updated_layout then
 				render2d.SetAlphaMultiplier(1)
 				render.SetPresetBlendMode("alpha")
-				local c = ColorHSV(math.clamp(-(self.updated_layout/10)+1,0,1), self.updated_layout/10, self.updated_layout/10)
-				render2d.SetColor(c.r, c.g, c.b, self.updated_layout/10)
+				local c = ColorHSV(
+					math.clamp(-(self.updated_layout / 10) + 1, 0, 1),
+					self.updated_layout / 10,
+					self.updated_layout / 10
+				)
+				render2d.SetColor(c.r, c.g, c.b, self.updated_layout / 10)
 				render2d.SetTexture()
-				render2d.DrawRect(0,0, self.Size.x, self.Size.y)
+				render2d.DrawRect(0, 0, self.Size.x, self.Size.y)
 				self.updated_layout = nil
 				render.SetPresetBlendMode("alpha")
 			else
@@ -495,21 +470,37 @@ do -- drawing
 	function META:DrawRect(x, y, w, h)
 		if self.NinePatch then
 			gfx.DrawNinePatch(
-				x or 0, y or 0,
-				w or (self.Size.x + self.DrawSizeOffset.x), h or (self.Size.y + self.DrawSizeOffset.y),
-				self.NinePatchRect.w, self.NinePatchRect.h,
+				x or 0,
+				y or 0,
+				w or (self.Size.x + self.DrawSizeOffset.x),
+				h or (self.Size.y + self.DrawSizeOffset.y),
+				self.NinePatchRect.w,
+				self.NinePatchRect.h,
 				self.NinePatchCornerSize,
-				self.NinePatchRect.x, self.NinePatchRect.y,
+				self.NinePatchRect.x,
+				self.NinePatchRect.y,
 				self:GetSkin().pixel_scale
 			)
 		else
 			if not self.NinePatchRect:IsZero() then
-				render2d.SetRectUV(self.NinePatchRect.x, self.NinePatchRect.y, self.NinePatchRect.w, self.NinePatchRect.h, self.Texture.Size.x, self.Texture.Size.y)
+				render2d.SetRectUV(
+					self.NinePatchRect.x,
+					self.NinePatchRect.y,
+					self.NinePatchRect.w,
+					self.NinePatchRect.h,
+					self.Texture.Size.x,
+					self.Texture.Size.y
+				)
 			end
-			render2d.DrawRect(x or 0, y or 0, w or (self.Size.x + self.DrawSizeOffset.x), h or (self.Size.y + self.DrawSizeOffset.y))
-			if not self.NinePatchRect:IsZero() then
-				render2d.SetRectUV()
-			end
+
+			render2d.DrawRect(
+				x or 0,
+				y or 0,
+				w or (self.Size.x + self.DrawSizeOffset.x),
+				h or (self.Size.y + self.DrawSizeOffset.y)
+			)
+
+			if not self.NinePatchRect:IsZero() then render2d.SetRectUV() end
 		end
 	end
 
@@ -527,11 +518,10 @@ do -- orientation
 	META:GetSet("Margin", Rect(0, 0, 0, 0))
 	META:GetSet("Angle", 0)
 	META:GetSet("Order", 0)
-
 	META:GetSet("ThreeDee", false)
-	META:GetSet("ThreeDeePosition", Vec3(0,0,0))
-	META:GetSet("ThreeDeeAngles", Ang3(0,0,0))
-	META:GetSet("ThreeDeeScale", Vec3(1,1,1))
+	META:GetSet("ThreeDeePosition", Vec3(0, 0, 0))
+	META:GetSet("ThreeDeeAngles", Ang3(0, 0, 0))
+	META:GetSet("ThreeDeeScale", Vec3(1, 1, 1))
 
 	do
 		META:GetSet("Matrix", Matrix44())
@@ -542,20 +532,21 @@ do -- orientation
 					v.rebuild_matrix = true
 				end
 			end
+
 			self.rebuild_matrix = true
 		end
 
 		function META:RebuildMatrix(lol)
 			if self:IsWorld() then return end
+
 			if self.rebuild_matrix then
 				self.rebuild_matrix = false
-
 				self.Matrix:Identity()
-
 				self:OnPreMatrixBuild()
 
 				if self.ThreeDee then
 					local pos, ang, scale = self.ThreeDeePosition, self.ThreeDeeAngles, self.ThreeDeeScale
+
 					if pos then
 						self.Matrix:Translate(-pos.y, -pos.x, -pos.z) -- Vec3(left/right, back/forth, down/up)
 					end
@@ -567,8 +558,8 @@ do -- orientation
 					end
 
 					if scale then
-						local w,h = render2d.GetSize()
-						local scale2d = (w/h) / 100
+						local w, h = render2d.GetSize()
+						local scale2d = (w / h) / 100
 						self.Matrix:Scale(scale.x * scale2d, scale.y * scale2d, scale.z)
 					end
 				end
@@ -582,11 +573,10 @@ do -- orientation
 				self.Matrix:Translate(math.ceil(self.Position.x), math.ceil(self.Position.y), 0)
 
 				if self.Angle ~= 0 then
-					local w = (self.Size.x)/2
-					local h = (self.Size.y)/2
-
+					local w = (self.Size.x) / 2
+					local h = (self.Size.y) / 2
 					self.Matrix:Translate(w, h, 0)
-						self.Matrix:Rotate(self.Angle, 0, 0, 1)
+					self.Matrix:Rotate(self.Angle, 0, 0, 1)
 					self.Matrix:Translate(-w, -h, 0)
 				end
 
@@ -595,38 +585,31 @@ do -- orientation
 				end
 
 				if self.DrawScaleOffset.x ~= 1 or self.DrawScaleOffset.y ~= 1 then
-					local w,h
-					if self.DrawScaleCenter then
-						w = (self.Size.x)/2
-						h = (self.Size.y)/2
+					local w, h
 
+					if self.DrawScaleCenter then
+						w = (self.Size.x) / 2
+						h = (self.Size.y) / 2
 						self.Matrix:Translate(w, h, 0)
 					end
 
 					self.Matrix:Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y, 1)
 
-					if w then
-						self.Matrix:Translate(-w, -h, 0)
-					end
+					if w then self.Matrix:Translate(-w, -h, 0) end
 				end
 
 				if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
-					local w = (self.Size.x + self.DrawSizeOffset.x)/2
-					local h = (self.Size.y + self.DrawSizeOffset.y)/2
-
+					local w = (self.Size.x + self.DrawSizeOffset.x) / 2
+					local h = (self.Size.y + self.DrawSizeOffset.y) / 2
 					self.Matrix:Translate(w, h, 0)
-
 					self.Matrix:Rotate(self.DrawAngleOffset.x, 0, 0, 1)
 					self.Matrix:Rotate(self.DrawAngleOffset.y, 0, 1, 0)
 					self.Matrix:Rotate(self.DrawAngleOffset.z, 1, 0, 0)
-
 					self.Matrix:Translate(-w, -h, 0)
 				end
 
 				self.Matrix:Translate(math.ceil(-self.Parent.RealScroll.x), math.ceil(-self.Parent.RealScroll.y), 0)
-
 				self:OnPostMatrixBuild()
-
 				self.rebuild_matrix = false
 			end
 		end
@@ -642,7 +625,6 @@ do -- orientation
 		end
 
 		self:OnPositionChanged(pos)
-
 		self.Position = pos
 	end
 
@@ -650,7 +632,6 @@ do -- orientation
 		if self.StyleSize:IsZero() then
 			size.x = math.max(size.x, self.MinimumSize.x)
 			size.y = math.max(size.y, self.MinimumSize.y)
-
 			self.Size = size
 
 			if self.Size ~= self.last_size then
@@ -671,13 +652,9 @@ do -- orientation
 	end
 
 	function META:GetParentMargin()
-		if not self.ObeyMargin then
-			return Rect(0,0,0,0)
-		end
+		if not self.ObeyMargin then return Rect(0, 0, 0, 0) end
 
-		if self:IsWorld() then
-			return self:GetMargin()
-		end
+		if self:IsWorld() then return self:GetMargin() end
 
 		return self.Parent:GetMargin()
 	end
@@ -702,28 +679,27 @@ do -- orientation
 
 	function META:LocalToWorld(lpos)
 		local x, y = self.Matrix:GetTranslation()
-
 		return Vec2(x + lpos.x, y + lpos.y)
 	end
 
-	local sorter = function(a,b)
+	local sorter = function(a, b)
 		return a.Order > b.Order
 	end
 
 	function META:SetOrder(pos)
 		self.Order = pos
-
 		local parent = self:GetParent()
 
 		if parent:IsValid() then
 			table.sort(parent:GetChildren(), sorter)
-			--gui.unrolled_draw = nil
+		--gui.unrolled_draw = nil
 		end
 	end
 
 	function META:SetX(x)
 		self.Position.x = x
 	end
+
 	function META:GetX()
 		return self.Position.x
 	end
@@ -731,6 +707,7 @@ do -- orientation
 	function META:SetY(y)
 		self.Position.y = y
 	end
+
 	function META:GetY()
 		return self.Position.y
 	end
@@ -739,6 +716,7 @@ do -- orientation
 		self.Size.x = w
 		self:Layout()
 	end
+
 	function META:GetWidth()
 		return self.Size.x
 	end
@@ -747,13 +725,13 @@ do -- orientation
 		self.Size.y = h
 		self:Layout()
 	end
+
 	function META:GetHeight()
 		return self.Size.y
 	end
 
 	META.SetW = META.SetWidth
 	META.GetW = META.GetWidth
-
 	META.SetH = META.SetHeight
 	META.GetH = META.GetHeight
 
@@ -766,7 +744,7 @@ do -- orientation
 		return Rect(self.Position.x, self.Position.y, self.Size.x, self.Size.y)
 	end
 
-	function META:SetRectFast(x,y,w,h)
+	function META:SetRectFast(x, y, w, h)
 		self.Position.x = x
 		self.Position.y = y
 		self.Size.x = w
@@ -779,16 +757,17 @@ do -- orientation
 
 	function META:GetWorldRect()
 		local rect = Rect(self.Position.x, self.Position.y, self.Size.x, self.Size.y)
-
 		-- convert to world
 		rect.w = rect.x + rect.w
 		rect.h = rect.y + rect.h
-
 		return rect
 	end
 
 	function META:GetWorldRectFast()
-		return self.Position.x, self.Position.y, self.Position.x + self.Size.x, self.Position.y + self.Size.y
+		return self.Position.x,
+		self.Position.y,
+		self.Position.x + self.Size.x,
+		self.Position.y + self.Size.y
 	end
 
 	function META:GetWorldRectFast2()
@@ -828,8 +807,11 @@ do -- cached rendering
 			self.cache_dirty = true
 
 			if
-				(not self.cache_fb or self.cache_texture:GetSize() ~= self.Size) and
-
+				(
+					not self.cache_fb or
+					self.cache_texture:GetSize() ~= self.Size
+				)
+				and
 				self.Size.x > 1 and
 				self.Size.y > 1 and
 				self.Size.x < 4096 and
@@ -838,17 +820,15 @@ do -- cached rendering
 				local fb = render.CreateFrameBuffer()
 				fb:SetTexture(1, render.CreateBlankTexture(self.Size))
 				fb:SetTexture("depth_stencil", {internal_format = "depth_stencil", size = self.Size})
-
 				self.cache_fb = fb
 				self.cache_texture = fb:GetTexture(1)
 			end
 		else
 			for _, v in ipairs(self:GetParentList()) do
-				if v:IsValid() and v.CachedRendering then
-					v.cache_dirty = true
-				end
+				if v:IsValid() and v.CachedRendering then v.cache_dirty = true end
 			end
 		end
+
 		self:InvalidateMatrix()
 	end
 
@@ -868,28 +848,20 @@ do -- cached rendering
 		if self:IsCacheDirty() then
 			self.cache_fb:Begin()
 			--self.cache_fb:Clear()
-
-			local x,y = self.Matrix:GetTranslation()
+			local x, y = self.Matrix:GetTranslation()
 			self.Matrix:Translate(-x, -y, 0)
 			render2d.PushMatrix(nil, true)
 
-			if self:IsDragging() or self:IsInsideParent() then
-				self:OnDraw()
-			end
+			if self:IsDragging() or self:IsInsideParent() then self:OnDraw() end
 
 			--render2d.Translate(-self.Scroll.x, -self.Scroll.y)
-
 			for _, v in ipairs(self:GetChildren()) do
-				if v.Visible then
-					v:Draw(true)
-				end
+				if v.Visible then v:Draw(true) end
 			end
 
 			render2d.PopMatrix()
-
 			self.Matrix:Translate(x, y, 0)
 			self.cache_fb:End()
-
 			self.cache_dirty = false
 			self.updated_cache = true
 		end
@@ -900,19 +872,16 @@ do -- scrolling
 	META:GetSet("Scrollable", false)
 	META:GetSet("Scroll", Vec2(0, 0))
 	META:GetSet("ScrollFraction", Vec2(0, 0))
-
-
 	META:GetSet("SmoothScroll", 0.25)
 	META.RealScroll = Vec2(0, 0)
 
 	function META:SetScroll(vec)
 		self:Layout(true)
-
 		local size = self:GetSizeOfChildren() - self.Size
-
 		self.Scroll = vec:GetClamped(Vec2(0), size)
 
 		if self.Scroll.x < 0 then self.Scroll.x = 0 end
+
 		if self.Scroll.y < 0 then self.Scroll.y = 0 end
 
 		if self.SmoothScroll == 0 then
@@ -924,20 +893,27 @@ do -- scrolling
 
 	function META:SetScrollFraction(frac)
 		self:Layout(true)
-
 		local size = self:GetSizeOfChildren()
+
 		if self.Size.x > size.x then size.x = self.Size.x end
+
 		if self.Size.y > size.y then size.y = self.Size.y end
 
 		self.Scroll = frac * size
 
 		if self.Scroll.x < 0 then self.Scroll.x = 0 end
+
 		if self.Scroll.y < 0 then self.Scroll.y = 0 end
 
-		if self.Scroll.x + self.Size.x > size.x then self.Scroll.x = size.x - self.Size.x end
-		if self.Scroll.y + self.Size.y > size.y then self.Scroll.y = size.y - self.Size.y end
-		--if self.Scroll.y - size.y > 0 then self.Scroll.y = size.y - self.Size.y end
+		if self.Scroll.x + self.Size.x > size.x then
+			self.Scroll.x = size.x - self.Size.x
+		end
 
+		if self.Scroll.y + self.Size.y > size.y then
+			self.Scroll.y = size.y - self.Size.y
+		end
+
+		--if self.Scroll.y - size.y > 0 then self.Scroll.y = size.y - self.Size.y end
 		self.ScrollFraction = frac
 
 		if self.SmoothScroll == 0 then
@@ -958,7 +934,6 @@ do -- scrolling
 	function META:StopScrolling()
 		self.scroll_button = nil
 		self.scroll_drag_pos = nil
-
 		self.scroll_time = nil
 		self.scroll_stop = nil
 		self.scroll_start = nil
@@ -970,24 +945,23 @@ do -- scrolling
 	end
 
 	function META:CalcScrolling()
-
 		if self.SmoothScroll ~= 0 then
 			self.smooth_scroll_pos = self.smooth_scroll_pos or Vec2()
-
 			local smooth_scrolling = self.smooth_scroll_pos - self.Scroll
 			local len = smooth_scrolling:GetLength()
-
 			local speed = 10
 
 			if len > 2 then
 				local dist = smooth_scrolling:GetLength()
-				self.smooth_scroll_pos = self.smooth_scroll_pos - ((self.smooth_scroll_pos - self.Scroll) * system.GetFrameTime() * speed)
+				self.smooth_scroll_pos = self.smooth_scroll_pos - (
+						(
+							self.smooth_scroll_pos - self.Scroll
+						) * system.GetFrameTime() * speed
+					)
 				self.smooth_scroll_pos:Ceil()
 				self.RealScroll = self.smooth_scroll_pos
-
 				local size = self:GetSizeOfChildren() - self.Size
 				self:OnScroll(self.smooth_scroll_pos / size)
-
 				self:MarkCacheDirty()
 			else
 				self.RealScroll = self.Scroll:Copy()
@@ -997,7 +971,10 @@ do -- scrolling
 		if self:IsScrolling() then
 			local size = self:GetSizeOfChildren()
 
-			if size.x < self.Size.x and size.y < self.Size.y then self:StopScrolling() return end
+			if size.x < self.Size.x and size.y < self.Size.y then
+				self:StopScrolling()
+				return
+			end
 
 			if input.IsMouseDown(self.scroll_button) then
 				self:SetScroll(self.scroll_drag_pos - self:GetMousePosition())
@@ -1026,7 +1003,6 @@ do -- drag drop
 		self.drag_original_pos = nil
 		self.drag_drop_pos = nil
 		self.drag_panel = nil
-
 		self.drag_stop_button = nil
 		self.drag_world_pos = nil
 		self.drag_local_pos = nil
@@ -1049,71 +1025,60 @@ do -- drag drop
 		local drag_pos = Vec2(render2d.ScreenToWorld(self.drag_world_pos:Unpack()))
 		local pos = self.drag_panel_start_pos + self:GetMousePosition() - drag_pos
 
-		if not self.dragged_out_of_min_distance and pos:Distance(self.drag_panel_start_pos) < self.DragMinDistance then
+		if
+			not self.dragged_out_of_min_distance and
+			pos:Distance(self.drag_panel_start_pos) < self.DragMinDistance
+		then
 			return
 		else
 			self.dragged_out_of_min_distance = true
 		end
 
 		self:SetPosition(pos)
-
 		local panel = gui.GetHoveringPanel(nil, self)
-
 		local drop_pos = panel:GetMousePosition()
 
 		if self.drag_last_hover ~= panel then
-
 			if self.drag_last_hover then
 				self.drag_last_hover:OnDraggedChildExit(self, drop_pos)
 			end
 
 			panel:OnDraggedChildEnter(self, drop_pos)
-
 			self.drag_last_hover = panel
 		end
 
-		if self.SnapWhileDragging then
-			self:SnapToClosestPanel()
-		end
+		if self.SnapWhileDragging then self:SnapToClosestPanel() end
 
 		panel:OnPanelHover(self, drop_pos)
-
 		self.drag_drop_pos = drop_pos
 		self.drag_panel = panel
-
 		self:MarkCacheDirty()
 	end
 
-	function META:OnDraggedChildEnter(child, drop_pos)
+	function META:OnDraggedChildEnter(child, drop_pos) end
 
-	end
+	function META:OnDraggedChildExit(child, drop_pos) end
 
-	function META:OnDraggedChildExit(child, drop_pos)
+	function META:OnParentLand(parent) end
 
-	end
+	function META:OnPanelHover(panel, drop_pos) end
 
-	function META:OnParentLand(parent)
-
-	end
-
-	function META:OnPanelHover(panel, drop_pos)
-
-	end
-
-	function META:OnChildDrop(child, pos)
-
-	end
+	function META:OnChildDrop(child, pos) end
 end
 
 do -- magnet snap
 	META:GetSet("SnapWhileDragging", false)
-
 	local snapped = false
 
 	local function check1(pos, size, parent, margin, pos2, axis1, axis2)
 		if
-			pos[axis1] < pos2[axis1] + (parent.Padding[axis1] * 1.5) and
-			pos[axis1] > pos2[axis1] + (parent.Padding[axis1] / 4)
+			pos[axis1] < pos2[axis1] + (
+				parent.Padding[axis1] * 1.5
+			)
+			and
+			pos[axis1] > pos2[axis1] + (
+				parent.Padding[axis1] / 4
+			)
 		then
 			pos[axis1] = pos2[axis1] + parent.Padding[axis1]
 			snapped = true
@@ -1131,8 +1096,13 @@ do -- magnet snap
 				pos[axis1] = pos2[axis1] + -size[axis2]
 				snapped = true
 			elseif
-				pos[axis1] + size[axis2] > pos2[axis1] + (-margin[axis1] * 1.5) and
-				pos[axis1] + size[axis2] < pos2[axis1] + (margin[axis1] / 4)
+				pos[axis1] + size[axis2] > pos2[axis1] + (
+					-margin[axis1] * 1.5
+				)
+				and
+				pos[axis1] + size[axis2] < pos2[axis1] + (
+					margin[axis1] / 4
+				)
 			then
 				pos[axis1] = pos2[axis1] + -size[axis2] - margin[axis1]
 				snapped = true
@@ -1142,8 +1112,13 @@ do -- magnet snap
 
 	local function check2(pos, size, parent, margin, pos2, axis1, axis2)
 		if
-			pos[axis1] + size[axis2] > pos2[axis1] + parent.Size[axis2] - (parent.Padding[axis1] * 1.5) and
-			pos[axis1] + size[axis2] < pos2[axis1] + parent.Size[axis2] - (parent.Padding[axis1] / 4)
+			pos[axis1] + size[axis2] > pos2[axis1] + parent.Size[axis2] - (
+				parent.Padding[axis1] * 1.5
+			)
+			and
+			pos[axis1] + size[axis2] < pos2[axis1] + parent.Size[axis2] - (
+				parent.Padding[axis1] / 4
+			)
 		then
 			pos[axis1] = pos2[axis1] + parent.Size[axis2] - parent.Padding[axis1] - size[axis2]
 			snapped = true
@@ -1161,8 +1136,13 @@ do -- magnet snap
 				pos[axis1] = pos2[axis1] + parent.Size[axis2]
 				snapped = true
 			elseif
-				pos[axis1] < pos2[axis1] + parent.Size[axis2] + (margin[axis1] * 1.5) and
-				pos[axis1] > pos2[axis1] + parent.Size[axis2] + (margin[axis1] / 4)
+				pos[axis1] < pos2[axis1] + parent.Size[axis2] + (
+					margin[axis1] * 1.5
+				)
+				and
+				pos[axis1] > pos2[axis1] + parent.Size[axis2] + (
+					margin[axis1] / 4
+				)
 			then
 				pos[axis1] = pos2[axis1] + parent.Size[axis2] + margin[axis1]
 				snapped = true
@@ -1172,16 +1152,12 @@ do -- magnet snap
 
 	function META:SnapPosition(panel)
 		panel = panel or self:GetParent()
-
 		local pos = self:GetWorldPosition():Copy()
 		local pos2 = panel:GetWorldPosition()
 		local size = self:GetSize()
-
 		snapped = false
-
 		check1(pos, size, panel, self:GetParentMargin(), pos2, "x", "w")
 		check1(pos, size, panel, self:GetParentMargin(), pos2, "y", "h")
-
 		check2(pos, size, panel, self:GetParentMargin(), pos2, "x", "w")
 		check2(pos, size, panel, self:GetParentMargin(), pos2, "y", "h")
 
@@ -1196,17 +1172,20 @@ do -- magnet snap
 	function META:SnapToClosestPanel()
 		local tbl = {}
 
-		for k,v in pairs(self:GetParent():GetChildren()) do tbl[k] = v end
+		for k, v in pairs(self:GetParent():GetChildren()) do
+			tbl[k] = v
+		end
 
 		local wpos = self:GetWorldPosition()
 
-		table.sort(tbl, function(a, b) return a:GetWorldPosition():Distance(wpos) < b:GetWorldPosition():Distance(wpos) end)
+		table.sort(tbl, function(a, b)
+			return a:GetWorldPosition():Distance(wpos) < b:GetWorldPosition():Distance(wpos)
+		end)
 
 		for _, v in ipairs(tbl) do
-			if v:IsVisible() and v ~= self then
-				self:SnapPosition(v)
-			end
+			if v:IsVisible() and v ~= self then self:SnapPosition(v) end
 		end
+
 		self:SnapPosition(self:GetParent())
 	end
 end
@@ -1216,10 +1195,9 @@ do -- animations
 	META:GetSet("DrawSizeOffset", Vec2(0, 0))
 	META:GetSet("DrawScaleOffset", Vec2(1, 1))
 	META:GetSet("DrawPositionOffset", Vec2(0, 0))
-	META:GetSet("DrawAngleOffset", Ang3(0,0,0))
-	META:GetSet("DrawColor", Color(0,0,0,0))
+	META:GetSet("DrawAngleOffset", Ang3(0, 0, 0))
+	META:GetSet("DrawColor", Color(0, 0, 0, 0))
 	META:GetSet("DrawAlpha", 1)
-
 	local parent_layout = {
 		DrawSizeOffset = true,
 		DrawScaleOffset = true,
@@ -1234,18 +1212,14 @@ do -- animations
 		local tbl = {}
 
 		for i = 1, #values - 1 do
-			if type(values[i] ) == "number" then
+			if type(values[i]) == "number" then
 				tbl[i] = math.lerp(alpha, values[i], values[i + 1])
 			else
 				tbl[i] = values[i]:GetLerped(alpha, values[i + 1])
 			end
 		end
 
-		if #tbl > 1 then
-			return lerp_values(tbl, alpha)
-		else
-			return tbl[1]
-		end
+		if #tbl > 1 then return lerp_values(tbl, alpha) else return tbl[1] end
 	end
 
 	function META:CalcAnimations()
@@ -1258,23 +1232,20 @@ do -- animations
 						pause = true
 					else
 						table.remove(animation.pausers, i)
+
 						break
 					end
 				end
 			end
 
 			if not pause then
-
 				animation.alpha = animation.alpha + system.GetFrameTime() / animation.time
 				local alpha = animation.alpha
-
 				local val
 				local from = animation.from
 				local to = animation.to
 
-				if animation.pow then
-					alpha = alpha ^ animation.pow
-				end
+				if animation.pow then alpha = alpha ^ animation.pow end
 
 				val = lerp_values(to, alpha)
 
@@ -1298,6 +1269,7 @@ do -- animations
 					end
 
 					table.remove(self.animations, i)
+
 					break
 				else
 					self:MarkCacheDirty()
@@ -1318,7 +1290,6 @@ do -- animations
 		end
 
 		table.clear(self.animations)
-
 		self:UpdateAnimations()
 	end
 
@@ -1336,9 +1307,7 @@ do -- animations
 
 		local from = type(self[var]) == "number" and self[var] or self[var]:Copy()
 
-		if type(to) ~= "table" then
-			to = {to}
-		end
+		if type(to) ~= "table" then to = {to} end
 
 		local pausers = {}
 
@@ -1375,41 +1344,41 @@ do -- animations
 			end
 		end
 
-		if not set then
-			table.insert(to, 1, from)
-		end
+		if not set then table.insert(to, 1, from) end
 
-		table.insert(self.animations, {
-			operator = operator,
-			from = from,
-			to = to,
-			time = time or 0.25,
-			var = var,
-			func = self["Set" .. var],
-			start_time = system.GetElapsedTime(),
-			pow = pow,
-			callback = callback,
-			pausers =  pausers,
-			alpha = 0,
-		})
+		table.insert(
+			self.animations,
+			{
+				operator = operator,
+				from = from,
+				to = to,
+				time = time or 0.25,
+				var = var,
+				func = self["Set" .. var],
+				start_time = system.GetElapsedTime(),
+				pow = pow,
+				callback = callback,
+				pausers = pausers,
+				alpha = 0,
+			}
+		)
 	end
 end
 
 do -- resizing
-	META:GetSet("ResizeBorder", Rect(8,8,8,8))
+	META:GetSet("ResizeBorder", Rect(8, 8, 8, 8))
 	META:GetSet("Resizable", false)
 
 	function META:GetResizeLocation(pos)
 		pos = pos or self:GetMousePosition()
 		local loc = self:GetMouseLocation(pos)
 
-		if loc ~= "center" then
-			return loc
-		end
+		if loc ~= "center" then return loc end
 	end
 
 	function META:StartResizing(pos, button)
 		local loc = self:GetResizeLocation(pos)
+
 		if loc then
 			self.resize_start_pos = self:GetMousePosition():Copy()
 			self.resize_location = loc
@@ -1452,7 +1421,6 @@ do -- resizing
 		end
 
 		if self.resize_start_pos then
-
 			if self.resize_button ~= nil and not input.IsMouseDown(self.resize_button) then
 				self:StopResizing()
 				return
@@ -1486,16 +1454,14 @@ do -- resizing
 			if self:HasParent() and not self.ThreeDee then
 				prev_pos.x = math.max(prev_pos.x, 0)
 				prev_pos.y = math.max(prev_pos.y, 0)
-
 				prev_size.x = math.min(prev_size.x, self.Parent.Size.x - prev_pos.x)
 				prev_size.y = math.min(prev_size.y, self.Parent.Size.y - prev_pos.y)
 			end
 
 			self:SetPosition(prev_pos)
 			self:SetSize(prev_size)
-			if self.LayoutSize then
-				self:SetLayoutSize(prev_size:Copy())
-			end
+
+			if self.LayoutSize then self:SetLayoutSize(prev_size:Copy()) end
 		end
 	end
 end
@@ -1507,26 +1473,26 @@ do -- mouse
 	META:GetSet("AlwaysReceiveMouseInput", false)
 	META:GetSet("SendMouseInputToPanel", NULL)
 	META:GetSet("AllowKeyboardInput", true)
-
 	META:GetSet("MouseHoverTime", 0)
 	META:GetSet("MouseHoverTimeTrigger", 1)
 
 	do
 		gui.active_tooltip = NULL
-
 		META:GetSet("Tooltip", "")
 
 		function META:ShowTooltip()
 			local tooltip = gui.CreatePanel("text_button", nil, "gui_tooltip")
 			tooltip:SetSkin(self:GetSkin())
 			tooltip:SetPosition(self:GetWorldPosition())
-			tooltip:SetMargin(Rect()+4)
+			tooltip:SetMargin(Rect() + 4)
 			tooltip:SetText(self.Tooltip)
 			tooltip:SizeToText()
 			tooltip:SetIgnoreMouse(true)
+
 			self:CallOnRemove(function()
 				gui.RemovePanel(tooltip)
 			end)
+
 			gui.active_tooltip = tooltip
 			self.my_tooltip = tooltip
 		end
@@ -1536,13 +1502,18 @@ do -- mouse
 		end
 	end
 
-
 	function META:BringMouse()
 		window.SetMousePosition(self:GetWorldPosition() + self:GetSize() / 2)
 	end
 
 	function META:IsMouseOver()
-		return self:IsDragging() or self:IsResizing() or self.mouse_over and (gui.hovering_panel == self or self.popup_panel == self)
+		return self:IsDragging() or
+			self:IsResizing() or
+			self.mouse_over and
+			(
+				gui.hovering_panel == self or
+				self.popup_panel == self
+			)
 	end
 
 	function META:GlobalMouseCapture(b)
@@ -1552,55 +1523,64 @@ do -- mouse
 	function META:GetMouseLocation(pos) -- rename this function
 		pos = pos or self:GetMousePosition()
 		local offset = self.ResizeBorder
-
 		local siz = self:GetSize()
 
-		if
-			(pos.y > 0 and pos.y < offset.h) and -- top
-			(pos.x > 0 and pos.x < offset.w) -- left
+		if (pos.y > 0 and pos.y < offset.h) and -- top
+		(pos.x > 0 and pos.x < offset.w) -- left
 		then
 			return "top_left"
 		end
 
 		if
-			(pos.y > 0 and pos.y < offset.h) and -- top
-			(pos.x > siz.x - offset.w and pos.x < siz.x) -- right
+			(
+				pos.y > 0 and
+				pos.y < offset.h
+			)
+			and -- top
+			(
+				pos.x > siz.x - offset.w and
+				pos.x < siz.x
+			) -- right
 		then
 			return "top_right"
 		end
 
-
 		if
-			(pos.y > siz.y - offset.h and pos.y < siz.y) and -- bottom
-			(pos.x > 0 and pos.x < offset.w) -- left
+			(
+				pos.y > siz.y - offset.h and
+				pos.y < siz.y
+			)
+			and -- bottom
+			(
+				pos.x > 0 and
+				pos.x < offset.w
+			) -- left
 		then
 			return "bottom_left"
 		end
 
 		if
-			(pos.y > siz.y - offset.h and pos.y < siz.y) and -- bottom
-			(pos.x > siz.x - offset.w and pos.x < siz.x) --right
+			(
+				pos.y > siz.y - offset.h and
+				pos.y < siz.y
+			)
+			and -- bottom
+			(
+				pos.x > siz.x - offset.w and
+				pos.x < siz.x
+			) --right
 		then
 			return "bottom_right"
 		end
 
 		--
+		if pos.x > 0 and pos.x < offset.w then return "left" end
 
-		if pos.x > 0 and pos.x < offset.w then
-			return "left"
-		end
+		if pos.x > siz.x - offset.w and pos.x < siz.x then return "right" end
 
-		if pos.x > siz.x - offset.w and pos.x < siz.x then
-			return "right"
-		end
+		if pos.y > siz.y - offset.h and pos.y < siz.y then return "bottom" end
 
-		if pos.y > siz.y - offset.h and pos.y < siz.y then
-			return "bottom"
-		end
-
-		if pos.y > 0 and pos.y < offset.h then
-			return "top"
-		end
+		if pos.y > 0 and pos.y < offset.h then return "top" end
 
 		return "center"
 	end
@@ -1608,10 +1588,17 @@ do -- mouse
 	function META:CalcMouse()
 		if
 			self:HasParent() and
-			not self.Parent:IsWorld() and
-			not (self.popup or self.Parent.mouse_over) and
-			not self:IsDragging() and
-			not self:IsScrolling() and
+			not self.Parent:IsWorld()
+			and
+			not (
+				self.popup or
+				self.Parent.mouse_over
+			)
+			and
+			not self:IsDragging()
+			and
+			not self:IsScrolling()
+			and
 			not self.AlwaysCalcMouse and
 			not self.mouse_capture and
 			not self.mouse_hover_triggered and
@@ -1622,22 +1609,25 @@ do -- mouse
 		end
 
 		local x, y = render2d.ScreenToWorld(gui.mouse_pos.x, gui.mouse_pos.y)
-
 		self.MousePosition.x = x
 		self.MousePosition.y = y
-
 		local alpha = 1
 
-		if not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
+		if
+			not self.NinePatch and
+			self.NinePatchRect:IsZero() and
+			self.Texture and
+			self.Texture:IsValid() and
+			self.Texture ~= render.GetWhiteTexture()
+			and
+			not self.Texture:IsLoading()
+		then
 			local x = (x / self.Size.x)
 			local y = (y / self.Size.y)
-
 			x = x * self.Texture:GetSize().x
 			y = y * self.Texture:GetSize().y
-
-			x = math.clamp(math.floor(x), 1, self.Texture:GetSize().x-1)
-			y = math.clamp(math.floor(y), 1, self.Texture:GetSize().y-1)
-
+			x = math.clamp(math.floor(x), 1, self.Texture:GetSize().x - 1)
+			y = math.clamp(math.floor(y), 1, self.Texture:GetSize().y - 1)
 			alpha = select(4, self.Texture:GetRawPixelColor(x, y)) / 255
 		end
 
@@ -1656,6 +1646,7 @@ do -- mouse
 						return
 					end
 				end
+
 				self:OnMouseEnter(x, y)
 				self.mouse_just_entered = true
 				self.mouse_hover_triggered = false
@@ -1666,9 +1657,8 @@ do -- mouse
 				if not self.mouse_hover_triggered then
 					self:OnMouseHoverTrigger(true, x, y)
 					self.mouse_hover_triggered = true
-					if self.Tooltip ~= "" then
-						self:ShowTooltip()
-					end
+
+					if self.Tooltip ~= "" then self:ShowTooltip() end
 				end
 			end
 
@@ -1682,21 +1672,25 @@ do -- mouse
 						return
 					end
 				end
+
 				self:OnMouseExit(x, y)
 				self.mouse_just_entered = false
 			end
 
-			if self.mouse_hover_triggered and not (gui.active_tooltip:IsValid() or not self:ContainsParent(gui.active_tooltip)) then
+			if
+				self.mouse_hover_triggered and
+				not (
+					gui.active_tooltip:IsValid() or
+					not self:ContainsParent(gui.active_tooltip)
+				)
+			then
 				self:OnMouseHoverTrigger(false, x, y)
 				self.mouse_hover_triggered = false
-				if self.Tooltip ~= "" then
-					self:CloseTooltip()
-				end
+
+				if self.Tooltip ~= "" then self:CloseTooltip() end
 			end
 
-			if self.mouse_capture then
-				self:OnMouseMove(x, y)
-			end
+			if self.mouse_capture then self:OnMouseMove(x, y) end
 		end
 	end
 
@@ -1711,39 +1705,26 @@ do -- mouse
 		event.Call("PanelMouseInput", self, button, press)
 
 		if press then
+			if self.FocusOnClick then self:RequestFocus() end
 
-			if self.FocusOnClick then
-				self:RequestFocus()
-			end
-
-			if self.BringToFrontOnClick then
-				self:BringToFront()
-			end
+			if self.BringToFrontOnClick then self:BringToFront() end
 
 			if button == "button_1" then
 				if not self.Resizable or not self:StartResizing(nil, button) then
-					if self.Draggable then
-						self:StartDragging(button)
-					end
+					if self.Draggable then self:StartDragging(button) end
 				end
 			end
-
 		else
-			if button == "button_2" then
-				self:OnRightClick()
-			end
+			if button == "button_2" then self:OnRightClick() end
 		end
 
 		self:OnMouseInput(button, press)
-
 		self:MarkCacheDirty()
 	end
 
 	function META:GlobalMouseInput(button, press)
 		if self.Scrollable and self.mouse_over then
-			if button == "button_3" then
-				self:StartScrolling(button)
-			end
+			if button == "button_3" then self:StartScrolling(button) end
 
 			if press then
 				local dir
@@ -1755,7 +1736,6 @@ do -- mouse
 				end
 
 				if dir then
-
 					if (self.last_wheel_scroll_time or 0) < system.GetElapsedTime() then
 						self.last_wheel_scroll_dir = nil
 					end
@@ -1771,10 +1751,7 @@ do -- mouse
 					end
 
 					self.last_wheel_scroll_time = system.GetElapsedTime() + 0.25
-
 					self.last_wheel_scroll_dir = dir
-
-
 					self:SetScroll(self:GetScroll() + dir)
 				end
 			end
@@ -1785,6 +1762,7 @@ do -- mouse
 				self:OnParentLand(self.drag_panel, self.drag_drop_pos, self.drag_original_pos)
 				self.drag_panel:OnChildDrop(self, self.drag_drop_pos, self.drag_original_pos)
 			end
+
 			self:StopDragging()
 		end
 
@@ -1802,12 +1780,12 @@ do -- mouse
 		end
 
 		self:MarkCacheDirty()
-
 		return b
 	end
 
 	function META:CharInput(char)
 		if not self.AllowKeyboardInput then return end
+
 		self:MarkCacheDirty()
 		return self:OnCharInput(char)
 	end
@@ -1815,45 +1793,69 @@ end
 
 do -- layout
 	META.layout_count = 0
-
 	META:GetSet("LayoutSize", nil)
 	META:GetSet("IgnoreLayout", false)
 	META:GetSet("CollisionGroup", "none")
 	META:GetSet("OthersAlwaysCollide", false)
-
 	local origin
 
 	local function sort(a, b)
-		return math.abs(a.point-origin) < math.abs(b.point-origin)
+		return math.abs(a.point - origin) < math.abs(b.point - origin)
 	end
 
 	function META:RayCast(start_pos, stop_pos)
 		local parent = self:GetParent()
-
 		local dir = stop_pos - start_pos
-
 		local found = {}
 		local i = 1
-
 		local a_lft, a_top, a_rgt, a_btm = self:GetWorldRectFast()
 
 		for _, b in ipairs(parent:GetChildren()) do
 			if
 				b ~= self and
 				not b.nocollide and
-				((b.laid_out_x == nil or b.laid_out_x == true) or (b.laid_out_y == nil or b.laid_out_y == true)) and
+				(
+					(
+						b.laid_out_x == nil or
+						b.laid_out_x == true
+					)
+					or
+					(
+						b.laid_out_y == nil or
+						b.laid_out_y == true
+					)
+				)
+				and
 				b.Visible and
 				not b.ThreeDee and
 				not b.IgnoreLayout and
-				(self.CollisionGroup == b.CollisionGroup or b.OthersAlwaysCollide)
+				(
+					self.CollisionGroup == b.CollisionGroup or
+					b.OthersAlwaysCollide
+				)
 			then
 				local b_lft, b_top, b_rgt, b_btm = b:GetWorldRectFast()
 
 				if
-					(b_lft <= a_lft and b_rgt >= a_rgt) or
-					(b_lft >= a_lft and b_rgt <= a_rgt) or
-					(b_rgt > a_rgt and b_lft < a_rgt) or
-					(b_rgt > a_lft and b_lft < a_lft)
+					(
+						b_lft <= a_lft and
+						b_rgt >= a_rgt
+					)
+					or
+					(
+						b_lft >= a_lft and
+						b_rgt <= a_rgt
+					)
+					or
+					(
+						b_rgt > a_rgt and
+						b_lft < a_rgt
+					)
+					or
+					(
+						b_rgt > a_lft and
+						b_lft < a_lft
+					)
 				then
 					if dir.y > 0 and b_top > a_top and not b.nocollide_up then
 						found[i] = {child = b, point = b_top}
@@ -1865,11 +1867,25 @@ do -- layout
 				end
 
 				if
-					(b_top <= a_top and b_btm >= a_btm) or
-					(b_top >= a_top and b_btm <= a_btm) or
-					(b_btm > a_btm and b_top < a_btm) or
-					(b_btm > a_top and b_top < a_top)
-
+					(
+						b_top <= a_top and
+						b_btm >= a_btm
+					)
+					or
+					(
+						b_top >= a_top and
+						b_btm <= a_btm
+					)
+					or
+					(
+						b_btm > a_btm and
+						b_top < a_btm
+					)
+					or
+					(
+						b_btm > a_top and
+						b_top < a_top
+					)
 				then
 					if dir.x > 0 and b_rgt > a_rgt and not b.nocollide_left then
 						found[i] = {child = b, point = b_lft}
@@ -1893,12 +1909,10 @@ do -- layout
 		end
 
 		table.sort(found, sort)
-
 		local hit_pos = stop_pos
 
 		if found and found[1] then
 			local child = found[1].child
-
 			hit_pos = child:GetPosition():Copy()
 
 			if dir.x < 0 then
@@ -1970,15 +1984,12 @@ do -- layout
 	}
 
 	function META:ExecuteLayoutCommands()
-	--	if self:HasParent() then self = self.Parent end
-
+		--	if self:HasParent() then self = self.Parent end
 		--if not self.layout_us then return end
-
 		for _, child in ipairs(self:GetChildren()) do
 			if child.layout_commands then
-				if child.LayoutSize then
-					child:SetSize(child.LayoutSize:Copy())
-				end
+				if child.LayoutSize then child:SetSize(child.LayoutSize:Copy()) end
+
 				child.laid_out_x = false
 				child.laid_out_y = false
 				child:Confine()
@@ -2004,6 +2015,7 @@ do -- layout
 						elseif typex(cmd) == "vec2" then
 							child:SetSize(cmd:Copy())
 						end
+
 						child.last_layout_panel = nil
 					end
 				end
@@ -2014,7 +2026,7 @@ do -- layout
 			if child.layout_commands then
 				for _, cmd in ipairs(child.layout_commands) do
 					if cmd == "gmod_fill" then
-						child.LayoutSize = Vec2(1,1)
+						child.LayoutSize = Vec2(1, 1)
 						child:CenterSimple()
 						child:FillX()
 						child:FillY()
@@ -2028,22 +2040,17 @@ do -- layout
 	function META:DoLayout()
 		self.in_layout = self.in_layout + 1
 		gui.in_layout = gui.in_layout + 1
-
 		self:OnLayout(self:GetLayoutScale(), self:GetSkin())
-
 		self:ExecuteLayoutCommands()
 
 		if self.Stack then
 			local size = self:StackChildren()
-			if self.StackSizeToChildren then
-				self:SetSize(size)
-			end
+
+			if self.StackSizeToChildren then self:SetSize(size) end
 		end
 
 		self:OnPostLayout()
-
 		self:MarkCacheDirty()
-
 		self.in_layout = self.in_layout - 1
 		gui.in_layout = gui.in_layout - 1
 	end
@@ -2057,10 +2064,13 @@ do -- layout
 			table.insert(tbl, {count = count, trace = trace})
 		end
 
-		table.sort(tbl, function(a, b) return a.count > b.count end)
+		table.sort(tbl, function(a, b)
+			return a.count > b.count
+		end)
 
 		for i = 1, 20 do
 			if not tbl[i] then break end
+
 			logn("===============")
 			logn(tbl[i].count)
 			logn(tbl[i].trace)
@@ -2084,7 +2094,6 @@ do -- layout
 				self.layout_me_tr = nil
 			end
 
-
 			if self.Scrollable then
 				self:SetScrollFraction(self:GetScrollFraction())
 			end
@@ -2104,30 +2113,24 @@ do -- layout
 			end
 
 			self.layout_count = (self.layout_count or 0) + 1
-
 			self.last_children_size = nil
-
 			self.layout_me = false
-
 			self.in_layout = self.in_layout - 1
 			gui.in_layout = gui.in_layout - 1
-		else--if gui.in_layout == 0 then
+		else --if gui.in_layout == 0 then
 			self.layout_me = true
 
-			if gui.debug then
-				self.layout_me_tr = debug.traceback()
-			end
+			if gui.debug then self.layout_me_tr = debug.traceback() end
 		end
 	end
 
 	function META:CalcLayout()
-		if self.layout_me or gui.layout_stress then
-			self:Layout(true)
-		end
+		if self.layout_me or gui.layout_stress then self:Layout(true) end
 	end
 
 	function META:SetupLayout(...)
 		if self:HasParent() then self.Parent:Layout() end
+
 		self:Layout(true)
 
 		if ... then
@@ -2139,8 +2142,7 @@ do -- layout
 			self.Parent.layout_us = nil
 			self.LayoutSize = nil
 		end
-
-		--event.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
+	--event.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
 	end
 
 	function META:ResetLayoutSize()
@@ -2157,15 +2159,13 @@ do -- layout
 	end
 
 	do -- layout commands
-
 		function META:ResetLayout()
 			self.laid_out_x = false
 			self.laid_out_y = false
 
 			for _, child in ipairs(self:GetChildren()) do
-				if child.LayoutSize then
-					child:SetSize(child.LayoutSize:Copy())
-				end
+				if child.LayoutSize then child:SetSize(child.LayoutSize:Copy()) end
+
 				child.laid_out_x = false
 				child.laid_out_y = false
 			end
@@ -2254,29 +2254,23 @@ do -- layout
 		function META:FillX(percent)
 			local parent = self:GetParent()
 			local parent_width = parent.real_size and parent.real_size.x or parent:GetWidth()
-
 			self:SetWidth(1)
-
 			local left = self:RayCast(self:GetPosition(), Vec2(0, self.Position.y))
 			local right = self:RayCast(self:GetPosition(), Vec2(parent_width, self.Position.y))
 
-			if left.x > right.x then
-				left, right = right, left
-			end
+			if left.x > right.x then left, right = right, left end
 
 			right.x = math.clamp(right.x, 0, parent_width)
 			left.x = math.clamp(left.x, 0, parent_width)
-
 			right.x = right.x - left.x
-
 			local x = left.x
 			local w = right.x
-
 			local min_width = self.MinimumSize.x
 
 			if percent then
-				x = math.max(math.lerp(percent*0.5, left.x, right.x + self:GetWidth()), min_width) - min_width + left.x
-				w = w-x*2 + left.x*2
+				x = math.max(math.lerp(percent * 0.5, left.x, right.x + self:GetWidth()), min_width) - min_width + left.x
+				w = w - x * 2 + left.x * 2
+
 				if w < min_width then
 					x = -left.x
 					w = right.x
@@ -2285,37 +2279,29 @@ do -- layout
 
 			self:SetX(math.max(x, left.x)) -- HACK???
 			self:SetWidth(math.max(w, min_width))
-
 			self.laid_out_x = true
 		end
 
 		function META:FillY(percent)
 			local parent = self:GetParent()
 			local parent_height = parent.real_size and parent.real_size.y or parent:GetHeight()
-
 			self:SetHeight(1)
-
 			local top = self:RayCast(self:GetPosition(), Vec2(self.Position.x, 0))
 			local bottom = self:RayCast(self:GetPosition(), Vec2(self.Position.x, parent_height))
 
-
-			if top.x > bottom.x then
-				top, bottom = bottom, top
-			end
+			if top.x > bottom.x then top, bottom = bottom, top end
 
 			bottom.x = math.clamp(bottom.x, 0, parent_height)
 			top.x = math.clamp(top.x, 0, parent_height)
-
 			bottom.y = bottom.y - top.y
-
 			local y = top.y
 			local h = bottom.y
-
 			local min_height = self.MinimumSize.y
 
 			if percent then
-				y = math.max(math.lerp(percent, top.y, bottom.y + self:GetHeight()), min_height/2) - min_height/2 + top.y
-				h = h-y*2 + top.y*2
+				y = math.max(math.lerp(percent, top.y, bottom.y + self:GetHeight()), min_height / 2) - min_height / 2 + top.y
+				h = h - y * 2 + top.y * 2
+
 				if h < min_height then
 					y = -top.y
 					h = bottom.y
@@ -2324,7 +2310,6 @@ do -- layout
 
 			self:SetY(math.max(y, top.y)) -- HACK???
 			self:SetHeight(math.max(h + 1, min_height))
-
 			self.laid_out_y = true
 		end
 
@@ -2335,45 +2320,42 @@ do -- layout
 
 		function META:CenterX()
 			self:CenterXSimple()
-
 			local parent = self:GetParent()
 			local width = parent.real_size and parent.real_size.x or parent:GetWidth()
-
 			local left = self:RayCast(self:GetPosition(), Vec2(0, self.Position.y))
 			local right = self:RayCast(self:GetPosition(), Vec2(width, left.y))
-
-			self:SetX((left.x + right.x)/2 - self:GetWidth()/2 - self.Padding:GetLeft() + self.Padding:GetRight())
-
+			self:SetX(
+				(
+						left.x + right.x
+					) / 2 - self:GetWidth() / 2 - self.Padding:GetLeft() + self.Padding:GetRight()
+			)
 			self.laid_out_x = true
 		end
 
 		function META:CenterY()
 			local parent = self:GetParent()
 			local height = parent.real_size and parent.real_size.y or parent:GetHeight()
-
 			local top = self:RayCast(self:GetPosition(), Vec2(self.Position.x, 0))
 			local bottom = self:RayCast(self:GetPosition(), Vec2(top.x, height))
-			self:SetY((top.y + bottom.y)/2 - self:GetHeight()/2 - self.Padding:GetTop() + self.Padding:GetBottom())
-
+			self:SetY(
+				(
+						top.y + bottom.y
+					) / 2 - self:GetHeight() / 2 - self.Padding:GetTop() + self.Padding:GetBottom()
+			)
 			self.laid_out_y = true
 		end
-
 
 		function META:CenterXSimple()
 			local parent = self:GetParent()
 			local width = parent.real_size and parent.real_size.x or parent:GetWidth()
-
 			self:SetX(width / 2 - self:GetWidth() / 2)
-
 			self.laid_out_x = true
 		end
 
 		function META:CenterYSimple()
 			local parent = self:GetParent()
 			local height = parent.real_size and parent.real_size.y or parent:GetHeight()
-
 			self:SetY(height / 2 - self:GetHeight() / 2)
-
 			self.laid_out_y = true
 		end
 
@@ -2384,13 +2366,13 @@ do -- layout
 
 		function META:CenterXFrame()
 			local parent = self:GetParent()
-
 			local left = self:RayCast(self:GetPosition(), Vec2(0, self.Position.y))
 			local right = self:RayCast(self:GetPosition(), Vec2(parent:GetWidth(), left.y))
 
 			if
-				self:GetX()+self:GetWidth()+self.Padding:GetRight() < right.x+self:GetWidth()-self.Padding:GetRight() and
-				self:GetX()-self.Padding.x > left.x
+				self:GetX() + self:GetWidth() + self.Padding:GetRight() < right.x + self:GetWidth() - self.Padding:GetRight()
+				and
+				self:GetX() - self.Padding.x > left.x
 			then
 				self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
 			end
@@ -2401,60 +2383,52 @@ do -- layout
 		function META:MoveUp()
 			local parent = self:GetParent()
 
-			if self.last_layout_panel then
-				self:MoveUpOf(self.last_layout_panel)
-			end
+			if self.last_layout_panel then self:MoveUpOf(self.last_layout_panel) end
 
-			if not self.laid_out_y then
-				self:SetY(999999999999) -- :(
+			if not self.laid_out_y then self:SetY(999999999999) -- :(
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
 			self:SetY(self:RayCast(self:GetPosition(), Vec2(self:GetX(), 0)).y)
-
 			self.laid_out_y = true
 		end
 
 		function META:MoveLeft()
 			local parent = self:GetParent()
 
-			if self.last_layout_panel then
-				self:MoveLeftOf(self.last_layout_panel)
-			end
+			if self.last_layout_panel then self:MoveLeftOf(self.last_layout_panel) end
 
-			if not self.laid_out_x then
-				self:SetX(999999999999)
-			end
+			if not self.laid_out_x then self:SetX(999999999999) end
 
 			self:SetX(math.max(self:GetX(), 1))
 			self:SetX(self:RayCast(self:GetPosition(), Vec2(0, self.Position.y)).x)
-
 			self.laid_out_x = true
 		end
 
 		function META:Confine()
 			local m = self:GetParent():GetMargin()
 			local p = self:GetPadding()
-
-			self.Position.x = math.clamp(self.Position.x, m:GetLeft() + p:GetLeft(), self.Parent.Size.x - self.Size.x - m:GetRight() + p:GetRight())
-			self.Position.y = math.clamp(self.Position.y, m:GetTop() + p:GetTop(), self.Parent.Size.y - self.Size.y - m:GetBottom() + p:GetBottom())
+			self.Position.x = math.clamp(
+				self.Position.x,
+				m:GetLeft() + p:GetLeft(),
+				self.Parent.Size.x - self.Size.x - m:GetRight() + p:GetRight()
+			)
+			self.Position.y = math.clamp(
+				self.Position.y,
+				m:GetTop() + p:GetTop(),
+				self.Parent.Size.y - self.Size.y - m:GetBottom() + p:GetBottom()
+			)
 		end
-
 
 		function META:MoveDown()
 			local parent = self:GetParent()
 
-			if self.last_layout_panel then
-				self:MoveDownOf(self.last_layout_panel)
-			end
+			if self.last_layout_panel then self:MoveDownOf(self.last_layout_panel) end
 
-			if not self.laid_out_y then
-				self:SetY(-999999999999)
-			end
+			if not self.laid_out_y then self:SetY(-999999999999) end
 
 			self:SetY(math.max(self:GetY(), 1))
 			self:SetY(self:RayCast(self:GetPosition(), Vec2(self:GetX(), parent:GetHeight() - self:GetHeight())).y)
-
 			self.laid_out_y = true
 		end
 
@@ -2465,20 +2439,16 @@ do -- layout
 				self:MoveRightOf(self.last_layout_panel)
 			end
 
-			if not self.laid_out_x then
-				self:SetX(-999999999999)
-			end
+			if not self.laid_out_x then self:SetX(-999999999999) end
 
 			self:SetX(math.max(self:GetX(), 1))
 			self:SetX(self:RayCast(self:GetPosition(), Vec2(parent:GetWidth() - self:GetWidth(), self.Position.y)).x)
-
 			self.laid_out_x = true
 		end
 
 		function META:MoveRightOf(panel)
 			self:SetY(panel:GetY())
 			self:SetX(panel:GetX() + panel:GetWidth())
-
 			self.laid_out_x = true
 			self.laid_out_y = true
 		end
@@ -2486,7 +2456,6 @@ do -- layout
 		function META:MoveDownOf(panel)
 			self:SetX(panel:GetX())
 			self:SetY(panel:GetY() + panel:GetHeight())
-
 			self.laid_out_x = true
 			self.laid_out_y = true
 		end
@@ -2494,7 +2463,6 @@ do -- layout
 		function META:MoveLeftOf(panel)
 			self:SetY(panel:GetY())
 			self:SetX(panel:GetX() - self:GetWidth())
-
 			self.laid_out_x = true
 			self.laid_out_y = true
 		end
@@ -2502,7 +2470,6 @@ do -- layout
 		function META:MoveUpOf(panel)
 			self:SetX(panel:GetX())
 			self:SetY(panel:GetY() - self:GetHeight())
-
 			self.laid_out_x = true
 			self.laid_out_y = true
 		end
@@ -2511,10 +2478,8 @@ end
 
 do -- stacking
 	META:GetSet("ForcedStackSize", Vec2(0, 0))
-
 	META:GetSet("StackRight", true)
 	META:GetSet("StackDown", true)
-
 	META:GetSet("SizeStackToWidth", false)
 	META:GetSet("SizeStackToHeight", false)
 	META:IsSet("Stackable", true)
@@ -2530,13 +2495,9 @@ do -- stacking
 			if pnl:IsStackable() then
 				local siz = pnl:GetSize():Copy()
 
-				if self.ForcedStackSize.x ~= 0 then
-					siz.x = self.ForcedStackSize.x
-				end
+				if self.ForcedStackSize.x ~= 0 then siz.x = self.ForcedStackSize.x end
 
-				if self.ForcedStackSize.y ~= 0 then
-					siz.y = self.ForcedStackSize.y
-				end
+				if self.ForcedStackSize.y ~= 0 then siz.y = self.ForcedStackSize.y end
 
 				siz.x = siz.x + pnl.Padding.w
 				siz.y = siz.y + pnl.Padding.h
@@ -2555,9 +2516,7 @@ do -- stacking
 				else
 					h = h or 0
 					h = h + siz.y
-
 					w = siz.x > w and siz.x or w
-
 					pnl.Position.x = pad.x + pnl.Padding.x
 					pnl.Position.y = h + pad.y - siz.y + pnl.Padding.y
 				end
@@ -2565,13 +2524,9 @@ do -- stacking
 				if not self.ForcedStackSize:IsZero() then
 					local siz = self.ForcedStackSize
 
-					if self.SizeStackToWidth then
-						siz.x = self:GetWidth()
-					end
+					if self.SizeStackToWidth then siz.x = self:GetWidth() end
 
-					if self.SizeStackToHeight then
-						siz.x = self:GetHeight()
-					end
+					if self.SizeStackToHeight then siz.x = self:GetHeight() end
 
 					pnl:SetSize(Vec2(siz.x - pad.y * 2, siz.y))
 				else
@@ -2586,12 +2541,9 @@ do -- stacking
 			end
 		end
 
-		if self.SizeStackToWidth then
-			w = self:GetWidth() - pad.x * 2
-		end
+		if self.SizeStackToWidth then w = self:GetWidth() - pad.x * 2 end
 
 		h = h or 0
-
 		return Vec2(w, h) + pad:GetSize()
 	end
 end
@@ -2603,6 +2555,7 @@ do -- skin
 
 	function META:SetLayoutScale(scale)
 		self.LayoutScale = scale
+
 		for _, v in ipairs(self:GetChildrenList()) do
 			v.LayoutScale = scale
 		end
@@ -2617,9 +2570,7 @@ do -- skin
 	end
 
 	function META:SetSkin(skin)
-		if type(skin) == "string" then
-			skin = gui.GetRegisteredSkin(skin).skin
-		end
+		if type(skin) == "string" then skin = gui.GetRegisteredSkin(skin).skin end
 
 		self.Skin = skin
 
@@ -2643,7 +2594,6 @@ do -- skin
 
 	function META:SetStyle(name)
 		self.Style = name
-
 		self.style_nodraw = false
 		self.style_blank = false
 
@@ -2660,12 +2610,9 @@ do -- skin
 		else
 			self.style_translation = self.style_translation or {}
 			name = self.style_translation[name] or name
-
 			local skin = self:GetSkin()
 
-			if skin[name] then
-				self:SetupStyle(skin[name])
-			end
+			if skin[name] then self:SetupStyle(skin[name]) end
 		end
 
 		self:MarkCacheDirty()
@@ -2674,7 +2621,6 @@ do -- skin
 	function META:SetStyleTranslation(from, to)
 		self.style_translation = self.style_translation or {}
 		self.style_translation[from] = to
-
 		self:SetStyle(self:GetStyle())
 	end
 
@@ -2684,9 +2630,8 @@ do -- skin
 	META:GetSet("StyleSize", Vec2(0, 0))
 
 	function META:SetStyleSize(vec)
-		if not vec:IsZero() then
-			self:SetSize(vec)
-		end
+		if not vec:IsZero() then self:SetSize(vec) end
+
 		self.StyleSize = vec
 	end
 
@@ -2694,33 +2639,31 @@ do -- skin
 		tbl = tbl or {}
 
 		if tbl.ninepatch ~= nil then self:SetNinePatch(tbl.ninepatch) end
+
 		if tbl.color then self:SetColor(tbl.color:Copy()) end
+
 		if tbl.texture then self:SetTexture(tbl.texture) end
+
 		if tbl.texture_rect then self:SetNinePatchRect(tbl.texture_rect:Copy()) end
+
 		if tbl.corner_size then self:SetNinePatchCornerSize(tbl.corner_size) end
 
 		local skin = self:GetSkin()
-
 		local scale = tbl.size and tbl.size:Copy() or self.StyleSize
 
-		if skin.pixel_scale then
-			scale = scale * skin.pixel_scale
-		end
+		if skin.pixel_scale then scale = scale * skin.pixel_scale end
 
 		self:SetStyleSize(scale)
 	end
 
 	function META:ReloadStyle()
-
 		local style = self:GetStyle()
 
 		if style then
 			self:SetStyle("none")
 			self:SetStyle(style)
 
-			if self.GetText then
-				self:SetText(self:GetText())
-			end
+			if self.GetText then self:SetText(self:GetText()) end
 		end
 
 		self:Layout()
@@ -2737,12 +2680,11 @@ do -- events
 			self.Color.b + self.DrawColor.b,
 			self.Color.a + self.DrawColor.a
 		)
-
 		render2d.SetTexture(self.Texture)
-
 		self:DrawRect()
 	end
---[[
+
+	--[[
 	function META:OnUnParent()
 		gui.unrolled_draw = nil
 	end
@@ -2752,9 +2694,7 @@ do -- events
 --		self:Layout()
 		--child:Layout()
 	end
-	]]
-
-	function META:OnChildAdd(child)
+	]] function META:OnChildAdd(child)
 		self:Layout()
 	end
 
@@ -2762,13 +2702,10 @@ do -- events
 
 	function META:OnRemove()
 		self:MarkCacheDirty()
-
 		gui.panels[self] = nil
 
 		for _, v in pairs(self:GetChildrenList()) do
-			if v.RemoveOnParentRemove then
-				v:Remove()
-			end
+			if v.RemoveOnParentRemove then v:Remove() end
 		end
 
 		-- this is important!!
@@ -2785,45 +2722,64 @@ do -- events
 	function META:OnSystemFileDrop(path) end
 
 	function META:OnPreDraw() end
+
 	function META:OnPostDraw() end
 
 	function META:OnPostMatrixBuild() end
+
 	function META:OnPreMatrixBuild() end
 
 	function META:OnFocus() end
+
 	function META:OnUnfocus() end
 
 	function META:OnMouseEnter(x, y) end
+
 	function META:OnMouseExit(x, y) end
+
 	function META:OnMouseMove(x, y) end
+
 	function META:OnMouseInput(button, press) end
 
 	function META:OnPreKeyInput(button, press) end
+
 	function META:OnKeyInput(button, press) end
+
 	function META:OnPostKeyInput(button, press) end
+
 	function META:OnCharInput(char) end
+
 	function META:OnRightClick() end
+
 	function META:OnGlobalMouseInput(button, press) end
 
 	function META:OnCharTyped(char) end
+
 	function META:OnKeyPressed(key, pressed) end
+
 	function META:OnUpdate() end
+
 	function META:OnStyleChanged(skin) end
 
 	function META:OnPositionChanged(pos) end
+
 	function META:OnScroll(fraction) end
+
 	function META:OnLayout() end
+
 	function META:OnPostLayout() end
+
 	function META:OnShow() end
+
 	function META:OnHide() end
+
 	function META:OnMouseHoverTrigger(x, y) end
+
 	function META:Initialize() end
 end
 
 gui.RegisterPanel(META)
 
-if RELOAD then
-	for _,v in pairs(gui.panels) do
-		v:Layout()
-	end
-end
+if RELOAD then for _, v in pairs(gui.panels) do
+	v:Layout()
+end end

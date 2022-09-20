@@ -29,8 +29,7 @@ function engine.GetGames()
 			folder = dod,
 			mounted = false,
 			installed = false,
-		},]]
-		{
+		},]] {
 			depot = 440,
 			title = "Team Fortress 2",
 			owned = true,
@@ -45,13 +44,18 @@ function engine.CloseServer()
 	wlog("nope")
 end
 
-function engine.IsPlayingDemo() return false end
-function engine.IsRecordingDemo() return false end
+function engine.IsPlayingDemo()
+	return false
+end
+
+function engine.IsRecordingDemo()
+	return false
+end
 
 function engine.LightStyle() end
 
 function engine.ServerFrameTime()
-	return 1/33
+	return 1 / 33
 end
 
 function engine.GetGamemodes()

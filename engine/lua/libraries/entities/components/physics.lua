@@ -1,33 +1,29 @@
 local META = prototype.CreateTemplate()
-
 META.Name = "physics"
 META.Require = {"transform"}
-
 META.Network = {
-	Position = {"vec3", 1/30, "unreliable", false, 70},
-	Rotation = {"quat", 1/30, "unreliable", false, 70},
-
-	Mass = {"unsigned long", 1/5},
-	LinearDamping = {"float", 1/5},
-	AngularDamping = {"float", 1/5},
-	MassOrigin = {"vec3", 1/5},
-	PhysicsBoxScale = {"vec3", 1/5},
-	PhysicsSphereRadius = {"float", 1/5},
-	PhysicsCapsuleZRadius = {"float", 1/5},
-	PhysicsCapsuleZHeight = {"float", 1/5},
-	PhysicsModelPath = {"string", 1/10, "reliable", true}, -- last true means don't send default path (blank path in this case)
+	Position = {"vec3", 1 / 30, "unreliable", false, 70},
+	Rotation = {"quat", 1 / 30, "unreliable", false, 70},
+	Mass = {"unsigned long", 1 / 5},
+	LinearDamping = {"float", 1 / 5},
+	AngularDamping = {"float", 1 / 5},
+	MassOrigin = {"vec3", 1 / 5},
+	PhysicsBoxScale = {"vec3", 1 / 5},
+	PhysicsSphereRadius = {"float", 1 / 5},
+	PhysicsCapsuleZRadius = {"float", 1 / 5},
+	PhysicsCapsuleZHeight = {"float", 1 / 5},
+	PhysicsModelPath = {"string", 1 / 10, "reliable", true}, -- last true means don't send default path (blank path in this case)
 }
-
 META:StartStorable()
+META:GetSet("Position", Vec3(0, 0, 0))
+META:GetSet("Rotation", Quat(0, 0, 0, 1))
+META:GetSet("PhysicsModelPath", "")
 
-	META:GetSet("Position", Vec3(0, 0, 0))
-	META:GetSet("Rotation", Quat(0, 0, 0, 1))
-	META:GetSet("PhysicsModelPath", "")
-	if prototype.GetRegistered("physics_body") then
-		prototype.DelegateProperties(META, prototype.GetRegistered("physics_body"), "rigid_body")
-	end
+if prototype.GetRegistered("physics_body") then
+	prototype.DelegateProperties(META, prototype.GetRegistered("physics_body"), "rigid_body")
+end
+
 META:EndStorable()
-
 META:GetSet("PhysicsModel", nil)
 
 if PHYSICS then
@@ -38,38 +34,32 @@ if PHYSICS then
 	end
 
 	local function to_physics_body(self)
-		if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return end
+		if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then
+			return
+		end
 
 		local pos = self.Position
 		local rot = self.Rotation
-
 		local out = Matrix44()
 		out:SetTranslation(pos.x, pos.y, pos.z)
 		out:SetRotation(rot)
-
 		self.rigid_body:SetMatrix(out)
 	end
 
 	local function from_physics_body(self)
-		if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return Matrix44() end
+		if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then
+			return Matrix44()
+		end
 
 		local out = self.rigid_body:GetMatrix()
-
-	--	local x,y,z = out:GetTranslation()
+		--	local x,y,z = out:GetTranslation()
 		--local p,y,r = out:GetAngles()
-
-	--	local out = Matrix44()
-
+		--	local out = Matrix44()
 		--out:Translate(x, y, z)
-
-
 		--out:Rotate(math.deg(y), 0, 1, 0)
 		--out:Rotate(math.deg(r), 1, 0, 0)
-
 		--out:Scale(1,-1,-1)
-
-	--	print(self:GetEntity(), self.Position, out:GetTranslation())
-
+		--	print(self:GetEntity(), self.Position, out:GetTranslation())
 		return out:Copy()
 	end
 
@@ -96,7 +86,7 @@ if PHYSICS then
 	end
 
 	function META:SetAngles(ang)
-		self:SetRotation(Quat(0,0,0,1):SetAngles(ang))
+		self:SetRotation(Quat(0, 0, 0, 1):SetAngles(ang))
 	end
 
 	function META:GetAngles()
@@ -112,6 +102,7 @@ if PHYSICS then
 
 			if SERVER then
 				local obj = self:GetComponent("network")
+
 				if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsSphere", rad) end
 			end
 
@@ -131,6 +122,7 @@ if PHYSICS then
 
 			if SERVER then
 				local obj = self:GetComponent("network")
+
 				if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsBox", scale) end
 			end
 
@@ -146,6 +138,7 @@ if PHYSICS then
 
 			if SERVER then
 				local obj = self:GetComponent("network")
+
 				if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsCapsuleZ") end
 			end
 
@@ -160,11 +153,8 @@ if PHYSICS then
 
 				-- TODO: support for more bodies
 				if #physics_meshes > 1 then
-
 					for _, v in pairs(self:GetEntity():GetChildren()) do
-						if v.physics_chunk then
-							v:Remove()
-						end
+						if v.physics_chunk then v:Remove() end
 					end
 
 					for i, mesh in ipairs(physics_meshes) do
@@ -184,10 +174,9 @@ if PHYSICS then
 				to_physics_body(self)
 			end, function(err)
 				llog("%s failed to load physics model %q: %s", self, path, err)
+
 				for _, v in pairs(self:GetEntity():GetChildren()) do
-					if v.physics_chunk then
-						v:Remove()
-					end
+					if v.physics_chunk then v:Remove() end
 				end
 			end)
 		end
@@ -204,6 +193,7 @@ if PHYSICS then
 
 			if SERVER then
 				local obj = self:GetComponent("network")
+
 				if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexHull") end
 			end
 
@@ -222,6 +212,7 @@ if PHYSICS then
 
 			if SERVER then
 				local obj = self:GetComponent("network")
+
 				if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexTriangles") end
 			end
 
@@ -240,6 +231,7 @@ if PHYSICS then
 
 			if SERVER then
 				local obj = self:GetComponent("network")
+
 				if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsTriangles") end
 			end
 
@@ -252,21 +244,20 @@ if PHYSICS then
 	function META:OnUpdate()
 		if
 			not physics.IsReady() or
-			not self.rigid_body:IsValid() or
+			not self.rigid_body:IsValid()
+			or
 			not self.rigid_body:IsPhysicsValid()
 		then
 			return
 		end
 
 		local transform = self:GetComponent("transform")
-
 		transform:SetTRMatrix(from_physics_body(self))
 	end
 
 	function META:OnAdd(ent)
-		if PHYSICS then
-			self:GetComponent("transform"):SetSkipRebuild(true)
-		end
+		if PHYSICS then self:GetComponent("transform"):SetSkipRebuild(true) end
+
 		if physics.IsReady() then
 			self.rigid_body = physics.CreateBody()
 			self.rigid_body.ent = self
@@ -274,12 +265,8 @@ if PHYSICS then
 	end
 
 	function META:OnRemove(ent)
-		if self.rigid_body:IsValid() then
-			self.rigid_body:Remove()
-		end
+		if self.rigid_body:IsValid() then self.rigid_body:Remove() end
 	end
 end
 
-META:RegisterComponent()
-
---runfile("physics_container.lua")
+META:RegisterComponent()--runfile("physics_container.lua")

@@ -1,7 +1,5 @@
 local fs = _G.fs or {}
-
 local ffi = require("ffi")
-
 ffi.cdef([[
 void *fopen(const char *filename, const char *mode);
 size_t fread(void *ptr, size_t size, size_t nmemb, void *stream);
@@ -11,7 +9,6 @@ long int ftell ( void * stream );
 int fclose(void *fp);
 int feof(void *stream);
 ]])
-
 fs.open = ffi.C.fopen
 fs.read = ffi.C.fread
 fs.write = ffi.C.fwrite
@@ -19,7 +16,6 @@ fs.seek = ffi.C.fseek
 fs.tell = ffi.C.ftell
 fs.close = ffi.C.fclose
 fs.eof = ffi.C.feof
-
 ffi.cdef([[
 	typedef struct goluwa_file_time {
 		unsigned long high;
@@ -88,24 +84,24 @@ ffi.cdef([[
 	int RemoveDirectoryA(const char *path);
 
 ]])
-
 local error_str = ffi.new("uint8_t[?]", 1024)
-local FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000;
-local FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200;
+local FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000
+
+local FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200
+
 local error_flags = bit.bor(FORMAT_MESSAGE_FROM_SYSTEM, FORMAT_MESSAGE_IGNORE_INSERTS)
+
 local function error_string()
 	local code = ffi.C.GetLastError()
 	local numout = ffi.C.FormatMessageA(error_flags, nil, code, 0, error_str, 1023, nil)
 	local err = numout ~= 0 and ffi.string(error_str, numout)
-	if err and err:sub(-2) == "\r\n" then
-		return err:sub(0, -3)
-	end
+
+	if err and err:sub(-2) == "\r\n" then return err:sub(0, -3) end
+
 	return err
 end
 
 local data = ffi.new("goluwa_find_data[1]")
-
-
 local flags = {
 	archive = 0x20, -- A file or directory that is an archive file or directory. Applications typically use this attribute to mark files for backup or removal .
 	compressed = 0x800, -- A file or directory that is compressed. For a file, all of the data in the file is compressed. For a directory, compression is the default for newly created files and subdirectories.
@@ -129,7 +125,7 @@ local flags = {
 local function flags_to_table(bits)
 	local out = {}
 
-	for k,v in pairs(flags) do
+	for k, v in pairs(flags) do
 		out[k] = bit.bor(bits, v) == v
 	end
 
@@ -145,7 +141,7 @@ end
 
 function fs.get_attributes(path)
 	local info = ffi.new("goluwa_file_attributes[1]")
-	
+
 	if ffi.C.GetFileAttributesExA(path, 0, info) == 0 then
 		return nil, error_string()
 	end
@@ -157,9 +153,9 @@ function fs.get_attributes(path)
 		last_modified = POSIX_TIME(info[0].ftLastWriteTime),
 		last_changed = -1, -- last permission changes
 		size = info[0].nFileSizeLow,
-		type = bit.band(
-			info[0].dwFileAttributes, flags.directory
-		) == flags.directory and "directory" or "file",
+		type = bit.band(info[0].dwFileAttributes, flags.directory) == flags.directory and
+			"directory" or
+			"file",
 	}
 end
 
@@ -167,26 +163,23 @@ do
 	local info = ffi.new("goluwa_file_attributes[1]")
 
 	function fs.get_type(path)
-		if ffi.C.GetFileAttributesExA(path, 0, info) == 0 then
-			return nil
-		end
-		return 
-			bit.band(info[0].dwFileAttributes, flags.directory) == 
-			flags.directory and "directory" or "file"
+		if ffi.C.GetFileAttributesExA(path, 0, info) == 0 then return nil end
+
+		return bit.band(info[0].dwFileAttributes, flags.directory) == flags.directory and
+			"directory" or
+			"file"
 	end
 end
 
 do
 	do
 		local dot = string.byte(".")
+
 		local function is_dots(ptr)
 			if ptr[0] == dot then
-				if ptr[1] == dot and ptr[2] == 0 then
-					return true
-				end
-				if ptr[1] == 0 then
-					return true
-				end
+				if ptr[1] == dot and ptr[2] == 0 then return true end
+
+				if ptr[1] == 0 then return true end
 			end
 
 			return false
@@ -200,33 +193,27 @@ do
 		local INVALID_FILE = ffi.cast("void *", 0xffffffffffffffffULL)
 
 		function fs.get_files(dir)
-			if path == "" then
-				path = "."
-			end
-			if dir:sub(-1) ~= "/" then
-				dir = dir .. "/"
-			end
+			if path == "" then path = "." end
+
+			if dir:sub(-1) ~= "/" then dir = dir .. "/" end
 
 			local handle = FindFirstFileA(dir .. "*", data)
 
-			if handle == nil then
-				return nil, error_string()
-			end
+			if handle == nil then return nil, error_string() end
 
 			local out = {}
 
 			if handle ~= INVALID_FILE then
 				local i = 1
+
 				repeat
 					if not is_dots(data[0].cFileName) then
 						out[i] = ffi_string(data[0].cFileName)
 						i = i + 1
-					end
+					end				
 				until FindNextFileA(handle, data) == 0
 
-				if FindClose(handle) == 0 then
-					return nil, error_string()
-				end
+				if FindClose(handle) == 0 then return nil, error_string() end
 			end
 
 			return out
@@ -245,6 +232,7 @@ do
 
 			if handle ~= INVALID_FILE then
 				local i = 1
+
 				repeat
 					if not is_dots(data[0].cFileName) then
 						local name = path .. ffi_string(data[0].cFileName)
@@ -255,31 +243,26 @@ do
 							tbl[tbl[0]] = name
 							tbl[0] = tbl[0] + 1
 						end
-					end
+					end				
 				until FindNextFileA(handle, data) == 0
 
-				if FindClose(handle) == 0 then
-					return nil, error_string()
-				end
+				if FindClose(handle) == 0 then return nil, error_string() end
 			end
 
 			return tbl
 		end
 
 		function fs.get_files_recursive(path)
-			if path == "" then
-				path = "."
-			end
-			if not path:sub(-1) ~= "/" then
-				path = path .. "/"
-			end
+			if path == "" then path = "." end
+
+			if not path:sub(-1) ~= "/" then path = path .. "/" end
 
 			local out = {}
 			local errors = {}
 			out[0] = 1
-			if not walk(path, out, errors) then
-				return nil, errors[1].error
-			end
+
+			if not walk(path, out, errors) then return nil, errors[1].error end
+
 			out[0] = nil
 			return out, errors[1] and errors or nil
 		end
@@ -293,30 +276,31 @@ function fs.get_current_directory()
 end
 
 function fs.set_current_directory(path)
-	if ffi.C.SetCurrentDirectoryA(path) == 0 then
-		return nil, error_string()
-	end
-	
+	if ffi.C.SetCurrentDirectoryA(path) == 0 then return nil, error_string() end
+
 	return true
 end
 
 function fs.create_directory(path)
-	if ffi.C.CreateDirectoryA(path, nil) == 0 then
-		return nil, error_string()
-	end
+	if ffi.C.CreateDirectoryA(path, nil) == 0 then return nil, error_string() end
+
 	return true
 end
 
 function fs.setcustomattribute(path, data)
 	local f = io.open(path .. ":goluwa_attributes", "wb")
+
 	if not f then return nil, err end
+
 	f:write(data)
 	f:close()
 end
 
 function fs.getcustomattribute(path)
 	local f, err = io.open(path .. ":goluwa_attributes", "rb")
+
 	if not f then return "" end
+
 	local data = f:read("*all")
 	f:close()
 	return data
@@ -327,12 +311,10 @@ do
 
 	function fs.watch(path, mask)
 		local self = {}
-		function self:Read()
 
-		end
+		function self:Read() end
 
-		function self:Remove()
-		end
+		function self:Remove() end
 
 		return self
 	end
@@ -342,33 +324,29 @@ function fs.link(from, to, symbolic)
 	if ffi.C.CreateHardLinkA(to, from, nil) == 0 then
 		return nil, error_string()
 	end
+
 	return true
 end
 
 function fs.copy(from, to)
-	if ffi.C.CopyFileA(from, to, 1) == 0 then
-		return nil, error_string()
-	end
+	if ffi.C.CopyFileA(from, to, 1) == 0 then return nil, error_string() end
 
 	return true
 end
 
 function fs.remove_file(path)
-	if ffi.C.DeleteFileA(path) == 0 then
-		return nil, error_string()
-	end
+	if ffi.C.DeleteFileA(path) == 0 then return nil, error_string() end
+
 	return true
 end
 
 function fs.remove_directory(path)
-	if ffi.C.RemoveDirectoryA(path) == 0 then
-		return nil, error_string()
-	end
+	if ffi.C.RemoveDirectoryA(path) == 0 then return nil, error_string() end
+
 	return true
 end
 
-if RELOAD then
-	--print(fs.link("goluwa.cmd", "TEST", true))
+if RELOAD then  --print(fs.link("goluwa.cmd", "TEST", true))
 end
 
 return fs

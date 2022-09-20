@@ -1,10 +1,7 @@
 local fonts = ... or {}
-
 fonts.registered_fonts = fonts.registered_fonts or {}
 fonts.font_dpi = 64
-
 fonts.default_font_path = "fonts/unifont.ttf"
-
 local ready = false
 local queue = {}
 
@@ -18,7 +15,6 @@ end
 
 function fonts.GetDefaultFont()
 	fonts.default_font = fonts.default_font or fonts.CreateFont({path = fonts.default_font_path})
-
 	return fonts.default_font or fonts.GetFallbackFont()
 end
 
@@ -34,17 +30,14 @@ function fonts.CreateFont(options, callback)
 	end
 
 	options = options or {}
-
 	local path = options.path or fonts.default_font_path
 	local size = options.size or 14
-	local scale = options.scale or Vec2(1,1)
+	local scale = options.scale or Vec2(1, 1)
 	local padding = options.padding or 1
 	local fallback = options.fallback
 	local filtering = options.filtering or "linear"
 
-	if type(scale) == "number" then
-		scale = Vec2()+scale
-	end
+	if type(scale) == "number" then scale = Vec2() + scale end
 
 	if fallback then
 		if typex(fallback) ~= "table" then fallback = {options.fallback} end
@@ -53,17 +46,12 @@ function fonts.CreateFont(options, callback)
 	local monospace = options.monospace
 	local spacing = options.spacing
 
-	if monospace and not spacing then
-		spacing = size
-	end
+	if monospace and not spacing then spacing = size end
 
 	spacing = spacing or 0
 
 	if type(options.shadow) == "number" then
-		options.shadow = {
-			dir = options.shadow,
-			color = options.shadow_color
-		}
+		options.shadow = {dir = options.shadow, color = options.shadow_color}
 	end
 
 	local shading_info = options.shader
@@ -73,12 +61,11 @@ function fonts.CreateFont(options, callback)
 			if not shading_info:find("return") then
 				shading_info = "return " .. shading_info
 			end
+
 			shading_info = {source = shading_info}
 		end
 
-		if shading_info.source then
-			shading_info = {shading_info}
-		end
+		if shading_info.source then shading_info = {shading_info} end
 	end
 
 	local sorted = {}
@@ -93,6 +80,7 @@ function fonts.CreateFont(options, callback)
 	if options.fx then
 		for _, tbl in ipairs(options.fx) do
 			local callback = fonts.effects[tbl.type]
+
 			if callback then
 				tbl.order = tbl.order or 0
 				table.insert(sorted, {info = tbl, callback = callback})
@@ -102,14 +90,15 @@ function fonts.CreateFont(options, callback)
 
 	if sorted[1] then
 		shading_info = shading_info or {}
-		table.sort(sorted, function(a, b) return a.info.order > b.info.order end)
+
+		table.sort(sorted, function(a, b)
+			return a.info.order > b.info.order
+		end)
 
 		for _, data in ipairs(sorted) do
 			local stages = data.callback(data.info, options)
 
-			if stages.source then
-				stages = {stages}
-			end
+			if stages.source then stages = {stages} end
 
 			for _, stage in ipairs(stages) do
 				table.insert(shading_info, stage)
@@ -120,11 +109,9 @@ function fonts.CreateFont(options, callback)
 	for class_name, _ in pairs(fonts.registered_fonts) do
 		if not options.type or options.type == class_name then
 			local self = prototype.CreateDerivedObject("font", class_name)
-
 			self.pages = {}
 			self.chars = {}
 			self.state = "reading"
-
 			self:SetName(path)
 			self:SetPath(path)
 			self:SetSize(size)
@@ -138,19 +125,18 @@ function fonts.CreateFont(options, callback)
 			self:SetReverseDraw(options.reverse_draw)
 			self:SetTabWidthMultiplier(options.tab_width_multiplier or 4)
 			self:SetFlags(options.flags)
+
 			if options.curve then self:SetCurve(options.curve) end
 
 			self.OnLoad = function()
 				self:SetReady(true)
 				event.Call("FontChanged", self, options)
 			end
-
 			local ok, err = pcall(self.Initialize, self, options)
 
 			if ok and err ~= false then
-				if gfx then
-					gfx.InvalidateFontSizeCache(self)
-				end
+				if gfx then gfx.InvalidateFontSizeCache(self) end
+
 				return self
 			else
 				if err ~= false or fonts.debug then
@@ -171,19 +157,16 @@ end
 
 function fonts.FindFont(name)
 	for _, font in ipairs(prototype.GetCreated(true, "font")) do
-		if font:GetName():compare(name) then
-			return font
-		end
+		if font:GetName():compare(name) then return font end
 	end
+
 	return fonts.default_font
 end
 
 function fonts.RegisterFont(meta)
 	meta.TypeBase = "base"
 	meta.Type = "font"
-
 	prototype.Register(meta)
-
 	fonts.registered_fonts[meta.ClassName] = meta
 
 	if RELOAD then
@@ -206,8 +189,10 @@ do
 	end
 
 	local function add_blur_stage(stages, blur_radius, blur_dir)
-		table.insert(stages, {
-			source = [[
+		table.insert(
+			stages,
+			{
+				source = [[
 			//this will be our RGBA sum
 			vec4 sum = vec4(0.0);
 
@@ -238,12 +223,13 @@ do
 
 			return sum;
 			]],
-			vars = {
-				radius = blur_radius,
-				dir = blur_dir,
-			},
-			blend_mode = "alpha",
-		})
+				vars = {
+					radius = blur_radius,
+					dir = blur_dir,
+				},
+				blend_mode = "alpha",
+			}
+		)
 	end
 
 	fonts.AddEffect("shadow", function(info, options)
@@ -258,59 +244,70 @@ do
 		end
 
 		local stages = {}
-
 		-- copy the old texture
 		table.insert(stages, {copy = true})
-
 		local passes = info.dir_passes or 1
+
 		for i = 1, passes do
 			local m = (i / passes)
-
-			table.insert(stages, {
-				source = "return vec4(color.r, color.g, color.b, texture(copy, uv + (dir / size)).a * color.a);",
-				vars = {
-					dir = dir * m,
-					color = i == 1 and color or color:Copy():SetAlpha((color.a * -m+1) ^ (info.dir_falloff or 1)),
-				},
-				blend_mode = i == 1 and "none" or "alpha",
-			})
+			table.insert(
+				stages,
+				{
+					source = "return vec4(color.r, color.g, color.b, texture(copy, uv + (dir / size)).a * color.a);",
+					vars = {
+						dir = dir * m,
+						color = i == 1 and
+							color or
+							color:Copy():SetAlpha((color.a * -m + 1) ^ (info.dir_falloff or 1)),
+					},
+					blend_mode = i == 1 and "none" or "alpha",
+				}
+			)
 		end
 
 		if blur_radius then
 			local times = info.blur_passes or 1
+
 			for i = 1, times do
 				local m = i / times
-				add_blur_stage(stages, blur_radius, Vec2(0,1) * m)
-				add_blur_stage(stages, blur_radius, Vec2(1,0) * m)
+				add_blur_stage(stages, blur_radius, Vec2(0, 1) * m)
+				add_blur_stage(stages, blur_radius, Vec2(1, 0) * m)
 			end
 		end
 
 		if info.alpha_pow then
-			table.insert(stages, {
-				source = "return vec4(texture(self, uv).rgb, pow(texture(self, uv).a, alpha_pow));",
-				vars = {
-					alpha_pow = info.alpha_pow,
-				},
-				blend_mode = "none",
-			})
+			table.insert(
+				stages,
+				{
+					source = "return vec4(texture(self, uv).rgb, pow(texture(self, uv).a, alpha_pow));",
+					vars = {
+						alpha_pow = info.alpha_pow,
+					},
+					blend_mode = "none",
+				}
+			)
 		end
 
-		table.insert(stages, {
-			source = "return texture(self, uv) * vec4(1,1,1,color.a);",
-			blend_mode = "alpha",
-			vars = {
-				color = color,
-			},
-			blend_mode = "none",
-		})
-
+		table.insert(
+			stages,
+			{
+				source = "return texture(self, uv) * vec4(1,1,1,color.a);",
+				blend_mode = "alpha",
+				vars = {
+					color = color,
+				},
+				blend_mode = "none",
+			}
+		)
 		-- render the old texture above the shadow texture with normal alpha blending
-		table.insert(stages, {
-			source = "return texture(copy, uv);",
-			blend_mode = "alpha",
-			vars = {},
-		})
-
+		table.insert(
+			stages,
+			{
+				source = "return texture(copy, uv);",
+				blend_mode = "alpha",
+				vars = {},
+			}
+		)
 		return stages
 	end)
 
@@ -338,8 +335,6 @@ end
 runfile("base_font.lua")
 runfile("fonts/*", fonts)
 
-if RELOAD then
-	fonts.Initialize()
-end
+if RELOAD then fonts.Initialize() end
 
 return fonts

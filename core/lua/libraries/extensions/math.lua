@@ -1,11 +1,9 @@
-math.tau = math.pi*2
+math.tau = math.pi * 2
 
 function math.linear2gamma(n, gamma)
 	gamma = gamma or 2.4
 
-	if n <= 0.04045 then
-		return n / 12.92
-	end
+	if n <= 0.04045 then return n / 12.92 end
 
 	return ((n + 0.055) / 1.055) ^ gamma
 end
@@ -56,7 +54,7 @@ end
 function math.randomf(min, max)
 	min = min or -1
 	max = max or 1
-	return min + (math.random() * (max-min))
+	return min + (math.random() * (max - min))
 end
 
 function math.clamp(self, min, max)
@@ -80,43 +78,36 @@ function math.len(x)
 		len = len + 2
 	end
 
-	if x > 9 then
-		len = len + 1
-	end
+	if x > 9 then len = len + 1 end
 
 	return len
 end
 
-
 function math.digit10(x, n)
-    while n > 0 do
-        x = x / 10
+	while n > 0 do
+		x = x / 10
 		n = n - 1
-    end
+	end
 
-    return math.floor(x % 10)
+	return math.floor(x % 10)
 end
 
 function math.approach(cur, target, inc)
-    inc = math.abs(inc)
+	inc = math.abs(inc)
 
-    if cur < target then
-        return math.clamp(cur + inc, cur, target)
-    elseif cur > target then
-        return math.clamp(cur - inc, target, cur)
-    end
+	if cur < target then
+		return math.clamp(cur + inc, cur, target)
+	elseif cur > target then
+		return math.clamp(cur - inc, target, cur)
+	end
 
-    return target
+	return target
 end
 
 local inf, ninf = math.huge, -math.huge
 
 function math.isvalid(num)
-	return
-		num and
-		num ~= inf and
-		num ~= ninf and
-		(num >= 0 or num <= 0)
+	return num and num ~= inf and num ~= ninf and (num >= 0 or num <= 0)
 end
 
 function math.tostring(num)

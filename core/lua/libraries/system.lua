@@ -22,20 +22,17 @@ do
 	end
 end
 
-function system.ExecuteArgs()
-end
+function system.ExecuteArgs() end
 
 function system.ForceMainLoop()
 	system.force_main_loop = true
 end
 
 function system.GetWorkingDirectory()
-
 	if CLI then
 		local dir = os.getenv("GOLUWA_WORKING_DIRECTORY")
-		if dir then
-			return vfs.FixPathSlashes("os:" .. dir .. "/")
-		end
+
+		if dir then return vfs.FixPathSlashes("os:" .. dir .. "/") end
 
 		return "os:" .. e.ROOT_FOLDER
 	end
@@ -47,9 +44,8 @@ function system.OSCommandExists(...)
 	if select("#", ...) > 1 then
 		for _, cmd in ipairs({...}) do
 			local ok, err = system.OSCommandExists(cmd)
-			if not ok then
-				return false, err
-			end
+
+			if not ok then return false, err end
 		end
 	end
 
@@ -61,7 +57,6 @@ do -- console title
 	local titlesi = {}
 	local str = ""
 	local last_title
-
 	local lasttbl = {}
 
 	function system.SetConsoleTitle(title, id)
@@ -80,30 +75,30 @@ do -- console title
 					for _, v in ipairs(titlesi) do
 						if v == titles[id] then
 							table.remove(titlesi, i)
+
 							break
 						end
 					end
 				end
 
 				str = ""
+
 				for _, v in ipairs(titlesi) do
-					str = str ..  v.title .. " | "
+					str = str .. v.title .. " | "
 				end
 
 				if str ~= "" then
 					str = "| " .. str
 
-					if str ~= last_title then
-						system.SetConsoleTitleRaw(str)
-					end
+					if str ~= last_title then system.SetConsoleTitleRaw(str) end
 				end
 			else
 				local title = title or ""
 				str = title
-				if str ~= last_title then
-					system.SetConsoleTitleRaw(title)
-				end
+
+				if str ~= last_title then system.SetConsoleTitleRaw(title) end
 			end
+
 			last_title = str
 			lasttbl[id] = system.GetElapsedTime() + 0.05
 		end
@@ -119,9 +114,9 @@ do
 
 	function system.ShutDown(code)
 		code = code or 0
-		if VERBOSE then
-			logn("shutting down with code ", code)
-		end
+
+		if VERBOSE then logn("shutting down with code ", code) end
+
 		system.run = code
 		os.exitcode = code
 	end
@@ -130,7 +125,7 @@ do
 
 	function os.exit(code)
 		wlog("os.exit() called with code %i", code or 0, 2)
-		--system.ShutDown(code)
+	--system.ShutDown(code)
 	end
 
 	function os.realexit(code)
@@ -138,7 +133,10 @@ do
 	end
 end
 
-local function not_implemented() debug.trace() logn("this function is not yet implemented!") end
+local function not_implemented()
+	debug.trace()
+	logn("this function is not yet implemented!")
+end
 
 do -- frame time
 	local frame_time = 0.1
@@ -207,7 +205,6 @@ end
 do -- arg is made from luajit.exe
 	local arg = _G.arg or {}
 	_G.arg = nil
-
 	arg[0] = nil
 	arg[-1] = nil
 	table.remove(arg, 1)
@@ -220,12 +217,21 @@ end
 do
 	-- this should be used for xpcall
 	local suppress = false
+
 	function system.OnError(msg, ...)
 		logsection("lua error", true)
+
 		if msg then logn(msg) end
+
 		msg = msg or "no error"
 		msg = tostring(msg)
-		if suppress then logn("error in system.OnError: ", msg, ...) logn(debug.traceback())  return end
+
+		if suppress then
+			logn("error in system.OnError: ", msg, ...)
+			logn(debug.traceback())
+			return
+		end
+
 		suppress = true
 
 		if event.Call("LuaError", msg) == false then return end
@@ -240,33 +246,31 @@ do
 		else
 			logn("STACK TRACE:")
 			logn("{")
-
 			local data = {}
 
 			for level = 3, 100 do
 				local info = debug.getinfo(level)
+
 				if info then
 					info.source = debug.getprettysource(level) .. ":" .. (info.currentline or 0)
-
 					local args = {}
 
 					for arg = 1, info.nparams do
 						local key, val = debug.getlocal(level, arg)
+
 						if type(val) == "table" then
 							val = tostring(val)
 						else
 							val = serializer.GetLibrary("luadata").ToString(val)
-							if val and #val > 200 then
-								val = val:sub(0, 200) .. "...."
-							end
+
+							if val and #val > 200 then val = val:sub(0, 200) .. "...." end
 						end
+
 						table.insert(args, ("%s = %s"):format(key, val))
 					end
 
 					info.arg_line = table.concat(args, ", ")
-
 					info.name = info.name or "unknown"
-
 					table.insert(data, info)
 				else
 					break
@@ -278,28 +282,26 @@ do
 
 				for _, info in pairs(tbl) do
 					local str = tostring(info[field])
+
 					if str then
-						if #str > length then
-							length = #str
-						end
+						if #str > length then length = #str end
+
 						info[field] = str
 					end
 				end
 
 				for _, info in pairs(tbl) do
 					local str = info[field]
+
 					if str then
 						local diff = length - #str:split("\n")[1]
 
-						if diff > 0 then
-							info[field] = str .. (" "):rep(diff)
-						end
+						if diff > 0 then info[field] = str .. (" "):rep(diff) end
 					end
 				end
 			end
 
 			table.insert(data, {source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
-
 			resize_field(data, "source")
 			resize_field(data, "name")
 
@@ -308,40 +310,39 @@ do
 			end
 
 			table.clear(data)
-
 			logn("}")
 			logn("LOCALS: ")
 			logn("{")
+
 			for _, param in pairs(debug.getparamsx(4)) do
 				--if not param.key:find("(",nil,true) then
-					local val
+				local val
 
-					if type(param.val) == "table" then
-						val = tostring(param.val)
-					elseif type(param.val) == "string" then
-						val = param.val:sub(0, 10)
+				if type(param.val) == "table" then
+					val = tostring(param.val)
+				elseif type(param.val) == "string" then
+					val = param.val:sub(0, 10)
 
-						if val ~= param.val then
-							val = val .. " .. " .. utility.FormatFileSize(#param.val)
-						end
-					else
-						val = serializer.GetLibrary("luadata").ToString(param.val)
+					if val ~= param.val then
+						val = val .. " .. " .. utility.FormatFileSize(#param.val)
 					end
+				else
+					val = serializer.GetLibrary("luadata").ToString(param.val)
+				end
 
-					table.insert(data, {key = param.key, value = val})
-				--end
+				table.insert(data, {key = param.key, value = val})
+			--end
 			end
 
 			table.insert(data, {key = "KEY:", value = "VALUE:"})
-
 			resize_field(data, "key")
 			resize_field(data, "value")
 
 			for _, info in table.npairs(data) do
 				logf("  %s   %s\n", info.key, info.value)
 			end
-			logn("}")
 
+			logn("}")
 			logn("ERROR:")
 			logn("{")
 			local source, _msg = msg:match("(.+): (.+)")
@@ -350,9 +351,7 @@ do
 				source = source:trim()
 				local info = debug.getinfo(2)
 
-				if info.source:startswith("@") then
-					info.source = info.source:sub(2)
-				end
+				if info.source:startswith("@") then info.source = info.source:sub(2) end
 
 				logn("  ", info.source .. ":" .. info.currentline)
 				logn("  ", _msg:trim())
@@ -377,24 +376,26 @@ function system.GetCLICommand(cmd)
 	if not system.OSCommandExists(cmd) then
 		error("unable to find command " .. cmd)
 	end
-	return setmetatable({}, {__index = function(_, key)
-		return function(...)
-			local str = cmd .. " " .. key
 
-			if ... then
-				str = str .. " " .. table.concat({...}, " ")
-			end
+	return setmetatable(
+		{},
+		{
+			__index = function(_, key)
+				return function(...)
+					local str = cmd .. " " .. key
 
-			local f = io.popen(str)
-			local res = f:read("*all")
+					if ... then str = str .. " " .. table.concat({...}, " ") end
 
-			if not f:close() then
-				return nil, res
-			end
+					local f = io.popen(str)
+					local res = f:read("*all")
 
-			return res
-		end
-	end})
+					if not f:close() then return nil, res end
+
+					return res
+				end
+			end,
+		}
+	)
 end
 
 return system

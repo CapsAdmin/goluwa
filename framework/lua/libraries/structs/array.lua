@@ -1,7 +1,5 @@
-
 local ffi = desire("ffi")
 local TMPL = prototype.CreateTemplate("array")
-
 TMPL:GetSet("Length", 0)
 TMPL:GetSet("Size", 0)
 TMPL:GetSet("ArrayType", "uint8_t")
@@ -17,7 +15,6 @@ function TMPL:OnDeserialize(data)
 	self:SetSize(data[2])
 	self:SetPointer(data[3])
 end
-
 
 function TMPL:__tostring()
 	return ("array[%p][%s][%i]"):format(self.Pointer, self.ArrayType, self:GetLength())
@@ -38,9 +35,7 @@ function TMPL:__newindex(key, val)
 end
 
 function TMPL:Copy(array)
-	if array then
-		ffi.copy(self.Pointer, array.Pointer, self.Size)
-	end
+	if array then ffi.copy(self.Pointer, array.Pointer, self.Size) end
 end
 
 function TMPL:Fill(val)
@@ -48,17 +43,13 @@ function TMPL:Fill(val)
 end
 
 TMPL:Register()
-
 local translate = {
 	int_8 = "int8_t[?]",
 	uint_8 = "uint8_t[?]",
-
 	int_16 = "int16_t[?]",
 	uint_16 = "uint16_t[?]",
-
 	int_32 = "int32_t[?]",
 	uint_32 = "uint32_t[?]",
-
 	int_64 = "int64_t[?]",
 	uint_64 = "uint64_t[?]",
 }
@@ -72,7 +63,6 @@ function Array(type, length, ptr)
 	end
 
 	constructor = translate[type]
-
 	self:SetArrayType(type)
 
 	if _G.type(ptr) == "cdata" then

@@ -1,33 +1,35 @@
 local function promise(func)
-    return func
+	return func
 end
 
 local function await(func, ...)
-    assert(coroutine.running())
+	assert(coroutine.running())
+	local ret = nil
 
-    local ret = nil
+	func(function(...)
+		ret = {...}
+	end)
 
-    func(function(...) ret = {...} end)
+	while ret == nil do
+		tasks.Wait()
+	end
 
-    while ret == nil do
-        tasks.Wait()
-    end
-
-    return unpack(ret)
+	return unpack(ret)
 end
 
 foo = promise(function(resolve, ...)
-    return (function(someval)
-        local val = nil
+	return (
+		function(someval)
+			local val = nil
 
-        event.Delay(5, function()
-            resolve(someval)
-        end)
-    end)(...)
+			event.Delay(5, function()
+				resolve(someval)
+			end)
+		end
+	)(...)
 end)
-
 tasks.enabled = true
 
 tasks.CreateTask(function()
-    local val = await(foo, 5)
+	local val = await(foo, 5)
 end)

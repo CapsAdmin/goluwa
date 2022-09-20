@@ -12,22 +12,14 @@ if CLIENT then
 			audio.SetListenerGain(val)
 		end, nil, true)
 
-		pvars.Setup("snd_mute_losefocus", 0, function(val)
-
-		end, nil, true)
+		pvars.Setup("snd_mute_losefocus", 0, function(val) end, nil, true)
 	end
 
-	pvars.Setup("cl_timeout", 30, function(val)
+	pvars.Setup("cl_timeout", 30, function(val) end, nil, true)
 
-	end, nil, true)
+	pvars.Setup("r_radiosity", 0, function(val) end, nil, true)
 
-	pvars.Setup("r_radiosity", 0, function(val)
-
-	end, nil, true)
-
-	pvars.Setup("developer", 0, function(val)
-
-	end, nil, true)
+	pvars.Setup("developer", 0, function(val) end, nil, true)
 end
 
 if SERVER then

@@ -1,7 +1,5 @@
 local gui = ... or _G.gui
-
 local META = prototype.CreateTemplate("button")
-
 META:GetSet("Mode", "normal")
 META:GetSet("ResetOnMouseExit", true)
 META:GetSet("Highlight", false)
@@ -29,9 +27,7 @@ end
 function META:SetImageSize(size)
 	self.ImageSize = size:Copy()
 
-	if self.image then
-		self.image:SetSize(self.ImageSize)
-	end
+	if self.image then self.image:SetSize(self.ImageSize) end
 end
 
 function META:SetActiveStyle(str)
@@ -69,24 +65,32 @@ function META:SetState(press, button)
 
 	if self.OffsetContentOnClick ~= 0 then
 		if press then
-			self:Animate("DrawPositionOffset", {Vec2() + self.OffsetContentOnClick, function() return self:GetState(button) end, "from"}, nil, "", 0.5)
+			self:Animate(
+				"DrawPositionOffset",
+				{
+					Vec2() + self.OffsetContentOnClick,
+					function()
+						return self:GetState(button)
+					end,
+					"from",
+				},
+				nil,
+				"",
+				0.5
+			)
 		end
 	end
 
 	if press then
 		self.button_down[button] = press
 
-		if button == "button_1" then
-			self:SetStyle(self.ActiveStyle)
-		end
+		if button == "button_1" then self:SetStyle(self.ActiveStyle) end
 
 		return true
-	else--if self.button_down[button] then
+	else --if self.button_down[button] then
 		self.button_down[button] = nil
 
-		if button == "button_1" then
-			self:SetStyle(self.InactiveStyle)
-		end
+		if button == "button_1" then self:SetStyle(self.InactiveStyle) end
 
 		return true
 	end
@@ -96,7 +100,6 @@ end
 
 function META:TieCheckbox(button)
 	self.tied_buttons = self.tied_buttons or {}
-
 	table.insert(self.tied_buttons, button)
 
 	for _, button in ipairs(self.tied_buttons) do
@@ -115,15 +118,15 @@ end
 
 function META:CanPress(button)
 	button = button or "button_1"
-
 	self.click_times = self.click_times or {}
 	self.click_times[button] = self.click_times[button] or {last_click = 0, times = 0}
-
 	return self.click_times[button].times >= self.ClicksToActivate
 end
 
 function META:OnMouseInput(button, press)
-	if button == "button_3" or button == "mwheel_up" or button == "mwheel_down" then return end
+	if button == "button_3" or button == "mwheel_up" or button == "mwheel_down" then
+		return
+	end
 
 	self.click_times = self.click_times or {}
 	self.click_times[button] = self.click_times[button] or {last_click = 0, times = 0}
@@ -147,12 +150,9 @@ function META:OnMouseInput(button, press)
 
 		if self:SetState(press, button) then
 			self:OnStateChanged(press, button)
+
 			if button == "button_1" then
-				if press then
-					self:OnPress()
-				else
-					self:OnRelease()
-				end
+				if press then self:OnPress() else self:OnRelease() end
 			end
 		end
 	elseif press then
@@ -160,16 +160,12 @@ function META:OnMouseInput(button, press)
 			if self:Toggle(button) then
 				local press = self:GetState(button)
 				self:OnStateChanged(press, button)
-				if press then
-					self:OnPress()
-				else
-					self:OnRelease()
-				end
+
+				if press then self:OnPress() else self:OnRelease() end
 			end
 		elseif self.Mode == "radio" then
 			if self:Toggle(button) then
 				local press = self:GetState(button)
-
 				self:OnCheck(press)
 
 				if self.tied_buttons and #self.tied_buttons > 0 then
@@ -195,33 +191,44 @@ function META:OnMouseInput(button, press)
 							end
 						end
 
-						if not found then
-							self:SetState(true, button)
-						end
+						if not found then self:SetState(true, button) end
 					end
 				end
 
 				self:OnStateChanged(press, button)
 
-				if press then
-					self:OnPress()
-				else
-					self:OnRelease()
-				end
+				if press then self:OnPress() else self:OnRelease() end
 			end
 		end
 	end
 end
 
 function META:OnGlobalMouseInput(button, press)
-	if self.Mode == "normal" and not press and self.button_down[button] and not self.mouse_over then
+	if
+		self.Mode == "normal" and
+		not press and
+		self.button_down[button] and
+		not self.mouse_over
+	then
 		self:SetStyle(self.InactiveStyle)
 	end
 end
 
 function META:OnMouseEnter()
 	if self.HighlightOnMouseEnter then
-		self:Animate("DrawColor", {Color(1,1,1,1)*0.3, function() return self.Highlight or self:IsMouseOver() end, "from"}, nil, "", 0.25)
+		self:Animate(
+			"DrawColor",
+			{
+				Color(1, 1, 1, 1) * 0.3,
+				function()
+					return self.Highlight or self:IsMouseOver()
+				end,
+				"from",
+			},
+			nil,
+			"",
+			0.25
+		)
 	end
 end
 
@@ -232,15 +239,15 @@ function META:OnMouseExit()
 end
 
 function META:OnRelease() end
+
 function META:OnPress() end
+
 function META:OnStateChanged(press, button) end
 
 function META:Test()
 	local btn = gui.CreatePanel("button")
-
 	btn:SetMode("toggle")
-	btn:SetPosition(Vec2()+100)
-
+	btn:SetPosition(Vec2() + 100)
 	return btn
 end
 

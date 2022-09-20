@@ -1,4 +1,8 @@
-local ffi = require("ffi");local CLIB = assert(ffi.load("tls"));ffi.cdef([[struct tls {};
+local ffi = require("ffi")
+
+local CLIB = assert(ffi.load("tls"))
+
+ffi.cdef([[struct tls {};
 struct tls_config {};
 int(tls_config_set_key_mem)(struct tls_config*,const unsigned char*,unsigned long);
 const unsigned char*(tls_peer_cert_chain_pem)(struct tls*,unsigned long*);
@@ -92,22 +96,29 @@ int(tls_config_set_ca_mem)(struct tls_config*,const unsigned char*,unsigned long
 ]])
 local library = {}
 
-
 --====helper safe_clib_index====
-		function SAFE_INDEX(clib)
-			return setmetatable({}, {__index = function(_, k)
-				local ok, val = pcall(function() return clib[k] end)
+function SAFE_INDEX(clib)
+	return setmetatable(
+		{},
+		{
+			__index = function(_, k)
+				local ok, val = pcall(function()
+					return clib[k]
+				end)
+
 				if ok then
 					return val
 				elseif clib_index then
 					return clib_index(k)
 				end
-			end})
-		end
-	
---====helper safe_clib_index====
+			end,
+		}
+	)
+end
 
-CLIB = SAFE_INDEX(CLIB)library = {
+--====helper safe_clib_index====
+CLIB = SAFE_INDEX(CLIB)
+library = {
 	config_set_key_mem = CLIB.tls_config_set_key_mem,
 	peer_cert_chain_pem = CLIB.tls_peer_cert_chain_pem,
 	connect_socket = CLIB.tls_connect_socket,

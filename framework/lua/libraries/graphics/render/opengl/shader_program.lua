@@ -7,7 +7,6 @@ end
 
 local gl = require("opengl")
 local ffi = require("ffi")
-
 local META = prototype.CreateTemplate("shader_program")
 
 function render.CreateShaderProgram()
@@ -18,11 +17,9 @@ end
 
 function META:CompileShader(type, source)
 	local shader = gl.CreateShader2("GL_" .. type:upper() .. "_SHADER")
-
 	local shader_strings = ffi.new("const GLchar * [1]", ffi.cast("const GLchar *", source))
 	shader:Source(1, shader_strings, nil)
 	shader:Compile()
-
 	local log_length = ffi.new("GLint[1]", 0)
 	shader:Getiv("GL_INFO_LOG_LENGTH", log_length)
 
@@ -31,7 +28,6 @@ function META:CompileShader(type, source)
 		local size = ffi.new("GLsizei[1]")
 		shader:GetInfoLog(1024, size, log)
 		shader:Delete()
-
 		error(ffi.string(log, size[0]), 2)
 	end
 
@@ -46,7 +42,6 @@ function META:Link()
 	end
 
 	self.gl_program:Link()
-
 	local status = ffi.new("GLint[1]", 1)
 	self.gl_program:Getiv("GL_LINK_STATUS", status)
 
@@ -55,7 +50,6 @@ function META:Link()
 		local size = ffi.new("GLsizei[1]")
 		self.gl_program:GetInfoLog(1024, size, log)
 		self.gl_program:Delete()
-
 		error(ffi.string(log, size[0]), 2)
 	end
 
@@ -75,8 +69,7 @@ do
 			GL_REFERENCED_BY_TESS_CONTROL_SHADER = true,
 			GL_REFERENCED_BY_TESS_EVALUATION_SHADER = true,
 			GL_REFERENCED_BY_COMPUTE_SHADER = true,
-		},]]
-		GL_BUFFER_VARIABLE = {
+		},]] GL_BUFFER_VARIABLE = {
 			GL_NAME_LENGTH = true,
 			GL_OFFSET = true,
 			GL_REFERENCED_BY_FRAGMENT_SHADER = true,
@@ -236,11 +229,9 @@ do
 	end
 
 	if not render.IsExtensionSupported("ARB_compute_shader") then
-		for k,v in pairs(fill_info) do
+		for k, v in pairs(fill_info) do
 			for k in pairs(v) do
-				if k:find("COMPUTE_SHADER") then
-					v[k] = nil
-				end
+				if k:find("COMPUTE_SHADER") then v[k] = nil end
 			end
 		end
 	end
@@ -266,7 +257,6 @@ do
 		bool_vec2 = {name = "bvec2", size = 8},
 		bool_vec3 = {name = "bvec3", size = 12},
 		bool_vec4 = {name = "bvec4", size = 16},
-
 		float_mat2 = {name = "mat2", size = 16},
 		float_mat3 = {name = "mat3", size = 36},
 		float_mat4 = {name = "mat4", size = 64},
@@ -276,8 +266,6 @@ do
 		float_mat4x2 = {name = "mat4x2", size = 32},
 		float_mat3x4 = {name = "mat3x4", size = 48},
 		float_mat4x3 = {name = "mat4x3", size = 48},
-
-
 		double_mat2 = {name = "dmat2", size = 32},
 		double_mat3 = {name = "dmat3", size = 72},
 		double_mat4 = {name = "dmat4", size = 128},
@@ -324,15 +312,14 @@ do
 		unsigned_int_sampler_buffer = {name = "usamplerbuffer"},
 		unsigned_int_sampler_2d_rect = {name = "usampler2drect"},
 	}
-
-
 	local temp
-
 	temp = {}
+
 	for what, properties in pairs(fill_info) do
 		local property_enums = {}
 		local property_enums_tbl = {}
 		local names = {}
+
 		for enum in pairs(properties) do
 			table.insert(property_enums, gl.e[enum])
 			table.insert(property_enums_tbl, enum)
@@ -340,18 +327,22 @@ do
 		end
 
 		temp[what] = {
-			enums = ffi.new("const GLenum["..#names.."]", property_enums),
+			enums = ffi.new("const GLenum[" .. #names .. "]", property_enums),
 			enumstbl = property_enums_tbl,
 			count = #names,
-			names = names
+			names = names,
 		}
 	end
-	fill_info = temp
 
+	fill_info = temp
 	temp = {}
-	for k,v in pairs(type_translate) do
-		pcall(function() temp[gl.e[("gl_" .. k):upper()]] = v end)
+
+	for k, v in pairs(type_translate) do
+		pcall(function()
+			temp[gl.e[("gl_" .. k):upper()]] = v
+		end)
 	end
+
 	type_translate = temp
 
 	if render.IsExtensionSupported("ARB_program_interface_query") then
@@ -362,15 +353,20 @@ do
 				local resource_count = ffi.new("GLint[1]")
 				self.gl_program:GetInterface(what, "GL_ACTIVE_RESOURCES", resource_count)
 				resource_count = resource_count[0]
-
 				local properties = {}
 
 				for resource_index = 0, resource_count - 1 do
-
-					local res = ffi.new("GLint["..property_info.count.."]")
+					local res = ffi.new("GLint[" .. property_info.count .. "]")
 					local len = ffi.new("GLsizei[1]")
-					self.gl_program:GetResource(what, resource_index, property_info.count, property_info.enums, property_info.count, len, res)
-
+					self.gl_program:GetResource(
+						what,
+						resource_index,
+						property_info.count,
+						property_info.enums,
+						property_info.count,
+						len,
+						res
+					)
 					local values = {}
 
 					for i = 1, property_info.count do
@@ -389,6 +385,7 @@ do
 
 						values[key] = val
 					end
+
 					--[[
 					if what == "GL_UNIFORM_BLOCK" then
 						local res = ffi.new("GLint[1]")
@@ -407,16 +404,11 @@ do
 							end
 						end
 					end
-					]]
-
-					table.insert(properties, values)
+					]] table.insert(properties, values)
 				end
 
-				if next(properties) then
-					out[what:sub(4):lower()] = properties
-				end
+				if next(properties) then out[what:sub(4):lower()] = properties end
 			end
-
 
 			if out.buffer_variable then
 				for _, info in ipairs(out.buffer_variable) do
@@ -424,6 +416,7 @@ do
 					out.shader_storage_block[i].variables = out.shader_storage_block[i].variables or {}
 					table.insert(out.shader_storage_block[i].variables, info)
 				end
+
 				out.buffer_variable = nil
 
 				for _, info in pairs(out.shader_storage_block) do
@@ -441,6 +434,7 @@ do
 						out.uniform[i2] = nil
 					end
 				end
+
 				out.buffer_variable = nil
 
 				for _, info in pairs(out.uniform_block) do
@@ -454,25 +448,24 @@ do
 	else
 		function META:GetProperties()
 			local out = {}
-
 			return out
 		end
 	end
 
 	function META:GetUniformData(key)
 		local out = {}
-
 		out.block_index = self:GetUniformBlockIndex(key)
 
-		for _, v in ipairs({
-			"GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER",
-			"GL_UNIFORM_BLOCK_REFERENCED_BY_TESS_CONTROL_SHADER",
-			"GL_UNIFORM_BLOCK_REFERENCED_BY_TESS_EVALUATION_SHADER",
-			"GL_UNIFORM_BLOCK_REFERENCED_BY_GEOMETRY_SHADER",
-			"GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER",
-			"GL_UNIFORM_BLOCK_REFERENCED_BY_COMPUTE_SHADER",
-		}) do
-
+		for _, v in ipairs(
+			{
+				"GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER",
+				"GL_UNIFORM_BLOCK_REFERENCED_BY_TESS_CONTROL_SHADER",
+				"GL_UNIFORM_BLOCK_REFERENCED_BY_TESS_EVALUATION_SHADER",
+				"GL_UNIFORM_BLOCK_REFERENCED_BY_GEOMETRY_SHADER",
+				"GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER",
+				"GL_UNIFORM_BLOCK_REFERENCED_BY_COMPUTE_SHADER",
+			}
+		) do
 			local ptr = ffi.new("GLint[1]")
 			self:GetActiveUniformBlock(out.block_index, v, ptr)
 			out[v:sub(18):lower()] = ptr[0]
@@ -483,26 +476,20 @@ do
 		local strptr = ffi.new("uint8_t[?]", ptr[0])
 		self:GetActiveUniformBlockName(out.block_index, ptr[0], nil, strptr)
 		out.name = ffi.string(strptr)
-
 		local ptr = ffi.new("GLint[1]")
 		self:GetActiveUniformBlock(out.block_index, "GL_UNIFORM_BLOCK_DATA_SIZE", ptr)
 		out.buffer_data_size = ptr[0]
-
 		local ptr = ffi.new("GLint[1]")
 		self:GetActiveUniformBlock(out.block_index, "GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS", ptr)
 		out.active_uniforms = ptr[0]
-
 		out.variables = {}
-
 		local ptr = ffi.new("GLint[?]", out.active_uniforms)
 		self:GetActiveUniformBlock(out.block_index, "GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES", ptr)
+
 		for i = 0, out.active_uniforms - 1 do
 			local idx = ptr[i]
-
 			local name, type = self:GetActiveUniform(idx)
-
 			local tbl = {}
-
 			tbl.location = idx
 			tbl.name = name
 			tbl.type = type
@@ -511,7 +498,6 @@ do
 			tbl.matrix_stride = self:GetActiveUniforms({idx}, "GL_UNIFORM_MATRIX_STRIDE")[1]
 			tbl.is_row_major = self:GetActiveUniforms({idx}, "GL_UNIFORM_IS_ROW_MAJOR")[1]
 			tbl.atomic_counter_buffer_index = self:GetActiveUniforms({idx}, "GL_UNIFORM_ATOMIC_COUNTER_BUFFER_INDEX")[1]
-
 			table.insert(out.variables, tbl)
 		end
 
@@ -521,9 +507,9 @@ do
 	do -- GetProperties alternative
 		function META:GetUniformBlockIndex(key)
 			local location = self.gl_program:GetUniformBlockIndex(key)
-			if location == gl.e.GL_INVALID_INDEX then
-				return nil, "invalid index"
-			end
+
+			if location == gl.e.GL_INVALID_INDEX then return nil, "invalid index" end
+
 			return location
 		end
 
@@ -546,9 +532,11 @@ do
 			local out = ffi.new("GLint[?]", #indices)
 			gl.GetActiveUniformsiv(self.gl_program.id, #indices, ffi.new("GLint[?]", unpack(indices)), pname, out)
 			local tbl = {}
+
 			for i = 1, #indices do
-				tbl[i] = out[i-1]
+				tbl[i] = out[i - 1]
 			end
+
 			return tbl
 		end
 	end
@@ -584,6 +572,7 @@ end
 
 if SRGB then
 	local linear2gamma = math.linear2gamma
+
 	function META:UploadColor(key, val)
 		self.gl_program:Uniform4f(key, linear2gamma(val.r), linear2gamma(val.g), linear2gamma(val.b), val.a)
 	end
@@ -595,10 +584,10 @@ end
 
 if render.IsExtensionSupported("ARB_bindless_texture") then
 	function META:UploadTexture(key, val)
-		if not val.gl_bindless_handle then
-			val:SetBindless(true)
-		end
+		if not val.gl_bindless_handle then val:SetBindless(true) end
+
 		if val.Loading then val = render.GetLoadingTexture() end
+
 		self.gl_program:UniformHandleui64(key, val.gl_bindless_handle)
 	end
 else
@@ -629,9 +618,7 @@ function META:BindAttribLocation(i, name)
 end
 
 function META:OnRemove()
-	if self.gl_program then
-		self.gl_program:Delete()
-	end
+	if self.gl_program then self.gl_program:Delete() end
 end
 
 META:Register()

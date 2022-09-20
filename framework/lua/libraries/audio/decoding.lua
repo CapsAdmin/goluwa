@@ -1,5 +1,4 @@
 local audio = ... or _G.audio or {}
-
 audio.decoders = audio.decoders or {}
 
 function audio.AddDecoder(id, callback)
@@ -18,10 +17,12 @@ end
 
 function audio.Decode(file, path_hint, id)
 	local errors = {}
+
 	for _, decoder in ipairs(audio.decoders) do
 		if not id or id == decoder.id then
 			file:SetPosition(0)
 			local ok, buffer, length, info = pcall(decoder.callback, file, path_hint)
+
 			if ok then
 				if buffer and length then
 					return buffer, length, info or {}
@@ -35,9 +36,9 @@ function audio.Decode(file, path_hint, id)
 			end
 		end
 	end
+
 	llog("failed to decode ", path_hint, ":\n\t", table.concat(errors, "\n\t"))
 end
 
 runfile("decoders/*", audio)
-
 return audio

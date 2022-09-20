@@ -1,10 +1,9 @@
 local glfw = desire("glfw")
+
 if not glfw then return end
 
 local ffi = require("ffi")
-
 local META = ... or prototype.GetRegistered("window")
-
 META.KeyMap = {
 	[-1] = "unknown",
 	[32] = "space",
@@ -128,7 +127,6 @@ META.KeyMap = {
 	[347] = "right_super",
 	[348] = "menu",
 }
-
 META.ButtonMap = {
 	[0] = "button_1",
 	[1] = "button_2",
@@ -140,40 +138,33 @@ META.ButtonMap = {
 	[7] = "button_8",
 }
 
-
 function META:Initialize()
 	if not glfw.init then
 		glfw.Init()
-
-		local cb = function(code, str) wlog(ffi.string(str)) end
+		local cb = function(code, str)
+			wlog(ffi.string(str))
+		end
 		jit.off(cb)
 		glfw.SetErrorCallback(cb)
-
-		local cb = function() event.Call("OnMonitorConnected") end
+		local cb = function()
+			event.Call("OnMonitorConnected")
+		end
 		jit.off(cb)
 		glfw.SetMonitorCallback(cb)
 
-		if OPENGL then
-			require("opengl").GetProcAddress = glfw.GetProcAddress
-		end
+		if OPENGL then require("opengl").GetProcAddress = glfw.GetProcAddress end
 
 		glfw.init = true
 	end
 
 	self:PreWindowSetup(self.Flags or {"shown", "resizable"})
-
 	local w, h = self.Size.x, self.Size.y
-
 	local monitor = glfw.GetPrimaryMonitor()
 	local props = glfw.GetVideoMode(monitor)
 
-	if w == 0 then
-		w = props.width
-	end
+	if w == 0 then w = props.width end
 
-	if h == 0 then
-		h = props.height
-	end
+	if h == 0 then h = props.height end
 
 	local ptr = glfw.CreateWindow(w, h, self.Title, nil, render.main_window and render.main_window.wnd_ptr)
 
@@ -183,13 +174,12 @@ function META:Initialize()
 	end
 
 	glfw.MakeContextCurrent(ptr)
-	
+
 	if VERBOSE then
 		logn("glfw version: ", ffi.string(glfw.GetVersionString()):trim())
 	end
 
 	self.wnd_ptr = ptr
-
 	self:PostWindowSetup()
 
 	if not system.disable_window then
@@ -200,14 +190,14 @@ function META:Initialize()
 	do -- callbacks
 		local function set_callback(name, cb)
 			jit.off(cb)
-			glfw["Set" .. name .."Callback"](ptr, cb)
+			glfw["Set" .. name .. "Callback"](ptr, cb)
 		end
 
 		set_callback("Drop", function(ptr, count, strings)
 			local t = {}
 
 			for i = 1, count do
-				t[i] = ffi.string(strings[i-1])
+				t[i] = ffi.string(strings[i - 1])
 			end
 
 			self:CallEvent("Drop", t)
@@ -285,9 +275,7 @@ function META:Initialize()
 		end)
 	end
 
-	if not render.current_window:IsValid() then
-		render.current_window = self
-	end
+	if not render.current_window:IsValid() then render.current_window = self end
 
 	render.context_created = true
 
@@ -335,9 +323,7 @@ do
 	}
 
 	function META:SetCursor(mode)
-		if not self.Cursors[mode] then
-			mode = "arrow"
-		end
+		if not self.Cursors[mode] then mode = "arrow" end
 
 		self.Cursor = mode
 
@@ -351,13 +337,14 @@ do
 		end
 	end
 end
+
 function META:SetSize(pos)
 	glfw.SetWindowSize(self.wnd_ptr, pos:Unpack())
 end
+
 function META:GetSize()
 	local x = ffi.new("int[1]")
 	local y = ffi.new("int[1]")
-
 	glfw.GetWindowSize(self.wnd_ptr, x, y)
 	return Vec2(x[0], y[0])
 end
@@ -365,9 +352,7 @@ end
 function META:GetFramebufferSize()
 	local x = ffi.new("int[1]")
 	local y = ffi.new("int[1]")
-
 	glfw.GetFramebufferSize(self.wnd_ptr, x, y)
-
 	return Vec2(x[0], y[0])
 end
 
@@ -388,7 +373,7 @@ function META:GetMousePosition()
 end
 
 function META:SwapInterval(b)
-	if last~= b then
+	if last ~= b then
 		glfw.SwapInterval(b and 1 or 0)
 		last = b
 	end
@@ -400,21 +385,17 @@ end
 
 function META:GetClipboard()
 	local str = glfw.GetClipboardString(self.wnd_ptr)
-	if str ~= nil then
-		return ffi.string(str)
-	end
+
+	if str ~= nil then return ffi.string(str) end
 end
 
 if VULKAN then
 	function META:PreWindowSetup(flags)
 		table.insert(flags, "vulkan")
-
 		glfw.WindowHint(glfw.e.CLIENT_API, glfw.e.NO_API)
 	end
 
-	function META:PostWindowSetup()
-
-	end
+	function META:PostWindowSetup() end
 
 	function render.CreateVulkanSurface(wnd, instance)
 		return glfw.CreateWindowSurface(instance, wnd.wnd_ptr, nil)
@@ -438,10 +419,8 @@ if OPENGL and not NULL_OPENGL then
 
 	function META:PreWindowSetup(flags)
 		table.insert(flags, "opengl")
-
 		glfw.WindowHint(glfw.e.DEPTH_BITS, 16)
 		glfw.WindowHint(glfw.e.STENCIL_BITS, 8)
-
 		-- workaround for srgb on intel mesa driver
 		glfw.WindowHint(glfw.e.ALPHA_BITS, 1)
 		--glfw.WindowHint(glfw.e.CONTEXT_VERSION_MINOR, 3)
@@ -466,18 +445,19 @@ do
 		if glfw.JoystickPresent(i) == 0 then return end
 
 		local out = {axes = {}, buttons = {}}
+
 		if glfw.JoystickPresent(i) ~= 0 then
-
 			out.name = ffi.string(glfw.GetJoystickName(i))
-
 			local axes = glfw.GetJoystickAxes(i, count)
+
 			for i = 0, count[0] do
-				out.axes[i+1] = axes[i]
+				out.axes[i + 1] = axes[i]
 			end
 
 			local buttons = glfw.GetJoystickButtons(i, count)
+
 			for i = 0, count[0] do
-				out.buttons[i+1] = buttons[i]
+				out.buttons[i + 1] = buttons[i]
 			end
 
 			return out

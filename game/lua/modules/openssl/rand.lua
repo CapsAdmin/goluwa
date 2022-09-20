@@ -1,3 +1,2 @@
-local ctx = require"_openssl.rand"
-
+local ctx = require("_openssl.rand")
 return ctx

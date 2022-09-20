@@ -1,9 +1,9 @@
 local tex = render.CreateTexture("2d")
-
 tex:SetPath("textures/greendog.png")
 
 local function blur_texture(dir)
-	tex:Shade([[
+	tex:Shade(
+		[[
 		//this will be our RGBA sum
 		vec4 sum = vec4(0.0);
 
@@ -33,15 +33,17 @@ local function blur_texture(dir)
 		sum += texture(self, vec2(uv.x + 4.0*blur*hstep, uv.y + 4.0*blur*vstep)) * 0.0162162162;
 
 		return sum;
-	]], {
-		radius = 1,
-		resolution = render.GetScreenSize(),
-		dir = dir,
-	})
+	]],
+		{
+			radius = 1,
+			resolution = render.GetScreenSize(),
+			dir = dir,
+		}
+	)
 end
 
-blur_texture(Vec2(0,5))
-blur_texture(Vec2(5,0))
+blur_texture(Vec2(0, 5))
+blur_texture(Vec2(5, 0))
 
 function goluwa.PreDrawGUI()
 	render2d.SetTexture(tex)

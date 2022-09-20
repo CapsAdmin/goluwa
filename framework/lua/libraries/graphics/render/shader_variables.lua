@@ -4,7 +4,6 @@ local META = prototype.CreateTemplate("shader_variables")
 
 function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 	extra_size = extra_size or 0
-
 	local properties = shader.program:GetProperties()
 	local block
 
@@ -13,14 +12,16 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 	elseif properties.shader_storage_block then
 		block = properties.shader_storage_block[name]
 	else
-		return nil, "could not find uniform_block or shader_storage_block in shader properties"
+		return nil,
+		"could not find uniform_block or shader_storage_block in shader properties"
 	end
 
 	local referenced = false
 
-	for k,v in pairs(block) do
+	for k, v in pairs(block) do
 		if k:startswith("referenced_by_") and v == 1 then
 			referenced = true
+
 			break
 		end
 	end
@@ -40,7 +41,6 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 		name = name:match("(.+)%[") or name
 		variables[name] = {}
 		table.insert(variables2, name)
-
 		local temp
 		local set
 		local get
@@ -48,10 +48,8 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 		if v.type.size then
 			local size = v.type.size
 			local offset = v.offset
-
-			total_size = math.max(offset+size, total_size)
-
-			local length =  v.type.size / ffi.sizeof("float")
+			total_size = math.max(offset + size, total_size)
+			local length = v.type.size / ffi.sizeof("float")
 			temp = ffi.new("float[?]", length)
 
 			if length == 16 or length == 9 then
@@ -61,7 +59,7 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 				end
 			elseif length == 4 then
 				if SRGB then
-				local linear2gamma = math.linear2gamma
+					local linear2gamma = math.linear2gamma
 					set = function(buffer, var, index)
 						temp[0] = linear2gamma(var.r)
 						temp[1] = linear2gamma(var.g)
@@ -105,46 +103,38 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 		elseif v.type.name:find("sampler") then
 			local size = ffi.sizeof("uint64_t")
 			local offset = v.offset
-
 			total_size = math.max(offset + size, total_size)
-
 			temp = ffi.new("uint64_t[1]")
-
 			set = function(buffer, var, index)
-				if not var.gl_bindless_handle then
-					var:SetBindless(true)
-				end
+				if not var.gl_bindless_handle then var:SetBindless(true) end
+
 				temp[0] = var.gl_bindless_handle
 				buffer:UpdateData(temp, size, offset + (index * v.array_stride))
 			end
 		end
 
 		variables[name].set = set
-		variables[name].get = function() return temp end
+		variables[name].get = function()
+			return temp
+		end
 	end
 
 	local self = META:CreateObject()
-
 	self.last_variables = {}
 	self.variables = variables
 	self.variables2 = variables2
 	self.buffer = render.CreateShaderVariableBuffer(typ, total_size, persistent)
 	self.block = block
 	self.type = typ
-
 	return self
 end
 
 function META:BeginWrite()
-	if self.buffer.ptr then
-		self.buffer:WaitForLockedRange()
-	end
+	if self.buffer.ptr then self.buffer:WaitForLockedRange() end
 end
 
 function META:EndWrite()
-	if self.buffer.ptr then
-		self.buffer:LockRange()
-	end
+	if self.buffer.ptr then self.buffer:LockRange() end
 end
 
 function META:SetBindLocation(shader, bind_location)
@@ -158,9 +148,9 @@ end
 function META:UpdateVariable(key, val, index)
 	if self.variables[key] and self.last_variables[key] ~= val then
 		self.variables[key].set(self.buffer, val, index or 0)
-		if type(val) == "cdata" then
-			val = val:Copy()
-		end
+
+		if type(val) == "cdata" then val = val:Copy() end
+
 		self.last_variables[key] = val
 	end
 end

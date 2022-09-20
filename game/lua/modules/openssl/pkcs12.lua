@@ -1,1 +1,1 @@
-return require('_openssl.pkcs12')
+return require("_openssl.pkcs12")

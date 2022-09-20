@@ -14,20 +14,13 @@ function gine.env.Vector(x, y, z)
 		z = tonumber(z)
 	end
 
-	if type(x) ~= "number" then
-		x = 0
-	end
+	if type(x) ~= "number" then x = 0 end
 
-	if type(y) ~= "number" then
-		y = 0
-	end
+	if type(y) ~= "number" then y = 0 end
 
-	if type(z) ~= "number" then
-		z = 0
-	end
+	if type(z) ~= "number" then z = 0 end
 
 	self.ptr = Vec3(x, y, z)
-
 	return setmetatable(self, META)
 end
 
@@ -52,6 +45,7 @@ function META:__newindex(key, val)
 		self.ptr.z = val
 	end
 end
+
 function META:__tostring()
 	return ("Vector(%f, %f, %f)"):format(self.ptr:Unpack())
 end
@@ -93,7 +87,7 @@ function META.__div(a, b)
 end
 
 function META:ToScreen()
-	local pos,vis = math3d.WorldPositionToScreen(self.ptr)
+	local pos, vis = math3d.WorldPositionToScreen(self.ptr)
 	return {
 		x = pos.x,
 		y = pos.y,
@@ -109,9 +103,7 @@ function META:Cross(vec)
 	return gine.env.Vector(self.ptr:Cross(vec))
 end
 
-function META:Rotate()
-
-end
+function META:Rotate() end
 
 function META:Distance(vec)
 	return self.ptr:Distance(vec.ptr)
@@ -121,9 +113,7 @@ function META:Dot(vec)
 	return self.ptr:GetDot(vec.ptr)
 end
 
-function META:Rotate(ang)
-
-end
+function META:Rotate(ang) end
 
 META.DotProduct = META.Dot
 
@@ -179,6 +169,7 @@ end
 function META:Length()
 	return self.ptr:GetLength()
 end
+
 function META:DistToSqr(b)
 	return (self.ptr - b.ptr):GetLengthSquared()
 end

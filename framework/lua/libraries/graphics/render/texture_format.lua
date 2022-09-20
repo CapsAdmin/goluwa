@@ -1,5 +1,4 @@
 local render = ... or _G.render
-
 local texture_formats = {
 	depth_component16 = {bits = {16}},
 	depth_component24 = {bits = {24}},
@@ -66,7 +65,6 @@ local texture_formats = {
 	rgba32i = {signed = true, bits = {32, 32, 32, 32}},
 	rgba32ui = {bits = {32, 32, 32, 32}},
 }
-
 local number_types = {
 	unsigned_byte = {type = "uint8_t"},
 	byte = {type = "int8_t"},
@@ -76,7 +74,6 @@ local number_types = {
 	int = {type = "int32_t"},
 	half_float = {type = "float", float = true},
 	float = {type = "double", float = true},
-
 	-- these are combined, so like rgba can be packed into one whole integer
 	unsigned_byte_3_3_2 = {type = "uint8_t", combined = true},
 	unsigned_byte_2_3_3_rev = {type = "uint8_t", combined = true},
@@ -104,9 +101,7 @@ for _, info in pairs(texture_formats) do
 		type = ""
 
 		if not info.float then
-			if not info.signed then
-				type = type .. "u"
-			end
+			if not info.signed then type = type .. "u" end
 
 			type = type .. "int"
 		end
@@ -129,28 +124,23 @@ for _, info in pairs(texture_formats) do
 	end
 
 	local ending = table.concat(info.bits, "_")
-
 	info.combined_number_types = {}
 
 	for friendly2, info2 in pairs(number_types) do
-		if not info2.enum then
-			info2.friendly = friendly2
-		end
+		if not info2.enum then info2.friendly = friendly2 end
 
 		if info2.combined then
 			if friendly2:match(".-_.-_(.+)"):gsub("_rev", "") == ending then
 				table.insert(info.combined_number_types, info2)
 			end
 		else
-			if info2.type == type then
-				info.number_type = info2
-			end
+			if info2.type == type then info.number_type = info2 end
 		end
 	end
 
 	line = line .. "} "
-
 	local ffi = desire("ffi")
+
 	if ffi then
 		info.ctype = ffi.typeof(line)
 		info.ctype_array = ffi.typeof("$[?]", info.ctype)
@@ -167,44 +157,20 @@ local function get_upload_format(size, reverse, integer, depth, stencil)
 	end
 
 	if size == 1 then
-		if integer then
-			return "red_integer"
-		else
-			return "red"
-		end
+		if integer then return "red_integer" else return "red" end
 	elseif size == 2 then
-		if integer then
-			return "rg_integer"
-		else
-			return "rg"
-		end
+		if integer then return "rg_integer" else return "rg" end
 	elseif size == 3 then
 		if reverse then
-			if integer then
-				return "bgr_integer"
-			else
-				return "bgr"
-			end
+			if integer then return "bgr_integer" else return "bgr" end
 		else
-			if integer then
-				return "rgb_integer"
-			else
-				return "rgb"
-			end
+			if integer then return "rgb_integer" else return "rgb" end
 		end
 	elseif size == 4 then
 		if reverse then
-			if integer then
-				return "bgra_integer"
-			else
-				return "bgra"
-			end
+			if integer then return "bgra_integer" else return "bgra" end
 		else
-			if integer then
-				return "rgba_integer"
-			else
-				return "rgba"
-			end
+			if integer then return "rgba_integer" else return "rgba" end
 		end
 	end
 end
@@ -228,9 +194,13 @@ function render.GetTextureFormatInfo(format)
 	end
 
 	local info = table.copy(texture_formats[format:lower()])
-
-	info.preferred_upload_format = get_upload_format(#info.bits, reverse, false, format:lower():find("depth", nil, true), format:lower():find("stencil", nil, true))
+	info.preferred_upload_format = get_upload_format(
+		#info.bits,
+		reverse,
+		false,
+		format:lower():find("depth", nil, true),
+		format:lower():find("stencil", nil, true)
+	)
 	info.preferred_upload_type = info.number_type.friendly
-
 	return info
 end

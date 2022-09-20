@@ -1,13 +1,10 @@
 local oh = ... or _G.oh
-
 local table_remove = table.remove
 local ipairs = ipairs
-
 local META = {}
 META.__index = META
 
 function META:Whitespace(str, force)
-
 	if self.config.preserve_whitespace and not force then return end
 
 	if str == "?" then
@@ -25,12 +22,12 @@ function META:Whitespace(str, force)
 	end
 end
 
-
 function META:Emit(str)
 	if type(str) ~= "string" then
 		table.print(str)
 		print(debug.traceback())
 	end
+
 	self.out[self.i] = str or ""
 	self.i = self.i + 1
 end
@@ -71,9 +68,7 @@ function META:EmitToken(v, translate)
 		self:Emit(v.value)
 
 		if self.FORCE_INTEGER then
-			if v.type == "number" then
-				self:Emit("LL")
-			end
+			if v.type == "number" then self:Emit("LL") end
 		end
 	end
 end
@@ -82,9 +77,7 @@ function META:BuildCode(block)
 	self.level = 0
 	self.out = {}
 	self.i = 1
-
 	self:Block(block)
-
 	return table.concat(self.out)
 end
 

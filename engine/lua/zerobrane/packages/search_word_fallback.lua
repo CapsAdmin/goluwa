@@ -5,8 +5,14 @@ local PLUGIN = {
 }
 
 function PLUGIN:onEditorKeyDown(editor, event)
-	if event:GetModifiers() == wxstc.wxSTC_SCMOD_CTRL and event:GetKeyCode() == ("F"):byte() then
+	if
+		event:GetModifiers() == wxstc.wxSTC_SCMOD_CTRL and
+		event:GetKeyCode() == (
+			"F"
+		):byte()
+	then
 		local start, stop = editor:GetSelection()
+
 		if start == stop then
 			local pos = start
 			start = editor:WordStartPosition(pos, true)

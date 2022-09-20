@@ -6,7 +6,5 @@ event.AddListener("ClientChat", "chatsounds", function(client, txt, seed)
 		init = true
 	end
 
-	if not txt:find("^%p") then
-		chatsounds.Say(txt, seed)
-	end
+	if not txt:find("^%p") then chatsounds.Say(txt, seed) end
 end)

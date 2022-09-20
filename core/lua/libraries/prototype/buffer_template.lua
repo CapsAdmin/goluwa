@@ -1,29 +1,26 @@
 local META = ...
-
 local ffi = desire("ffi")
 
 -- <cmtptr> CapsAdmin, http://codepad.org/uN7qlQTm
 local function swap_endian(num, size)
 	local result = 0
+
 	for shift = 0, size - 8, 8 do
-		result = bit.bor(bit.lshift(result, 8),
-				bit.band(bit.rshift(num, shift), 0xff))
+		result = bit.bor(bit.lshift(result, 8), bit.band(bit.rshift(num, shift), 0xff))
 	end
+
 	return result
 end
 
 local function header_to_table(str)
 	local out = {}
-
 	str = str:gsub("//.-\n", "") -- remove line comments
 	str = str:gsub("/%*.-%s*/", "") -- remove multiline comments
 	str = str:gsub("%s+", " ") -- remove excessive whitespace
-
 	for field in str:gmatch("(.-);") do
 		local type, key
 		local assert
 		local swap_endianess = false
-
 		field = field:trim()
 
 		if field:startswith("swap") then
@@ -40,42 +37,36 @@ local function header_to_table(str)
 
 		type = type:trim()
 		key = key:trim()
-
 		local length
-
 		key = key:gsub("%[(.-)%]$", function(num)
 			length = tonumber(num) or num
 			return ""
 		end)
-
 		local qualifier, _type = type:match("(.+) (.+)")
 
-		if qualifier then
-			type = _type
-		end
+		if qualifier then type = _type end
 
 		if not type then
 			logn("somethings wrong with the above line!")
 			error(field, 2)
 		end
 
-		if qualifier == nil then
-			qualifier = "signed"
-		end
+		if qualifier == nil then qualifier = "signed" end
 
-		if type == "char" and not length then
-			type = "byte"
-		end
+		if type == "char" and not length then type = "byte" end
 
-		table.insert(out, {
-			type,
-			key,
-			signed = qualifier == "signed",
-			length = length,
-			padding = qualifier == "padding",
-			assert = assert,
-			swap_endianess = swap_endianess,
-		})
+		table.insert(
+			out,
+			{
+				type,
+				key,
+				signed = qualifier == "signed",
+				length = length,
+				padding = qualifier == "padding",
+				assert = assert,
+				swap_endianess = swap_endianess,
+			}
+		)
 	end
 
 	return out
@@ -89,28 +80,23 @@ do -- basic data types
 		local type_info = {
 			LongLong = "int64_t",
 			UnsignedLongLong = "uint64_t",
-
 			Long = "int32_t",
 			UnsignedLong = "uint32_t",
-
 			Short = "int16_t",
 			UnsignedShort = "uint16_t",
-
 			Double = "double",
 			Float = "float",
 		}
-
 		local ffi_cast = ffi.cast
 		local ffi_string = ffi.string
+
 		for name, type in pairs(type_info) do
 			type = ffi.typeof(type)
 			local size = ffi.sizeof(type)
-
 			local ctype = ffi.typeof("$*", type)
 			META["Read" .. name] = function(self)
 				return ffi_cast(ctype, self:ReadBytes(size))[0]
 			end
-
 			local ctype = ffi.typeof("$[1]", type)
 			local hmm = ffi.new(ctype, 0)
 			META["Write" .. name] = function(self, num)
@@ -123,49 +109,45 @@ do -- basic data types
 		do -- Luajit uses NAN tagging, make sure we have the canonical NAN
 			local bit_band = bit.band
 			local bit_bor = bit.bor
-			local split_int32_p = ffi.typeof ( "struct { int32_t " .. ( ffi.abi("le") and "lo, hi" or "hi, lo" ) .. "; } *" )
-			local int32_ctype = ffi.typeof ( "int32_t*" )
+			local split_int32_p = ffi.typeof("struct { int32_t " .. (ffi.abi("le") and "lo, hi" or "hi, lo") .. "; } *")
+			local int32_ctype = ffi.typeof("int32_t*")
 
 			do
 				local function double_isnan(buff)
-					local q = ffi_cast(split_int32_p , buff)
-					return
-					bit_band(q.hi , 0x7FF00000) == 0x7FF00000 and
-					bit_bor(q.lo, bit_band(q.hi, 0xFFFFF)) ~= 0
+					local q = ffi_cast(split_int32_p, buff)
+					return bit_band(q.hi, 0x7FF00000) == 0x7FF00000 and
+						bit_bor(q.lo, bit_band(q.hi, 0xFFFFF)) ~= 0
 				end
 
 				local double_ctype = ffi.typeof("double *")
+
 				function META:ReadDouble()
 					local src = self:ReadBytes(8)
 
-					if double_isnan(src) then
-						return 0/0
-					end
+					if double_isnan(src) then return 0 / 0 end
 
 					return ffi_cast(double_ctype, src)[0]
 				end
 			end
+
 			do
 				local function float_isnan(buff)
 					local as_int = ffi_cast(int32_ctype, buff)[0]
-					return
-						bit_band(as_int, 0x7F800000) == 0x7F800000 and
+					return bit_band(as_int, 0x7F800000) == 0x7F800000 and
 						bit_band(as_int, 0x7FFFFF) ~= 0
 				end
 
 				local float_ctype = ffi.typeof("float *")
+
 				function META:ReadFloat()
 					local src = self:ReadBytes(4)
 
-					if float_isnan ( src ) then
-						return 0/0
-					end
+					if float_isnan(src) then return 0 / 0 end
 
 					return ffi_cast(float_ctype, src)[0]
 				end
 			end
 		end
-
 
 		do -- taken from lua sources https://github.com/lua/lua/blob/master/lstrlib.c
 			local NB = 8
@@ -196,7 +178,7 @@ do -- basic data types
 
 				if size < SZINT then
 					if signed then
-						local mask = bit.lshift(1, size*NB - 1)
+						local mask = bit.lshift(1, size * NB - 1)
 						res = bit.bxor(res, mask) - mask
 					end
 				end
@@ -205,17 +187,14 @@ do -- basic data types
 			end
 		end
 
-
-
 		function META:ReadVariableSizedInteger(byte_size)
 			local ret = 0
 
 			for i = 0, byte_size - 1 do
 				local byte = self:ReadByte()
 				ret = bit.bor(ret, bit.lshift(bit.band(byte, 127), 7 * i))
-				if bit.band(byte, 128) == 0 then
-					break
-				end
+
+				if bit.band(byte, 128) == 0 then break end
 			end
 
 			if byte_size == 1 then
@@ -271,7 +250,9 @@ do -- basic data types
 
 		function META:ReadShort()
 			local b1, b2 = self:ReadByte(), self:ReadByte()
+
 			if not b1 or not b2 then return end
+
 			return b1 + bit.lshift(b2, 8)
 		end
 
@@ -284,7 +265,9 @@ do -- basic data types
 
 		function META:ReadLong()
 			local s1, s2 = self:ReadShort(), self:ReadShort()
+
 			if not s1 or not s2 then return end
+
 			return s1 + bit.lshift(s2, 16)
 		end
 
@@ -294,56 +277,60 @@ do -- basic data types
 			-- 111111
 			-- 54321098 76543210
 			-- seeeeemm mmmmmmmm
-			if value==0.0 then
+			if value == 0.0 then
 				self:WriteByte(0)
 				self:WriteByte(0)
 				return
 			end
 
-			local signBit=0
-			if value<0 then
-				signBit=128 -- shifted left to appropriate position
-				value=-value
+			local signBit = 0
+
+			if value < 0 then
+				signBit = 128 -- shifted left to appropriate position
+				value = -value
 			end
 
-			local m,e=math.frexp(value)
-			m=m*2-1
-			e=e-1+15
-			e=math.min(math.max(0,e),31)
-
-			m=m*4
+			local m, e = math.frexp(value)
+			m = m * 2 - 1
+			e = e - 1 + 15
+			e = math.min(math.max(0, e), 31)
+			m = m * 4
 			-- sign, 5 bits of exponent, 2 bits of mantissa
-			self:WriteByte(bit.bor(signBit,bit.band(e,31)*4,bit.band(m,3)))
-
+			self:WriteByte(bit.bor(signBit, bit.band(e, 31) * 4, bit.band(m, 3)))
 			-- get rid of written bits and shift for next 8
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
+			m = (m - math.floor(m)) * 256
+			self:WriteByte(bit.band(m, 255))
 			return self
 		end
 
 		function META:ReadHalf()
-			local b=self:ReadByte()
-			local sign=1
-			if b>=128 then
-				sign=-1
-				b=b-128
-			end
-			local exponent=bit.rshift(b,2)-15
-			local mantissa=bit.band(b,3)/4
+			local b = self:ReadByte()
+			local sign = 1
 
-			b=self:ReadByte()
-			mantissa=mantissa+b/4/256
-			if mantissa==0.0 and exponent==-15 then return 0.0
-			else return (mantissa+1.0)*math.pow(2,exponent)*sign end
+			if b >= 128 then
+				sign = -1
+				b = b - 128
+			end
+
+			local exponent = bit.rshift(b, 2) - 15
+			local mantissa = bit.band(b, 3) / 4
+			b = self:ReadByte()
+			mantissa = mantissa + b / 4 / 256
+
+			if mantissa == 0.0 and exponent == -15 then
+				return 0.0
+			else
+				return (mantissa + 1.0) * math.pow(2, exponent) * sign
+			end
 		end
 
 		-- float
 		function META:WriteFloat(value)
-		-- ieee 754 binary32
-		-- 33222222 22221111 111111
-		-- 10987654 32109876 54321098 76543210
-		-- seeeeeee emmmmmmm mmmmmmmm mmmmmmmm
-			if value==0.0 then
+			-- ieee 754 binary32
+			-- 33222222 22221111 111111
+			-- 10987654 32109876 54321098 76543210
+			-- seeeeeee emmmmmmm mmmmmmmm mmmmmmmm
+			if value == 0.0 then
 				self:WriteByte(0)
 				self:WriteByte(0)
 				self:WriteByte(0)
@@ -351,148 +338,157 @@ do -- basic data types
 				return
 			end
 
-			local signBit=0
-			if value<0 then
-				signBit=128 -- shifted left to appropriate position
-				value=-value
+			local signBit = 0
+
+			if value < 0 then
+				signBit = 128 -- shifted left to appropriate position
+				value = -value
 			end
 
-			local m,e=math.frexp(value)
-			m=m*2-1
-			e=e-1+127
-			e=math.min(math.max(0,e),255)
-
+			local m, e = math.frexp(value)
+			m = m * 2 - 1
+			e = e - 1 + 127
+			e = math.min(math.max(0, e), 255)
 			-- sign and 7 bits of exponent
-			self:WriteByte(bit.bor(signBit,bit.band(bit.rshift(e,1),127)))
-
+			self:WriteByte(bit.bor(signBit, bit.band(bit.rshift(e, 1), 127)))
 			-- first 7 bits of mantissa
-			m=m*128
+			m = m * 128
 			-- write last bit of exponent and first 7 of mantissa
-			self:WriteByte(bit.bor(bit.band(bit.lshift(e,7),255),bit.band(m,127)))
+			self:WriteByte(bit.bor(bit.band(bit.lshift(e, 7), 255), bit.band(m, 127)))
 			-- get rid of written bits and shift for next 8
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
+			m = (m - math.floor(m)) * 256
+			self:WriteByte(bit.band(m, 255))
+			m = (m - math.floor(m)) * 256
+			self:WriteByte(bit.band(m, 255))
 			return self
 		end
 
 		function META:ReadFloat()
-			local b=self:ReadByte()
-			local sign=1
-			if b>=128 then
-				sign=-1
-				b=b-128
-			end
-			local exponent=b*2
-			b=self:ReadByte()
-			exponent=exponent+bit.band(bit.rshift(b,7),1)-127
-			local mantissa=bit.band(b,127)/128
+			local b = self:ReadByte()
+			local sign = 1
 
-			b=self:ReadByte()
-			mantissa=mantissa+b/128/256
-			b=self:ReadByte()
-			mantissa=mantissa+b/128/65536
-			if mantissa==0.0 and exponent==-127 then return 0.0
-			else return (mantissa+1.0)*math.pow(2,exponent)*sign end
+			if b >= 128 then
+				sign = -1
+				b = b - 128
+			end
+
+			local exponent = b * 2
+			b = self:ReadByte()
+			exponent = exponent + bit.band(bit.rshift(b, 7), 1) - 127
+			local mantissa = bit.band(b, 127) / 128
+			b = self:ReadByte()
+			mantissa = mantissa + b / 128 / 256
+			b = self:ReadByte()
+			mantissa = mantissa + b / 128 / 65536
+
+			if mantissa == 0.0 and exponent == -127 then
+				return 0.0
+			else
+				return (mantissa + 1.0) * math.pow(2, exponent) * sign
+			end
 		end
 
 		-- double
 		function META:WriteDouble(value)
-		-- ieee 754 binary64
-		-- 66665555 55555544 44444444 33333333 33222222 22221111 111111
-		-- 32109876 54321098 76543210 98765432 10987654 32109876 54321098 76543210
-		-- seeeeeee eeeemmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm
-			if value==0.0 then
+			-- ieee 754 binary64
+			-- 66665555 55555544 44444444 33333333 33222222 22221111 111111
+			-- 32109876 54321098 76543210 98765432 10987654 32109876 54321098 76543210
+			-- seeeeeee eeeemmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm
+			if value == 0.0 then
 				for i = 1, 8 do
 					self:WriteByte(0)
 				end
+
 				return
 			end
 
-			local signBit=0
+			local signBit = 0
 
-			if value<0 then
-				signBit=128 -- shifted left to appropriate position
-				value=-value
+			if value < 0 then
+				signBit = 128 -- shifted left to appropriate position
+				value = -value
 			end
 
-			local m,e=math.frexp(value)
-			m=m*2-1 -- m in [0.5,1.0), multiply by 2 will get it to [1.0,2.0) giving the implicit first bit in mantissa, -1 to get rid of that
-			e=e-1+1023 -- adjust for the *2 on previous line and 1023 is the exponent zero offset
-
+			local m, e = math.frexp(value)
+			m = m * 2 - 1 -- m in [0.5,1.0), multiply by 2 will get it to [1.0,2.0) giving the implicit first bit in mantissa, -1 to get rid of that
+			e = e - 1 + 1023 -- adjust for the *2 on previous line and 1023 is the exponent zero offset
 			-- sign and 7 bits of exponent
-			self:WriteByte(bit.bor(signBit,bit.band(bit.rshift(e,4),127)))
-
+			self:WriteByte(bit.bor(signBit, bit.band(bit.rshift(e, 4), 127)))
 			-- first 4 bits of mantissa
-			m=m*16
-
+			m = m * 16
 			-- write last 4 bits of exponent and first 4 of mantissa
-			self:WriteByte(bit.bor(bit.band(bit.lshift(e,4),255),bit.band(m,15)))
-
+			self:WriteByte(bit.bor(bit.band(bit.lshift(e, 4), 255), bit.band(m, 15)))
 			-- get rid of written bits and shift for next 8
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-
+			m = (m - math.floor(m)) * 256
+			self:WriteByte(bit.band(m, 255))
 			-- repeat for rest of mantissa
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-
-			m=(m-math.floor(m))*256
-			self:WriteByte(bit.band(m,255))
-
+			m = (m - math.floor(m)) * 256
+			self:WriteByte(bit.band(m, 255))
+			m = (m - math.floor(m)) * 256
+			self:WriteByte(bit.band(m, 255))
+			m = (m - math.floor(m)) * 256
+			self:WriteByte(bit.band(m, 255))
+			m = (m - math.floor(m)) * 256
+			self:WriteByte(bit.band(m, 255))
+			m = (m - math.floor(m)) * 256
+			self:WriteByte(bit.band(m, 255))
 			return self
 		end
 
 		function META:ReadDouble()
 			local b = self:ReadByte()
+
 			if not b then return end
+
 			local sign = 1
 
 			if b >= 128 then
-				sign =- 1
+				sign = -1
 				b = b - 128
 			end
 
-			local exponent = b*16
+			local exponent = b * 16
 			b = self:ReadByte()
-			if not b then return end
-			exponent = exponent+bit.band(bit.rshift(b,4),15)-1023
-			local mantissa=bit.band(b,15)/16
 
-			b = self:ReadByte()
 			if not b then return end
-			mantissa = mantissa+b/16/256
-			b = self:ReadByte()
-			if not b then return end
-			mantissa = mantissa+b/16/65536
-			b = self:ReadByte()
-			if not b then return end
-			mantissa = mantissa+b/16/65536/256
-			b = self:ReadByte()
-			if not b then return end
-			mantissa = mantissa+b/16/65536/65536
-			b = self:ReadByte()
-			if not b then return end
-			mantissa = mantissa+b/16/65536/65536/256
-			b = self:ReadByte()
-			if not b then return end
-			mantissa = mantissa+b/16/65536/65536/65536
 
-			if mantissa==0.0 and exponent==-1023 then
+			exponent = exponent + bit.band(bit.rshift(b, 4), 15) - 1023
+			local mantissa = bit.band(b, 15) / 16
+			b = self:ReadByte()
+
+			if not b then return end
+
+			mantissa = mantissa + b / 16 / 256
+			b = self:ReadByte()
+
+			if not b then return end
+
+			mantissa = mantissa + b / 16 / 65536
+			b = self:ReadByte()
+
+			if not b then return end
+
+			mantissa = mantissa + b / 16 / 65536 / 256
+			b = self:ReadByte()
+
+			if not b then return end
+
+			mantissa = mantissa + b / 16 / 65536 / 65536
+			b = self:ReadByte()
+
+			if not b then return end
+
+			mantissa = mantissa + b / 16 / 65536 / 65536 / 256
+			b = self:ReadByte()
+
+			if not b then return end
+
+			mantissa = mantissa + b / 16 / 65536 / 65536 / 65536
+
+			if mantissa == 0.0 and exponent == -1023 then
 				return 0.0
 			else
-				return (mantissa+1.0)*math.pow(2,exponent)*sign
+				return (mantissa + 1.0) * math.pow(2, exponent) * sign
 			end
 		end
 	end
@@ -500,15 +496,12 @@ do -- basic data types
 	META.WriteUInt16_T = META.WriteUnsignedShort
 	META.WriteUInt32_T = META.WriteUnsignedLong
 	META.WriteUInt64_T = META.WriteUnsignedLongLong
-
 	META.ReadUInt16_T = META.ReadUnsignedShort
 	META.ReadUInt32_T = META.ReadUnsignedLong
 	META.ReadUInt64_T = META.ReadUnsignedLongLong
-
 	META.WriteInt16_T = META.WriteShort
 	META.WriteInt32_T = META.WriteLong
 	META.WriteInt64_T = META.WriteLongLong
-
 	META.ReadInt16_T = META.ReadShort
 	META.ReadInt32_T = META.ReadLong
 	META.ReadInt64_T = META.ReadLongLong
@@ -517,14 +510,17 @@ do -- basic data types
 		for i = 1, len or #str do
 			self:WriteByte(str:byte(i))
 		end
+
 		return self
 	end
 
 	function META:ReadBytes(bytes)
 		local out = {}
+
 		for i = 1, bytes do
 			out[i] = string.char(self:ReadByte())
 		end
+
 		return table.concat(out)
 	end
 
@@ -538,17 +534,16 @@ do -- basic data types
 	function META:ReadString(length, advance, terminator)
 		terminator = terminator or 0
 
-		if length and not advance then
-			return self:ReadBytes(length)
-		end
+		if length and not advance then return self:ReadBytes(length) end
 
 		local str = {}
-
 		local pos = self:GetPosition()
 
 		for _ = 1, length or self:GetSize() do
 			local byte = self:ReadByte()
+
 			if not byte or byte == terminator then break end
+
 			table.insert(str, string.char(byte))
 		end
 
@@ -564,20 +559,21 @@ do -- basic data types
 	-- not null terminated string (write size of string first)
 	function META:WriteString2(str)
 		if #str > 0xFFFFFFFF then error("string is too long!", 2) end
+
 		self:WriteUnsignedLong(#str)
 		self:WriteBytes(str)
 		return self
 	end
 
 	function META:ReadString2()
-
 		local length = self:ReadUnsignedLong()
-
 		local str = {}
 
 		for _ = 1, length do
 			local byte = self:ReadByte()
+
 			if not byte then break end
+
 			table.insert(str, string.char(byte))
 		end
 
@@ -586,7 +582,6 @@ do -- basic data types
 end
 
 do -- extended
-
 	function META:IterateStrings()
 		return function()
 			local value = self:ReadString()
@@ -596,51 +591,55 @@ do -- extended
 
 	-- half precision (2 bytes)
 	function META:WriteHalf(value)
-	-- ieee 754 binary16
-	-- 111111
-	-- 54321098 76543210
-	-- seeeeemm mmmmmmmm
-		if value==0.0 then
+		-- ieee 754 binary16
+		-- 111111
+		-- 54321098 76543210
+		-- seeeeemm mmmmmmmm
+		if value == 0.0 then
 			self:WriteByte(0)
 			self:WriteByte(0)
 			return
 		end
 
-		local signBit=0
-		if value<0 then
-			signBit=128 -- shifted left to appropriate position
-			value=-value
+		local signBit = 0
+
+		if value < 0 then
+			signBit = 128 -- shifted left to appropriate position
+			value = -value
 		end
 
-		local m,e=math.frexp(value)
-		m=m*2-1
-		e=e-1+15
-		e=math.min(math.max(0,e),31)
-
-		m=m*4
+		local m, e = math.frexp(value)
+		m = m * 2 - 1
+		e = e - 1 + 15
+		e = math.min(math.max(0, e), 31)
+		m = m * 4
 		-- sign, 5 bits of exponent, 2 bits of mantissa
-		self:WriteByte(bit.bor(signBit,bit.band(e,31)*4,bit.band(m,3)))
-
+		self:WriteByte(bit.bor(signBit, bit.band(e, 31) * 4, bit.band(m, 3)))
 		-- get rid of written bits and shift for next 8
-		m=(m-math.floor(m))*256
-		self:WriteByte(bit.band(m,255))
+		m = (m - math.floor(m)) * 256
+		self:WriteByte(bit.band(m, 255))
 		return self
 	end
 
 	function META:ReadHalf()
-		local b=self:ReadByte()
-		local sign=1
-		if b>=128 then
-			sign=-1
-			b=b-128
-		end
-		local exponent=bit.rshift(b,2)-15
-		local mantissa=bit.band(b,3)/4
+		local b = self:ReadByte()
+		local sign = 1
 
-		b=self:ReadByte()
-		mantissa=mantissa+b/4/256
-		if mantissa==0.0 and exponent==-15 then return 0.0
-		else return (mantissa+1.0)*math.pow(2,exponent)*sign end
+		if b >= 128 then
+			sign = -1
+			b = b - 128
+		end
+
+		local exponent = bit.rshift(b, 2) - 15
+		local mantissa = bit.band(b, 3) / 4
+		b = self:ReadByte()
+		mantissa = mantissa + b / 4 / 256
+
+		if mantissa == 0.0 and exponent == -15 then
+			return 0.0
+		else
+			return (mantissa + 1.0) * math.pow(2, exponent) * sign
+		end
 	end
 
 	function META:ReadVarInt(signed)
@@ -661,9 +660,7 @@ do -- extended
 			if b < 0x80 then break end
 		end
 
-		if signed then
-			res = res - bit.band(res, 2^15) * 2
-		end
+		if signed then res = res - bit.band(res, 2 ^ 15) * 2 end
 
 		return res
 	end
@@ -694,7 +691,9 @@ do -- extended
 
 	function META:ReadChar()
 		local b = self:ReadByte()
+
 		if not b then return end
+
 		return string.char(b)
 	end
 
@@ -714,6 +713,7 @@ do -- extended
 		for i = 1, 16 do
 			self:WriteFloat(matrix[i - 1])
 		end
+
 		return self
 	end
 
@@ -732,6 +732,7 @@ do -- extended
 		for i = 1, 8 do
 			self:WriteFloat(matrix[i - 1])
 		end
+
 		return self
 	end
 
@@ -830,17 +831,13 @@ do -- extended
 	function META:WriteVariableSizedInteger(value, max_size)
 		local output_size = 1
 
-		while
-			(max_size and output_size < max_size) or
-			(not max_size and value > 127)
-		do
+		while (max_size and output_size < max_size) or (not max_size and value > 127) do
 			self:WriteByte(tonumber(bit.bor(bit.band(value, 127), 128)))
 			value = bit.rshift(value, 7)
 			output_size = output_size + 1
 		end
 
 		self:WriteByte(tonumber(bit.band(value, 127)))
-
 		return output_size
 	end
 
@@ -854,13 +851,16 @@ do -- extended
 		for k, v in pairs(tbl) do
 			local t = type_func(k)
 			local id = self:GetTypeID(t)
+
 			if not id then error("tried to write unknown type " .. t, 2) end
+
 			self:WriteByte(id)
 			self:WriteType(k, t, type_func)
-
 			t = type_func(v)
 			id = self:GetTypeID(t)
+
 			if not id then error("tried to write unknown type " .. t, 2) end
+
 			self:WriteByte(id)
 			self:WriteType(v, t, type_func)
 		end
@@ -872,31 +872,35 @@ do -- extended
 		while true do
 			local b = self:ReadByte()
 			local t = self:GetTypeFromID(b)
-			if not t then error("typeid " .. b .. " is unknown!", 2) end
-			local k = self:ReadType(t)
 
+			if not t then error("typeid " .. b .. " is unknown!", 2) end
+
+			local k = self:ReadType(t)
 			b = self:ReadByte()
 			t = self:GetTypeFromID(b)
+
 			if not t then error("typeid " .. b .. " is unknown!", 2) end
 
 			tbl[k] = self:ReadType(t)
 
 			if self:TheEnd() then return tbl end
 		end
-
 	end
 
 	function META:ReadULEB()
 		local result, shift = 0, 0
+
 		while not self:TheEnd() do
 			local b = self:ReadByte()
-			result = bit.bor( result, bit.lshift( bit.band( b, 0x7f ), shift ) )
-			if bit.band( b, 0x80 ) == 0 then break end
+			result = bit.bor(result, bit.lshift(bit.band(b, 0x7f), shift))
+
+			if bit.band(b, 0x80) == 0 then break end
+
 			shift = shift + 7
 		end
+
 		return result
 	end
-
 end
 
 do -- structures
@@ -912,6 +916,7 @@ do -- structures
 						if not values or values[data.get] == nil then
 							errorf("expected %s %s got nil", 2, data[1], data.get)
 						end
+
 						self:WriteType(values[data.get], data[1])
 					end
 				else
@@ -930,14 +935,10 @@ do -- structures
 
 		if type(structure) == "string" then
 			-- if the string is something like "vec3" just call ReadType
-			if META.read_functions[structure] then
-				return self:ReadType(structure)
-			end
+			if META.read_functions[structure] then return self:ReadType(structure) end
 
 			local data = header_to_table(structure)
-
 			cache[structure] = data
-
 			return self:ReadStructure(data, ordered)
 		end
 
@@ -948,6 +949,7 @@ do -- structures
 		for i, data in ipairs(structure) do
 			if data.match then
 				local key, val = next(data.match)
+
 				if (type(val) == "function" and not val(out[key])) or out[key] ~= val then
 					goto continue_
 				end
@@ -971,9 +973,11 @@ do -- structures
 					val = self:ReadString(length)
 				else
 					local values = {}
+
 					for i = 1, length do
 						values[i] = self:ReadType(read_type)
 					end
+
 					val = values
 				end
 			else
@@ -981,12 +985,14 @@ do -- structures
 					val = self:GetPosition()
 				else
 					val = self:ReadType(read_type)
-					if data.swap_endianess then
 
+					if data.swap_endianess then
 						local size = 16
+
 						if read_type:find("32", nil, true) or read_type:find("long", nil, true) then
 							size = 32 -- asdasdasd
 						end
+
 						val = swap_endian(val, size)
 					end
 				end
@@ -994,24 +1000,28 @@ do -- structures
 
 			if data.assert then
 				if val ~= data.assert then
-					errorf("error in header: %s %s expected %s got %s", 2, data[1], data[2], data.assert, (type(val) == "number" and ("%X"):format(val) or val))
+					errorf(
+						"error in header: %s %s expected %s got %s",
+						2,
+						data[1],
+						data[2],
+						data.assert,
+						(type(val) == "number" and ("%X"):format(val) or val)
+					)
 				end
 			end
 
-			if data.translate then
-				val = data.translate[val] or val
-			end
+			if data.translate then val = data.translate[val] or val end
 
 			if not data.padding then
 				if val == nil then val = "nil" end
+
 				local key = data[2]
 
 				if ordered then
 					table.insert(out, {key = key, val = val})
 				else
-					if out[key] then
-						key = key .. i
-					end
+					if out[key] then key = key .. i end
 
 					out[key] = val
 				end
@@ -1058,6 +1068,7 @@ do -- structures
 			local t = v[1]
 
 			if t == "longlong" then t = "long long" end
+
 			if t == "byte" then t = "uint8_t" end
 
 			if structs.GetStructMeta(t) then
@@ -1071,9 +1082,7 @@ do -- structures
 	end
 end
 
-
 do -- automatic
-
 	function META:GenerateTypes()
 		local read_functions = {}
 		local write_functions = {}
@@ -1081,6 +1090,7 @@ do -- automatic
 		for k, v in pairs(META) do
 			if type(k) == "string" then
 				local key = k:match("Read(.+)")
+
 				if key then
 					read_functions[key:lower()] = v
 
@@ -1091,6 +1101,7 @@ do -- automatic
 				end
 
 				key = k:match("Write(.+)")
+
 				if key then
 					write_functions[key:lower()] = v
 
@@ -1104,14 +1115,15 @@ do -- automatic
 
 		META.read_functions = read_functions
 		META.write_functions = write_functions
-
 		local ids = {}
 
 		for k in pairs(read_functions) do
 			table.insert(ids, k)
 		end
 
-		table.sort(ids, function(a, b) return a > b end)
+		table.sort(ids, function(a, b)
+			return a > b
+		end)
 
 		META.type_ids = ids
 	end
@@ -1133,7 +1145,6 @@ do -- automatic
 	end
 
 	function META:ReadType(t, signed)
-
 		if META.read_functions[t] then
 			return META.read_functions[t](self, signed)
 		end
@@ -1142,10 +1153,8 @@ do -- automatic
 	end
 
 	function META:GetTypeID(val)
-		for k,v in ipairs(META.type_ids) do
-			if v == val then
-				return k
-			end
+		for k, v in ipairs(META.type_ids) do
+			if v == val then return k end
 		end
 	end
 
@@ -1157,11 +1166,13 @@ end
 do -- push pop position
 	function META:PushPosition(pos)
 		if self:GetSize() == 0 then return end
-		if pos >= self:GetSize() then error("position pushed is larger than reported size of buffer", 2) end
+
+		if pos >= self:GetSize() then
+			error("position pushed is larger than reported size of buffer", 2)
+		end
+
 		self.push_pop_pos_stack = self.push_pop_pos_stack or {}
-
 		table.insert(self.push_pop_pos_stack, self:GetPosition())
-
 		self:SetPosition(pos)
 	end
 
@@ -1206,7 +1217,6 @@ function META:FindString(str)
 	end
 
 	self:SetPosition(old_pos)
-
 	return false
 end
 
@@ -1233,7 +1243,7 @@ META.__len = META.GetSize
 
 function META:GetDebugString()
 	self:PushPosition(1)
-		local str = self:GetString():readablehex()
+	local str = self:GetString():readablehex()
 	self:PopPosition()
 	return str
 end
@@ -1259,8 +1269,8 @@ do -- read bits
 		end
 
 		self.buf_nbit = self.buf_nbit - nbits
-
 		local bits
+
 		if nbits == 32 then
 			bits = self.buf_byte
 			self.buf_byte = 0

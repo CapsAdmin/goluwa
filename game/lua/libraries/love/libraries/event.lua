@@ -1,8 +1,6 @@
 local love = ... or _G.love
 local ENV = love._line_env
-
 love.event = love.event or {}
-
 ENV.event_queue = ENV.event_queue or {}
 
 function love.event.clear()
@@ -19,9 +17,7 @@ function love.event.poll()
 	end
 end
 
-function love.event.pump()
-
-end
+function love.event.pump() end
 
 function love.event.quit()
 	logn("love.event.quit")
@@ -30,9 +26,7 @@ end
 function love.event.wait()
 	local val = table.remove(ENV.event_queue, 1)
 
-	if val then
-		return unpack(val)
-	end
+	if val then return unpack(val) end
 end
 
 love.handlers = {}

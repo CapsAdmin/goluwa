@@ -1,5 +1,4 @@
 runfile("lua/libraries/graphics/render3d/sky_shaders/atmosphere2.lua")
-
 render.AddGlobalShaderCode([[
 float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)
 {
@@ -29,8 +28,8 @@ float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, 
 	return attenuation;
 }
 ]])
-
-render.AddGlobalShaderCode([[
+render.AddGlobalShaderCode(
+	[[
 float sqr(float x) { return x*x; }
 
 float SchlickFresnel(float u)
@@ -145,8 +144,11 @@ vec3 compute_specular2(
 		Gs*Fs/*Ds*/ +
 		.25*clearcoat*Gr*Fr*Dr;
 }
-]], "compute_specular2")
-render.AddGlobalShaderCode([[
+]],
+	"compute_specular2"
+)
+render.AddGlobalShaderCode(
+	[[
 float LightingFuncGGX_D(float dotNH, float roughness)
 {
 	float alpha = roughness*roughness;
@@ -193,7 +195,9 @@ float compute_specular(vec3 N, vec3 V, vec3 L, float roughness, float F0)
 
 	return specular;
 }
-]], "compute_specular")
+]],
+	"compute_specular"
+)
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_specular(vec3 light_dir, vec3 view_dir, vec3 normal, float attenuation, vec3 light_color)
 {
@@ -235,16 +239,14 @@ vec3 gbuffer_compute_specular(vec3 light_dir, vec3 view_dir, vec3 normal, float 
 
 	) * max(dot(-light_dir, normal), 0);
 }]])
-
 local PASS = {}
-
 PASS.Position = -1
 PASS.Name = "test"
 PASS.Default = true
-
 PASS.Source = {}
-
-table.insert(PASS.Source, {
+table.insert(
+	PASS.Source,
+	{
 		buffer = {
 			--max_size = Vec2() + 512,
 			size_divider = 1,
@@ -277,18 +279,21 @@ table.insert(PASS.Source, {
 				out_color = light;
 			}
 		}
-	]]
-})
-
+	]],
+	}
+)
 render3d.AddBilateralBlurPass(PASS, "pow(get_roughness(uv)*0.12, 1.5)", 0.98, "r11f_g11f_b10f", 1)
-
-table.insert(PASS.Source, {
-	source =  [[
+table.insert(
+	PASS.Source,
+	{
+		source = [[
 		out vec3 out_color;
 
 		void main()
 		{
-			vec3 reflection = texture(tex_stage_]]..(#PASS.Source-1)..[[, uv).rgb*2;
+			vec3 reflection = texture(tex_stage_]] .. (
+				#PASS.Source - 1
+			) .. [[, uv).rgb*2;
 			if (texture(tex_depth, uv).r == 1)
 			{
 				out_color = gbuffer_compute_sky(get_camera_dir(uv), 1);
@@ -296,7 +301,9 @@ table.insert(PASS.Source, {
 			}
 
 			float roughness = get_roughness(uv);
-			float shadow = texture(tex_stage_]]..(#PASS.Source)..[[, uv).r;
+			float shadow = texture(tex_stage_]] .. (
+				#PASS.Source
+			) .. [[, uv).r;
 			vec3 albedo = get_albedo(uv);
 
 			vec3 specular = get_specular(uv)*g_ssao(uv);
@@ -314,9 +321,9 @@ table.insert(PASS.Source, {
 			out_color = albedo * light + fog;
 			out_color *= 5;
 		}
-	]]
-})
-
+	]],
+	}
+)
 render3d.AddGBufferShader(PASS)
 
 if RELOAD then

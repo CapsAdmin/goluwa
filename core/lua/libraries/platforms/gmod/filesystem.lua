@@ -5,18 +5,15 @@ local file_IsDir = gmod.file.IsDir
 local file_CreateDir = gmod.file.CreateDir
 local file_Time = gmod.file.Time
 local GoluwaToGmodPath = GoluwaToGmodPath
-
 local fs = {}
-
-local dprint = function(...) if DEBUG then gmod.print("[goluwa] fs: ", ...) end end
-
+local dprint = function(...)
+	if DEBUG then gmod.print("[goluwa] fs: ", ...) end
+end
 fs.find_cache = {}
 fs.get_attributes_cache = {}
 
 function fs.uncache(path)
-	if path:sub(-1) == "/" then
-		path = path:sub(0, -2)
-	end
+	if path:sub(-1) == "/" then path = path:sub(0, -2) end
 
 	dprint("uncaching " .. path)
 	fs.find_cache[path:match("(.+/)")] = nil
@@ -26,12 +23,9 @@ end
 function fs.get_files(path)
 	dprint("fs.get_files: ", path)
 
-	if path:startswith("/") then
-		path = path:sub(2)
-	end
+	if path:startswith("/") then path = path:sub(2) end
 
 	local original_path = path
-
 	dprint("fs.get_files: is " .. path .. " cached?")
 
 	if fs.find_cache[path] then
@@ -41,9 +35,7 @@ function fs.get_files(path)
 		dprint("no")
 	end
 
-	if path:sub(-1) == "/" then
-		path = path .. "*"
-	end
+	if path:sub(-1) == "/" then path = path .. "*" end
 
 	local where = "GAME"
 
@@ -52,33 +44,24 @@ function fs.get_files(path)
 		where = "DATA"
 	end
 
-	dprint("fs.get_files: file.Find("..path..", "..where..")")
-
+	dprint("fs.get_files: file.Find(" .. path .. ", " .. where .. ")")
 	local files, dirs = file_Find(path, where)
-
 	dprint(files, dirs)
 
-	if not files then
-		return nil, "No such file or directory"
-	end
+	if not files then return nil, "No such file or directory" end
 
 	if where == "DATA" then
 		for i, name in ipairs(files) do
 			local new_name, count = name:gsub("%^", "%.")
 
-			if count > 0 then
-				files[i] = new_name:sub(0, -5)
-			end
+			if count > 0 then files[i] = new_name:sub(0, -5) end
 		end
 	end
 
 	table.add(files, dirs)
-
 	dprint("found " .. #files .. " files and folders")
-
 	fs.find_cache[original_path] = files
 	dprint("fs.get_files: caching results for dir " .. path)
-
 	return files
 end
 
@@ -93,16 +76,11 @@ end
 
 function fs.create_directory(path)
 	dprint("fs.create_directory: ", path)
-
 	fs.uncache(path)
-
 	local path, where = GoluwaToGmodPath(path)
-
 	file_CreateDir(path, where)
 
-	if file_IsDir(path, where) then
-		return true
-	end
+	if file_IsDir(path, where) then return true end
 
 	return nil, "file.IsDir returns false"
 end
@@ -121,8 +99,8 @@ end
 
 function fs.get_attributes(path)
 	dprint("fs.get_attributes: ", path)
-
 	local cache_key = path
+
 	if cache_key:sub(-1) == "/" then cache_key = cache_key:sub(0, -2) end
 
 	if fs.get_attributes_cache[cache_key] ~= nil then
@@ -137,11 +115,9 @@ function fs.get_attributes(path)
 		local size = path == "" and 0 or file_Size(path, where)
 		local time = file_Time(path, where)
 		local type = file_IsDir(path, where) and "directory" or "file"
-
 		dprint("\t", size)
 		dprint("\t", time)
 		dprint("\t", type)
-
 		local res = {
 			creation_time = time,
 			last_accessed = time,
@@ -150,16 +126,13 @@ function fs.get_attributes(path)
 			size = size,
 			type = type,
 		}
-
 		fs.get_attributes_cache[cache_key] = res
-
 		return res
 	else
 		dprint("\t" .. path .. " " .. where .. " does not exist")
 	end
 
 	fs.get_attributes_cache[cache_key] = false
-
 	return false
 end
 

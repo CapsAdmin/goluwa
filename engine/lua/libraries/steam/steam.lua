@@ -1,94 +1,93 @@
 local steam = _G.steam or {}
-
 steam.source2meters = 0.01905
-
 runfile("mount.lua", steam)
 runfile("vmt.lua", steam)
 
 function steam.DownloadWorkshop(id, callback, on_error, last_modified)
-	if not tonumber(id) then
-		id = id:match("id=(%d+)")
-	end
+	if not tonumber(id) then id = id:match("id=(%d+)") end
+
 	on_error = on_error or llog
-	sockets.Request({
-		method = "POST",
-		url = "http://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v0001/",
-		post_data = "itemcount=1&publishedfileids[0]="..id.."&format=json",
-		header = {
-			["Content-Type"] = "application/x-www-form-urlencoded"
-		},
-		callback = function(data)
-			local data, err = serializer.Decode("json", data.content)
+	sockets.Request(
+		{
+			method = "POST",
+			url = "http://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v0001/",
+			post_data = "itemcount=1&publishedfileids[0]=" .. id .. "&format=json",
+			header = {["Content-Type"] = "application/x-www-form-urlencoded"},
+			callback = function(data)
+				local data, err = serializer.Decode("json", data.content)
 
-			if not data then
-				on_error(err)
-				return
-			end
-
-			local details = data.response.publishedfiledetails[1]
-
-			if details.file_url and details.file_url ~= "" then
-				if last_modified and details.time_updated < last_modified then
-					logn(id, ": no changes since last time")
+				if not data then
+					on_error(err)
 					return
 				end
 
-				resource.Download(details.file_url, nil, nil, true, details.creator_app_id == 4000 and "gma" or "zip"):Then(function(path)
-					local bin, err = serializer.ReadFile("lzma", path)
-					if not bin then
-						on_error("unable to extract data: " .. err)
+				local details = data.response.publishedfiledetails[1]
+
+				if details.file_url and details.file_url ~= "" then
+					if last_modified and details.time_updated < last_modified then
+						logn(id, ": no changes since last time")
 						return
 					end
-					vfs.Write(path, bin)
-					callback(path, data.response)
-				end):Catch(on_error)
-			else
-				on_error("error downloading " ..  id .. " no file url?")
-			end
-		end,
-		code_callback = function(code)
-			if code == 404 or code == 400 then
-				on_error("error code " .. code)
-			end
-		end,
-		error_callback = on_error,
-		timedout_callback = on_error,
-	})
+
+					resource.Download(details.file_url, nil, nil, true, details.creator_app_id == 4000 and "gma" or "zip"):Then(function(path)
+						local bin, err = serializer.ReadFile("lzma", path)
+
+						if not bin then
+							on_error("unable to extract data: " .. err)
+							return
+						end
+
+						vfs.Write(path, bin)
+						callback(path, data.response)
+					end):Catch(on_error)
+				else
+					on_error("error downloading " .. id .. " no file url?")
+				end
+			end,
+			code_callback = function(code)
+				if code == 404 or code == 400 then on_error("error code " .. code) end
+			end,
+			error_callback = on_error,
+			timedout_callback = on_error,
+		}
+	)
 end
 
 tasks.WrapCallback(steam, "DownloadWorkshop")
 
 function steam.DownloadWorkshopCollection(id, callback, on_error)
-	if not tonumber(id) then
-		id = id:match("id=(%d+)")
-	end
+	if not tonumber(id) then id = id:match("id=(%d+)") end
+
 	on_error = on_error or llog
-	sockets.Request({
-		method = "POST",
-		url = "http://api.steampowered.com/ISteamRemoteStorage/GetCollectionDetails/v0001/",
-		post_data = "itemcount=1&publishedfileids[0]="..id.."&collectioncount=1&format=json",
-		header = {
-			["Content-Type"] = "application/x-www-form-urlencoded",
-		},
-		callback = function(data)
-			local data, err = serializer.Decode("json", data.content)
-			if not data then
-				on_error(err)
-				return
-			end
-			for i,v in ipairs(data.response.collectiondetails[1].children) do
-				data.response.collectiondetails[1].children[i] = v.publishedfileid
-			end
-			callback(data.response.collectiondetails[1].children)
-		end,
-		code_callback = function(code)
-			if code == 404 or code == 400 then
-				on_error("error code " .. code)
-			end
-		end,
-		error_callback = on_error,
-		timedout_callback = on_error,
-	})
+	sockets.Request(
+		{
+			method = "POST",
+			url = "http://api.steampowered.com/ISteamRemoteStorage/GetCollectionDetails/v0001/",
+			post_data = "itemcount=1&publishedfileids[0]=" .. id .. "&collectioncount=1&format=json",
+			header = {
+				["Content-Type"] = "application/x-www-form-urlencoded",
+			},
+			callback = function(data)
+				local data, err = serializer.Decode("json", data.content)
+
+				if not data then
+					on_error(err)
+					return
+				end
+
+				for i, v in ipairs(data.response.collectiondetails[1].children) do
+					data.response.collectiondetails[1].children[i] = v.publishedfileid
+				end
+
+				callback(data.response.collectiondetails[1].children)
+			end,
+			code_callback = function(code)
+				if code == 404 or code == 400 then on_error("error code " .. code) end
+			end,
+			error_callback = on_error,
+			timedout_callback = on_error,
+		}
+	)
 end
 
 tasks.WrapCallback(steam, "DownloadWorkshopCollection")
@@ -97,16 +96,12 @@ function steam.InitializeSteamWorks()
 	local ok, err = pcall(function()
 		local steamworks_api = require("steamworks")
 
-		for k,v in pairs(steamworks_api) do
-			if not steam[k] then
-				steam[k] = v
-			end
+		for k, v in pairs(steamworks_api) do
+			if not steam[k] then steam[k] = v end
 		end
 	end)
 
-	if not ok then
-		llog(err)
-	end
+	if not ok then llog(err) end
 
 	return ok
 end
@@ -127,9 +122,7 @@ if steamfriends then
 		event.Call("SteamFriendsMessage", sender_steam_id, text, receiver_steam_id)
 	end
 end
-]]
-
-function steam.IsSteamClientAvailible()
+]] function steam.IsSteamClientAvailible()
 	return steamfriends
 end
 
@@ -140,21 +133,18 @@ function steam.SteamIDToCommunityID(id)
 
 	local parts = id:Split(":")
 	local a, b = parts[2], parts[3]
-
-	return tostring("7656119" .. 7960265728 + a + (b*2))
+	return tostring("7656119" .. 7960265728 + a + (b * 2))
 end
 
 function steam.CommunityIDToSteamID(id)
 	local s = "76561197960"
-	if id:sub(1, #s) ~= s then
-		return "UNKNOWN"
-	end
 
-	local c = tonumber( id )
+	if id:sub(1, #s) ~= s then return "UNKNOWN" end
+
+	local c = tonumber(id)
 	local a = id % 2 == 0 and 0 or 1
 	local b = (c - 76561197960265728 - a) / 2
-
-	return "STEAM_0:" .. a .. ":" .. (b+2)
+	return "STEAM_0:" .. a .. ":" .. (b + 2)
 end
 
 steam.appids = {
@@ -552,7 +542,6 @@ steam.appids = {
 	[304930] = "Unturned Dedicated Server",
 	[17505] = "Zombie Panic Source Dedicated Server",
 }
-
 local name_translate = {
 	hl1 = "Half-Life",
 	hl2 = "Half-Life 2",
@@ -578,13 +567,12 @@ local name_translate = {
 }
 
 function steam.GetAppIdFromName(search)
-	if tonumber(search) then
-		return tonumber(search)
-	end
+	if tonumber(search) then return tonumber(search) end
 
 	for from, to in pairs(name_translate) do
 		if search:find("^" .. from .. "%s") or search:find("^" .. from .. "$") then
 			search = search:gsub("^" .. from, to)
+
 			break
 		end
 	end
@@ -599,22 +587,22 @@ function steam.GetAppIdFromName(search)
 		table.insert(sorted, {name = name, appid = appid})
 	end
 
-	table.sort(sorted, function(a, b) return #a.name < #b.name end)
+	table.sort(sorted, function(a, b)
+		return #a.name < #b.name
+	end)
 
 	for _, data in ipairs(sorted) do
-		if data.name == search then
-			return data.appid, data.name
-		end
+		if data.name == search then return data.appid, data.name end
 	end
 
 	for _, data in ipairs(sorted) do
-		if data.name:compare(search) then
-			return data.appid, data.name
-		end
+		if data.name:compare(search) then return data.appid, data.name end
 	end
 
 	for _, data in ipairs(sorted) do
-		if data.name:lower():gsub("%p+", " "):gsub("%s+", " "):compare(search:gsub("%p+", " "):gsub("%s+", " ")) then
+		if
+			data.name:lower():gsub("%p+", " "):gsub("%s+", " "):compare(search:gsub("%p+", " "):gsub("%s+", " "))
+		then
 			return data.appid, data.name
 		end
 	end
