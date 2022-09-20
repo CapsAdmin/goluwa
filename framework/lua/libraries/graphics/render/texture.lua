@@ -75,28 +75,16 @@ end
 function META:LoadTextureFromPath(path, face)
 	self.Loading = true
 
-	resource.Download(path):Then(function(full_path)
-		local val, err = vfs.Read(full_path)
-
-		if val then
-			local info, err = render.DecodeTexture(val, full_path)
-
-			if info then
-				info.face = info.face or face
-
-				if self.Size:IsZero() then
-					self:SetSize(Vec2(info.width, info.height))
-				end
-
-				self:Upload(info)
-			else
-				wlog("[%s] unable to decode %s: %s\n", self, path, err)
-			end
-		else
-			wlog("[%s] unable to read %s: %s\n", self, full_path, err)
-		end
-
+	resource.Download(path):Done(function()
 		self.Loading = false
+	end):Then(function(full_path)
+		local val = assert(vfs.Read(full_path))
+		local info = assert(render.DecodeTexture(val, full_path))
+		info.face = info.face or face
+
+		if self.Size:IsZero() then self:SetSize(Vec2(info.width, info.height)) end
+
+		self:Upload(info)
 
 		if self.OnLoad then self:OnLoad() end
 	end):Catch(function(reason)
