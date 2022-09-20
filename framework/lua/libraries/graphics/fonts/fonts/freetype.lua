@@ -59,16 +59,6 @@ local function try_find(files, name)
 	end
 end
 
-local function google(path)
-	local family, rest = path:match("(.-) (.+)")
-
-	if family then
-		return family .. "/" .. family:upperchar(1) .. "-" .. rest:upperchar(1) .. ".ttf"
-	end
-
-	return path .. "/" .. path:upperchar(1) .. ".ttf"
-end
-
 local function translate_windows_font(font_name)
 	-- TODO: EnumFontFamiliesEx
 	local name_translate = {
@@ -109,27 +99,22 @@ end
 
 local providers = {
 	{
-		url = "https://github.com/google/fonts/raw/master/apache/", -- roboto/Roboto-Bolditallic.ttf
-		translate = google,
-	},
-	{
-		url = "https://github.com/google/fonts/raw/master/ofl/", -- roboto/Roboto-Bolditallic.ttf
-		translate = google,
-	},
-	{
-		url = "https://gitlab.com/jeichert/fonts/raw/master/",
-		translate = translate_windows_font,
-	},
-	{
-		url = "http://www.speedywristbands.com/public/files/fonts/",
+		url = "https://fonts.google.com/download?family=", -- roboto/Roboto-Bolditallic.ttf
 		translate = function(path)
-			return (" " .. path):gsub("%s(%l)", function(str)
-				return str:upper()
-			end) .. ".ttf"
+			local family, rest = path:match("(.-) (.+)")
+			family = family:capitalize()
+			return family
+		end,
+		archive = function(archive_path, path)
+			return try_find(vfs.Find(archive_path, true), path)
 		end,
 	},
 	{
-		url = "http://dl.dafont.com/dl/?f=", -- roboto | Roboto-BoldItalic.ttf
+		url = "https://gitlab.com/jeichert/fonts/-/raw/master/",
+		translate = translate_windows_font,
+	},
+	{
+		url = "https://dl.dafont.com/dl/?f=", -- roboto | Roboto-BoldItalic.ttf
 		translate = function(path)
 			path = path:gsub(" ", "_")
 			return path
@@ -139,7 +124,7 @@ local providers = {
 		end,
 	},
 	{
-		url = "http://dl.1001fonts.com/", -- roboto.zip | Roboto-BoldItalic.ttf
+		url = "https://www.1001fonts.com/download/", -- roboto.zip | Roboto-BoldItalic.ttf
 		translate = function(path)
 			path = path:gsub(" ", "-")
 			return path .. ".zip"
