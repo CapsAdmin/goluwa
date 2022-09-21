@@ -51,15 +51,7 @@ function gine.env.module(name, _ENV)
 	local tbl = package.loaded[name] or gine.env[name] or {}
 
 	if _ENV == package.seeall then
-		_ENV = gine.env;setfenv(1, _ENV);
-		
-		setfenv(1, _ENV)
-		
-		setfenv(1, _ENV)
-		setfenv(1, _ENV)
-		setfenv(1, _ENV)
-		setfenv(1, _ENV)
-		setfenv(1, _ENV)
+		_ENV = gine.env
 		setmetatable(tbl, {__index = _ENV})
 	elseif _ENV then
 		wlog(_ENV, 2)
