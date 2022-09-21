@@ -77,38 +77,15 @@ function sockets.MixinHTTP(META)
 	end
 
 	do
-		local function decode_chunked_body(self, body)
-			local temp = {}
-			local pos = 1
+		local function decode_chunk(str)
+			local hex_num, rest = str:match("^([abcdefABCDEF0123456789]-)\r\n(.+)")
 
-			for i = 1, math.huge do
-				if body:sub(pos, pos + #"0\r\n\r\n"):endswith("0\r\n\r\n") then
-					break
-				end
-
-				-- find nearest \r\n
-				local size_stop, chunk_start = body:find("\r\n", pos, true)
-				local size = tonumber(body:sub(pos, size_stop), 16)
-
-				if not size then
-					return self:Error("chunk #" .. i .. " has no size?")
-				end
-
-				pos = size_stop + 2
-				temp[i] = body:sub(pos, pos + size - 1)
-				pos = pos + size
-				local eoc = body:sub(pos, pos + 1)
-
-				if eoc ~= "\r\n" then
-					return self:Error(
-						"chunk #" .. i .. " reports a size of " .. size .. " bytes but is not terminated with \\r\\n"
-					)
-				end
-
-				pos = pos + 2
+			if hex_num then
+				local num = tonumber("0x" .. hex_num)
+				return rest:sub(1, num),
+				rest:sub(num + 3),
+				rest:sub(num + 3):startswith("0\r\n\r\n")
 			end
-
-			return table.concat(temp)
 		end
 
 		function META:WriteHTTP(chunk, is_response)
@@ -168,9 +145,7 @@ function sockets.MixinHTTP(META)
 						do
 							local content_length = tonumber(keyvalues["content-length"])
 
-							if content_length == 0 then
-								content_length = nil
-							end
+							if content_length == 0 then content_length = nil end
 
 							keyvalues["content-length"] = content_length
 						end
@@ -191,61 +166,46 @@ function sockets.MixinHTTP(META)
 
 			if state.stage == "body" then
 				if state.header["transfer-encoding"] == "chunked" then
-					if
-						(
-							not state.received_bytes or
-							not state.to_receive
-						)
-						or
-						state.received_bytes > state.to_receive
-					then
-						local hex_num, rest = chunk:match("^([abcdefABCDEF0123456789]-)\r\n(.+)")
+					state.remaining_chunk = state.remaining_chunk or ""
+					local decoded = ""
+					local remaining = state.remaining_chunk .. chunk
 
-						if hex_num == "0" then
+					while true do
+						local decoded_chunk, rest, done = decode_chunk(remaining)
+
+						if done then
 							state.chunked_done = true
-						elseif hex_num then
-							local num = tonumber("0x" .. hex_num) or 0
-							self:SetBufferSize(num)
-							state.to_receive = num
-						else
-							state.to_receive = 0
+							decoded = decoded .. decoded_chunk
+
+							break
 						end
 
-						chunk = rest or chunk
-						state.received_bytes = 0
+						if not decoded_chunk or rest == "" then break end
+
+						decoded = decoded .. decoded_chunk
+						remaining = rest
 					end
 
-					state.received_bytes = (state.received_bytes or 0) + #chunk
-
-					if state.received_bytes > state.to_receive then
-						local hex_num, rest = chunk:match("^([abcdefABCDEF0123456789]-)\r\n(.+)")
-
-						if hex_num == "0" or chunk:endswith("0\r\n\r\n") then
-							state.chunked_done = true
-						end
-					end
+					state.remaining_chunk = remaining
+					self:WriteBody(decoded)
+					state.current_body_chunk = decoded
+				else
+					self:WriteBody(chunk)
 				end
 
-				state.current_body_chunk = chunk
+				if state.current_body_chunk ~= "" then
+					if self:OnHTTPEvent("chunk") == false then return end
+				end
 
-				if self:OnHTTPEvent("chunk") == false then return end
-
-				self:WriteBody(chunk)
 				local body = nil
 
 				if state.header["transfer-encoding"] == "chunked" then
-					if state.chunked_done then
-						body = self:GetWrittenBodyString()
-					end
+					if state.chunked_done then body = self:GetWrittenBodyString() end
 				elseif
 					state.header["content-length"] and
 					self:GetWrittenBodySize() >= state.header["content-length"]
 				then
 					body = self:GetWrittenBodyString()
-				elseif self:GetWrittenBodyString():endswith("0\r\n\r\n") then
-					body = decode_chunked_body(self, self:GetWrittenBodyString())
-
-					if body == false then return end
 				end
 
 				if body then
@@ -484,22 +444,53 @@ function sockets.HTTPResponse(code, status, header, body)
 end
 
 if RELOAD then
+	RELOAD = false
+	runfile("http11_client.lua")
+	RELOAD = true
 	local client = sockets.HTTPClient()
-	client:Request("GET", "https://primes.utm.edu/lists/small/100000.txt")
+	client:Request("GET", "https://fonts.google.com/download?family=Roboto")
+	print("\n\n\n\n\n\n\n\n===================")
 
-	function client:OnReceiveStatus(code, status)
-		print(code, status)
+	function client:OnReceiveStatus(code, status) --	print(code, status)
 	end
 
-	function client:OnReceiveHeader(header, raw_header)
-		table.print(header)
-	end
+	local f = io.open("temp.zip", "wb")
 
 	function client:OnReceiveBodyChunk(chunk)
-		print(chunk)
+		print(#chunk)
+		f:write(chunk)
+		f:flush()
 	end
 
 	function client:OnReceiveBody(body)
-		print(body)
+		f:close()
+		print(#body)
 	end
+
+	function client:OnReceiveBody(body)
+		print("received body", #body)
+	end
+
+	do
+		return
+	end
+
+	local f = io.open("/home/caps/Desktop/roboto.txt", "rb")
+	client:InitializeHTTPParser()
+
+	event.Timer(
+		"test",
+		0,
+		0,
+		function()
+			local data = f:read(256)
+
+			if not data then
+				event.RemoveTimer("test")
+				return
+			end
+
+			client:OnReceiveChunk(data)
+		end
+	)
 end

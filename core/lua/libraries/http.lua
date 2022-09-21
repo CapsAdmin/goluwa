@@ -51,7 +51,14 @@ do
 			end):Catch(function(reason)
 				fail(url, reason or "no reason")
 			end):Subscribe("header", function(header)
-				if not header["content-length"] or header["content-length"] == 0 then
+				if
+					(
+						not header["content-length"] or
+						header["content-length"] == 0
+					)
+					and
+					not header["content-type"]
+				then
 					return false, "download length is 0"
 				end
 
@@ -71,13 +78,11 @@ end
 
 do
 	function http.Get(url, callback, timeout, binary, debug)
-		return sockets.Request(
-			{
-				method = "GET",
-				url = url,
-				callback = callback,
-			}
-		)
+		return sockets.Request({
+			method = "GET",
+			url = url,
+			callback = callback,
+		})
 	end
 end
 
@@ -110,14 +115,10 @@ do
 			end
 		end
 		client.OnReceiveHeader = function(_, header)
-			if tbl.header_callback then
-				tbl.header_callback(header)
-			end
+			if tbl.header_callback then tbl.header_callback(header) end
 		end
 		client.OnReceiveBodyChunk = function(_, chunk)
-			if tbl.on_chunks then
-				tbl.on_chunks(chunk, length, header)
-			end
+			if tbl.on_chunks then tbl.on_chunks(chunk, length, header) end
 		end
 		client.OnReceiveBody = function(_, body)
 			tbl.callback(
@@ -234,9 +235,7 @@ do
 
 	for _, method in ipairs(methods) do
 		http[method] = function(url, data)
-			if tasks.GetActiveTask() then
-				return start(url, data, method):Get()
-			end
+			if tasks.GetActiveTask() then return start(url, data, method):Get() end
 
 			return start(url, data, method)
 		end
