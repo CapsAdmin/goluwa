@@ -40,7 +40,7 @@ table.insert(
 			r += 1. / r;
 			vangle = rot * vangle;
 			// (r-1.0) here is the equivalent to sqrt(0, 1, 2, 3...)
-			vec3 col = texture2D(tex, uv + pixel * (r-1.) * vangle).xyz;
+			vec3 col = texture(tex, uv + pixel * (r-1.) * vangle).xyz;
 			col = col * col * 1.5; // ...contrast it for better highlights - leave this out elsewhere.
 			vec3 bokeh = pow(col, vec3(9.0)) * amount+.4;
 			acc += col * bokeh;
