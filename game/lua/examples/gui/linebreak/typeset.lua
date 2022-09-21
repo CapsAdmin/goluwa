@@ -2,7 +2,7 @@ local loaded = {}
 
 function hyphenate_word(language, word)
 	if not loaded[language] then
-		local data = runfile("lua/examples/hypher_" .. language .. ".lua")
+		local data = assert(runfile("lua/examples/gui/linebreak/hypher_" .. language .. ".lua"))
 		local tree = {_points = {}}
 
 		for size, pattern in pairs(data.patterns) do
