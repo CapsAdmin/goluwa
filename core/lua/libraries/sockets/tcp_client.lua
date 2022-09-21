@@ -239,15 +239,25 @@ function META:Update()
 			end
 		end
 
-		local chunk, err = self.socket:receive(self.BufferSize)
+		for i = 1, 500 do
+			local chunk, err = self.socket:receive(self.BufferSize)
 
-		if chunk then
-			self:OnReceiveChunk(chunk)
-		else
-			if err == "closed" then
-				self:OnClose("receive")
-			elseif err ~= "timeout" then
-				self:Error(err)
+			if err == "context not connected" then break end
+
+			if err == "timeout" then break end
+
+			if chunk then
+				self:OnReceiveChunk(chunk)
+			else
+				if err == "closed" then
+					self:OnClose("receive")
+
+						break
+				elseif err ~= "timeout" then
+					self:Error(err)
+
+					break
+				end
 			end
 		end
 	end
