@@ -823,75 +823,77 @@ function M.gunzip(t)
 
 	parse_gzip_header(bs)
 	local data_crc32 = 0
-	inflate({
-		input = bs,
-		output = disable_crc and
-			outbs or
-			function(byte)
-				data_crc32 = crc32(byte, data_crc32)
-				outbs(byte)
-			end,
-	}
-)
-bs:read(bs:nbits_left_in_byte())
-local expected_crc32 = bs:read(32)
-local isize = bs:read(32) -- ignored
-if DEBUG then
-	debug("crc32=", expected_crc32)
-	debug("isize=", isize)
-end
-
-if not disable_crc and data_crc32 then
-	if data_crc32 ~= expected_crc32 then
-		runtime_error("invalid compressed data--crc error")
+	inflate(
+		{
+			input = bs,
+			output = disable_crc and
+				outbs or
+				function(byte)
+					data_crc32 = crc32(byte, data_crc32)
+					outbs(byte)
+				end,
+		}
+	)
+	bs:read(bs:nbits_left_in_byte())
+	local expected_crc32 = bs:read(32)
+	local isize = bs:read(32) -- ignored
+	if DEBUG then
+		debug("crc32=", expected_crc32)
+		debug("isize=", isize)
 	end
-end
 
-if bs:read() then warn("trailing garbage ignored") end
+	if not disable_crc and data_crc32 then
+		if data_crc32 ~= expected_crc32 then
+			runtime_error("invalid compressed data--crc error")
+		end
+	end
+
+	if bs:read() then warn("trailing garbage ignored") end
 end
 
 function M.adler32(byte, crc)
-local s1 = crc % 65536
-local s2 = (crc - s1) / 65536
-s1 = (s1 + byte) % 65521
-s2 = (s2 + s1) % 65521
-return s2 * 65536 + s1
+	local s1 = crc % 65536
+	local s2 = (crc - s1) / 65536
+	s1 = (s1 + byte) % 65521
+	s2 = (s2 + s1) % 65521
+	return s2 * 65536 + s1
 end -- 65521 is the largest prime smaller than 2^16
 function M.inflate_zlib(t)
-local bs = get_bitstream(t.input)
-local outbs = get_obytestream(t.output)
-local disable_crc = t.disable_crc
+	local bs = get_bitstream(t.input)
+	local outbs = get_obytestream(t.output)
+	local disable_crc = t.disable_crc
 
-if disable_crc == nil then disable_crc = false end
+	if disable_crc == nil then disable_crc = false end
 
-local window_size_ = parse_zlib_header(bs)
-local data_adler32 = 1
-inflate({
-	input = bs,
-	output = disable_crc and
-		outbs or
-		function(byte)
-			data_adler32 = M.adler32(byte, data_adler32)
-			outbs(byte)
-		end,
-}
-)
-bs:read(bs:nbits_left_in_byte())
-local b3 = bs:read(8)
-local b2 = bs:read(8)
-local b1 = bs:read(8)
-local b0 = bs:read(8)
-local expected_adler32 = ((b3 * 256 + b2) * 256 + b1) * 256 + b0
+	local window_size_ = parse_zlib_header(bs)
+	local data_adler32 = 1
+	inflate(
+		{
+			input = bs,
+			output = disable_crc and
+				outbs or
+				function(byte)
+					data_adler32 = M.adler32(byte, data_adler32)
+					outbs(byte)
+				end,
+		}
+	)
+	bs:read(bs:nbits_left_in_byte())
+	local b3 = bs:read(8)
+	local b2 = bs:read(8)
+	local b1 = bs:read(8)
+	local b0 = bs:read(8)
+	local expected_adler32 = ((b3 * 256 + b2) * 256 + b1) * 256 + b0
 
-if DEBUG then debug("alder32=", expected_adler32) end
+	if DEBUG then debug("alder32=", expected_adler32) end
 
-if not disable_crc then
-if data_adler32 ~= expected_adler32 then
-	runtime_error("invalid compressed data--crc error")
-end
-end
+	if not disable_crc then
+		if data_adler32 ~= expected_adler32 then
+			runtime_error("invalid compressed data--crc error")
+		end
+	end
 
-if bs:read() then warn("trailing garbage ignored") end
+	if bs:read() then warn("trailing garbage ignored") end
 end
 
 return M

@@ -293,7 +293,16 @@ typedef struct {
 	hdr.eversion = 1
 	hdr.type = f16(1)
 	hdr.machine = f16((
-		{x86 = 3, x64 = 62, arm = 40, arm64 = 183, arm64be = 183, ppc = 20, mips = 8, mipsel = 8}
+		{
+			x86 = 3,
+			x64 = 62,
+			arm = 40,
+			arm64 = 183,
+			arm64be = 183,
+			ppc = 20,
+			mips = 8,
+			mipsel = 8,
+		}
 	)[ctx.arch])
 
 	if ctx.arch == "mips" or ctx.arch == "mipsel" then
@@ -428,7 +437,14 @@ typedef struct {
 	local o = ffi.new("PEobj")
 	local hdr = o.hdr
 	hdr.arch = f16((
-		{x86 = 0x14c, x64 = 0x8664, arm = 0x1c0, ppc = 0x1f2, mips = 0x366, mipsel = 0x366}
+		{
+			x86 = 0x14c,
+			x64 = 0x8664,
+			arm = 0x1c0,
+			ppc = 0x1f2,
+			mips = 0x366,
+			mipsel = 0x366,
+		}
 	)[ctx.arch])
 	hdr.nsects = f16(2)
 	hdr.symtabofs = f32(ffi.offsetof(o, "sym0"))

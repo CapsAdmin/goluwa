@@ -168,9 +168,7 @@ function sockets.DownloadToPath(url, path, on_finish, on_error, on_progress, on_
 
 	if etag and not total_size then header["If-None-Match"] = etag end
 
-	if current_size > 0 then
-		header["range"] = "bytes=" .. current_size .. "-"
-	end
+	if current_size > 0 then header["range"] = "bytes=" .. current_size .. "-" end
 
 	local http = sockets.HTTPClient()
 	http.url = url

@@ -269,4 +269,4 @@ if PHYSICS then
 	end
 end
 
-META:RegisterComponent()--runfile("physics_container.lua")
+META:RegisterComponent() --runfile("physics_container.lua")

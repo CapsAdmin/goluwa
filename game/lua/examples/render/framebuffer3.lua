@@ -11,7 +11,12 @@ event.Timer(
 		local t = system.GetElapsedTime()
 		fb:ClearColor(1, 0, 0, 0)
 		fb:Begin()
-		gfx.DrawRect(size.x / 2 + math.sin(t) * size.x / 2 - 16, size.y / 2 + math.cos(t) * size.y / 2 - 16, 32, 32)
+		gfx.DrawRect(
+			size.x / 2 + math.sin(t) * size.x / 2 - 16,
+			size.y / 2 + math.cos(t) * size.y / 2 - 16,
+			32,
+			32
+		)
 		fb:End()
 	end
 )

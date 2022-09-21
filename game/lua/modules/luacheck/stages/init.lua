@@ -59,9 +59,7 @@ register_warnings(
 )
 
 for _, stage_module in ipairs(stages.modules) do
-	if stage_module.warnings then
-		register_warnings(stage_module.warnings)
-	end
+	if stage_module.warnings then register_warnings(stage_module.warnings) end
 end
 
 function stages.run(chstate)

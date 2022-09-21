@@ -132,9 +132,7 @@ local function get_field_status(opts, warning, depth)
 				-- The field is defined, recurse into it.
 				def = def.fields[index_string]
 
-				if def.read_only ~= nil then
-					read_only = def.read_only
-				end
+				if def.read_only ~= nil then read_only = def.read_only end
 			else
 				-- The field is not defined, but it may be okay to index if `other_fields` is true.
 				if not def.other_fields then defined = false end
@@ -291,9 +289,7 @@ function CachingOptionsNormalizer:normalize_options(stds, option_stack)
 	local result_node = self.result_trie
 
 	for _, option_table in ipairs(option_stack) do
-		if not result_node[option_table] then
-			result_node[option_table] = {}
-		end
+		if not result_node[option_table] then result_node[option_table] = {} end
 
 		result_node = result_node[option_table]
 	end

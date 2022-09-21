@@ -422,5 +422,5 @@ insert(
 insert("return gl")
 --collectgarbage()
 local code = table.concat(lua, "\n")
-vfs.Write("lua/libraries/graphics/ffi/opengl/init.lua", code)--package.loaded["graphics.ffi.opengl"] = nil
+vfs.Write("lua/libraries/graphics/ffi/opengl/init.lua", code) --package.loaded["graphics.ffi.opengl"] = nil
 --require("graphics.ffi.opengl")

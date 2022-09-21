@@ -243,11 +243,8 @@ local irtype_ansi = setmetatable(
 	{
 		__index = function(tab, t)
 			local s = colorize_ansi(irtype_text[t], t)
-			
 			tab[t] = s
-			
 			return s
-			
 		end,
 	}
 )
@@ -267,11 +264,8 @@ local irtype_html = setmetatable(
 	{
 		__index = function(tab, t)
 			local s = colorize_html(irtype_text[t], t)
-			
 			tab[t] = s
-			
 			return s
-			
 		end,
 	}
 )
@@ -803,9 +797,7 @@ local function dumpon(opt, outfile)
 	if opt then
 		opt = gsub(opt, "[TAH]", function(mode)
 			colormode = mode
-			
 			return ""
-			
 		end)
 	end
 

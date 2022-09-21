@@ -23,9 +23,7 @@ local config_options = {
 function runner.new(opts)
 	local ok, err = options.validate(config_options, opts)
 
-	if not ok then
-		error(("bad argument #1 to 'runner.new' (%s)"):format(err))
-	end
+	if not ok then error(("bad argument #1 to 'runner.new' (%s)"):format(err)) end
 
 	local base_config, config_err = config.load_config(opts.config, opts.default_config)
 
@@ -70,9 +68,7 @@ local function validate_inputs(inputs)
 					):format(context, field, type(input[field]))
 				end
 
-				if field ~= "filename" then
-					specifies_source = true
-				end
+				if field ~= "filename" then specifies_source = true end
 			end
 		end
 
@@ -275,9 +271,7 @@ function Runner:_get_reports(inputs)
 	for _, input in ipairs(inputs) do
 		local report = input.cached_report or input.new_report
 
-		if not report then
-			report = {fatal = input.fatal, msg = input.msg}
-		end
+		if not report then report = {fatal = input.fatal, msg = input.msg} end
 
 		report.filename = input.filename
 		table.insert(res, report)
@@ -412,9 +406,7 @@ function Runner:format(report, format_opts)
 		end
 	end
 
-	if #output > 0 and output:sub(-1) ~= "\n" then
-		output = output .. "\n"
-	end
+	if #output > 0 and output:sub(-1) ~= "\n" then output = output .. "\n" end
 
 	return output
 end

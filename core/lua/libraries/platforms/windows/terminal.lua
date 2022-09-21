@@ -132,11 +132,8 @@ ffi.cdef([[
 ]])
 local error_str = ffi.new("uint8_t[?]", 1024)
 local FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000
-
 local ENABLE_WINDOW_INPUT = 0x0008
-
 local FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200
-
 local error_flags = bit.bor(FORMAT_MESSAGE_FROM_SYSTEM, FORMAT_MESSAGE_IGNORE_INSERTS)
 
 local function throw_error()

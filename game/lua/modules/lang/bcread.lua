@@ -397,11 +397,7 @@ local function bcline(proto, pc, ins, m, prefix)
 		return format("%s=> %04d", s, pc + d - 0x7fff)
 	end
 
-	if mb ~= 0 then
-		d = band(d, 0xff)
-	elseif mc == 0 then
-		return s
-	end
+	if mb ~= 0 then d = band(d, 0xff) elseif mc == 0 then return s end
 
 	local kc
 
@@ -684,7 +680,9 @@ local function proto_info_target(target)
 	end
 
 	local function ins(_, ls, pc, ins, m)
-		if band(m, 15 * 128) == 13 * 128 then proto.target[pc + shr(ins, 16) - 0x7fff] = true end
+		if band(m, 15 * 128) == 13 * 128 then
+			proto.target[pc + shr(ins, 16) - 0x7fff] = true
+		end
 	end
 
 	return {
@@ -785,9 +783,7 @@ local function bcread_header(ls, target)
 	ls.flags = flags
 	action(target, "flags", ls, flags)
 
-	if band(flags, bnot(BCDUMP.F_KNOWN)) ~= 0 then
-		error("unknown flags")
-	end
+	if band(flags, bnot(BCDUMP.F_KNOWN)) ~= 0 then error("unknown flags") end
 
 	if band(flags, BCDUMP.F_STRIP) == 0 then
 		local len = bcread_uleb128(ls)

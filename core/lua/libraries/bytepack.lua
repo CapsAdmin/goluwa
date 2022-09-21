@@ -174,7 +174,6 @@ do -- taken from lua sources https://github.com/lua/lua/blob/master/lstrlib.c
 				for i = limit, size - 1 do
 					if str[i] ~= mask then
 						errorf("%d-byte integer does not fit into Lua Integer", size)
-						
 					end
 				end
 			end
@@ -294,9 +293,7 @@ local function read(state)
 					state.position = stop
 					capture = state.input:sub(start, stop)
 
-					if cmd.arg_type == "n" then
-						capture = tonumber(capture)
-					end
+					if cmd.arg_type == "n" then capture = tonumber(capture) end
 				end
 			end
 
@@ -340,15 +337,11 @@ local function compile(str, decode)
 				if cmd.name == "I" then
 					lua = lua .. "bytepack.packint." .. what .. "(" .. first_arg .. ", " .. arg .. ", false, " .. endianess .. ")\n"
 
-					if decode then
-						lua = lua .. "input = input + " .. arg .. "\n"
-					end
+					if decode then lua = lua .. "input = input + " .. arg .. "\n" end
 				elseif cmd.name == "i" then
 					lua = lua .. "bytepack.packint." .. what .. "(" .. first_arg .. ", " .. arg .. ", true, " .. endianess .. ")\n"
 
-					if decode then
-						lua = lua .. "input = input + " .. arg .. "\n"
-					end
+					if decode then lua = lua .. "input = input + " .. arg .. "\n" end
 				elseif cmd.func ~= "" then
 					lua = lua .. "bytepack." .. cmd.func .. "." .. what .. "(" .. first_arg .. ", " .. endianess .. ")\n"
 

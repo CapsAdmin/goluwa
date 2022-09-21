@@ -4,11 +4,7 @@ local color_support = not utils.is_windows or os.getenv("ANSICON")
 
 local function prefix_if_indirect(fmt)
 	return function(w)
-		if w.indirect then
-			return "indirectly " .. fmt
-		else
-			return fmt
-		end
+		if w.indirect then return "indirectly " .. fmt else return fmt end
 	end
 end
 
@@ -288,9 +284,7 @@ function formatters.default(report, file_names, opts)
 			end
 		end
 
-		if #buf > 0 and buf[#buf]:sub(-1) ~= "\n" then
-			table.insert(buf, "")
-		end
+		if #buf > 0 and buf[#buf]:sub(-1) ~= "\n" then table.insert(buf, "") end
 	end
 
 	local total = (

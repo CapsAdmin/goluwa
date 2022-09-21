@@ -119,9 +119,7 @@ local function lookup(key, scp)
 	for i = #scp.children, 1, -1 do
 		local var = scp.children[i]
 
-		if var.type == "variable" and var.key.value == key.value then
-			return var
-		end
+		if var.type == "variable" and var.key.value == key.value then return var end
 	end
 
 	if scp.parent then return lookup(key, scp.parent) end
@@ -140,9 +138,7 @@ local function set_variable(key, val, type)
 
 			if val.value_types then
 				for i, v in ipairs(test.val.value_types) do
-					if not is_type(val, v) then
-						table.insert(val.value_types, v)
-					end
+					if not is_type(val, v) then table.insert(val.value_types, v) end
 				end
 
 				for i, v in ipairs(val.value_types) do
@@ -245,9 +241,7 @@ local function get_root_value(node)
 		while true do
 			local test = lookup(cur.value)
 
-			if not test or test.variable_type ~= "upvalue" then
-				break
-			end
+			if not test or test.variable_type ~= "upvalue" then break end
 
 			cur = test.val
 		end
@@ -275,9 +269,7 @@ local function truthy(node)
 	end
 
 	if node.type == "letter" then
-		if node.value == "false" or node.value == "nil" then
-			return false
-		end
+		if node.value == "false" or node.value == "nil" then return false end
 	end
 
 	return true
@@ -332,9 +324,7 @@ local function walk(node)
 					local key = left[i].value
 					local val = nil
 
-					if right and right[i] then
-						val = get_value(right[i], left[i])
-					end
+					if right and right[i] then val = get_value(right[i], left[i]) end
 
 					if not val then
 						val = {
@@ -549,4 +539,4 @@ local function dump(scope)
 	end
 end
 
-dump(tree.children)---	table.print2(table.tolist(found, function(a,b) return a.val < b.val end))
+dump(tree.children) ---	table.print2(table.tolist(found, function(a,b) return a.val < b.val end))

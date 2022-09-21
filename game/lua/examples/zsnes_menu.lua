@@ -212,7 +212,7 @@ function menu.CreateTopBar()
 					end
 				)
 
-				if not menu.okay then  --return false
+				if not menu.okay then --return false
 				end
 			end)
 
@@ -232,12 +232,15 @@ function menu.CreateTopBar()
 
 		if cmd then name = name .. cmd:trim() end
 
-		table.insert(list, {
-			name,
-			function()
-				if cmd then commands.RunString(cmd) end
-			end,
-		})
+		table.insert(
+			list,
+			{
+				name,
+				function()
+					if cmd then commands.RunString(cmd) end
+				end,
+			}
+		)
 	end
 
 	table.insert(list, {})

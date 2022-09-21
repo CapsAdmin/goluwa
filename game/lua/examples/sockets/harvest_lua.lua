@@ -18,9 +18,7 @@ fs.PushWorkingDirectory("harvest_lua")
 for url in pairs(serializer.GetKeyValuesInFile("luadata", "lua_harvest")) do
 	local name = url:match(".+/(.+)")
 
-	if fs.get_type(name) ~= "directory" then
-		git.clone(url, "--depth 1", "&")
-	end
+	if fs.get_type(name) ~= "directory" then git.clone(url, "--depth 1", "&") end
 end
 
 fs.PopWorkingDirectory()

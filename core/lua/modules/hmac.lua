@@ -118,9 +118,7 @@ function _M.new(self, key, hash_algo)
 	local ctx = ctx_new()
 	local _hash_algo = hash_algo or hashes.MD5
 
-	if C.HMAC_Init_ex(ctx, key, #key, _hash_algo, nil) == 0 then
-		return nil
-	end
+	if C.HMAC_Init_ex(ctx, key, #key, _hash_algo, nil) == 0 then return nil end
 
 	ffi_gc(ctx, ctx_free)
 	return setmetatable({_ctx = ctx}, mt)
@@ -136,9 +134,7 @@ function _M.final(self, s, hex_output)
 	end
 
 	if C.HMAC_Final(self._ctx, buf, res_len) == 1 then
-		if hex_output == true then
-			return to_hex(ffi_str(buf, res_len[0]))
-		end
+		if hex_output == true then return to_hex(ffi_str(buf, res_len[0])) end
 
 		return ffi_str(buf, res_len[0])
 	end

@@ -309,7 +309,6 @@ do
 						end
 
 						return r
-						
 					end) .. "0000"
 				):gsub("%d%d%d?%d?%d?%d?", function(x)
 					if (#x < 6) then return "" end
@@ -341,7 +340,6 @@ do
 				end
 
 				return r
-				
 			end):gsub("%d%d%d?%d?%d?%d?%d?%d?", function(x)
 				if (#x ~= 8) then return "" end
 

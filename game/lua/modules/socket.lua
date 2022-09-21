@@ -26,7 +26,7 @@ function _M.bind(host, port, backlog)
 	if host == "*" then host = "0.0.0.0" end
 
 	local addrinfo, err = socket.dns.getaddrinfo(host)
-	
+
 	if not addrinfo then return nil, err end
 
 	local sock, res
@@ -49,11 +49,7 @@ function _M.bind(host, port, backlog)
 		else
 			res, err = sock:listen(backlog)
 
-			if not res then
-				sock:close()
-			else
-				return sock
-			end
+			if not res then sock:close() else return sock end
 		end
 	end
 

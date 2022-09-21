@@ -846,9 +846,7 @@ local function putop(ctx, text, operands)
 			)
 		)
 	else
-		ctx.out(
-			format("%08x  %-5s %s%s\n", ctx.addr + pos, text, concat(operands, ", "), extra)
-		)
+		ctx.out(format("%08x  %-5s %s%s\n", ctx.addr + pos, text, concat(operands, ", "), extra))
 	end
 
 	ctx.pos = pos + 4
@@ -1010,7 +1008,6 @@ local function disass_ins(ctx)
 
 					if name == "mov" then
 						name = s
-						
 						x = r
 					elseif r then
 						x = format("%s %s", s, r)

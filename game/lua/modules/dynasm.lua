@@ -260,7 +260,6 @@ local function definesubst_one(word)
 
 	if subst then
 		gotsubst = word
-		
 		return subst
 	else
 		return word
@@ -617,7 +616,6 @@ map_coreop[".capture_1"] = function(params)
 
 	if not buf then
 		buf = {}
-		
 		cap_buffers[name] = buf
 	end
 
@@ -1247,13 +1245,11 @@ end
 
 function opt_map.ccomment()
 	g_opt.comment = "/*|"
-	
 	g_opt.endcomment = " */"
 end
 
 function opt_map.cppcomment()
 	g_opt.comment = "//|"
-	
 	g_opt.endcomment = ""
 end
 
@@ -1373,9 +1369,7 @@ local function parseargs(args)
 	local nargs = #args - args.argn + 1
 
 	if nargs ~= 1 then
-		if nargs == 0 then
-			if g_opt.dumpdef > 0 then return dumpdef(stdout) end
-		end
+		if nargs == 0 then if g_opt.dumpdef > 0 then return dumpdef(stdout) end end
 
 		opt_map.help()
 	end
@@ -1517,4 +1511,4 @@ else -- use as standalone script
 
 	-- Start DynASM.
 	parseargs({...})
-end------------------------------------------------------------------------------
+end ------------------------------------------------------------------------------

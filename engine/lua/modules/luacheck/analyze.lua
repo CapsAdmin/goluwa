@@ -277,9 +277,7 @@ local function check_var(chstate, var)
 					if value.overwriting_item then
 						overwriting_node = find_overwriting_lhs_node(value.overwriting_item, value)
 
-						if overwriting_node == value.node then
-							overwriting_node = nil
-						end
+						if overwriting_node == value.node then overwriting_node = nil end
 					else
 						overwriting_node = get_overwriting_node_in_dup_assignment(value.item, value)
 					end

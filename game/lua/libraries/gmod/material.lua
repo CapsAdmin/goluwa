@@ -1,374 +1,191 @@
 local function name_translate()
 	-- https://github.com/Nican/swarm-sdk/blob/master/src/materialsystem/stdshaders/unlitgeneric_dx9.cpp#L85-L163
 	info.m_nBaseTexture = BASETEXTURE
-	
 	info.m_nBaseTextureFrame = FRAME
-	
 	info.m_nBaseTextureTransform = BASETEXTURETRANSFORM
-	
 	info.m_nAlbedo = ALBEDO
-	
 	info.m_nSelfIllumTint = -1
-	
 	info.m_nDetail = DETAIL
-	
 	info.m_nDetailFrame = DETAILFRAME
-	
 	info.m_nDetailScale = DETAILSCALE
-	
 	info.m_nDetailTextureCombineMode = DETAILBLENDMODE
-	
 	info.m_nDetailTextureBlendFactor = DETAILBLENDFACTOR
-	
 	info.m_nDetailTextureTransform = DETAILTEXTURETRANSFORM
-	
 	info.m_nEnvmap = ENVMAP
-	
 	info.m_nEnvmapFrame = ENVMAPFRAME
-	
 	info.m_nEnvmapMask = ENVMAPMASK
-	
 	info.m_nEnvmapMaskFrame = ENVMAPMASKFRAME
-	
 	info.m_nEnvmapMaskTransform = ENVMAPMASKTRANSFORM
-	
 	info.m_nEnvmapTint = ENVMAPTINT
-	
 	info.m_nBumpmap = -1
-	
 	info.m_nBumpFrame = -1
-	
 	info.m_nBumpTransform = -1
-	
 	info.m_nEnvmapContrast = ENVMAPCONTRAST
-	
 	info.m_nEnvmapSaturation = ENVMAPSATURATION
-	
 	info.m_nAlphaTestReference = ALPHATESTREFERENCE
-	
 	info.m_nVertexAlphaTest = VERTEXALPHATEST
-	
 	info.m_nFlashlightTexture = FLASHLIGHTTEXTURE
-	
 	info.m_nFlashlightTextureFrame = FLASHLIGHTTEXTUREFRAME
-	
 	info.m_nHDRColorScale = HDRCOLORSCALE
-	
 	info.m_nPhongExponent = -1
-	
 	info.m_nPhongExponentTexture = -1
-	
 	info.m_nDiffuseWarpTexture = -1
-	
 	info.m_nPhongWarpTexture = -1
-	
 	info.m_nPhongBoost = -1
-	
 	info.m_nPhongFresnelRanges = -1
-	
 	info.m_nPhong = -1
-	
 	info.m_nPhongTint = -1
-	
 	info.m_nPhongAlbedoTint = -1
-	
 	info.m_nSelfIllumEnvMapMask_Alpha = -1
-	
 	info.m_nAmbientOnly = -1
-	
 	info.m_nBaseMapAlphaPhongMask = -1
-	
 	info.m_nEnvmapFresnel = -1
-	
 	info.m_nSelfIllumMask = -1
-	
 	info.m_nAmbientOcclusion = -1
-	
 	info.m_nBaseMapLuminancePhongMask = -1
-	
 	info.m_nDistanceAlpha = DISTANCEALPHA
-	
 	info.m_nDistanceAlphaFromDetail = DISTANCEALPHAFROMDETAIL
-	
 	info.m_nSoftEdges = SOFTEDGES
-	
 	info.m_nEdgeSoftnessStart = EDGESOFTNESSSTART
-	
 	info.m_nEdgeSoftnessEnd = EDGESOFTNESSEND
-	
 	info.m_nScaleEdgeSoftnessBasedOnScreenRes = SCALEEDGESOFTNESSBASEDONSCREENRES
-	
 	info.m_nGlow = GLOW
-	
 	info.m_nGlowColor = GLOWCOLOR
-	
 	info.m_nGlowAlpha = GLOWALPHA
-	
 	info.m_nGlowStart = GLOWSTART
-	
 	info.m_nGlowEnd = GLOWEND
-	
 	info.m_nGlowX = GLOWX
-	
 	info.m_nGlowY = GLOWY
-	
 	info.m_nOutline = OUTLINE
-	
 	info.m_nOutlineColor = OUTLINECOLOR
-	
 	info.m_nOutlineAlpha = OUTLINEALPHA
-	
 	info.m_nOutlineStart0 = OUTLINESTART0
-	
 	info.m_nOutlineStart1 = OUTLINESTART1
-	
 	info.m_nOutlineEnd0 = OUTLINEEND0
-	
 	info.m_nOutlineEnd1 = OUTLINEEND1
-	
 	info.m_nScaleOutlineSoftnessBasedOnScreenRes = SCALEOUTLINESOFTNESSBASEDONSCREENRES
-	
 	info.m_nSeparateDetailUVs = SEPARATEDETAILUVS
-	
 	info.m_nLinearWrite = LINEARWRITE
-	
 	info.m_nGammaColorRead = GAMMACOLORREAD
-	
 	info.m_nReceiveFlashlight = RECEIVEFLASHLIGHT
-	
 	info.m_nSinglePassFlashlight = SINGLEPASSFLASHLIGHT
-	
 	info.m_nShaderSrgbRead360 = SHADERSRGBREAD360
-	
 	info.m_nDisplacementMap = DISPLACEMENTMAP
-	
 	-- https://github.com/Nican/swarm-sdk/blob/master/src/materialsystem/stdshaders/vertexlitgeneric_dx9.cpp#L168-L272
 	info.m_nBaseTexture = BASETEXTURE
-	
 	info.m_nWrinkle = COMPRESS
-	
 	info.m_nStretch = STRETCH
-	
 	info.m_nBaseTextureFrame = FRAME
-	
 	info.m_nBaseTextureTransform = BASETEXTURETRANSFORM
-	
 	info.m_nAlbedo = ALBEDO
-	
 	info.m_nSelfIllumTint = SELFILLUMTINT
-	
 	info.m_nDetail = DETAIL
-	
 	info.m_nDetailFrame = DETAILFRAME
-	
 	info.m_nDetailScale = DETAILSCALE
-	
 	info.m_nEnvmap = ENVMAP
-	
 	info.m_nEnvmapFrame = ENVMAPFRAME
-	
 	info.m_nEnvmapMask = ENVMAPMASK
-	
 	info.m_nEnvmapMaskFrame = ENVMAPMASKFRAME
-	
 	info.m_nEnvmapMaskTransform = ENVMAPMASKTRANSFORM
-	
 	info.m_nEnvmapTint = ENVMAPTINT
-	
 	info.m_nBumpmap = BUMPMAP
-	
 	info.m_nNormalWrinkle = BUMPCOMPRESS
-	
 	info.m_nNormalStretch = BUMPSTRETCH
-	
 	info.m_nBumpFrame = BUMPFRAME
-	
 	info.m_nBumpTransform = BUMPTRANSFORM
-	
 	info.m_nEnvmapContrast = ENVMAPCONTRAST
-	
 	info.m_nEnvmapSaturation = ENVMAPSATURATION
-	
 	info.m_nAlphaTestReference = ALPHATESTREFERENCE
-	
 	info.m_nFlashlightNoLambert = FLASHLIGHTNOLAMBERT
-	
 	info.m_nFlashlightTexture = FLASHLIGHTTEXTURE
-	
 	info.m_nFlashlightTextureFrame = FLASHLIGHTTEXTUREFRAME
-	
 	info.m_nSelfIllumEnvMapMask_Alpha = SELFILLUM_ENVMAPMASK_ALPHA
-	
 	info.m_nSelfIllumFresnel = SELFILLUMFRESNEL
-	
 	info.m_nSelfIllumFresnelMinMaxExp = SELFILLUMFRESNELMINMAXEXP
-	
 	info.m_nSelfIllumMaskScale = SELFILLUMMASKSCALE
-	
 	info.m_nAmbientOnly = AMBIENTONLY
-	
 	info.m_nPhongExponent = PHONGEXPONENT
-	
 	info.m_nPhongExponentTexture = PHONGEXPONENTTEXTURE
-	
 	info.m_nPhongTint = PHONGTINT
-	
 	info.m_nPhongAlbedoTint = PHONGALBEDOTINT
-	
 	info.m_nDiffuseWarpTexture = LIGHTWARPTEXTURE
-	
 	info.m_nPhongWarpTexture = PHONGWARPTEXTURE
-	
 	info.m_nPhongBoost = PHONGBOOST
-	
 	info.m_nPhongFresnelRanges = PHONGFRESNELRANGES
-	
 	info.m_nPhong = PHONG
-	
 	info.m_nBaseMapAlphaPhongMask = BASEMAPALPHAPHONGMASK
-	
 	info.m_nEnvmapFresnel = ENVMAPFRESNEL
-	
 	info.m_nDetailTextureCombineMode = DETAILBLENDMODE
-	
 	info.m_nDetailTextureBlendFactor = DETAILBLENDFACTOR
-	
 	info.m_nDetailTextureTransform = DETAILTEXTURETRANSFORM
-	
 	info.m_nBaseMapLuminancePhongMask = BASEMAPLUMINANCEPHONGMASK
-	
 	-- Rim lighting parameters
 	info.m_nRimLight = RIMLIGHT
-	
 	info.m_nRimLightPower = RIMLIGHTEXPONENT
-	
 	info.m_nRimLightBoost = RIMLIGHTBOOST
-	
 	info.m_nRimMask = RIMMASK
-	
 	-- seamless
 	info.m_nSeamlessScale = SEAMLESS_SCALE
-	
 	info.m_nSeamlessDetail = SEAMLESS_DETAIL
-	
 	info.m_nSeamlessBase = SEAMLESS_BASE
-	
 	info.m_nSeparateDetailUVs = SEPARATEDETAILUVS
-	
 	info.m_nLinearWrite = LINEARWRITE
-	
 	info.m_nDetailTint = DETAILTINT
-	
 	info.m_nInvertPhongMask = INVERTPHONGMASK
-	
 	info.m_nSelfIllumMask = SELFILLUMMASK
-	
 	info.m_nShaderSrgbRead360 = SHADERSRGBREAD360
-	
 	info.m_nAmbientOcclusion = AMBIENTOCCLUSION
-	
 	info.m_nBlendTintByBaseAlpha = BLENDTINTBYBASEALPHA
-	
 	info.m_nDesaturateWithBaseAlpha = DESATURATEWITHBASEALPHA
-	
 	info.m_nAllowDiffuseModulation = ALLOWDIFFUSEMODULATION
-	
 	info.m_nEnvMapFresnelMinMaxExp = ENVMAPFRESNELMINMAXEXP
-	
 	info.m_nBaseAlphaEnvMapMaskMinMaxExp = BASEALPHAENVMAPMASKMINMAXEXP
-	
 	info.m_nDisplacementMap = DISPLACEMENTMAP
-	
 	info.m_nDisplacementWrinkleMap = DISPLACEMENTWRINKLE
-	
 	info.m_nPhongDisableHalfLambert = PHONGDISABLEHALFLAMBERT
-	
 	info.m_nFoW = FOW
-	
 	info.m_nTreeSway = TREESWAY
-	
 	info.m_nTreeSwayHeight = TREESWAYHEIGHT
-	
 	info.m_nTreeSwayStartHeight = TREESWAYSTARTHEIGHT
-	
 	info.m_nTreeSwayRadius = TREESWAYRADIUS
-	
 	info.m_nTreeSwayStartRadius = TREESWAYSTARTRADIUS
-	
 	info.m_nTreeSwaySpeed = TREESWAYSPEED
-	
 	info.m_nTreeSwaySpeedHighWindMultiplier = TREESWAYSPEEDHIGHWINDMULTIPLIER
-	
 	info.m_nTreeSwayStrength = TREESWAYSTRENGTH
-	
 	info.m_nTreeSwayScrumbleSpeed = TREESWAYSCRUMBLESPEED
-	
 	info.m_nTreeSwayScrumbleStrength = TREESWAYSCRUMBLESTRENGTH
-	
 	info.m_nTreeSwayScrumbleFrequency = TREESWAYSCRUMBLEFREQUENCY
-	
 	info.m_nTreeSwayFalloffExp = TREESWAYFALLOFFEXP
-	
 	info.m_nTreeSwayScrumbleFalloffExp = TREESWAYSCRUMBLEFALLOFFEXP
-	
 	info.m_nTreeSwaySpeedLerpStart = TREESWAYSPEEDLERPSTART
-	
 	info.m_nTreeSwaySpeedLerpEnd = TREESWAYSPEEDLERPEND
-	
 	info.m_nBlendStrength = EMISSIVEBLENDSTRENGTH
-	
 	info.m_nBaseTexture = EMISSIVEBLENDBASETEXTURE
-	
 	info.m_nFlowTexture = EMISSIVEBLENDFLOWTEXTURE
-	
 	info.m_nEmissiveTexture = EMISSIVEBLENDTEXTURE
-	
 	info.m_nEmissiveTint = EMISSIVEBLENDTINT
-	
 	info.m_nEmissiveScrollVector = EMISSIVEBLENDSCROLLVECTOR
-	
 	info.m_nTime = TIME
-	
 	info.m_nFleshTexture = FLESHINTERIORTEXTURE
-	
 	info.m_nFleshNoiseTexture = FLESHINTERIORNOISETEXTURE
-	
 	info.m_nFleshBorderTexture1D = FLESHBORDERTEXTURE1D
-	
 	info.m_nFleshNormalTexture = FLESHNORMALTEXTURE
-	
 	info.m_nFleshSubsurfaceTexture = FLESHSUBSURFACETEXTURE
-	
 	info.m_nFleshCubeTexture = FLESHCUBETEXTURE
-	
 	info.m_nflBorderNoiseScale = FLESHBORDERNOISESCALE
-	
 	info.m_nflDebugForceFleshOn = FLESHDEBUGFORCEFLESHON
-	
 	info.m_nvEffectCenterRadius1 = FLESHEFFECTCENTERRADIUS1
-	
 	info.m_nvEffectCenterRadius2 = FLESHEFFECTCENTERRADIUS2
-	
 	info.m_nvEffectCenterRadius3 = FLESHEFFECTCENTERRADIUS3
-	
 	info.m_nvEffectCenterRadius4 = FLESHEFFECTCENTERRADIUS4
-	
 	info.m_ncSubsurfaceTint = FLESHSUBSURFACETINT
-	
 	info.m_nflBorderWidth = FLESHBORDERWIDTH
-	
 	info.m_nflBorderSoftness = FLESHBORDERSOFTNESS
-	
 	info.m_ncBorderTint = FLESHBORDERTINT
-	
 	info.m_nflGlobalOpacity = FLESHGLOBALOPACITY
-	
 	info.m_nflGlossBrightness = FLESHGLOSSBRIGHTNESS
-	
 	info.m_nflScrollSpeed = FLESHSCROLLSPEED
-	
 	info.m_nTime = TIME
-	
 end
 
 local function base_shader()
@@ -587,14 +404,12 @@ local shaders = {
 			"0.6",
 			"Start value for soft edges for distancealpha."
 		)
-		
 		SHADER_PARAM(
 			EDGESOFTNESSEND,
 			SHADER_PARAM_TYPE_FLOAT,
 			"0.5",
 			"End value for soft edges for distancealpha."
 		)
-		
 		SHADER_PARAM(
 			GLOW,
 			SHADER_PARAM_TYPE_BOOL,
@@ -1305,11 +1120,14 @@ add_new_defaults(
 local translate = {}
 setfenv(
 	name_translate,
-	setmetatable({info = translate}, {
-		__index = function(_, key)
-			return key:lower()
-		end,
-	})
+	setmetatable(
+		{info = translate},
+		{
+			__index = function(_, key)
+				return key:lower()
+			end,
+		}
+	)
 )
 name_translate()
 

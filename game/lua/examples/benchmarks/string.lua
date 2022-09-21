@@ -27,4 +27,4 @@ profiler.MeasureFunction(
 	end,
 	1000,
 	"pattern"
-)-- pattern: average: 0.011039 total: 11.039442
+) -- pattern: average: 0.011039 total: 11.039442

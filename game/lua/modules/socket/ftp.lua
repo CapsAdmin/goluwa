@@ -111,8 +111,7 @@ function metat.__index:send(sendt)
 	if self.pasvt then self:pasvconnect() end
 
 	-- get the transfer argument and command
-	local argument = sendt.argument or
-		url.unescape(string.gsub(sendt.path or "", "^[/\\]", ""))
+	local argument = sendt.argument or url.unescape(string.gsub(sendt.path or "", "^[/\\]", ""))
 
 	if argument == "" then argument = nil end
 
@@ -155,8 +154,7 @@ function metat.__index:receive(recvt)
 
 	if self.pasvt then self:pasvconnect() end
 
-	local argument = recvt.argument or
-		url.unescape(string.gsub(recvt.path or "", "^[/\\]", ""))
+	local argument = recvt.argument or url.unescape(string.gsub(recvt.path or "", "^[/\\]", ""))
 
 	if argument == "" then argument = nil end
 

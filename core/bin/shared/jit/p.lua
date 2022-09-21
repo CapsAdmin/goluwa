@@ -117,7 +117,6 @@ local function prof_cb(th, samples, vmmode)
 
 			if not t3 then
 				t3 = {}
-				
 				t2[k1] = t3
 			end
 
@@ -194,7 +193,6 @@ local function prof_annotate(count1, samples)
 
 			if not file then
 				file = k
-				
 				line = 0
 			end
 
@@ -202,9 +200,7 @@ local function prof_annotate(count1, samples)
 
 			if not fl then
 				fl = {}
-				
 				files[file] = fl
-				
 				files[#files + 1] = file
 			end
 
@@ -249,9 +245,8 @@ local function prof_annotate(count1, samples)
 			for i = 1, ann do
 				if fl[i] then
 					show = true
-					
 					out:write("@@ 1 @@\n")
-					
+
 					break
 				end
 			end
@@ -330,19 +325,16 @@ local function prof_start(mode)
 	local interval = ""
 	mode = mode:gsub("i%d*", function(s)
 		interval = s
-		
 		return ""
 	end)
 	prof_min = 3
 	mode = mode:gsub("m(%d+)", function(s)
 		prof_min = tonumber(s)
-		
 		return ""
 	end)
 	prof_depth = 1
 	mode = mode:gsub("%-?%d+", function(s)
 		prof_depth = tonumber(s)
-		
 		return ""
 	end)
 	local m = {}

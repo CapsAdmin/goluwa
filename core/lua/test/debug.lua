@@ -18,11 +18,8 @@ function foo.THENAME() end
 test(debug.getname, foo.THENAME, "foo.THENAME")
 foo = nil
 local foo = {}
-
 foo["THENAME"] = {}
-
 local wtf = function() end
-
 foo["THENAME"][wtf] = function() end
 test(debug.getname, foo.THENAME[wtf], "foo['THENAME'][wtf]")
 foo = nil

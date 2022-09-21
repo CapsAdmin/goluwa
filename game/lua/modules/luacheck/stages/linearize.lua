@@ -233,9 +233,7 @@ function LinState:register_var(node, type_)
 			warn_redefined(self.chstate, var, prev_var, is_same_scope)
 		end
 
-		if is_same_scope then
-			prev_var.scope_end = self.lines.top.items.size
-		end
+		if is_same_scope then prev_var.scope_end = self.lines.top.items.size end
 	end
 
 	self.scopes.top.vars[var.name] = var
@@ -269,9 +267,7 @@ function LinState:register_label(name, range)
 	if prev_label then
 		assert(not pseudo_labels[name])
 		parser.syntax_error(
-			(
-				"label '%s' already defined on line %d"
-			):format(name, prev_label.range.line),
+			("label '%s' already defined on line %d"):format(name, prev_label.range.line),
 			range,
 			prev_label.range
 		)
@@ -474,9 +470,7 @@ function LinState:emit_stmt_Set(node)
 		if expr.tag == "Id" then
 			local var = self:check_var(expr)
 
-			if var then
-				self:register_upvalue_action(item, var, "set_upvalues")
-			end
+			if var then self:register_upvalue_action(item, var, "set_upvalues") end
 		else
 			assert(expr.tag == "Index")
 			self:scan_lhs_index(item, expr)
@@ -542,9 +536,7 @@ end
 
 function LinState:scan_lhs_index(item, node)
 	if node[1].tag == "Id" then
-		if self:check_var(node[1]) then
-			self:mark_mutation(item, node[1])
-		end
+		if self:check_var(node[1]) then self:mark_mutation(item, node[1]) end
 	elseif node[1].tag == "Index" then
 		self:scan_lhs_index(item, node[1])
 	else
@@ -580,15 +572,11 @@ function LinState:register_set_variables()
 			if item.rhs then
 				local last_rhs_item = item.rhs[#item.rhs]
 
-				if is_unpacking(last_rhs_item) then
-					unpacking_item = last_rhs_item
-				end
+				if is_unpacking(last_rhs_item) then unpacking_item = last_rhs_item end
 			end
 
 			local secondaries -- Array of values unpacked from rightmost rhs item.
-			if unpacking_item and (#item.lhs > #item.rhs) then
-				secondaries = {}
-			end
+			if unpacking_item and (#item.lhs > #item.rhs) then secondaries = {} end
 
 			for i, node in ipairs(item.lhs) do
 				local value

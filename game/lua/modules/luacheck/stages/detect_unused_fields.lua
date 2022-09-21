@@ -66,9 +66,7 @@ local function check_table(chstate, node)
 			key_value_to_node[key_value] = key_node
 			key_node_to_repr[key_node] = key_repr
 
-			if pair.tag ~= "Pair" then
-				index_key_nodes[key_node] = true
-			end
+			if pair.tag ~= "Pair" then index_key_nodes[key_node] = true end
 		end
 	end
 end

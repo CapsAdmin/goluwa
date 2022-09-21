@@ -21,9 +21,13 @@ for _, info in ipairs(camera.GetVariables()) do
 		if info.glsl then
 			render.SetGlobalShaderVariable2(info.name, (info.glsl:gsub("%$", "g_"):gsub("%^", "")), type)
 		else
-			render.SetGlobalShaderVariable2(info.name, function()
-				return render3d.camera:GetMatrices()[info.name]
-			end, type)
+			render.SetGlobalShaderVariable2(
+				info.name,
+				function()
+					return render3d.camera:GetMatrices()[info.name]
+				end,
+				type
+			)
 		end
 	end
 end
@@ -56,9 +60,13 @@ render.SetGlobalShaderVariable2(
 	"vec3"
 )
 
-render.SetGlobalShaderVariable2("cam_right", function()
-	return render3d.camera:GetAngles():GetRight()
-end, "vec3")
+render.SetGlobalShaderVariable2(
+	"cam_right",
+	function()
+		return render3d.camera:GetAngles():GetRight()
+	end,
+	"vec3"
+)
 
 render.AddGlobalShaderCode([[
 float get_depth(vec2 uv)

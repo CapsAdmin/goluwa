@@ -641,9 +641,7 @@ for i, v in ipairs({"double", "float"}) do
 		self.m22 = (-sqx - sqy + sqz + sqw) * invs
 		local tmp1, tmp2
 		tmp1 = q.x * q.y
-		
 		tmp2 = q.z * q.w
-		
 		self.m10 = 2.0 * (tmp1 + tmp2) * invs
 		self.m01 = 2.0 * (tmp1 - tmp2) * invs
 		tmp1 = q.x * q.z

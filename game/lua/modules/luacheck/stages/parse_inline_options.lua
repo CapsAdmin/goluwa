@@ -19,9 +19,7 @@ local limit_opts = utils.array_to_set(
 )
 
 local function is_valid_option_name(name)
-	if name == "std" or options.variadic_inline_options[name] then
-		return true
-	end
+	if name == "std" or options.variadic_inline_options[name] then return true end
 
 	name = name:gsub("^no_", "")
 	return options.nullary_inline_options[name] or limit_opts[name]
@@ -83,9 +81,7 @@ local function parse_options(body)
 		end
 
 		if name == "std" then
-			if #args ~= 1 then
-				return nil, unexpected_num_args(name, args, 1)
-			end
+			if #args ~= 1 then return nil, unexpected_num_args(name, args, 1) end
 
 			opts.std = args[1]
 		elseif name == "ignore" and #args == 0 then

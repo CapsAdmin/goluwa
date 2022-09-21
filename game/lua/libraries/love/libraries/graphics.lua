@@ -36,37 +36,21 @@ do -- quad
 
 	local function refresh(vertices, x, y, w, h, sw, sh)
 		vertices[0].x = 0
-		
 		vertices[0].y = 0
-		
 		vertices[1].x = 0
-		
 		vertices[1].y = h
-		
 		vertices[2].x = w
-		
 		vertices[2].y = h
-		
 		vertices[3].x = w
-		
 		vertices[3].y = 0
-		
 		vertices[0].s = x / sw
-		
 		vertices[0].t = y / sh
-		
 		vertices[1].s = x / sw
-		
 		vertices[1].t = (y + h) / sh
-		
 		vertices[2].s = (x + w) / sw
-		
 		vertices[2].t = (y + h) / sh
-		
 		vertices[3].s = (x + w) / sw
-		
 		vertices[3].t = y / sh
-		
 	end
 
 	function Quad:flip() end

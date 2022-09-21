@@ -38,9 +38,7 @@ do
 		if self.tls_setup then return end
 
 		if not tls or not tls.config then
-			if not tls then
-				return self:Error("unable to find libtls: " .. reason)
-			end
+			if not tls then return self:Error("unable to find libtls: " .. reason) end
 
 			self.tls_setup = true
 			tls.init()
@@ -69,9 +67,7 @@ do
 		function self.socket:on_connect(host, serivce)
 			local code = tls.connect_socket(tls_client, self.fd, host)
 
-			if code < 0 then
-				return nil, last_error(code, "connect")
-			end
+			if code < 0 then return nil, last_error(code, "connect") end
 
 			return true
 		end
@@ -84,9 +80,7 @@ do
 			elseif ret < 0 then
 				local err = last_error(ret, "handshake")
 
-				if err ~= "handshake already completed" then
-					return nil, err
-				end
+				if err ~= "handshake already completed" then return nil, err end
 			end
 
 			self.DoHandshake = nil
@@ -170,9 +164,7 @@ function META:Send(data)
 
 			if t < os.clock() then return false, "timeout" end
 
-			if not ok and err ~= "timeout" then
-				return self:Error(err)
-			end
+			if not ok and err ~= "timeout" then return self:Error(err) end
 
 			if err ~= "timeout" then
 				pos = pos + tonumber(ok)
@@ -252,7 +244,7 @@ function META:Update()
 				if err == "closed" then
 					self:OnClose("receive")
 
-						break
+					break
 				elseif err ~= "timeout" then
 					self:Error(err)
 

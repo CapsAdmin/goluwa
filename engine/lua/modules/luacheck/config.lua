@@ -34,9 +34,7 @@ local function make_config_env_mt()
 
 	function env_mt.__newindex(env, key, value)
 		if special_mts[key] then
-			if type(value) == "table" then
-				setmetatable(value, special_mts[key])
-			end
+			if type(value) == "table" then setmetatable(value, special_mts[key]) end
 
 			special_values[key] = value
 		else
@@ -118,9 +116,7 @@ local function normalize_overrides(files, abs_conf_dir)
 	for _, orig_glob in ipairs(orig_globs) do
 		local glob = fs.normalize(fs.join(abs_conf_dir, orig_glob))
 
-		if not overrides.options[glob] then
-			table.insert(overrides.globs, glob)
-		end
+		if not overrides.options[glob] then table.insert(overrides.globs, glob) end
 
 		overrides.options[glob] = files[orig_glob]
 	end
@@ -190,14 +186,10 @@ local function get_global_config_dir()
 			if not config_home_dir then
 				local home_dir = os.getenv("HOME")
 
-				if home_dir then
-					config_home_dir = fs.join(home_dir, ".config")
-				end
+				if home_dir then config_home_dir = fs.join(home_dir, ".config") end
 			end
 
-			if config_home_dir then
-				return fs.join(config_home_dir, "luacheck")
-			end
+			if config_home_dir then return fs.join(config_home_dir, "luacheck") end
 		end
 	end
 end
@@ -279,11 +271,7 @@ end
 
 -- Adjusts path starting from config dir to start from current directory.
 function config.relative_path(conf, path)
-	if conf.empty then
-		return path
-	else
-		return fs.join(conf.rel_dir, path)
-	end
+	if conf.empty then return path else return fs.join(conf.rel_dir, path) end
 end
 
 -- Requires module from config directory.

@@ -15,9 +15,7 @@ local function validate_fields(tables, per_code_fields)
 
 			local warning_info = stages.warnings[t.code]
 
-			if not warning_info then
-				error("Unknown issue code " .. t.code, 0)
-			end
+			if not warning_info then error("Unknown issue code " .. t.code, 0) end
 
 			fields_set = warning_info.fields_set
 		else

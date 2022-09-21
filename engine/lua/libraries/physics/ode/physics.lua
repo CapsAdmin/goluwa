@@ -55,20 +55,14 @@ function physics._Initialize()
 			local b1 = ode.GeomGetBody(o1)
 			local b2 = ode.GeomGetBody(o2)
 			local MAX_CONTACTS = 8
-			
 			local contact = ffi.new("struct dContact[?]", MAX_CONTACTS)
-			
 			local numc = ode.Collide(o1, o2, MAX_CONTACTS, contact[0].geom, ffi.sizeof("struct dContact"))
 
 			for i = 0, numc - 1 do
 				contact[i].render2d.mode = ode.e.ContactApprox1
-				
 				contact[i].render2d.mu = 5
-				
 				local c = ode.JointCreateContact(physics.world, physics.contact_group, contact + i)
-				
 				ode.JointAttach(c, b1, b2)
-				
 			end
 		end
 
@@ -77,19 +71,16 @@ function physics._Initialize()
 		local function nearCallBack_checkSpace(data, o1, o2)
 			if ode.GeomIsSpace(o1) ~= nil or ode.GeomIsSpace(o2) ~= nil then
 				ode.SpaceCollide2(o1, o2, data, nearCallback_cb)
-				
+
 				if ode.GeomIsSpace(o1) ~= nil then
 					ode.SpaceCollide(ode.GeomGetSpace(o1), data, nearCallback_cb)
-					
 				end
 
 				if ode.GeomIsSpace(o2) ~= nil then
 					ode.SpaceCollide(ode.GeomGetSpace(o2), data, nearCallback_cb)
-					
 				end
 			else
 				nearCallback(data, o1, o2)
-				
 			end
 		end
 

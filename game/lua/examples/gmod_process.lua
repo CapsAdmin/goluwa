@@ -26,5 +26,5 @@ event.AddListener("Update", "", function()
 	end
 end)
 
-LOL2 = p--local gmod = assert(steam.FindSourceGame("gmod"))
+LOL2 = p --local gmod = assert(steam.FindSourceGame("gmod"))
 --  print(gmod.game_dir)

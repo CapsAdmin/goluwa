@@ -179,9 +179,7 @@ function LinState:register_var(node, type_)
 		local same_scope = self.scopes.top.vars[var.name]
 		self.chstate:warn_redefined(var, prev_var, same_scope)
 
-		if same_scope then
-			prev_var.scope_end = self.lines.top.items.size
-		end
+		if same_scope then prev_var.scope_end = self.lines.top.items.size end
 	end
 
 	self.scopes.top.vars[var.name] = var
@@ -449,9 +447,7 @@ function LinState:emit_stmt_Set(node)
 		if expr.tag == "Id" then
 			local var = self:check_var(expr)
 
-			if var then
-				self:register_upvalue_action(item, var, "set_upvalues")
-			end
+			if var then self:register_upvalue_action(item, var, "set_upvalues") end
 		else
 			assert(expr.tag == "Index")
 			self:scan_lhs_index(item, expr)
@@ -517,9 +513,7 @@ end
 
 function LinState:scan_lhs_index(item, node)
 	if node[1].tag == "Id" then
-		if self:check_var(node[1]) then
-			self:mark_mutation(item, node[1])
-		end
+		if self:check_var(node[1]) then self:mark_mutation(item, node[1]) end
 	elseif node[1].tag == "Index" then
 		self:scan_lhs_index(item, node[1])
 	else
@@ -544,10 +538,8 @@ local function node_to_lua_value(node)
 	elseif node.tag == "Number" then
 		local str = node[1]
 
-		if str:find("[iIuUlL]") then
-			-- Ignore LuaJIT cdata literals.
-			return
-		end
+		if str:find("[iIuUlL]") then -- Ignore LuaJIT cdata literals.
+		return end
 
 		-- On Lua 5.3 convert to float to get same results as on Lua 5.1 and 5.2.
 		if _VERSION == "Lua 5.3" and not str:find("[%.eEpP]") then
@@ -610,15 +602,11 @@ function LinState:register_set_variables()
 			if item.rhs then
 				local last_rhs_item = item.rhs[#item.rhs]
 
-				if is_unpacking(last_rhs_item) then
-					unpacking_item = last_rhs_item
-				end
+				if is_unpacking(last_rhs_item) then unpacking_item = last_rhs_item end
 			end
 
 			local secondaries -- Array of values unpacked from rightmost rhs item.
-			if unpacking_item and (#item.lhs > #item.rhs) then
-				secondaries = {}
-			end
+			if unpacking_item and (#item.lhs > #item.rhs) then secondaries = {} end
 
 			for i, node in ipairs(item.lhs) do
 				local value

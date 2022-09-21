@@ -123,4 +123,4 @@ syntax_process(
 	vfs.Read("lua/examples/2d/lua_editor.lua") or
 		"local hello = ''\n asdasdasd = 1234\n --[[it's a comment]] local test \n --it's really powerful\n",
 	edit:GetMarkup()
-)--edit:SizeToText()
+) --edit:SizeToText()

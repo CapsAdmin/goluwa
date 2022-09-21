@@ -207,8 +207,7 @@ function ExpressionRule:Table(node, dest)
 					narray = math.max(narray, kval + 1)
 
 					if kval == 0 then -- Zero-indexed array term.
-						zeroarr = 1
-					end
+					zeroarr = 1 end
 				else
 					nhash = nhash + 1
 
@@ -561,9 +560,7 @@ function TestRule:BinaryExpression(node, jmp, jreg, negate, store, dest)
 			self.ctx:op_comp(test, a, btag, b, jmp, free, swap)
 		end
 
-		if has_branch(store, not negate) then
-			self.ctx:op_load(dest, not negate)
-		end
+		if has_branch(store, not negate) then self.ctx:op_load(dest, not negate) end
 	else
 		self:expr_test(node, jmp, jreg, negate, store, dest)
 	end
@@ -727,9 +724,7 @@ function StatementRule:AssignmentExpression(node)
 	for i = 1, nvars do
 		local va = self:lhs_expr_emit(node.left[i])
 
-		if va.tag == "local" then
-			assign_hazard(self, lhs, va.target)
-		end
+		if va.tag == "local" then assign_hazard(self, lhs, va.target) end
 
 		lhs[i] = va
 	end
@@ -1027,9 +1022,7 @@ local function generate(tree, name)
 				self.ctx:op_load(dest, const_val)
 			end
 
-			if xor(negate, not const_val) then
-				self.ctx:jump(jmp, jreg)
-			end
+			if xor(negate, not const_val) then self.ctx:jump(jmp, jreg) end
 		else
 			local expr = self:expr_toanyreg(node)
 

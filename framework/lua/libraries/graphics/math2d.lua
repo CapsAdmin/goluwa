@@ -43,7 +43,9 @@ do
 	end
 
 	local function point_in_triangle(p, a, b, c)
-		return on_same_side(p, a, b, c) and on_same_side(p, b, a, c) and on_same_side(p, c, a, b)
+		return on_same_side(p, a, b, c) and
+			on_same_side(p, b, a, c) and
+			on_same_side(p, c, a, b)
 	end
 
 	local function any_point_in_triangle(vertices, a, b, c)
@@ -251,7 +253,7 @@ do
 
 		points = math.ceil(points)
 
-		if points <= 0 or angle1 == angle2 then  --return
+		if points <= 0 or angle1 == angle2 then --return
 		end
 
 		if math.abs(angle1 - angle2) >= 2 * math.pi then return -- draw circle

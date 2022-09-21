@@ -253,9 +253,7 @@ local function parse_string(str, i)
 				s = s:gsub("\\u[dD][89aAbB]..\\u....", parse_unicode_escape)
 			end
 
-			if has_unicode_escape then
-				s = s:gsub("\\u....", parse_unicode_escape)
-			end
+			if has_unicode_escape then s = s:gsub("\\u....", parse_unicode_escape) end
 
 			if has_escape then s = s:gsub("\\.", escape_char_map_inv) end
 

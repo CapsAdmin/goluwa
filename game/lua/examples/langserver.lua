@@ -136,9 +136,7 @@ function server:HandleMessage(resp, client)
 				local pos = 0
 
 				for i, str in ipairs(code:split("\n")) do
-					if i < line + 1 then
-						pos = pos + str:ulen() + 1
-					end
+					if i < line + 1 then pos = pos + str:ulen() + 1 end
 
 					if i == line + 1 then
 						pos = pos + char

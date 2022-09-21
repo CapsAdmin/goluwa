@@ -1,7 +1,5 @@
 local ffi = require("ffi")
-
 local CLIB = assert(ffi.load("openal"))
-
 ffi.cdef([[void(alGetBufferSamplesSOFT)(unsigned int,int,int,int,int,void*);
 void(alGetEffectfv)(unsigned int,int,float*);
 void(alEffectf)(unsigned int,int,float);

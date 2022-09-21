@@ -132,16 +132,12 @@ local function add_fields(def, fields, overwrite, ignore_array_part, default_rea
 
 			if not def.fields then def.fields = {} end
 
-			if not def.fields[field_name] then
-				def.fields[field_name] = {}
-			end
+			if not def.fields[field_name] then def.fields[field_name] = {} end
 
 			local existing_field_def = def.fields[field_name]
 			local new_read_only = field_def.read_only
 
-			if new_read_only == nil then
-				new_read_only = default_read_only
-			end
+			if new_read_only == nil then new_read_only = default_read_only end
 
 			if new_read_only ~= nil then
 				if overwrite or new_read_only == false then
@@ -211,9 +207,7 @@ function standards.remove_field(final_std, field_names)
 		field_def = field_def.fields[field_name]
 	end
 
-	if parent_def then
-		parent_def.fields[field_names[#field_names]] = nil
-	end
+	if parent_def then parent_def.fields[field_names[#field_names]] = nil end
 end
 
 local function infer_deep_read_only_statuses(def, read_only)

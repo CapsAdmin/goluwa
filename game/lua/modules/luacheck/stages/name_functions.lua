@@ -1,9 +1,7 @@
 local stage = {}
 
 local function get_index_name(base_name, key_node)
-	if key_node.tag == "String" then
-		return base_name .. "." .. key_node[1]
-	end
+	if key_node.tag == "String" then return base_name .. "." .. key_node[1] end
 end
 
 local function get_full_field_name(node)

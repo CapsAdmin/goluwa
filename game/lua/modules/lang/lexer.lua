@@ -247,11 +247,7 @@ local function strnumdump(str)
 	for i = 1, #str do
 		local c = strsub(str, i, i)
 
-		if char_isident(c) then
-			t[i] = strbyte(c)
-		else
-			return nil
-		end
+		if char_isident(c) then t[i] = strbyte(c) else return nil end
 	end
 
 	return t
@@ -296,18 +292,12 @@ local function lex_number(ls)
 	elseif strsub(str, -2, -1) == "ll" then
 		local t = strnumdump(str)
 
-		if t then
-			x = xp == "e" and build_64int(t) or build_64hex(t)
-		end
+		if t then x = xp == "e" and build_64int(t) or build_64hex(t) end
 	else
 		x = tonumber(str)
 	end
 
-	if x then
-		return x
-	else
-		lex_error(ls, "TK_number", "malformed number")
-	end
+	if x then return x else lex_error(ls, "TK_number", "malformed number") end
 end
 
 local function read_long_string(ls, sep, ret_value)
@@ -330,8 +320,7 @@ local function read_long_string(ls, sep, ret_value)
 			save(ls, "\n")
 			inclinenumber(ls)
 
-			if not ret_value then
-				resetbuf(ls) -- avoid wasting space
+			if not ret_value then resetbuf(ls) -- avoid wasting space
 			end
 		else
 			if ret_value then save_and_next(ls) else nextchar(ls) end
@@ -378,9 +367,7 @@ local function read_escape_char(ls)
 			if ch2 then hc = strchar(ch1 * 16 + ch2) end
 		end
 
-		if not hc then
-			lex_error(ls, "TK_string", "invalid escape sequence")
-		end
+		if not hc then lex_error(ls, "TK_string", "invalid escape sequence") end
 
 		save(ls, hc)
 		nextchar(ls)
@@ -467,11 +454,7 @@ local function llex(ls)
 			local s = get_string(ls, 0, 0)
 			local reserved = ReservedKeyword[s]
 
-			if reserved then
-				return "TK_" .. s
-			else
-				return "TK_name", s
-			end
+			if reserved then return "TK_" .. s else return "TK_name", s end
 		end
 
 		if current == "\n" or current == "\r" then
@@ -518,7 +501,6 @@ local function llex(ls)
 				return "="
 			else
 				nextchar(ls)
-				
 				return "TK_eq"
 			end
 		elseif current == "<" then
@@ -528,7 +510,6 @@ local function llex(ls)
 				return "<"
 			else
 				nextchar(ls)
-				
 				return "TK_le"
 			end
 		elseif current == ">" then
@@ -538,7 +519,6 @@ local function llex(ls)
 				return ">"
 			else
 				nextchar(ls)
-				
 				return "TK_ge"
 			end
 		elseif current == "~" then
@@ -548,7 +528,6 @@ local function llex(ls)
 				return "~"
 			else
 				nextchar(ls)
-				
 				return "TK_ne"
 			end
 		elseif current == ":" then
@@ -558,7 +537,6 @@ local function llex(ls)
 				return ":"
 			else
 				nextchar(ls)
-				
 				return "TK_label"
 			end
 		elseif current == "\"" or current == "'" then

@@ -460,7 +460,8 @@ end
 
 local function check_list(spec, prop)
 	if type(prop) ~= "table" then
-		return false, "expected list of " .. kind2str(spec.kind) .. " (got " .. type(prop) .. ")"
+		return false,
+		"expected list of " .. kind2str(spec.kind) .. " (got " .. type(prop) .. ")"
 	end
 
 	if isnode(prop) then
@@ -481,7 +482,8 @@ local function check_enum(spec, prop)
 		if prop == spec.values[i] then return true end
 	end
 
-	return false, "expected one of " .. kind2str(spec) .. " (got '" .. tostring(prop) .. "')"
+	return false,
+	"expected one of " .. kind2str(spec) .. " (got '" .. tostring(prop) .. "')"
 end
 
 local function check_literal(spec, prop)
@@ -499,7 +501,8 @@ local function check_choice(spec, prop)
 		if check(spec.values[i], prop) then return true end
 	end
 
-	return false, "expected one of " .. kind2str(spec) .. " (got '" .. tostring(prop) .. "')"
+	return false,
+	"expected one of " .. kind2str(spec) .. " (got '" .. tostring(prop) .. "')"
 end
 
 function check(spec, prop)

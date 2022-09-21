@@ -161,9 +161,7 @@ function decoder.decode(bytes)
 	if sfind(bytes, "[\128-\255]") then
 		local codepoints, byte_offsets = get_codepoints_and_byte_offsets(bytes)
 
-		if codepoints then
-			return UnicodeChars(bytes, codepoints, byte_offsets)
-		end
+		if codepoints then return UnicodeChars(bytes, codepoints, byte_offsets) end
 	end
 
 	return LatinChars(bytes)

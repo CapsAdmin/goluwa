@@ -340,94 +340,93 @@ end
 local trequest, tredirect
 
 --[[local]] function tredirect(reqt, location)
-	local result, code, headers, status = trequest({
-		-- the RFC says the redirect URL has to be absolute, but some
-		-- servers do not respect that
-		url = url.absolute(reqt.url, location),
-		source = reqt.source,
-		sink = reqt.sink,
-		headers = reqt.headers,
-		proxy = reqt.proxy,
-		nredirects = (reqt.nredirects or 0) + 1,
-		create = reqt.create,
-	}
-)
--- pass location header back as a hint we redirected
-headers = headers or {}
-headers.location = headers.location or location
-return result, code, headers, status
+	local result, code, headers, status = trequest(
+		{
+			-- the RFC says the redirect URL has to be absolute, but some
+			-- servers do not respect that
+			url = url.absolute(reqt.url, location),
+			source = reqt.source,
+			sink = reqt.sink,
+			headers = reqt.headers,
+			proxy = reqt.proxy,
+			nredirects = (reqt.nredirects or 0) + 1,
+			create = reqt.create,
+		}
+	)
+	-- pass location header back as a hint we redirected
+	headers = headers or {}
+	headers.location = headers.location or location
+	return result, code, headers, status
 end
 
 --[[local]] function trequest(reqt)
--- we loop until we get what we want, or
--- until we are sure there is no way to get it
-local nreqt = adjustrequest(reqt)
-local h = _M.open(nreqt.host, nreqt.port, nreqt.create)
--- send request line and headers
-h:sendrequestline(nreqt.method, nreqt.uri)
-h:sendheaders(nreqt.headers)
+	-- we loop until we get what we want, or
+	-- until we are sure there is no way to get it
+	local nreqt = adjustrequest(reqt)
+	local h = _M.open(nreqt.host, nreqt.port, nreqt.create)
+	-- send request line and headers
+	h:sendrequestline(nreqt.method, nreqt.uri)
+	h:sendheaders(nreqt.headers)
 
--- if there is a body, send it
-if nreqt.source then
-	h:sendbody(nreqt.headers, nreqt.source, nreqt.step)
-end
+	-- if there is a body, send it
+	if nreqt.source then h:sendbody(nreqt.headers, nreqt.source, nreqt.step) end
 
-local code, status = h:receivestatusline()
+	local code, status = h:receivestatusline()
 
--- if it is an HTTP/0.9 server, simply get the body and we are done
-if not code then
-	h:receive09body(status, nreqt.sink, nreqt.step)
-	return 1, 200
-end
+	-- if it is an HTTP/0.9 server, simply get the body and we are done
+	if not code then
+		h:receive09body(status, nreqt.sink, nreqt.step)
+		return 1, 200
+	end
 
-local headers
+	local headers
 
--- ignore any 100-continue messages
-while code == 100 do
+	-- ignore any 100-continue messages
+	while code == 100 do
+		headers = h:receiveheaders()
+		code, status = h:receivestatusline()
+	end
+
 	headers = h:receiveheaders()
-	code, status = h:receivestatusline()
-end
 
-headers = h:receiveheaders()
+	-- at this point we should have a honest reply from the server
+	-- we can't redirect if we already used the source, so we report the error
+	if shouldredirect(nreqt, code, headers) and not nreqt.source then
+		h:close()
+		return tredirect(reqt, headers.location)
+	end
 
--- at this point we should have a honest reply from the server
--- we can't redirect if we already used the source, so we report the error
-if shouldredirect(nreqt, code, headers) and not nreqt.source then
+	-- here we are finally done
+	if shouldreceivebody(nreqt, code) then
+		h:receivebody(headers, nreqt.sink, nreqt.step)
+	end
+
 	h:close()
-	return tredirect(reqt, headers.location)
-end
-
--- here we are finally done
-if shouldreceivebody(nreqt, code) then
-	h:receivebody(headers, nreqt.sink, nreqt.step)
-end
-
-h:close()
-return 1, code, headers, status
+	return 1, code, headers, status
 end
 
 local function srequest(u, b)
-local t = {}
-local reqt = {url = u, sink = ltn12.sink.table(t)}
+	local t = {}
+	local reqt = {url = u, sink = ltn12.sink.table(t)}
 
-if b then
-	reqt.source = ltn12.source.string(b)
-	reqt.headers = {
-		["content-length"] = string.len(b),
-		["content-type"] = "application/x-www-form-urlencoded",
-	}
-	reqt.method = "POST"
-end
+	if b then
+		reqt.source = ltn12.source.string(b)
+		reqt.headers = {
+			["content-length"] = string.len(b),
+			["content-type"] = "application/x-www-form-urlencoded",
+		}
+		reqt.method = "POST"
+	end
 
-local code, headers, status = socket.skip(1, trequest(reqt))
-return table.concat(t), code, headers, status
+	local code, headers, status = socket.skip(1, trequest(reqt))
+	return table.concat(t), code, headers, status
 end
 
 _M.request = socket.protect(function(reqt, body)
-if base.type(reqt) == "string" then
-	return srequest(reqt, body)
-else
-	return trequest(reqt)
-end
+	if base.type(reqt) == "string" then
+		return srequest(reqt, body)
+	else
+		return trequest(reqt)
+	end
 end)
 return _M

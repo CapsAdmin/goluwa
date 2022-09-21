@@ -1,8 +1,6 @@
 local oh = ... or _G.oh
 return function(syntax)
-	if syntax.UTF8 then
-		syntax.TokenizerSetup = oh.utf8_tokenizer_config
-	end
+	if syntax.UTF8 then syntax.TokenizerSetup = oh.utf8_tokenizer_config end
 
 	do
 		local map = {}
@@ -52,9 +50,7 @@ return function(syntax)
 		for priority, group in ipairs(syntax.Operators) do
 			for _, token in ipairs(group) do
 				if token:find("%p") then
-					if token:sub(1, 1) == "R" then
-						token = token:sub(2)
-					end
+					if token:sub(1, 1) == "R" then token = token:sub(2) end
 
 					table.insert(syntax.CharacterMap.symbol, token)
 				end

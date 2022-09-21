@@ -950,7 +950,9 @@ function chatsounds.Say(str, seed, custom_id)
 	str = str:gsub("<rep=(%d+)>(.-)</rep>", function(count, str)
 		count = math.min(math.max(tonumber(count), 1), 500)
 
-		if #str:rep(count):gsub("<(.-)=(.-)>", ""):gsub("</(.-)>", ""):gsub("%^%d", "") > 500 then
+		if
+			#str:rep(count):gsub("<(.-)=(.-)>", ""):gsub("</(.-)>", ""):gsub("%^%d", "") > 500
+		then
 			return "rep limit reached"
 		end
 

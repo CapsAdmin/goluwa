@@ -339,7 +339,6 @@ do
 
 	function terminal.GetSize()
 		ffi.C.ioctl(STDOUT_FILENO, TIOCGWINSZ, size)
-		
 		return size[0].ws_col, size[0].ws_row
 	end
 end

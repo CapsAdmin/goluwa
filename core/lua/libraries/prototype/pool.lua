@@ -36,9 +36,7 @@ function prototype.CreateObjectPool(name)
 		end,
 		call = function(self, func_name, ...)
 			for _, obj in ipairs(self.list) do
-				if obj[func_name] then
-					obj[func_name](obj, ...)
-				end
+				if obj[func_name] then obj[func_name](obj, ...) end
 			end
 		end,
 	}

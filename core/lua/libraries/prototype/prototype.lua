@@ -495,9 +495,11 @@ function prototype.FindObject(str)
 		return found
 	end
 
-	if try(function(obj)
-		return obj:GetName():compare(name) and find_property(obj)
-	end) then
+	if
+		try(function(obj)
+			return obj:GetName():compare(name) and find_property(obj)
+		end)
+	then
 		return found
 	end
 

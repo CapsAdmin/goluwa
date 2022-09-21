@@ -999,7 +999,9 @@ do -- parse tags
 		str = str:gsub("<rep=(%d+)>(.-)</rep>", function(count, str)
 			count = math.min(math.max(tonumber(count), 1), 500)
 
-			if #str:rep(count):gsub("<(.-)=(.-)>", ""):gsub("</(.-)>", ""):gsub("%^%d", "") > 500 then
+			if
+				#str:rep(count):gsub("<(.-)=(.-)>", ""):gsub("</(.-)>", ""):gsub("%^%d", "") > 500
+			then
 				return "rep limit reached"
 			end
 
@@ -1247,7 +1249,18 @@ do -- invalidate
 			if chunk.type == "color" or chunk.type == "font" then
 				logn("<", chunk.val, ">")
 			else
-				logn("'", chunk.val:luaescape(), "' ", chunk.x, ",", chunk.y, " ", chunk.w, ",", chunk.h)
+				logn(
+					"'",
+					chunk.val:luaescape(),
+					"' ",
+					chunk.x,
+					",",
+					chunk.y,
+					" ",
+					chunk.w,
+					",",
+					chunk.h
+				)
 			end
 		end
 	end

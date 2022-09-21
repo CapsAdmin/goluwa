@@ -40,14 +40,10 @@ function cache.get_default_dir()
 			if not config_home_dir then
 				local home_dir = os.getenv("HOME")
 
-				if home_dir then
-					config_home_dir = fs.join(home_dir, ".cache")
-				end
+				if home_dir then config_home_dir = fs.join(home_dir, ".cache") end
 			end
 
-			if config_home_dir then
-				return fs.join(config_home_dir, "luacheck")
-			end
+			if config_home_dir then return fs.join(config_home_dir, "luacheck") end
 		end
 	end
 end

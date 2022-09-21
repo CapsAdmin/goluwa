@@ -112,7 +112,10 @@ Links:
 		"Do not limit function cyclomatic complexity (default)."
 	):action("store_false"):target("max_cyclomatic_complexity")
 	local default_global_path = config.get_default_global_path()
-	local config_opt = parser:option("--config", "Path to configuration file. (default: " .. config.default_path .. ")")
+	local config_opt = parser:option(
+		"--config",
+		"Path to configuration file. (default: " .. config.default_path .. ")"
+	)
 	local no_config_opt = parser:flag("--no-config", "Do not look up configuration file."):action("store_false"):target("config")
 	parser:mutex(config_opt, no_config_opt)
 	local default_config_opt = parser:option(
@@ -141,9 +144,7 @@ Links:
 	)
 	local cache_opt = parser:option(
 		"--cache",
-		(
-			"Path to cache directory. (default: %s)"
-		):format(cache.get_default_dir())
+		("Path to cache directory. (default: %s)"):format(cache.get_default_dir())
 	):args("?")
 	local no_cache_opt = parser:flag("--no-cache", "Do not use cache."):action("store_false"):target("cache")
 	parser:mutex(cache_opt, no_cache_opt)
@@ -236,9 +237,7 @@ local function main()
 	if not report then critical(check_err) end
 
 	for _, file_report in ipairs(report) do
-		if not file_report.filename then
-			file_report.filename = "stdin"
-		end
+		if not file_report.filename then file_report.filename = "stdin" end
 	end
 
 	local output, format_err = checker:format(report)

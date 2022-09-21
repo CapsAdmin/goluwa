@@ -33,4 +33,4 @@ function goluwa.Update()
 
 	data.probe.tex.probe = data.probe
 	render3d.environment_probe_texture = data.probe.tex
-end--_G.active_probes = active_probes
+end --_G.active_probes = active_probes

@@ -654,9 +654,7 @@ local function putop(ctx, text, operands)
 			)
 		)
 	else
-		ctx.out(
-			format("%08x  %-7s %s%s\n", ctx.addr + pos, text, concat(operands, ", "), extra)
-		)
+		ctx.out(format("%08x  %-7s %s%s\n", ctx.addr + pos, text, concat(operands, ", "), extra))
 	end
 
 	ctx.pos = pos + 4
@@ -791,7 +789,6 @@ local function disass_ins(ctx)
 
 		if x then
 			operands[#operands + 1] = x
-			
 			last = x
 		end
 	end

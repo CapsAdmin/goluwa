@@ -154,9 +154,7 @@ function ffibuild.GetSharedLibrariesInDirectory(dir)
 			end
 		end
 
-		if WINDOWS then
-			if ext:endswith(find) then table.insert(out, path) end
-		end
+		if WINDOWS then if ext:endswith(find) then table.insert(out, path) end end
 	end
 
 	return out

@@ -938,5 +938,5 @@ function render.RebuildShaders()
 	end
 end
 
-if RELOAD then  --render.RebuildShaders()
+if RELOAD then --render.RebuildShaders()
 end

@@ -51,9 +51,7 @@ do
 				for i, arg in ipairs(v.function_arguments) do
 					str = str .. tostring(arg.value.value) .. ": " .. type2string(arg.data_type)
 
-					if i ~= #v.function_arguments then
-						str = str .. ", "
-					end
+					if i ~= #v.function_arguments then str = str .. ", " end
 				end
 
 				str = str .. "): " .. type2string(v.function_return_type)
@@ -152,10 +150,8 @@ local function transpile_ok(code, path, lang)
 		print("===================================")
 	end)
 
-	if ok then
-		--log(new_code, " - OK!\n")
-		return new_code, lua_err
-	end
+	if ok then --log(new_code, " - OK!\n")
+	return new_code, lua_err end
 end
 
 local function run_js(code, path)
@@ -210,7 +206,7 @@ local function transpile_check(code)
 		ok = false
 	end
 
-	if ok then  --log(code, " - OK!\n")
+	if ok then --log(code, " - OK!\n")
 	end
 
 	return ok, new_code
@@ -254,9 +250,7 @@ local function LinkTokensWithAST(tokens, ast)
 				end
 			end
 
-			if type(node.value) == "table" then
-				node.value.ast_node = node
-			end
+			if type(node.value) == "table" then node.value.ast_node = node end
 		end
 	end
 
@@ -321,7 +315,8 @@ transpile_check("local a = c")
 transpile_check("(a)[b] = c")
 transpile_check("local a = {[1+2+3] = 2}")
 transpile_check("foo = bar")
-transpile_check("foo--[[]].--[[]]bar--[[]]:--[[]]test--[[]](--[[]]1--[[]]--[[]],2--[[]])--------[[]]--[[]]--[[]]"
+transpile_check(
+	"foo--[[]].--[[]]bar--[[]]:--[[]]test--[[]](--[[]]1--[[]]--[[]],2--[[]])--------[[]]--[[]]--[[]]"
 )
 transpile_check("function foo.testadw() end")
 transpile_check("asdf.a.b.c[5](1)[2](3)")
@@ -359,7 +354,7 @@ transpile_check("🐵=😍+🙅")
 transpile_check("print(･✿ヾ╲｡◕‿◕｡╱✿･ﾟ)")
 transpile_check("print(･✿ヾ╲｡◕‿◕｡╱✿･ﾟ)")
 transpile_check(
-"print(ด้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็ด้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็ด้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็)"
+	"print(ด้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็ด้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็ด้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็็้้้้้้้้็็็็็้้้้้็็็็)"
 )
 transpile_check("function global(...) end")
 transpile_check("local function printf(fmt, ...) end")
@@ -381,238 +376,238 @@ check_tokens_separated_by_space([[while true do end]])
 check_tokens_separated_by_space([[if a == b and b + 4 and true or ( true and function ( ) end ) then :: foo :: end]])
 
 if false then
-print("CODE COVERAGE")
-local covered = utility.StopMonitorCoverage()
-local code = vfs.Read("lua/libraries/oh/lua/parser.lua")
+	print("CODE COVERAGE")
+	local covered = utility.StopMonitorCoverage()
+	local code = vfs.Read("lua/libraries/oh/lua/parser.lua")
 
-for i, line in ipairs(code:split("\n")) do
-	if not line:find("gmod_wire_expression2/core/custom") then
-		if not covered[i] then
-			print(line)
-		else
-			print("")
+	for i, line in ipairs(code:split("\n")) do
+		if not line:find("gmod_wire_expression2/core/custom") then
+			if not covered[i] then print(line) else print("") end
 		end
 	end
 end
-end
 
 if false then
-for _, path in ipairs(
-	vfs.GetFilesRecursive(e.ROOT_FOLDER .. "metastruct_addons/addons/merged/lua/", {".lua"})
-) do
-	print("testing " .. path .. "...")
-	local code = vfs.Read(path)
+	for _, path in ipairs(
+		vfs.GetFilesRecursive(e.ROOT_FOLDER .. "metastruct_addons/addons/merged/lua/", {".lua"})
+	) do
+		print("testing " .. path .. "...")
+		local code = vfs.Read(path)
 
-	if code then
-		if code:startswith("\xEF\xBB\xBF") then
-			code = code:sub(3)
-		end
+		if code then
+			if code:startswith("\xEF\xBB\xBF") then code = code:sub(3) end
 
-		local code2, err = transpile_ok(code, path)
+			local code2, err = transpile_ok(code, path)
 
-		if code2 and code2 ~= code then
-			print(path .. " differs!")
-			local name = vfs.GetFileNameFromPath(path)
-			vfs.Write("data/compare/" .. name .. crypto.CRC32(path) .. "/original.lua", code)
-			vfs.Write("data/compare/" .. name .. crypto.CRC32(path) .. "/new.lua", code2)
-			vfs.Write(
-				"data/compare/" .. name .. crypto.CRC32(path) .. "/meld.sh",
-				[[
+			if code2 and code2 ~= code then
+				print(path .. " differs!")
+				local name = vfs.GetFileNameFromPath(path)
+				vfs.Write("data/compare/" .. name .. crypto.CRC32(path) .. "/original.lua", code)
+				vfs.Write("data/compare/" .. name .. crypto.CRC32(path) .. "/new.lua", code2)
+				vfs.Write(
+					"data/compare/" .. name .. crypto.CRC32(path) .. "/meld.sh",
+					[[
                     meld original.lua new.lua
                 ]]
-			)
+				)
 
-			if err then print("error: " .. err) end
+				if err then print("error: " .. err) end
+			else
+				print(code2 == code, err)
+			end
 		else
-			print(code2 == code, err)
+			print("unable to read " .. path)
 		end
-	else
-		print("unable to read " .. path)
 	end
-end
 end
 
 if false then
-log("generating random tokens ...")
-local tokens = {
-	",",
-	"=",
-	".",
-	"(",
-	")",
-	"end",
-	":",
-	"function",
-	"self",
-	"then",
-	"}",
-	"{",
-	"[",
-	"]",
-	"local",
-	"if",
-	"return",
-	"ffi",
-	"tbl",
-	"1",
-	"cast",
-	"i",
-	"0",
-	"==",
-	"META",
-	"library",
-	"CLIB",
-	"or",
-	"do",
-	"v",
-	"..",
-	"+",
-	"for",
-	"type",
-	"-",
-	"x",
-	"str",
-	"s",
-	"data",
-	"y",
-	"and",
-	"in",
-	"true",
-	"info",
-	"steamworks",
-	"val",
-	"not",
-	"table",
-	"2",
-	"name",
-	"path",
-	"#",
-	"...",
-	"nil",
-	"new",
-	"key",
-	"render",
-	"ipairs",
-	"else",
-	"false",
-	"e",
-	"b",
-	"elseif",
-	"*",
-	"id",
-	"math",
-	"a",
-	"size",
-	"lib",
-	"pos",
-	"gine",
-	"vfs",
-	"insert",
-	"buffer",
-	"~=",
-	"t",
-	"k",
-	"out",
-	"table_only",
-	"flags",
-	"gl",
-	"render2d",
-	"_",
-	"/",
-	"4",
-	"env",
-	"chunk",
-	";",
-	"Color",
-	"3",
-	"pairs",
-	"line",
-	"format",
-	"count",
-	"0xFFFF",
-	"0b10101",
-	"10.52032",
-	"0.123123",
-}
-local whitespace_tokens = {
-	" ",
-	"\t",
-	"\n\t \n",
-	"\n",
-	"\n\t   ",
-	"--[[aaaaaa]]",
-	"--[[\n\n]]--what\n",
-}
-local code = {}
-local total = 100000
-local whitespace_count = 0
+	log("generating random tokens ...")
+	local tokens = {
+		",",
+		"=",
+		".",
+		"(",
+		")",
+		"end",
+		":",
+		"function",
+		"self",
+		"then",
+		"}",
+		"{",
+		"[",
+		"]",
+		"local",
+		"if",
+		"return",
+		"ffi",
+		"tbl",
+		"1",
+		"cast",
+		"i",
+		"0",
+		"==",
+		"META",
+		"library",
+		"CLIB",
+		"or",
+		"do",
+		"v",
+		"..",
+		"+",
+		"for",
+		"type",
+		"-",
+		"x",
+		"str",
+		"s",
+		"data",
+		"y",
+		"and",
+		"in",
+		"true",
+		"info",
+		"steamworks",
+		"val",
+		"not",
+		"table",
+		"2",
+		"name",
+		"path",
+		"#",
+		"...",
+		"nil",
+		"new",
+		"key",
+		"render",
+		"ipairs",
+		"else",
+		"false",
+		"e",
+		"b",
+		"elseif",
+		"*",
+		"id",
+		"math",
+		"a",
+		"size",
+		"lib",
+		"pos",
+		"gine",
+		"vfs",
+		"insert",
+		"buffer",
+		"~=",
+		"t",
+		"k",
+		"out",
+		"table_only",
+		"flags",
+		"gl",
+		"render2d",
+		"_",
+		"/",
+		"4",
+		"env",
+		"chunk",
+		";",
+		"Color",
+		"3",
+		"pairs",
+		"line",
+		"format",
+		"count",
+		"0xFFFF",
+		"0b10101",
+		"10.52032",
+		"0.123123",
+	}
+	local whitespace_tokens = {
+		" ",
+		"\t",
+		"\n\t \n",
+		"\n",
+		"\n\t   ",
+		"--[[aaaaaa]]",
+		"--[[\n\n]]--what\n",
+	}
+	local code = {}
+	local total = 100000
+	local whitespace_count = 0
 
-for i = 1, total do
-	math.randomseed(i)
+	for i = 1, total do
+		math.randomseed(i)
 
-	if math.random() < 0.5 then
-		if math.random() < 0.25 then
-			code[i] = tostring(math.random() * 100000000000000)
+		if math.random() < 0.5 then
+			if math.random() < 0.25 then
+				code[i] = tostring(math.random() * 100000000000000)
+			else
+				code[i] = "\"" .. tokens[math.random(1, #tokens)] .. "\""
+			end
 		else
-			code[i] = "\"" .. tokens[math.random(1, #tokens)] .. "\""
+			code[i] = " " .. tokens[math.random(1, #tokens)] .. " "
 		end
-	else
-		code[i] = " " .. tokens[math.random(1, #tokens)] .. " "
+
+		if math.random() > 0.75 then
+			code[i] = code[i] .. whitespace_tokens[math.random(1, #whitespace_tokens)]:rep(math.random(1, 4))
+			whitespace_count = whitespace_count + 1
+		end
 	end
 
-	if math.random() > 0.75 then
-		code[i] = code[i] .. whitespace_tokens[math.random(1, #whitespace_tokens)]:rep(math.random(1, 4))
-		whitespace_count = whitespace_count + 1
-	end
-end
-
-local code = table.concat(code)
-log(" - OK! ", ("%0.3f"):format(#code / 1024 / 1024), "Mb of lua code\n")
-
-do
-	log("tokenizing random tokens with capture_whitespace ...")
-	local t = os.clock()
-	local res = tokenize(code, true)
-	local total = os.clock() - t
-	log(" - OK! ", total, " seconds / ", #res, " tokens\n")
-end
-
-do
-	log("tokenizing random tokens without capture_whitespace ...")
-	local t = os.clock()
-	local res = tokenize(code, false)
-	local total = os.clock() - t
-	log(" - OK! ", total, " seconds / ", #res, " tokens\n")
-end
-
-local function measure(code)
-	collectgarbage()
-	local res = code
+	local code = table.concat(code)
+	log(" - OK! ", ("%0.3f"):format(#code / 1024 / 1024), "Mb of lua code\n")
 
 	do
-		log("tokenizing     ...", ("%0.3f"):format(#code / 1024 / 1024), "Mb of lua code\n")
+		log("tokenizing random tokens with capture_whitespace ...")
 		local t = os.clock()
-		res = tokenize(res)
+		local res = tokenize(code, true)
 		local total = os.clock() - t
 		log(" - OK! ", total, " seconds / ", #res, " tokens\n")
 	end
 
 	do
-		log("parsing        ...")
+		log("tokenizing random tokens without capture_whitespace ...")
 		local t = os.clock()
-		res = parse(res, code)
+		local res = tokenize(code, false)
 		local total = os.clock() - t
-		log(" - OK! ", total, " seconds\n")
+		log(" - OK! ", total, " seconds / ", #res, " tokens\n")
 	end
 
-	do
-		log("generating code...")
-		local t = os.clock()
-		res = transpile(res)
-		local total = os.clock() - t
-		log(" - OK! ", total, " seconds / ", ("%0.3f"):format(#res / 1024 / 1024), "Mb of code\n")
+	local function measure(code)
+		collectgarbage()
+		local res = code
+
+		do
+			log("tokenizing     ...", ("%0.3f"):format(#code / 1024 / 1024), "Mb of lua code\n")
+			local t = os.clock()
+			res = tokenize(res)
+			local total = os.clock() - t
+			log(" - OK! ", total, " seconds / ", #res, " tokens\n")
+		end
+
+		do
+			log("parsing        ...")
+			local t = os.clock()
+			res = parse(res, code)
+			local total = os.clock() - t
+			log(" - OK! ", total, " seconds\n")
+		end
+
+		do
+			log("generating code...")
+			local t = os.clock()
+			res = transpile(res)
+			local total = os.clock() - t
+			log(
+				" - OK! ",
+				total,
+				" seconds / ",
+				("%0.3f"):format(#res / 1024 / 1024),
+				"Mb of code\n"
+			)
+		end
 	end
-end
 end
 
 print("============TEST COMPLETE============")

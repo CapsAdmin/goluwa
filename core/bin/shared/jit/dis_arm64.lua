@@ -1060,9 +1060,7 @@ local function putop(ctx, text, operands)
 			)
 		)
 	else
-		ctx.out(
-			format("%08x  %-5s %s%s\n", ctx.addr + pos, text, concat(operands, ", "), extra)
-		)
+		ctx.out(format("%08x  %-5s %s%s\n", ctx.addr + pos, text, concat(operands, ", "), extra))
 	end
 
 	ctx.pos = pos + 4
@@ -1108,11 +1106,7 @@ local function decode_imm13(op)
 		imm = imm * imm13_rep[len]
 		local ix = fmt_hex32(imm)
 
-		if rshift(op, 31) ~= 0 then
-			return ix .. tohex(imm)
-		else
-			return ix
-		end
+		if rshift(op, 31) ~= 0 then return ix .. tohex(imm) else return ix end
 	else
 		local lo, hi = -1, 0
 
@@ -1335,7 +1329,11 @@ local function disass_ins(ctx)
 			if ind == 1 then
 				x = "[" .. rn .. "], #" .. imm7
 			elseif ind == 2 then
-				if imm7 == 0 then x = "[" .. rn .. "]" else x = "[" .. rn .. ", #" .. imm7 .. "]" end
+				if imm7 == 0 then
+					x = "[" .. rn .. "]"
+				else
+					x = "[" .. rn .. ", #" .. imm7 .. "]"
+				end
 			elseif ind == 3 then
 				x = "[" .. rn .. ", #" .. imm7 .. "]!"
 			end

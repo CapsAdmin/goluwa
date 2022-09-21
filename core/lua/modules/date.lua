@@ -20,7 +20,6 @@ local DAYNUM_MAX = 365242500 -- Sat Jan 01 1000000 00:00:00
 local DAYNUM_MIN = -365242500 -- Mon Jan 01 1000000 BCE 00:00:00
 local DAYNUM_DEF = 0 -- Mon Jan 01 0001 00:00:00
 local _
-
 --[[ LOCAL ARE FASTER ]] --
 local type = type
 local pairs = pairs
@@ -141,7 +140,6 @@ local sl_timezone = {
 -- set the day fraction resolution
 local function setticks(t)
 	TICKSPERSEC = t
-	
 	TICKSPERDAY = SECPERDAY * TICKSPERSEC
 	TICKSPERHOUR = SECPERHOUR * TICKSPERSEC
 	TICKSPERMIN = SECPERMIN * TICKSPERSEC
@@ -173,12 +171,13 @@ local function breakdaynum(g)
 
 	if d < 0 then
 		y = y - 1
-		
 		d = g - dayfromyear(y)
 	end
 
 	local mi = floor((100 * d + 52) / 3060)
-	return (floor((mi + 2) / 12) + y), mod(mi + 2, 12), (d - floor((mi * 306 + 5) / 10) + 1)
+	return (floor((mi + 2) / 12) + y),
+	mod(mi + 2, 12),
+	(d - floor((mi * 306 + 5) / 10) + 1)
 end
 
 --[[ for floats or int32 Lua Number data type
@@ -219,7 +218,6 @@ end
 -- parse v as a month
 local function getmontharg(v)
 	local m = tonumber(v)
-	
 	return (m and fix(m - 1)) or inlist(tostring(v) or "", sl_months, 2)
 end
 
@@ -233,22 +231,15 @@ end
 
 local function isowy(dn)
 	local w1
-	
 	local y = (breakdaynum(dn))
 
 	if dn >= makedaynum(y, 11, 29) then
 		w1 = isow1(y + 1)
-		
-		if dn < w1 then
-			w1 = isow1(y)
-			
-		else
-			y = y + 1
-			
-		end
+
+		if dn < w1 then w1 = isow1(y) else y = y + 1 end
 	else
 		w1 = isow1(y)
-		
+
 		if dn < w1 then
 			w1 = isow1(y - 1)
 			y = y - 1
@@ -285,7 +276,6 @@ end
 
 --[[ THE DATE MODULE ]] --
 local fmtstr = "%x %X"
-
 --#if not DATE_OBJECT_AFX then
 local date = {}
 setmetatable(date, date)
@@ -391,7 +381,6 @@ local function getbiasloc2(daynum, dayfrc)
 
 	local function chkutc()
 		tml.isdst = nil
-		
 		local tvug = ostime(tml)
 
 		if tvug and (tvl == tmtotv(osdate("*t", tvug))) then
@@ -400,7 +389,6 @@ local function getbiasloc2(daynum, dayfrc)
 		end
 
 		tml.isdst = true
-		
 		local tvud = ostime(tml)
 
 		if tvud and (tvl == tmtotv(osdate("*t", tvud))) then
@@ -458,12 +446,11 @@ end
 
 function strwalker:__call(s, f) -- print("strwalker:__call "..s..self:aimchr())
 	local is, ie
-	
 	is, ie, self[1], self[2], self[3], self[4], self[5] = find(self.s, s, self.i)
 
 	if is then
 		self.e, self.i = self.i, 1 + ie
-		
+
 		if f then f(unpack(self)) end
 
 		return self
@@ -488,7 +475,6 @@ local function date_parse(str)
 
 	local function sety(q)
 		y = y and error_dup() or tonumber(q)
-		
 	end
 
 	local function setm(q)
@@ -517,7 +503,6 @@ local function date_parse(str)
 
 	local function setj(q)
 		j = (m or w or j) and error_dup() or tonumber(q)
-		
 	end
 
 	local function setz(q)
@@ -526,8 +511,25 @@ local function date_parse(str)
 
 	local function setzn(zs, zn)
 		zn = tonumber(zn)
-		
-		setz(((zn < 24) and (zn * 60) or (mod(zn, 100) + floor(zn / 100) * 60)) * (zs == "+" and -1 or 1))
+		setz(
+			(
+					(
+						zn < 24
+					)
+					and
+					(
+						zn * 60
+					)
+					or
+					(
+						mod(zn, 100) + floor(zn / 100) * 60
+					)
+				) * (
+					zs == "+" and
+					-1 or
+					1
+				)
+		)
 	end
 
 	local function setzc(zs, zh, zm)
@@ -540,7 +542,6 @@ local function date_parse(str)
 			(
 				sw("^(%-?)(%d%d)%1(%d%d)", function(_, a, b)
 					setm(tonumber(a))
-					
 					setd(tonumber(b))
 				end) or
 				sw("^(%-?)[Ww](%d%d)%1(%d?)", function(_, a, b)
@@ -549,7 +550,6 @@ local function date_parse(str)
 				sw("^%-?(%d%d%d)", setj) or
 				sw("^%-?(%d%d)", function(a)
 					setm(a)
-					
 					setd(1)
 				end)
 			)
@@ -572,7 +572,6 @@ local function date_parse(str)
 		)
 	then --print(y,m,d,h,r,s,z,w,u,j)
 		sw:restart()
-		
 		y, m, d, h, r, s, z, w, u, j = nil, nil, nil, nil, nil, nil, nil, nil, nil, nil
 
 		repeat -- print(sw:aimchr())
@@ -735,14 +734,12 @@ local tmap = {
 	end,
 	["table"] = function(v)
 		local ref = getmetatable(v) == dobj
-		
 		return ref and v or date_fromtable(v), ref
 	end,
 }
 
 local function date_getdobj(v)
 	local o, r = (tmap[type(v)] or fnil)(v)
-	
 	return (o and o:normalize() or error("invalid date time value")), r -- if r is true then o is a reference to a date obj
 end
 
@@ -984,11 +981,8 @@ local function dobj_adddayfrc(self, n, pt, pd)
 
 	if n then
 		local x = floor(n / pd)
-		
 		self.daynum = self.daynum + x
-		
 		self.dayfrc = self.dayfrc + (n - x * pd) * pt
-		
 		return self:normalize()
 	else
 		return date_error_arg()
@@ -1111,9 +1105,7 @@ local tvspec = {
 	-- Time zone offset, the date object is assumed local time (+1000, -0230)
 	["%z"] = function(self)
 		local b = -self:getbias()
-		
 		local x = abs(b)
-		
 		return fmt("%s%.4d", b < 0 and "-" or "+", fix(x / 60) * 100 + floor(mod(x, 60)))
 	end,
 	-- Time zone name, the date object is assumed local time
@@ -1199,7 +1191,6 @@ function dobj:fmt0(str)
 	return (
 		gsub(str, "%%[%a%%\b\f]", function(x)
 			local f = tvspec[x]
-			
 			return (f and f(self)) or x
 		end)
 	)
@@ -1214,7 +1205,6 @@ function dobj:fmt(str)
 			(
 				gsub(str, "${%w+}", function(x)
 					local f = tvspec[x]
-					
 					return (f and f(self)) or x
 				end)
 			) or
@@ -1324,7 +1314,6 @@ function date:__call(arg1, ...)
 		return (date_getdobj(false))
 	else
 		local o, r = date_getdobj(arg1)
-		
 		return r and o:copy() or o
 	end
 end
@@ -1333,7 +1322,7 @@ date.diff = dobj.__sub
 
 function date.isleapyear(v)
 	local y = fix(v)
-	
+
 	if not y then
 		y = date_getdobj(v)
 		y = y and y:getyear()
@@ -1353,7 +1342,7 @@ end
 -- Internal functions
 function date.fmt(str)
 	if str then fmtstr = str end
-	
+
 	return fmtstr
 end
 
@@ -1389,6 +1378,6 @@ else -- error will be raise only if called!
 end
 
 --#if not DATE_OBJECT_AFX then
-return date--#else
+return date --#else
 --$return date_from
 --#end

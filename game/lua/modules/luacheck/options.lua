@@ -168,11 +168,7 @@ local function field_comparator(field1, field2)
 		local part1 = parts1[i]
 		local part2 = parts2[i]
 
-		if not part1 then
-			return true
-		elseif not part2 then
-			return false
-		end
+		if not part1 then return true elseif not part2 then return false end
 
 		if part1 ~= part2 then return part1 < part2 end
 	end
@@ -268,9 +264,7 @@ local function get_max_line_opts(opts_stack)
 		end
 
 		for _, opt_name in ipairs(line_length_suboptions) do
-			if opts[opt_name] ~= nil then
-				res[opt_name] = opts[opt_name]
-			end
+			if opts[opt_name] ~= nil then res[opt_name] = opts[opt_name] end
 		end
 	end
 
@@ -341,15 +335,11 @@ local function get_rules(opts_stack)
 			end
 		end
 
-		if opts.ignore then
-			table.insert(rules, {opts.ignore, "disable"})
-		end
+		if opts.ignore then table.insert(rules, {opts.ignore, "disable"}) end
 
 		if opts.only then table.insert(rules, {opts.only, "only"}) end
 
-		if opts.enable then
-			table.insert(rules, {opts.enable, "enable"})
-		end
+		if opts.enable then table.insert(rules, {opts.enable, "enable"}) end
 	end
 
 	return rules

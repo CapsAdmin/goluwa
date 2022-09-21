@@ -82,9 +82,10 @@ function prototype.SetupProperty(info)
 					self[callback](self)
 				end
 		else
-			meta[set_name] = meta[set_name] or function(self, var)
-				self[name] = tonumber(var) or default
-			end
+			meta[set_name] = meta[set_name] or
+				function(self, var)
+					self[name] = tonumber(var) or default
+				end
 		end
 
 		meta[get_name] = meta[get_name] or function(self)

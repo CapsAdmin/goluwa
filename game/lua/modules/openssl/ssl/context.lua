@@ -4,7 +4,6 @@ local pack = table.pack or function(...)
 end
 -- Allow passing a vararg of ciphers, or an array
 local setCipherList
-
 setCipherList = ctx.interpose("setCipherList", function(self, ciphers, ...)
 	if (...) then
 		local ciphers_t = pack(ciphers, ...)

@@ -322,9 +322,7 @@ local function new_variables_registry(create, match)
 
 		while scope do
 			for i = 1, #scope.vars do
-				if match(scope.vars[i], name) then
-					return scope
-				end
+				if match(scope.vars[i], name) then return scope end
 			end
 
 			scope = scope.parent

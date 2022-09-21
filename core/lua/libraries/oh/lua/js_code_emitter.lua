@@ -142,7 +142,7 @@ function META:Expression(v)
 			self:EmitToken(v.value)
 		end
 
-		if v.data_type then  --print(v)
+		if v.data_type then --print(v)
 		--self:Emit("--[[a]]")
 		end
 	else

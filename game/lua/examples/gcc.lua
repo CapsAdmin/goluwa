@@ -12,9 +12,7 @@ function gcc(data)
 
 	for name, option in pairs(translate) do
 		if data[name] then
-			if type(data[name]) == "string" then
-				data[name] = {data[name]}
-			end
+			if type(data[name]) == "string" then data[name] = {data[name]} end
 
 			for k, v in pairs(data[name]) do
 				if name == "defines" then

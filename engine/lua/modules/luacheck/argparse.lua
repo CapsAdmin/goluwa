@@ -45,9 +45,7 @@ local function class(prototype, properties, parent)
 		for _, property in ipairs(properties) do
 			local name, callback = property[1], property[2]
 			cl[name] = function(self, value)
-				if not callback(self, value) then
-					self["_" .. name] = value
-				end
+				if not callback(self, value) then self["_" .. name] = value end
 
 				return self
 			end
@@ -66,15 +64,11 @@ local function class(prototype, properties, parent)
 				local nargs = select("#", ...)
 
 				for i, property in ipairs(properties) do
-					if i > nargs or i > properties.args then
-						break
-					end
+					if i > nargs or i > properties.args then break end
 
 					local arg = select(i, ...)
 
-					if arg ~= nil then
-						self[property[1]](self, arg)
-					end
+					if arg ~= nil then self[property[1]](self, arg) end
 				end
 			end
 
@@ -465,9 +459,7 @@ function Option:_get_usage()
 	table.insert(usage, 1, self._name)
 	usage = table.concat(usage, " ")
 
-	if self._mincount == 0 or self._default then
-		usage = "[" .. usage .. "]"
-	end
+	if self._mincount == 0 or self._default then usage = "[" .. usage .. "]" end
 
 	return usage
 end
@@ -600,11 +592,7 @@ function Parser:get_usage()
 
 		local repr = "(" .. table.concat(buf, " | ") .. ")"
 
-		if is_vararg then
-			table.insert(vararg_mutexes, repr)
-		else
-			add(repr)
-		end
+		if is_vararg then table.insert(vararg_mutexes, repr) else add(repr) end
 	end
 
 	-- Second, put regular options
@@ -781,9 +769,7 @@ end
 local function bound(noun, min, max, is_max)
 	local res = ""
 
-	if min ~= max then
-		res = "at " .. (is_max and "most" or "least") .. " "
-	end
+	if min ~= max then res = "at " .. (is_max and "most" or "least") .. " " end
 
 	local number = is_max and max or min
 	return res .. tostring(number) .. " " .. noun .. (number == 1 and "" or "s")
@@ -897,9 +883,7 @@ end
 function ParseState:switch(parser)
 	self.parser = parser
 
-	if parser._action then
-		table.insert(self.command_actions, parser._action)
-	end
+	if parser._action then table.insert(self.command_actions, parser._action) end
 
 	for _, option in ipairs(parser._options) do
 		option = ElementState(self, option)

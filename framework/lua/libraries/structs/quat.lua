@@ -36,11 +36,7 @@ end
 function META.VecMul(a, b)
 	local vec, quat
 
-	if typex(a) == "vec3" then
-		vec, quat = a, b
-	else
-		vec, quat = b, a
-	end
+	if typex(a) == "vec3" then vec, quat = a, b else vec, quat = b, a end
 
 	local qvec = Vec3(quat.x, quat.y, quat.z)
 	local uvec = qvec:GetCross(vec)

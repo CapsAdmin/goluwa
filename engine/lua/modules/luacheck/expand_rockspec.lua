@@ -1,15 +1,11 @@
 local utils = require("luacheck.utils")
 
 local function extract_lua_files(rockspec)
-	if type(rockspec) ~= "table" then
-		return nil, "rockspec is not a table"
-	end
+	if type(rockspec) ~= "table" then return nil, "rockspec is not a table" end
 
 	local build = rockspec.build
 
-	if type(build) ~= "table" then
-		return nil, "rockspec.build is not a table"
-	end
+	if type(build) ~= "table" then return nil, "rockspec.build is not a table" end
 
 	local res = {}
 

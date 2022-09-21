@@ -1,7 +1,5 @@
 local ffi = require("ffi")
-
 local CLIB = assert(ffi.load("SDL2"))
-
 ffi.cdef([[typedef enum SDL_TextureAccess{SDL_TEXTUREACCESS_STATIC=0,SDL_TEXTUREACCESS_STREAMING=1,SDL_TEXTUREACCESS_TARGET=2};
 typedef enum SDL_BlendMode{SDL_BLENDMODE_NONE=0,SDL_BLENDMODE_BLEND=1,SDL_BLENDMODE_ADD=2,SDL_BLENDMODE_MOD=4,SDL_BLENDMODE_MUL=8,SDL_BLENDMODE_INVALID=2147483647};
 typedef enum SDL_PixelType{SDL_PIXELTYPE_UNKNOWN=0,SDL_PIXELTYPE_INDEX1=1,SDL_PIXELTYPE_INDEX4=2,SDL_PIXELTYPE_INDEX8=3,SDL_PIXELTYPE_PACKED8=4,SDL_PIXELTYPE_PACKED16=5,SDL_PIXELTYPE_PACKED32=6,SDL_PIXELTYPE_ARRAYU8=7,SDL_PIXELTYPE_ARRAYU16=8,SDL_PIXELTYPE_ARRAYU32=9,SDL_PIXELTYPE_ARRAYF16=10,SDL_PIXELTYPE_ARRAYF32=11};
@@ -2499,11 +2497,9 @@ function library.GetRequiredInstanceExtensions(wnd, extra)
 		table.insert(out, ffi.string(array[i]))
 	end
 
-	if extra then
-		for i, v in ipairs(extra) do
-			table.insert(out, v)
-		end
-	end
+	if extra then for i, v in ipairs(extra) do
+		table.insert(out, v)
+	end end
 
 	return out
 end

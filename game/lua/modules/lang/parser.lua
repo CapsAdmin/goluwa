@@ -606,9 +606,7 @@ function parse_body(ast, ls, line, needself)
 	ast:fscope_end()
 	local proto = ls.fs
 
-	if ls.token ~= "TK_end" then
-		lex_match(ls, "TK_end", "TK_function", line)
-	end
+	if ls.token ~= "TK_end" then lex_match(ls, "TK_end", "TK_function", line) end
 
 	ls.fs.lastline = ls.linenumber
 	ls:next()

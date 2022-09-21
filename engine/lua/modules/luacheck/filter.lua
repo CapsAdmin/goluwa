@@ -242,9 +242,7 @@ local function get_field_status(opts, warning, depth)
 				-- The field is defined, recurse into it.
 				def = def.fields[index_string]
 
-				if def.read_only ~= nil then
-					read_only = def.read_only
-				end
+				if def.read_only ~= nil then read_only = def.read_only end
 			else
 				-- The field is not defined, but it may be okay to index if `other_fields` is true.
 				if not def.other_fields then defined = false end
@@ -290,9 +288,7 @@ local function filters(opts, warning)
 		return true
 	end
 
-	if warning.secondary and not opts.unused_secondaries then
-		return true
-	end
+	if warning.secondary and not opts.unused_secondaries then return true end
 
 	if warning.self and not opts.self then return true end
 
@@ -318,9 +314,7 @@ local function filter_file_report(report)
 		end
 
 		if issue.code:match("0..") then
-			if issue.code == "011" or opts.inline then
-				table.insert(res, issue)
-			end
+			if issue.code == "011" or opts.inline then table.insert(res, issue) end
 		else
 			if not filters(opts, issue) then
 				if issue.code == "631" then

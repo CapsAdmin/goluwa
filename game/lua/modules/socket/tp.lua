@@ -58,9 +58,7 @@ function metat.__index:check(ok)
 	if base.type(ok) ~= "function" then
 		if base.type(ok) == "table" then
 			for i, v in base.ipairs(ok) do
-				if string.find(code, v) then
-					return base.tonumber(code), reply
-				end
+				if string.find(code, v) then return base.tonumber(code), reply end
 			end
 
 			return nil, reply

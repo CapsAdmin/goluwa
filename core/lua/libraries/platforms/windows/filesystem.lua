@@ -86,9 +86,7 @@ ffi.cdef([[
 ]])
 local error_str = ffi.new("uint8_t[?]", 1024)
 local FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000
-
 local FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200
-
 local error_flags = bit.bor(FORMAT_MESSAGE_FROM_SYSTEM, FORMAT_MESSAGE_IGNORE_INSERTS)
 
 local function error_string()
@@ -346,7 +344,7 @@ function fs.remove_directory(path)
 	return true
 end
 
-if RELOAD then  --print(fs.link("goluwa.cmd", "TEST", true))
+if RELOAD then --print(fs.link("goluwa.cmd", "TEST", true))
 end
 
 return fs

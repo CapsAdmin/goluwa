@@ -503,9 +503,7 @@ suffix_handlers[":"] = function(state, base_node)
 	local method_name = parse_id(state, "String")
 	local call_handler = call_handlers[state.token]
 
-	if not call_handler then
-		parse_error(state, "expected method arguments")
-	end
+	if not call_handler then parse_error(state, "expected method arguments") end
 
 	return call_handler(state, base_node, "Invoke", {base_node, method_name})
 end
@@ -822,9 +820,7 @@ statements["local"] = function(state)
 		lhs[#lhs + 1] = parse_id(state)	
 	until not test_and_skip_token(state, ",")
 
-	if test_and_skip_token(state, "=") then
-		rhs = parse_expression_list(state)
-	end
+	if test_and_skip_token(state, "=") then rhs = parse_expression_list(state) end
 
 	return new_inner_node(start_range, rhs and rhs[#rhs] or lhs[#lhs], "Local", {lhs, rhs})
 end
@@ -932,9 +928,7 @@ function parse_block(state, opening_token_range, opening_token, block)
 			-- Further semicolons are considered hanging.
 			after_statement = false
 		else
-			if unpaired_token_guesser then
-				unpaired_token_guesser:on_statement()
-			end
+			if unpaired_token_guesser then unpaired_token_guesser:on_statement() end
 
 			local statement = parse_statement(state)
 			after_statement = true

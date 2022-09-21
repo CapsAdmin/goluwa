@@ -161,7 +161,6 @@ end
 
 local lua = require("luajit")
 local LUA_GLOBALSINDEX = -10002
-
 local Threads = {__index = Threads, name = "worker"}
 setmetatable(Threads, Threads)
 
@@ -280,7 +279,6 @@ function Threads:__call(N, ...)
 		C.lua_getfield(L, LUA_GLOBALSINDEX, "__workerloop_ptr")
 		local workerloop_ptr = C.lua_tointeger(L, -1)
 		C.lua_settop(L, -2)
-		
 		local workers = ffi.new("struct THWorker*[2]", {self.mainworker, self.threadworker}) -- note: GCed
 		local thread = sdl.CreateThread(
 			ffi.cast("int(*)(void*)", workerloop_ptr),
@@ -394,7 +392,7 @@ end)
 local jobdone = 0
 
 for i = 1, njob do
-	threads:addjob(-- the job callback
+	threads:addjob( -- the job callback
 	function()
 		local id = tonumber(gsdl.threadID())
 		print(string.format("%s -- thread ID is %x", gmsg, id))

@@ -96,4 +96,4 @@ for i = 1, 20 do
 	end
 
 	if not test("Multiply", gl.MultMatrixd, random_matrix()) then break end
-end--test("Ortho", gl.Ortho, 0, 512, 0, 512, -1, 1)
+end --test("Ortho", gl.Ortho, 0, 512, 0, 512, -1, 1)

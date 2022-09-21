@@ -110,4 +110,4 @@ end
 
 lua = s .. "\n" .. lua
 check(lua, "eof")
-vfs.Write(e.BIN_FOLDER .. "main.lua", lua)--os.execute("./luajit main.lua")
+vfs.Write(e.BIN_FOLDER .. "main.lua", lua) --os.execute("./luajit main.lua")

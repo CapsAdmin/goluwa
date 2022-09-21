@@ -24,4 +24,4 @@ end
 
 vfs.Mount(R("os:data/lol/a/b/"), "os:test")
 test(vfs.Read, "os:test/1.txt").expect("1")
-vfs.Unmount(R("os:data/lol/a/b/"), "os:test")--test(vfs.Read, "os:test/1.txt").expect(nil)
+vfs.Unmount(R("os:data/lol/a/b/"), "os:test") --test(vfs.Read, "os:test/1.txt").expect(nil)

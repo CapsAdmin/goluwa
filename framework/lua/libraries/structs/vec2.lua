@@ -8,13 +8,9 @@ structs.Swizzle(META)
 
 function META:Rotate(angle)
 	local cs = math.cos(angle)
-	
 	local sn = math.sin(angle)
-	
 	local xx = self.x * cs - self.y * sn
-	
 	local yy = self.x * sn + self.y * cs
-	
 	self.x = xx
 	self.y = yy
 	return self

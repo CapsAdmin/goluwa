@@ -30,9 +30,7 @@ local function read_short_call_body(self, node)
 
 	node.arguments = self:IdentifierList()
 
-	if self:IsValue(")") then
-		node.tokens["func)"] = self:ReadToken(")")
-	end
+	if self:IsValue(")") then node.tokens["func)"] = self:ReadToken(")") end
 
 	if implicit_return then
 		--[[

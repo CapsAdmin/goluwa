@@ -55,9 +55,7 @@ local ev = function(ws)
 		cleanup()
 		self.state = "CLOSED"
 
-		if user_on_close then
-			user_on_close(self, was_clean, code, reason or "")
-		end
+		if user_on_close then user_on_close(self, was_clean, code, reason or "") end
 	end
 	local on_error = function(err, dont_cleanup)
 		if not dont_cleanup then cleanup() end
@@ -142,119 +140,120 @@ local ev = function(ws)
 			function(loop, connect_io)
 				connect_io:stop(loop)
 				local key = tools.generate_key()
-				local req = handshake.upgrade_request({
-					key = key,
-					host = host,
-					port = port,
-					protocols = ws_protocols_tbl,
-					origin = ws.origin,
-					uri = uri,
-				}
-			)
+				local req = handshake.upgrade_request(
+					{
+						key = key,
+						host = host,
+						port = port,
+						protocols = ws_protocols_tbl,
+						origin = ws.origin,
+						uri = uri,
+					}
+				)
 
-			async_send(
-				req,
-				function()
-					local resp = {}
-					local response = ""
-					local read_upgrade = function(loop, read_io)
-						-- this seems to be possible, i don't understand why though :(
-						if not sock then
+				async_send(
+					req,
+					function()
+						local resp = {}
+						local response = ""
+						local read_upgrade = function(loop, read_io)
+							-- this seems to be possible, i don't understand why though :(
+							if not sock then
+								read_io:stop(loop)
+								handshake_io = nil
+								return
+							end
+
+							repeat
+								local byte, err, pp = sock:receive(1)
+
+								if byte then
+									response = response .. byte
+								elseif err then
+									if err == "timeout" then
+										return
+									else
+										read_io:stop(loop)
+										on_error("accept failed")
+										return
+									end
+								end							
+							until response:sub(#response - 3) == "\r\n\r\n"
+
 							read_io:stop(loop)
 							handshake_io = nil
-							return
+							local headers = handshake.http_headers(response)
+							local expected_accept = handshake.sec_websocket_accept(key)
+
+							if headers["sec-websocket-accept"] ~= expected_accept then
+								self.state = "CLOSED"
+								on_error("accept failed")
+								return
+							end
+
+							message_io = require("websocket.ev_common").message_io(sock, loop, on_message, handle_socket_err)
+							on_open(self, headers)
 						end
-
-						repeat
-							local byte, err, pp = sock:receive(1)
-
-							if byte then
-								response = response .. byte
-							elseif err then
-								if err == "timeout" then
-									return
-								else
-									read_io:stop(loop)
-									on_error("accept failed")
-									return
-								end
-							end						
-						until response:sub(#response - 3) == "\r\n\r\n"
-
-						read_io:stop(loop)
-						handshake_io = nil
-						local headers = handshake.http_headers(response)
-						local expected_accept = handshake.sec_websocket_accept(key)
-
-						if headers["sec-websocket-accept"] ~= expected_accept then
-							self.state = "CLOSED"
-							on_error("accept failed")
-							return
-						end
-
-						message_io = require("websocket.ev_common").message_io(sock, loop, on_message, handle_socket_err)
-						on_open(self, headers)
-					end
-					handshake_io = ev.IO.new(read_upgrade, fd, ev.READ)
-					handshake_io:start(loop) -- handshake
-				end,
-				handle_socket_err
-			)
-		end,
-		fd,
-		ev.WRITE
-	)
-	local connected, err = sock:connect(host, port)
-
-	if connected then
-		handshake_io:callback()(loop, handshake_io)
-	elseif err == "timeout" or err == "Operation already in progress" then
-		handshake_io:start(loop) -- connect
-	else
-		self.state = "CLOSED"
-		on_error(err)
-	end
-end
-self.on_close = function(_, on_close_arg)
-	user_on_close = on_close_arg
-end
-self.on_error = function(_, on_error_arg)
-	user_on_error = on_error_arg
-end
-self.on_open = function(_, on_open_arg)
-	user_on_open = on_open_arg
-end
-self.on_message = function(_, on_message_arg)
-	user_on_message = on_message_arg
-end
-self.close = function(_, code, reason, timeout)
-	if handshake_io then
-		handshake_io:stop(loop)
-		handshake_io:clear_pending(loop)
-	end
-
-	if self.state == "CONNECTING" then
-		self.state = "CLOSING"
-		on_close(false, 1006, "")
-		return
-	elseif self.state == "OPEN" then
-		self.state = "CLOSING"
-		timeout = timeout or 3
-		local encoded = frame.encode_close(code or 1000, reason)
-		encoded = frame.encode(encoded, frame.CLOSE, true)
-		-- this should let the other peer confirm the CLOSE message
-		-- by 'echoing' the message.
-		async_send(encoded)
-		close_timer = ev.Timer.new(
-			function()
-				close_timer = nil
-				on_close(false, 1006, "timeout")
+						handshake_io = ev.IO.new(read_upgrade, fd, ev.READ)
+						handshake_io:start(loop) -- handshake
+					end,
+					handle_socket_err
+				)
 			end,
-			timeout
+			fd,
+			ev.WRITE
 		)
-		close_timer:start(loop)
+		local connected, err = sock:connect(host, port)
+
+		if connected then
+			handshake_io:callback()(loop, handshake_io)
+		elseif err == "timeout" or err == "Operation already in progress" then
+			handshake_io:start(loop) -- connect
+		else
+			self.state = "CLOSED"
+			on_error(err)
+		end
 	end
-end
-return self
+	self.on_close = function(_, on_close_arg)
+		user_on_close = on_close_arg
+	end
+	self.on_error = function(_, on_error_arg)
+		user_on_error = on_error_arg
+	end
+	self.on_open = function(_, on_open_arg)
+		user_on_open = on_open_arg
+	end
+	self.on_message = function(_, on_message_arg)
+		user_on_message = on_message_arg
+	end
+	self.close = function(_, code, reason, timeout)
+		if handshake_io then
+			handshake_io:stop(loop)
+			handshake_io:clear_pending(loop)
+		end
+
+		if self.state == "CONNECTING" then
+			self.state = "CLOSING"
+			on_close(false, 1006, "")
+			return
+		elseif self.state == "OPEN" then
+			self.state = "CLOSING"
+			timeout = timeout or 3
+			local encoded = frame.encode_close(code or 1000, reason)
+			encoded = frame.encode(encoded, frame.CLOSE, true)
+			-- this should let the other peer confirm the CLOSE message
+			-- by 'echoing' the message.
+			async_send(encoded)
+			close_timer = ev.Timer.new(
+				function()
+					close_timer = nil
+					on_close(false, 1006, "timeout")
+				end,
+				timeout
+			)
+			close_timer:start(loop)
+		end
+	end
+	return self
 end
 return ev

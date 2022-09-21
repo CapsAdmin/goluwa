@@ -190,9 +190,11 @@ function tasks.CreateTask(on_start, on_finish, now)
 		return on_start(...)
 	end end
 
-	if on_finish then self.OnFinish = function(_, ...)
-		return on_finish(...)
-	end end
+	if on_finish then
+		self.OnFinish = function(_, ...)
+			return on_finish(...)
+		end
+	end
 
 	if on_start then self:Start(now) end
 

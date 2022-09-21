@@ -903,7 +903,11 @@ function chatsounds.BuildListForGithub(appid)
 			end
 		end
 
-		serializer.WriteFile("msgpack", "data/chatsounds/autoadd/" .. (id or "unknown") .. "/list.msgpack", sounds)
+		serializer.WriteFile(
+			"msgpack",
+			"data/chatsounds/autoadd/" .. (id or "unknown") .. "/list.msgpack",
+			sounds
+		)
 	end
 
 	logn("finished building list files")

@@ -82,9 +82,7 @@ function fs.CopyRecursively(from, to, verbose)
 			ok, err = fs.copy(path, new_path)
 		end
 
-		if not ok and err ~= "File exists" then
-			table.insert(errors, err)
-		end
+		if not ok and err ~= "File exists" then table.insert(errors, err) end
 
 		if verbose then
 			if ok then
@@ -140,9 +138,7 @@ do
 			path = path:sub(3)
 		end
 
-		if path:find("\\", nil, true) then
-			path = path:replace("\\", "/")
-		end
+		if path:find("\\", nil, true) then path = path:replace("\\", "/") end
 
 		if path:find("//", nil, true) then
 			path = path:replace("//", "/")
@@ -164,9 +160,7 @@ do
 			elseif slice ~= ".." or consequtive_dots then
 				normalized = normalized .. slice
 
-				if i ~= count then
-					normalized = normalized .. "/"
-				end
+				if i ~= count then normalized = normalized .. "/" end
 			end
 
 			consequtive_dots = consequtive_dots and slice == ".."
@@ -177,9 +171,7 @@ do
 end
 
 function fs.Write(path, content, force)
-	if force then
-		fs.CreateDirectory(vfs.GetFolderFromPath(path), true)
-	end
+	if force then fs.CreateDirectory(vfs.GetFolderFromPath(path), true) end
 
 	local f, err = io.open(path, "wb")
 
@@ -203,9 +195,7 @@ fs.Copy = fs.copy
 fs.GetFiles = fs.get_files
 
 function fs.Link(from, to)
-	if fs.get_type(from) == "directory" then
-		return fs.link(from, to, true)
-	end
+	if fs.get_type(from) == "directory" then return fs.link(from, to, true) end
 
 	return fs.link(from, to, false)
 end

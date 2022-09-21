@@ -50,9 +50,7 @@ local upgrade_request = function(req)
 		"Sec-WebSocket-Version: 13",
 	}
 
-	if req.origin then
-		tinsert(lines, string.format("Origin: %s", req.origin))
-	end
+	if req.origin then tinsert(lines, string.format("Origin: %s", req.origin)) end
 
 	if req.port and req.port ~= 80 then
 		lines[2] = format("Host: %s:%d", req.host, req.port)

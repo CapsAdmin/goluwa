@@ -257,56 +257,57 @@ do -- PUT ME IN TRANSFORM
 		local axis
 		local dist = mctrl.grab_dist
 
-		for k, v in pairs({
-			x = math3d.WorldPositionToScreen(pos + forward * r),
-			y = math3d.WorldPositionToScreen(pos + right * r),
-			z = math3d.WorldPositionToScreen(pos + up * r),
-			view = math3d.WorldPositionToScreen(pos),
-		}
-	) do
-		local d = math.sqrt((v.x - x) ^ 2 + (v.y - y) ^ 2)
+		for k, v in pairs(
+			{
+				x = math3d.WorldPositionToScreen(pos + forward * r),
+				y = math3d.WorldPositionToScreen(pos + right * r),
+				z = math3d.WorldPositionToScreen(pos + up * r),
+				view = math3d.WorldPositionToScreen(pos),
+			}
+		) do
+			local d = math.sqrt((v.x - x) ^ 2 + (v.y - y) ^ 2)
 
-		if d <= dist then
-			axis = k
-			dist = d
+			if d <= dist then
+				axis = k
+				dist = d
 
-			break
+				break
+			end
+		end
+
+		if axis then
+			mctrl.grab.mode = "move"
+			mctrl.grab.axis = axis
+		end
+
+		-- Rotation
+		local axis
+		local dist = mctrl.grab_dist
+
+		for k, v in pairs(
+			{
+				x = math3d.WorldPositionToScreen(pos + forward * r * mctrl.angle_pos),
+				y = math3d.WorldPositionToScreen(pos + right * r * mctrl.angle_pos),
+				z = math3d.WorldPositionToScreen(pos + up * r * mctrl.angle_pos),
+			}
+		) do
+			local d = math.sqrt((v.x - x) ^ 2 + (v.y - y) ^ 2)
+
+			if d <= dist then
+				axis = k
+				dist = d
+
+				break
+			end
+		end
+
+		if axis then
+			mctrl.grab.mode = "rotate"
+			mctrl.grab.axis = axis
 		end
 	end
 
-	if axis then
-		mctrl.grab.mode = "move"
-		mctrl.grab.axis = axis
-	end
-
-	-- Rotation
-	local axis
-	local dist = mctrl.grab_dist
-
-	for k, v in pairs(
-		{
-			x = math3d.WorldPositionToScreen(pos + forward * r * mctrl.angle_pos),
-			y = math3d.WorldPositionToScreen(pos + right * r * mctrl.angle_pos),
-			z = math3d.WorldPositionToScreen(pos + up * r * mctrl.angle_pos),
-		}
-	) do
-		local d = math.sqrt((v.x - x) ^ 2 + (v.y - y) ^ 2)
-
-		if d <= dist then
-			axis = k
-			dist = d
-
-			break
-		end
-	end
-
-	if axis then
-		mctrl.grab.mode = "rotate"
-		mctrl.grab.axis = axis
-	end
-end
-
-_G.mctrl = mctrl
+	_G.mctrl = mctrl
 end
 
 editor.frame = editor.frame or NULL
@@ -316,173 +317,173 @@ editor.selected_ent = editor.selected_ent or NULL
 editor.prev_selected_ent = editor.prev_selected_ent or NULL
 
 local function get_save_menu(ent)
-return L("save"),
-{
+	return L("save"),
 	{
-		L("auto load"),
-		function()
-			serializer.WriteFile("luadata", "data/saved/autoload.tbl", ent:GetStorableTable())
-		end,
-		editor.frame:GetSkin().icons.transmit_go,
-	},
-	{},
-	{
-		L("new file"),
-		function()
-			gui.StringInput(
-				L("filename"),
-				L("filename"),
-				ent:GetName(),
-				function(name)
-					serializer.WriteFile("luadata", "data/saved/" .. name .. ".tbl", ent:GetStorableTable())
-				end
-			)
-		end,
-		editor.frame:GetSkin().icons.save,
-	},
-	{},
-	(
-		function()
-			local out = {}
-
-			for file_name in vfs.Iterate("saved/") do
-				table.insert(
-					out,
-					{
-						file_name:gsub("%.tbl", ""),
-						function()
-							serializer.WriteFile("luadata", "data/saved/" .. file_name, ent:GetStorableTable())
-						end,
-					}
+		{
+			L("auto load"),
+			function()
+				serializer.WriteFile("luadata", "data/saved/autoload.tbl", ent:GetStorableTable())
+			end,
+			editor.frame:GetSkin().icons.transmit_go,
+		},
+		{},
+		{
+			L("new file"),
+			function()
+				gui.StringInput(
+					L("filename"),
+					L("filename"),
+					ent:GetName(),
+					function(name)
+						serializer.WriteFile("luadata", "data/saved/" .. name .. ".tbl", ent:GetStorableTable())
+					end
 				)
-			end
+			end,
+			editor.frame:GetSkin().icons.save,
+		},
+		{},
+		(
+			function()
+				local out = {}
 
-			return unpack(out)
-		end
-	)(),
-},
-editor.frame:GetSkin().icons.save
+				for file_name in vfs.Iterate("saved/") do
+					table.insert(
+						out,
+						{
+							file_name:gsub("%.tbl", ""),
+							function()
+								serializer.WriteFile("luadata", "data/saved/" .. file_name, ent:GetStorableTable())
+							end,
+						}
+					)
+				end
+
+				return unpack(out)
+			end
+		)(),
+	},
+	editor.frame:GetSkin().icons.save
 end
 
 local function get_load_menu(ent)
-return L("load"),
-{
-	(
-		function()
-			function editor.GetSavedFiles(where)
-				where = where or "saved/"
-				local out = {}
+	return L("load"),
+	{
+		(
+			function()
+				function editor.GetSavedFiles(where)
+					where = where or "saved/"
+					local out = {}
 
-				for file_name in vfs.Iterate(where) do
-					local path = where .. file_name
+					for file_name in vfs.Iterate(where) do
+						local path = where .. file_name
 
-					if vfs.IsFile(path) and file_name:endswith(".tbl") then
-						local tbl = serializer.ReadFile("luadata", where .. file_name)
+						if vfs.IsFile(path) and file_name:endswith(".tbl") then
+							local tbl = serializer.ReadFile("luadata", where .. file_name)
 
-						if tbl then
-							table.insert(
-								out,
-								{
-									is_file = true,
-									name = file_name:gsub("%.tbl", ""),
-									path = path,
-									ent_tbl = tbl,
-								}
-							)
-						end
-					else
-						table.insert(
-							out,
-							{
-								name = file_name,
-								is_dir = true,
-								files = editor.GetSavedFiles(path .. "/"),
-								path = path,
-							}
-						)
-					end
-				end
-
-				return out
-			end
-
-			local function populate(files)
-				local out = {}
-
-				for _, v in ipairs(files) do
-					if v.is_file then
-						if v.name == "autoload" then
-							table.insert(
-								out,
-								1,
-								{
-									L("auto load"),
-									function()
-										ent:SetStorableTable(v.ent_tbl)
-									end,
-									editor.frame:GetSkin().icons.transmit_go,
-								}
-							)
-							table.insert(out, 2, {})
-						else
-							local config = prototype.GetConfigurations()[v.ent_tbl.config]
-
-							if config then
+							if tbl then
 								table.insert(
 									out,
 									{
-										v.name,
-										function()
-											ent:SetStorableTable(v.ent_tbl)
-										end,
-										config.icon,
+										is_file = true,
+										name = file_name:gsub("%.tbl", ""),
+										path = path,
+										ent_tbl = tbl,
 									}
 								)
 							end
+						else
+							table.insert(
+								out,
+								{
+									name = file_name,
+									is_dir = true,
+									files = editor.GetSavedFiles(path .. "/"),
+									path = path,
+								}
+							)
 						end
-					else
-						table.insert(out, {v.name, populate(v.files), editor.frame:GetSkin().icons.load})
 					end
+
+					return out
 				end
 
-				return out
-			end
+				local function populate(files)
+					local out = {}
 
-			return unpack(populate(editor.GetSavedFiles(path)))
-		end
-	)(),
-},
-editor.frame:GetSkin().icons.load
+					for _, v in ipairs(files) do
+						if v.is_file then
+							if v.name == "autoload" then
+								table.insert(
+									out,
+									1,
+									{
+										L("auto load"),
+										function()
+											ent:SetStorableTable(v.ent_tbl)
+										end,
+										editor.frame:GetSkin().icons.transmit_go,
+									}
+								)
+								table.insert(out, 2, {})
+							else
+								local config = prototype.GetConfigurations()[v.ent_tbl.config]
+
+								if config then
+									table.insert(
+										out,
+										{
+											v.name,
+											function()
+												ent:SetStorableTable(v.ent_tbl)
+											end,
+											config.icon,
+										}
+									)
+								end
+							end
+						else
+							table.insert(out, {v.name, populate(v.files), editor.frame:GetSkin().icons.load})
+						end
+					end
+
+					return out
+				end
+
+				return unpack(populate(editor.GetSavedFiles(path)))
+			end
+		)(),
+	},
+	editor.frame:GetSkin().icons.load
 end
 
 function editor.Open()
-if not render3d.gbuffer:IsValid() then
-	render3d.Initialize()
-	local data = serializer.ReadFile("luadata", "saved/autoload.tbl")
+	if not render3d.gbuffer:IsValid() then
+		render3d.Initialize()
+		local data = serializer.ReadFile("luadata", "saved/autoload.tbl")
 
-	if data then entities.GetWorld():SetStorableTable(data) end
-end
+		if data then entities.GetWorld():SetStorableTable(data) end
+	end
 
-gui.RemovePanel(editor.frame)
-local frame = gui.CreatePanel("frame")
-frame:SetWidth(300)
-frame:SetTitle(L("editor"))
-frame:SetIcon(frame:GetSkin().icons.application_edit)
+	gui.RemovePanel(editor.frame)
+	local frame = gui.CreatePanel("frame")
+	frame:SetWidth(300)
+	frame:SetTitle(L("editor"))
+	frame:SetIcon(frame:GetSkin().icons.application_edit)
 
-frame:CallOnRemove(function()
-	frame.UGH = true
-	editor.Close()
-end)
+	frame:CallOnRemove(function()
+		frame.UGH = true
+		editor.Close()
+	end)
 
-editor.frame = frame
-local menu_bar = gui.CreateMenuBar(
-	{
+	editor.frame = frame
+	local menu_bar = gui.CreateMenuBar(
 		{
-			name = "file",
-			options = {
-				{get_save_menu(entities.GetWorld())},
-				{get_load_menu(entities.GetWorld())},
-				--[[{
+			{
+				name = "file",
+				options = {
+					{get_save_menu(entities.GetWorld())},
+					{get_load_menu(entities.GetWorld())},
+					--[[{
 					L"wear",
 					function() end,
 					frame:GetSkin().icons.transmit,
@@ -498,7 +499,7 @@ local menu_bar = gui.CreateMenuBar(
 					},
 					frame:GetSkin().icons.cross,
 				},]] {},
-				--[[{
+					--[[{
 					L"help",
 					function() end,
 					frame:GetSkin().icons.information,
@@ -508,359 +509,359 @@ local menu_bar = gui.CreateMenuBar(
 					function() end,
 					frame:GetSkin().icons.star,
 				},]] {
-					L("exit"),
-					function()
-						editor.Close()
-					end,
-					frame:GetSkin().icons.cancel,
+						L("exit"),
+						function()
+							editor.Close()
+						end,
+						frame:GetSkin().icons.cancel,
+					},
+				},
+			},
+			{
+				name = "view",
+				options = {
+					{
+						L("hide editor"),
+						function()
+							editor.Toggle()
+						end,
+					},
+					{
+						L("camera follow"),
+						function() end,
+					},
+					{
+						L("reset view position"),
+						function()
+							render3d.camera:SetPosition(Vec3(0, 0, 0))
+						end,
+					},
 				},
 			},
 		},
-		{
-			name = "view",
-			options = {
-				{
-					L("hide editor"),
-					function()
-						editor.Toggle()
-					end,
-				},
-				{
-					L("camera follow"),
-					function() end,
-				},
-				{
-					L("reset view position"),
-					function()
-						render3d.camera:SetPosition(Vec3(0, 0, 0))
-					end,
-				},
-			},
-		},
-	},
-	frame
-)
-menu_bar:SetHeight(25)
-menu_bar:SetStyle("frame")
-menu_bar:SetupLayout("top", "fill_x")
-menu_bar:SetObeyMargin(false)
-local div = gui.CreatePanel("divider", frame)
-div:SetupLayout("fill")
-div:SetHideDivider(true)
-editor.top_scroll = div:SetTop(gui.CreatePanel("scroll"))
-editor.bottom_scroll = div:SetBottom(gui.CreatePanel("scroll"))
-local tree
+		frame
+	)
+	menu_bar:SetHeight(25)
+	menu_bar:SetStyle("frame")
+	menu_bar:SetupLayout("top", "fill_x")
+	menu_bar:SetObeyMargin(false)
+	local div = gui.CreatePanel("divider", frame)
+	div:SetupLayout("fill")
+	div:SetHideDivider(true)
+	editor.top_scroll = div:SetTop(gui.CreatePanel("scroll"))
+	editor.bottom_scroll = div:SetBottom(gui.CreatePanel("scroll"))
+	local tree
 
-local function right_click_node(node)
-	if node then tree:SelectNode(node) end
+	local function right_click_node(node)
+		if node then tree:SelectNode(node) end
 
-	local options = {}
+		local options = {}
 
-	local function add(...)
-		table.insert(options, {...})
-	end
-
-	local clipboard = serializer.Decode("luadata", window.GetClipboard(), true)
-
-	if clipboard then
-		if not clipboard.config or not clipboard.self or not clipboard.self.GUID then
-			clipboard = nil
+		local function add(...)
+			table.insert(options, {...})
 		end
-	end
 
-	--add("wear", nil, frame:GetSkin().icons.wear)
-	if node then
-		add(
-			L("copy"),
-			function()
-				window.SetClipboard(assert(serializer.Encode("luadata", node.ent:GetStorableTable())))
-			end,
-			frame:GetSkin().icons.copy
-		)
+		local clipboard = serializer.Decode("luadata", window.GetClipboard(), true)
+
+		if clipboard then
+			if not clipboard.config or not clipboard.self or not clipboard.self.GUID then
+				clipboard = nil
+			end
+		end
+
+		--add("wear", nil, frame:GetSkin().icons.wear)
+		if node then
+			add(
+				L("copy"),
+				function()
+					window.SetClipboard(assert(serializer.Encode("luadata", node.ent:GetStorableTable())))
+				end,
+				frame:GetSkin().icons.copy
+			)
+
+			if clipboard then
+				add(
+					L("paste"),
+					function()
+						node.ent:SetStorableTable(clipboard)
+					end,
+					frame:GetSkin().icons.paste
+				)
+			end
+
+			add(
+				L("clone"),
+				function()
+					local ent = entities.CreateEntity(node.ent.config)
+					ent:SetParent(node.ent:GetParent())
+					ent:SetStorableTable(node.ent:GetStorableTable())
+				end,
+				frame:GetSkin().icons.clone
+			)
+
+			if node.ent.GetTRPosition then
+				add(
+					L("goto"),
+					function()
+						render3d.camera:SetPosition(node.ent:GetPosition())
+					end,
+					"textures/silkicons/brick_go.png"
+				)
+			end
+
+			add()
+		end
+
+		local groups = {}
+
+		for config_name, info in pairs(prototype.GetConfigurations()) do
+			local meta = #info.components == 1 and
+				prototype.GetRegistered("component", info.components[1])
+
+			if meta and meta.Base then
+				groups[meta.Base] = groups[meta.Base] or {configs = {}, icon = meta.Icon}
+				groups[meta.Base].configs[config_name] = info
+			else
+				groups.default = groups.default or {configs = {}, icon = "textures/silkicons/shape_square.png"}
+				groups.default.configs[config_name] = info
+			end
+		end
+
+		for group_name, group in pairs(groups) do
+			local tbl = {}
+
+			for config_name, info in pairs(group.configs) do
+				table.insert(
+					tbl,
+					{
+						L(info.name),
+						function()
+							local ent = entities.CreateEntity(config_name, node and node.ent)
+
+							if ent.SetPosition then
+								ent:SetPosition(render3d.camera:GetPosition())
+							end
+
+							if ent.SetModelPath then
+								ent:SetModelPath(ent:GetModelPath())
+								local mat = render.CreateMaterial("model")
+								mat:SetAlbedoTexture(render.GetWhiteTexture())
+								mat:SetRoughnessTexture(render.GetWhiteTexture())
+								mat:SetMetallicTexture(render.GetWhiteTexture())
+								mat:SetRoughnessMultiplier(0)
+								mat:SetMetallicMultiplier(1)
+								ent:SetMaterialOverride(mat)
+							end
+						end,
+						info.icon,
+					}
+				)
+			end
+
+			add(L(group_name), tbl, group.icon) -- FIX ME
+		end
+
+		add()
+		add(get_save_menu(editor.selected_ent))
+		add(get_load_menu(editor.selected_ent))
 
 		if clipboard then
 			add(
-				L("paste"),
+				L("add") .. " " .. (
+						(
+							clipboard.self.Name and
+							clipboard.self.Name ~= "" and
+							clipboard.self.Name
+						)
+						or
+						clipboard.config
+					),
 				function()
-					node.ent:SetStorableTable(clipboard)
+					local ent = entities.CreateEntity(clipboard.config)
+					ent:SetStorableTable(clipboard)
 				end,
-				frame:GetSkin().icons.paste
+				frame:GetSkin().icons.add
 			)
 		end
 
-		add(
-			L("clone"),
-			function()
-				local ent = entities.CreateEntity(node.ent.config)
-				ent:SetParent(node.ent:GetParent())
-				ent:SetStorableTable(node.ent:GetStorableTable())
-			end,
-			frame:GetSkin().icons.clone
-		)
+		if node then
+			add()
 
-		if node.ent.GetTRPosition then
 			add(
-				L("goto"),
+				L("remove"),
 				function()
-					render3d.camera:SetPosition(node.ent:GetPosition())
+					local node = tree:GetSelectedNode()
+
+					if node:IsValid() and node.ent:IsValid() then node.ent:Remove() end
 				end,
-				"textures/silkicons/brick_go.png"
+				frame:GetSkin().icons.clear
 			)
 		end
 
-		add()
+		gui.CreateMenu(options, frame)
 	end
 
-	local groups = {}
+	local function fill(entities, node)
+		for _, ent in pairs(entities) do
+			if not ent:GetHideFromEditor() then
+				local name = ent:GetEditorName()
 
-	for config_name, info in pairs(prototype.GetConfigurations()) do
-		local meta = #info.components == 1 and
-			prototype.GetRegistered("component", info.components[1])
+				if name == "" then name = ent.config end
 
-		if meta and meta.Base then
-			groups[meta.Base] = groups[meta.Base] or {configs = {}, icon = meta.Icon}
-			groups[meta.Base].configs[config_name] = info
-		else
-			groups.default = groups.default or {configs = {}, icon = "textures/silkicons/shape_square.png"}
-			groups.default.configs[config_name] = info
-		end
-	end
-
-	for group_name, group in pairs(groups) do
-		local tbl = {}
-
-		for config_name, info in pairs(group.configs) do
-			table.insert(
-				tbl,
-				{
-					L(info.name),
-					function()
-						local ent = entities.CreateEntity(config_name, node and node.ent)
-
-						if ent.SetPosition then
-							ent:SetPosition(render3d.camera:GetPosition())
-						end
-
-						if ent.SetModelPath then
-							ent:SetModelPath(ent:GetModelPath())
-							local mat = render.CreateMaterial("model")
-							mat:SetAlbedoTexture(render.GetWhiteTexture())
-							mat:SetRoughnessTexture(render.GetWhiteTexture())
-							mat:SetMetallicTexture(render.GetWhiteTexture())
-							mat:SetRoughnessMultiplier(0)
-							mat:SetMetallicMultiplier(1)
-							ent:SetMaterialOverride(mat)
-						end
-					end,
-					info.icon,
-				}
-			)
-		end
-
-		add(L(group_name), tbl, group.icon) -- FIX ME
-	end
-
-	add()
-	add(get_save_menu(editor.selected_ent))
-	add(get_load_menu(editor.selected_ent))
-
-	if clipboard then
-		add(
-			L("add") .. " " .. (
-					(
-						clipboard.self.Name and
-						clipboard.self.Name ~= "" and
-						clipboard.self.Name
-					)
-					or
-					clipboard.config
-				),
-			function()
-				local ent = entities.CreateEntity(clipboard.config)
-				ent:SetStorableTable(clipboard)
-			end,
-			frame:GetSkin().icons.add
-		)
-	end
-
-	if node then
-		add()
-
-		add(
-			L("remove"),
-			function()
-				local node = tree:GetSelectedNode()
-
-				if node:IsValid() and node.ent:IsValid() then node.ent:Remove() end
-			end,
-			frame:GetSkin().icons.clear
-		)
-	end
-
-	gui.CreateMenu(options, frame)
-end
-
-local function fill(entities, node)
-	for _, ent in pairs(entities) do
-		if not ent:GetHideFromEditor() then
-			local name = ent:GetEditorName()
-
-			if name == "" then name = ent.config end
-
-			local node = node:AddNode(name, ent:GetPropertyIcon())
-			node.OnRightClick = right_click_node
-			--node.OnMouseHoverTrigger = show_tooltip
-			node.ent = ent
-			ent.editor_node = node
-			--node:SetIcon(render.CreateTextureFromPath("textures/" .. frame:GetSkin().icons[val.self.ClassName]))
-			fill(ent:GetChildren(), node)
-		end
-	end
-end
-
-local function repopulate()
-	if not frame:IsValid() then return end
-
-	gui.RemovePanel(tree)
-	tree = frame:CreatePanel("tree")
-	editor.top_scroll:SetPanel(tree)
-	local ents = {}
-
-	for _, v in pairs(entities.GetAll()) do
-		if not v:HasParent() then table.insert(ents, v) end
-	end
-
-	fill(EDITOR_ROOT or ents, tree)
-	tree:SetSize(tree:GetSizeOfChildren())
-	tree:SetWidth(frame:GetWidth())
-	editor.top_scroll:SetAlwaysReceiveMouseInput(true)
-	tree.OnNodeSelect = function(_, node)
-		gui.RemovePanel(editor.properties)
-		local properties = frame:CreatePanel("properties")
-		properties:AddGroup(L("entity"))
-		properties:AddPropertiesFromObject(node.ent)
-		local found_anything = false
-
-		if node.ent.GetComponents then
-			for _, v in ipairs(node.ent:GetComponents()) do
-				if next(prototype.GetStorableVariables(v)) then
-					properties:AddGroup(L(v.ClassName))
-					properties:AddPropertiesFromObject(v)
-					found_anything = true
-				end
-			end
-		else
-			for _, v in ipairs(node.ent:GetChildren()) do
-				if v.ClassName ~= "transform" and next(prototype.GetStorableVariables(v)) then
-					properties:AddGroup(L(v.ClassName))
-					properties:AddPropertiesFromObject(v)
-					found_anything = true
-				end
+				local node = node:AddNode(name, ent:GetPropertyIcon())
+				node.OnRightClick = right_click_node
+				--node.OnMouseHoverTrigger = show_tooltip
+				node.ent = ent
+				ent.editor_node = node
+				--node:SetIcon(render.CreateTextureFromPath("textures/" .. frame:GetSkin().icons[val.self.ClassName]))
+				fill(ent:GetChildren(), node)
 			end
 		end
-
-		editor.bottom_scroll:SetPanel(properties)
-		editor.properties = properties
-		editor.SelectEntity(node.ent, false)
 	end
-	tree.OnNodeDrop = function(_, node, dropped_node, drop_pos)
-		if dropped_node.ent then
-			node.ent:AddChild(dropped_node.ent)
+
+	local function repopulate()
+		if not frame:IsValid() then return end
+
+		gui.RemovePanel(tree)
+		tree = frame:CreatePanel("tree")
+		editor.top_scroll:SetPanel(tree)
+		local ents = {}
+
+		for _, v in pairs(entities.GetAll()) do
+			if not v:HasParent() then table.insert(ents, v) end
+		end
+
+		fill(EDITOR_ROOT or ents, tree)
+		tree:SetSize(tree:GetSizeOfChildren())
+		tree:SetWidth(frame:GetWidth())
+		editor.top_scroll:SetAlwaysReceiveMouseInput(true)
+		tree.OnNodeSelect = function(_, node)
+			gui.RemovePanel(editor.properties)
+			local properties = frame:CreatePanel("properties")
+			properties:AddGroup(L("entity"))
+			properties:AddPropertiesFromObject(node.ent)
+			local found_anything = false
+
+			if node.ent.GetComponents then
+				for _, v in ipairs(node.ent:GetComponents()) do
+					if next(prototype.GetStorableVariables(v)) then
+						properties:AddGroup(L(v.ClassName))
+						properties:AddPropertiesFromObject(v)
+						found_anything = true
+					end
+				end
+			else
+				for _, v in ipairs(node.ent:GetChildren()) do
+					if v.ClassName ~= "transform" and next(prototype.GetStorableVariables(v)) then
+						properties:AddGroup(L(v.ClassName))
+						properties:AddPropertiesFromObject(v)
+						found_anything = true
+					end
+				end
+			end
+
+			editor.bottom_scroll:SetPanel(properties)
+			editor.properties = properties
+			editor.SelectEntity(node.ent, false)
+		end
+		tree.OnNodeDrop = function(_, node, dropped_node, drop_pos)
+			if dropped_node.ent then
+				node.ent:AddChild(dropped_node.ent)
+				repopulate()
+			end
+		end
+		editor.tree = tree
+
+		if editor.selected_ent:IsValid() then
+			editor.SelectEntity(editor.selected_ent)
+		elseif editor.prev_selected_ent:IsValid() then
+			editor.SelectEntity(editor.prev_selected_ent)
+		elseif tree:GetChildren()[1] then
+			tree:SelectNode(tree:GetChildren()[1])
+		end
+	end
+
+	--editor.top_scroll.OnRightClick = function() right_click_node() end
+	event.AddListener("EntityCreated", "editor", function()
+		event.Delay(0, function()
 			repopulate()
+		end, "editor_repopulate_hack", frame)
+	end)
+
+	event.AddListener("EntityRemoved", "editor", function()
+		event.Delay(0, function()
+			repopulate()
+		end, "editor_repopulate_hack", frame)
+	end)
+
+	event.AddListener("MouseInput", "editor", mctrl.MouseInput)
+	event.AddListener("PreDrawGUI", "editor", mctrl.Draw)
+
+	event.AddListener("GUIObjectPropertyChanged", "editor", function(obj, val, info)
+		if info.var_name == "Name" and obj.editor_node then
+			if val == "" then
+				obj.editor_node:SetText(obj:GetEditorName())
+			else
+				obj.editor_node:SetText(val)
+			end
 		end
+	end)
+
+	repopulate()
+	tree:SetSize(tree:GetSizeOfChildren())
+	tree:SetWidth(frame:GetWidth() - 20)
+	frame.OnRightClick = function()
+		right_click_node()
 	end
-	editor.tree = tree
-
-	if editor.selected_ent:IsValid() then
-		editor.SelectEntity(editor.selected_ent)
-	elseif editor.prev_selected_ent:IsValid() then
-		editor.SelectEntity(editor.prev_selected_ent)
-	elseif tree:GetChildren()[1] then
-		tree:SelectNode(tree:GetChildren()[1])
-	end
-end
-
---editor.top_scroll.OnRightClick = function() right_click_node() end
-event.AddListener("EntityCreated", "editor", function()
-	event.Delay(0, function()
-		repopulate()
-	end, "editor_repopulate_hack", frame)
-end)
-
-event.AddListener("EntityRemoved", "editor", function()
-	event.Delay(0, function()
-		repopulate()
-	end, "editor_repopulate_hack", frame)
-end)
-
-event.AddListener("MouseInput", "editor", mctrl.MouseInput)
-event.AddListener("PreDrawGUI", "editor", mctrl.Draw)
-
-event.AddListener("GUIObjectPropertyChanged", "editor", function(obj, val, info)
-	if info.var_name == "Name" and obj.editor_node then
-		if val == "" then
-			obj.editor_node:SetText(obj:GetEditorName())
-		else
-			obj.editor_node:SetText(val)
-		end
-	end
-end)
-
-repopulate()
-tree:SetSize(tree:GetSizeOfChildren())
-tree:SetWidth(frame:GetWidth() - 20)
-frame.OnRightClick = function()
-	right_click_node()
-end
-div:SetDividerPosition(gui.world:GetHeight() / 2)
-window.SetMouseTrapped(false)
-frame:SetY(50)
-frame:MoveLeft()
-frame:FillY()
+	div:SetDividerPosition(gui.world:GetHeight() / 2)
+	window.SetMouseTrapped(false)
+	frame:SetY(50)
+	frame:MoveLeft()
+	frame:FillY()
 end
 
 function editor.Close()
-if not editor.frame.UGH then gui.RemovePanel(editor.frame) end
+	if not editor.frame.UGH then gui.RemovePanel(editor.frame) end
 
-window.SetMouseTrapped(false)
-event.RemoveListener("EntityCreated", "editor")
-event.RemoveListener("EntityRemoved", "editor")
-event.RemoveListener("MouseInput", "editor")
-event.RemoveListener("PreDrawGUI", "editor")
+	window.SetMouseTrapped(false)
+	event.RemoveListener("EntityCreated", "editor")
+	event.RemoveListener("EntityRemoved", "editor")
+	event.RemoveListener("MouseInput", "editor")
+	event.RemoveListener("PreDrawGUI", "editor")
 end
 
 function editor.Toggle()
-if editor.frame:IsValid() then
-	if editor.frame:IsMinimized() then
-		editor.frame:Minimize(false)
-		window.SetMouseTrapped(true)
+	if editor.frame:IsValid() then
+		if editor.frame:IsMinimized() then
+			editor.frame:Minimize(false)
+			window.SetMouseTrapped(true)
+		else
+			editor.frame:Minimize(true)
+			window.SetMouseTrapped(false)
+		end
 	else
-		editor.frame:Minimize(true)
-		window.SetMouseTrapped(false)
+		editor.Open()
 	end
-else
-	editor.Open()
-end
 end
 
 function editor.SelectEntity(ent, update_editor)
-event.Call("EditorSelectEentity", ent)
+	event.Call("EditorSelectEentity", ent)
 
-if editor.prev_selected_ent ~= editor.selected_ent and editor.selected_ent:IsValid() then
-	editor.prev_selected_ent = editor.selected_ent
-end
-
-editor.selected_ent = ent
-mctrl.target = ent
-
-if update_editor == false or not editor.frame:IsValid() then return end
-
-for i, v in ipairs(editor.tree:GetChildren()) do
-	if v.ent == ent then
-		editor.tree:SelectNode(v)
-		return v
+	if editor.prev_selected_ent ~= editor.selected_ent and editor.selected_ent:IsValid() then
+		editor.prev_selected_ent = editor.selected_ent
 	end
-end
+
+	editor.selected_ent = ent
+	mctrl.target = ent
+
+	if update_editor == false or not editor.frame:IsValid() then return end
+
+	for i, v in ipairs(editor.tree:GetChildren()) do
+		if v.ent == ent then
+			editor.tree:SelectNode(v)
+			return v
+		end
+	end
 end
 
 input.Bind("e+left_control", "toggle_editor")
@@ -869,6 +870,6 @@ commands.Add("toggle_editor=nil", editor.Toggle)
 commands.Add("open_editor=nil", editor.Open)
 
 if RELOAD then
-editor.Close()
-editor.Open()
+	editor.Close()
+	editor.Open()
 end

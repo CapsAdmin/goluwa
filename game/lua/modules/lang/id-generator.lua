@@ -47,9 +47,7 @@ local function close_gen_variables(variables)
 	for i = 1, #vars do
 		local id = vars[i]
 
-		if pseudo_match(id.name) then
-			id.name = normalize(variables, id.name)
-		end
+		if pseudo_match(id.name) then id.name = normalize(variables, id.name) end
 	end
 end
 

@@ -163,7 +163,10 @@ Otherwise, the pattern matches warning code.]]
 		parser:option("--only -o", "Filter out warnings not matching these patterns."):args("+"):count("*"):argname("<patt>"):action("concat"):init(nil)
 		parser:flag("--no-inline", "Disable inline options."):target("inline"):action("store_false")
 		parser:mutex(
-			parser:option("--config", "Path to configuration file. (default: " .. config.default_path .. ")"),
+			parser:option(
+				"--config",
+				"Path to configuration file. (default: " .. config.default_path .. ")"
+			),
 			parser:flag("--no-config", "Do not look up configuration file.")
 		)
 		local default_global_path = config.get_default_global_path()
@@ -566,9 +569,7 @@ patterns.]]):args("+"):count("*"):argname("<glob>")
 	normalize_stdin_in_filenames(files)
 	local output = pformat(report, files, conf, args)
 
-	if #output > 0 and output:sub(-1) ~= "\n" then
-		output = output .. "\n"
-	end
+	if #output > 0 and output:sub(-1) ~= "\n" then output = output .. "\n" end
 
 	io.stdout:write(output)
 

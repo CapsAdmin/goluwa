@@ -48,7 +48,10 @@ for i = 0, 2 do
 	btn.DrawScaleCenter = true
 	btn:Animate(
 		"DrawScaleOffset",
-		{Vec2(1 / btn:GetSize().x / btn:GetSize().y, btn:GetSize().y / btn:GetSize().x), "from"},
+		{
+			Vec2(1 / btn:GetSize().x / btn:GetSize().y, btn:GetSize().y / btn:GetSize().x),
+			"from",
+		},
 		0.5,
 		"=",
 		3,
@@ -92,14 +95,19 @@ for i = 0, 2 do
 
 	function btn:OnMouseInput(key, press)
 		if key == "button_1" and press then
-			self:Animate("Z", {
-				"from",
-				35,
-				function()
-					return self:IsMouseOver()
-				end,
-				"from",
-			}, 0.75, "+")
+			self:Animate(
+				"Z",
+				{
+					"from",
+					35,
+					function()
+						return self:IsMouseOver()
+					end,
+					"from",
+				},
+				0.75,
+				"+"
+			)
 			self:Animate(
 				"DrawColor",
 				{

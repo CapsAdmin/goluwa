@@ -37,11 +37,7 @@ local function to_hex(b)
 end
 
 local function to_dec(b)
-	if BYTE_0 <= b and b <= BYTE_9 then
-		return b - BYTE_0
-	else
-		return nil
-	end
+	if BYTE_0 <= b and b <= BYTE_9 then return b - BYTE_0 else return nil end
 end
 
 local function to_utf(codepoint)
@@ -247,17 +243,13 @@ local function lex_short_string(state, quote)
 
 				if b then c1 = to_hex(b) end
 
-				if not c1 then
-					return nil, "invalid hexadecimal escape sequence", -2
-				end
+				if not c1 then return nil, "invalid hexadecimal escape sequence", -2 end
 
 				b = next_byte(state)
 
 				if b then c2 = to_hex(b) end
 
-				if not c2 then
-					return nil, "invalid hexadecimal escape sequence", -3
-				end
+				if not c2 then return nil, "invalid hexadecimal escape sequence", -3 end
 
 				b = next_byte(state)
 				s = schar(c1 * 16 + c2)
@@ -311,9 +303,7 @@ local function lex_short_string(state, quote)
 
 				if b then cb = to_dec(b) end
 
-				if not cb then
-					return nil, "invalid escape sequence", -1
-				end
+				if not cb then return nil, "invalid escape sequence", -1 end
 
 				-- Up to three decimal digits.
 				b = next_byte(state)
@@ -421,9 +411,7 @@ local function lex_number(state, b)
 		if b == BYTE_PLUS or b == BYTE_DASH then b = next_byte(state) end
 
 		-- Exponent consists of one or more decimal digits.
-		if b == nil or not to_dec(b) then
-			return nil, "malformed number"
-		end
+		if b == nil or not to_dec(b) then return nil, "malformed number" end
 
 		repeat
 			b = next_byte(state)		
@@ -477,11 +465,7 @@ local function lex_ident(state)
 
 	local ident = ssub(state.src, start, state.offset - 1)
 
-	if keywords[ident] then
-		return ident
-	else
-		return "name", ident
-	end
+	if keywords[ident] then return ident else return "name", ident end
 end
 
 local function lex_dash(state)

@@ -81,11 +81,7 @@ local function bcline(func, pc, prefix)
 		return format("%s=> %04d\n", s, pc + d - 0x7fff)
 	end
 
-	if mb ~= 0 then
-		d = band(d, 0xff)
-	elseif mc == 0 then
-		return s .. "\n"
-	end
+	if mb ~= 0 then d = band(d, 0xff) elseif mc == 0 then return s .. "\n" end
 
 	local kc
 
@@ -99,11 +95,7 @@ local function bcline(func, pc, prefix)
 	elseif mc == 12 * 128 then -- BCMfunc
 		local fi = funcinfo(funck(func, -d - 1))
 
-		if fi.ffid then
-			kc = vmdef.ffnames[fi.ffid]
-		else
-			kc = fi.loc
-		end
+		if fi.ffid then kc = vmdef.ffnames[fi.ffid] else kc = fi.loc end
 	elseif mc == 5 * 128 then -- BCMuv
 		kc = funcuvname(func, d)
 	end
@@ -137,7 +129,9 @@ local function bctargets(func)
 
 		if not ins then break end
 
-		if band(m, 15 * 128) == 13 * 128 then target[pc + shr(ins, 16) - 0x7fff] = true end
+		if band(m, 15 * 128) == 13 * 128 then
+			target[pc + shr(ins, 16) - 0x7fff] = true
+		end
 	end
 
 	return target

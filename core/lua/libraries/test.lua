@@ -47,9 +47,7 @@ function test.test(func, ...)
 				end
 			end
 
-			if msg ~= "" then
-				test.fail(debug.getname(func), msg)
-			end
+			if msg ~= "" then test.fail(debug.getname(func), msg) end
 		end,
 		expect_compare = function(...)
 			local exp = table.pack(...)
@@ -58,18 +56,14 @@ function test.test(func, ...)
 			for i = 1, exp.n do
 				local b = ret[i] == exp[i]
 
-				if type(exp[i]) == "function" then
-					b = exp[i](ret[i])
-				end
+				if type(exp[i]) == "function" then b = exp[i](ret[i]) end
 
 				if not b then
 					msg = msg .. i .. ": expected " .. tostring(ret[i]) .. " got " .. tostring(exp[i]) .. "\n"
 				end
 			end
 
-			if msg ~= "" then
-				test.fail(debug.getname(func), msg)
-			end
+			if msg ~= "" then test.fail(debug.getname(func), msg) end
 		end,
 	}
 end

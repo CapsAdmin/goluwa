@@ -350,7 +350,9 @@ function zip.Decode(str)
 		if data.file_content then
 			if crypto.CRC32(data.file_content) ~= tostring(data.crc) then
 				table.print(data)
-				error("crc (" .. crypto.CRC32(data.file_content) .. ") does not match " .. data.crc .. "!")
+				error(
+					"crc (" .. crypto.CRC32(data.file_content) .. ") does not match " .. data.crc .. "!"
+				)
 			end
 		end
 	end

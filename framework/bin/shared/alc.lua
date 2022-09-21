@@ -1,7 +1,5 @@
 local ffi = require("ffi")
-
 local CLIB = assert(ffi.load("openal"))
-
 ffi.cdef([[struct ALCdevice_struct {};
 struct ALCcontext_struct {};
 void(alcDestroyContext)(struct ALCcontext_struct*);

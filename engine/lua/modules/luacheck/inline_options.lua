@@ -37,9 +37,7 @@ local function add_closure_boundaries(ast, events)
 		)
 	else
 		for _, node in ipairs(ast) do
-			if type(node) == "table" then
-				add_closure_boundaries(node, events)
-			end
+			if type(node) == "table" then add_closure_boundaries(node, events) end
 		end
 	end
 end
@@ -54,9 +52,7 @@ local max_line_length_opts = utils.array_to_set(
 )
 
 local function is_valid_option_name(name)
-	if name == "std" or options.variadic_inline_options[name] then
-		return true
-	end
+	if name == "std" or options.variadic_inline_options[name] then return true end
 
 	name = name:gsub("^no_", "")
 	return options.nullary_inline_options[name] or max_line_length_opts[name]
@@ -118,9 +114,7 @@ local function get_options(body)
 		end
 
 		if name == "std" then
-			if #args ~= 1 then
-				return nil, unexpected_num_args(name, args, 1)
-			end
+			if #args ~= 1 then return nil, unexpected_num_args(name, args, 1) end
 
 			opts.std = args[1]
 		elseif name == "ignore" and #args == 0 then
@@ -195,11 +189,7 @@ local function add_inline_option(events, per_line_opts, body, location, end_colu
 			}
 		)
 
-		if after_push then
-			body = after_push
-		else
-			return
-		end
+		if after_push then body = after_push else return end
 	end
 
 	local opts, err = get_options(body)
@@ -387,9 +377,7 @@ function inline_options.validate_options(events, per_line_opts)
 			local valid, invalid_opt = options.validate(options.all_options, event.options)
 
 			if valid then
-				if not new_per_line_opts[line] then
-					new_per_line_opts[line] = {}
-				end
+				if not new_per_line_opts[line] then new_per_line_opts[line] = {} end
 
 				table.insert(new_per_line_opts[line], event)
 			else

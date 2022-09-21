@@ -11,9 +11,7 @@ local function header_to_table(header)
 	for _, line in ipairs(header:split("\n")) do
 		local key, value = line:match("(.+):%s+(.+)\r")
 
-		if key and value then
-			tbl[key:lower()] = tonumber(value) or value
-		end
+		if key and value then tbl[key:lower()] = tonumber(value) or value end
 	end
 
 	return tbl
@@ -46,9 +44,7 @@ function META:OnClientConnected(client)
 				local decoded, fin, opcode, rest = frame.decode(encoded)
 
 				if decoded then
-					if not first_opcode then
-						first_opcode = opcode
-					end
+					if not first_opcode then first_opcode = opcode end
 
 					table.insert(frames, decoded)
 					encoded = rest

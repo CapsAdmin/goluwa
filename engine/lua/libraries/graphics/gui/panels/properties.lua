@@ -261,14 +261,17 @@ do -- choice
 			end
 		elseif not table.isarray(tbl) then
 			for k, v in pairs(tbl) do
-				table.insert(menu_options, {
-					v.friendly or
-					k,
-					function()
-						self:SetValue(k)
-					end,
-					v.icon_path,
-				})
+				table.insert(
+					menu_options,
+					{
+						v.friendly or
+						k,
+						function()
+							self:SetValue(k)
+						end,
+						v.icon_path,
+					}
+				)
 			end
 
 			table.sort(menu_options, function(a, b)

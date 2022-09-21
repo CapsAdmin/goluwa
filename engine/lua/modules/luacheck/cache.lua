@@ -70,9 +70,7 @@ local function compress(t, fields)
 		local value = t[field]
 
 		if value ~= nil then
-			if field == "options" then
-				value = compress(value, option_fields)
-			end
+			if field == "options" then value = compress(value, option_fields) end
 
 			res[index] = value
 		end
@@ -104,9 +102,7 @@ local function decompress(t, fields)
 		local value = t[index]
 
 		if value ~= nil then
-			if field == "options" then
-				value = decompress(value, option_fields)
-			end
+			if field == "options" then value = decompress(value, option_fields) end
 
 			res[field] = value
 		end
@@ -178,9 +174,7 @@ local function add_value(buffer, strings, value)
 			else
 				if put_one then table.insert(buffer, ",") end
 
-				if is_sparse then
-					table.insert(buffer, ("[%d]="):format(i))
-				end
+				if is_sparse then table.insert(buffer, ("[%d]="):format(i)) end
 
 				add_value(buffer, strings, item)
 				put_one = true
@@ -291,9 +285,7 @@ function cache.load(cache_filename, filenames, mtimes)
 			return result
 		end
 
-		if filename:sub(-1) == "\r" then
-			filename = filename:sub(1, -2)
-		end
+		if filename:sub(-1) == "\r" then filename = filename:sub(1, -2) end
 
 		local mtime = fh:read()
 		local cached = fh:read()

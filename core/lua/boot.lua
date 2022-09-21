@@ -542,7 +542,6 @@ ffi.cdef([[
 	int kill(uint32_t pid, int sig);
 ]])
 local LUA_GLOBALSINDEX = -10002
-
 local state = lua.L.newstate()
 
 for _, what in ipairs({"SIGSEGV"}) do

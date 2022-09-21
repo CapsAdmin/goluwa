@@ -66,7 +66,6 @@ do
 							end
 
 							event.channel = file:ReadByte()
-							
 						elseif sub_type == 0x2f then
 							--event.subtype = "end_of_track"
 							if length ~= 0 then
@@ -173,7 +172,6 @@ do
 					elseif event_type == 0x0d then
 						event.subtype = "channel_aftertouch"
 						event.amount = param1
-						
 					elseif event_type == 0x0e then
 						event.subtype = "pitch_bend"
 						event.value = param1 + bit.lshift(file:ReadByte(), 7)

@@ -145,59 +145,60 @@ local connect = function(self, ws_url, ws_protocol, ssl_params)
 	end
 
 	local key = tools.generate_key()
-	local req = handshake.upgrade_request({
-		key = key,
-		host = host,
-		port = port,
-		protocols = ws_protocols_tbl,
-		uri = uri,
-	}
-)
-local n, err = self:sock_send(req)
+	local req = handshake.upgrade_request(
+		{
+			key = key,
+			host = host,
+			port = port,
+			protocols = ws_protocols_tbl,
+			uri = uri,
+		}
+	)
+	local n, err = self:sock_send(req)
 
-if n ~= #req then return nil, err, nil end
+	if n ~= #req then return nil, err, nil end
 
-local resp = {}
+	local resp = {}
 
-repeat
-	local line, err = self:sock_receive("*l")
-	resp[#resp + 1] = line
+	repeat
+		local line, err = self:sock_receive("*l")
+		resp[#resp + 1] = line
 
-	if err then return nil, err, nil end
-until line == ""
+		if err then return nil, err, nil end	
+	until line == ""
 
-local response = table.concat(resp, "\r\n")
-local headers = handshake.http_headers(response)
-local expected_accept = handshake.sec_websocket_accept(key)
+	local response = table.concat(resp, "\r\n")
+	local headers = handshake.http_headers(response)
+	local expected_accept = handshake.sec_websocket_accept(key)
 
-if headers["sec-websocket-accept"] ~= expected_accept then
-	local msg = "Websocket Handshake failed: Invalid Sec-Websocket-Accept (expected %s got %s)"
-	return nil,
-	msg:format(expected_accept, headers["sec-websocket-accept"] or "nil"),
-	headers
-end
+	if headers["sec-websocket-accept"] ~= expected_accept then
+		local msg = "Websocket Handshake failed: Invalid Sec-Websocket-Accept (expected %s got %s)"
+		return nil,
+		msg:format(expected_accept, headers["sec-websocket-accept"] or "nil"),
+		headers
+	end
 
-self.state = "OPEN"
-return true, headers["sec-websocket-protocol"], headers
+	self.state = "OPEN"
+	return true, headers["sec-websocket-protocol"], headers
 end
 local extend = function(obj)
-assert(obj.sock_send)
-assert(obj.sock_receive)
-assert(obj.sock_close)
-assert(obj.is_closing == nil)
-assert(obj.receive == nil)
-assert(obj.send == nil)
-assert(obj.close == nil)
-assert(obj.connect == nil)
+	assert(obj.sock_send)
+	assert(obj.sock_receive)
+	assert(obj.sock_close)
+	assert(obj.is_closing == nil)
+	assert(obj.receive == nil)
+	assert(obj.send == nil)
+	assert(obj.close == nil)
+	assert(obj.connect == nil)
 
-if not obj.is_server then assert(obj.sock_connect) end
+	if not obj.is_server then assert(obj.sock_connect) end
 
-if not obj.state then obj.state = "CLOSED" end
+	if not obj.state then obj.state = "CLOSED" end
 
-obj.receive = receive
-obj.send = send
-obj.close = close
-obj.connect = connect
-return obj
+	obj.receive = receive
+	obj.send = send
+	obj.close = close
+	obj.connect = connect
+	return obj
 end
 return {extend = extend}

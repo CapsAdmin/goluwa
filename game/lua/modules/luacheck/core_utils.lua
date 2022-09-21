@@ -24,10 +24,8 @@ function core_utils.eval_const_node(node)
 
 		local str = node[1]
 
-		if str:find("[iIuUlL]") then
-			-- Ignore LuaJIT cdata literals.
-			return
-		end
+		if str:find("[iIuUlL]") then -- Ignore LuaJIT cdata literals.
+		return end
 
 		-- On Lua 5.3 convert to float to get same results as on Lua 5.1 and 5.2.
 		if _VERSION == "Lua 5.3" and not str:find("[%.eEpP]") then

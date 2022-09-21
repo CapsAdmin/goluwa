@@ -86,7 +86,11 @@ function structs.Register(META)
 							arg_lines[i] = arg_lines[i] .. ";"
 						end
 					else
-						lua = lua .. "\t" .. (not found and "if" or "elseif") .. " key == \"" .. v .. "\" then\n"
+						lua = lua .. "\t" .. (
+								not found and
+								"if" or
+								"elseif"
+							) .. " key == \"" .. v .. "\" then\n"
 						lua = lua .. "\t\treturn self." .. arg[1] .. "\n"
 						found = true
 					end

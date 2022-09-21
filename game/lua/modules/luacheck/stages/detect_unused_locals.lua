@@ -237,9 +237,7 @@ local function detect_unused_locals_in_line(chstate, line)
 		if item.tag == "Local" then
 			for var in pairs(item.set_variables) do
 				-- Do not check the implicit top level vararg.
-				if var.node.line then
-					detect_unused_local(chstate, var)
-				end
+				if var.node.line then detect_unused_local(chstate, var) end
 			end
 		end
 	end

@@ -1,7 +1,5 @@
 local ffi = require("ffi")
-
 local CLIB = assert(ffi.load("tls"))
-
 ffi.cdef([[struct tls {};
 struct tls_config {};
 int(tls_config_set_key_mem)(struct tls_config*,const unsigned char*,unsigned long);

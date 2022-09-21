@@ -40,7 +40,6 @@ return {
 	onEditorCharAdded = function(self, editor, event)
 		if lasterr then
 			clean(editor)
-			
 			lasterr = nil
 		end
 

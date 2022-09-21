@@ -965,7 +965,8 @@ local value_handlers = {
 		return ffi.string(sqlite3.sqlite3_column_text(stmt, n), sqlite3.sqlite3_column_bytes(stmt, n) - 1)
 	end,
 	[sqlite3.SQLITE_BLOB] = function(stmt, n)
-		return sqlite3.sqlite3_column_blob(stmt, n), sqlite3.sqlite3_column_bytes(stmt, n)
+		return sqlite3.sqlite3_column_blob(stmt, n),
+		sqlite3.sqlite3_column_bytes(stmt, n)
 	end,
 	[sqlite3.SQLITE_NULL] = function()
 		return nil

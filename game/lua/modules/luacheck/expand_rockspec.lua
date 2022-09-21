@@ -60,14 +60,10 @@ end
 local function extract_lua_files(rockspec_path, rockspec)
 	local build = rockspec.build
 
-	if type(build) ~= "table" then
-		return autodetect_modules(rockspec_path)
-	end
+	if type(build) ~= "table" then return autodetect_modules(rockspec_path) end
 
 	if not build.type or build.type == "builtin" or build.type == "module" then
-		if not build.modules then
-			return autodetect_modules(rockspec_path)
-		end
+		if not build.modules then return autodetect_modules(rockspec_path) end
 	end
 
 	local res = {}

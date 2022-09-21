@@ -96,9 +96,7 @@ local function string_is_ident(str)
 	for k = 2, #str do
 		c = strsub(str, k, k)
 
-		if not char_isletter(c) and not char_isdigit(c) then
-			return false
-		end
+		if not char_isletter(c) and not char_isdigit(c) then return false end
 	end
 
 	return not LuaReservedKeyword[str]
@@ -231,9 +229,7 @@ end
 function ExpressionRule:CallExpression(node)
 	local callee, prio = self:expr_emit(node.callee)
 
-	if prio < operator.ident_priority then
-		callee = "(" .. callee .. ")"
-	end
+	if prio < operator.ident_priority then callee = "(" .. callee .. ")" end
 
 	local exp = format("%s(%s)", callee, self:expr_list(node.arguments))
 	return exp, operator.ident_priority
@@ -336,9 +332,7 @@ function StatementRule:IfStatement(node)
 		self:add_section(header, node.cons[i], true)
 	end
 
-	if node.alternate then
-		self:add_section("else", node.alternate, true)
-	end
+	if node.alternate then self:add_section("else", node.alternate, true) end
 
 	self:add_line("end")
 end
@@ -403,11 +397,7 @@ end
 local function proto_new(parent, indent)
 	local ind = 0
 
-	if indent then
-		ind = indent
-	elseif parent then
-		ind = parent.indent
-	end
+	if indent then ind = indent elseif parent then ind = parent.indent end
 
 	local proto = {code = {}, indent = ind, parent = parent}
 	proto.inline = proto_inline

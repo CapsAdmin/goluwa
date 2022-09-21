@@ -39,14 +39,10 @@ local function get_global_config_dir()
 			if not config_home_dir then
 				local home_dir = os.getenv("HOME")
 
-				if home_dir then
-					config_home_dir = fs.join(home_dir, ".config")
-				end
+				if home_dir then config_home_dir = fs.join(home_dir, ".config") end
 			end
 
-			if config_home_dir then
-				return fs.join(config_home_dir, "luacheck")
-			end
+			if config_home_dir then return fs.join(config_home_dir, "luacheck") end
 		end
 	end
 end
@@ -167,9 +163,7 @@ local function make_config_env_mt()
 
 	function env_mt.__newindex(env, key, value)
 		if special_mts[key] then
-			if type(value) == "table" then
-				setmetatable(value, special_mts[key])
-			end
+			if type(value) == "table" then setmetatable(value, special_mts[key]) end
 
 			special_values[key] = value
 		else
@@ -270,9 +264,7 @@ local function add_stds_from_config(conf, stds)
 		local std_names = {}
 
 		for std_name in pairs(conf.options.stds) do
-			if type(std_name) == "string" then
-				table.insert(std_names, std_name)
-			end
+			if type(std_name) == "string" then table.insert(std_names, std_name) end
 		end
 
 		table.sort(std_names)
@@ -420,9 +412,7 @@ function ConfigStack:get_top_options()
 
 	for _, conf in ipairs(self._configs) do
 		for _, option in ipairs({"quiet", "color", "codes", "ranges", "jobs"}) do
-			if conf.options[option] ~= nil then
-				res[option] = conf.options[option]
-			end
+			if conf.options[option] ~= nil then res[option] = conf.options[option] end
 		end
 
 		-- It's not immediately obvious relatively to which config formatter modules
@@ -486,10 +476,7 @@ local function add_applying_overrides(option_stack, conf, filename)
 			local abs_glob = fs.normalize(fs.join(anchor_dir, glob))
 
 			if globbing.match(abs_glob, abs_filename) then
-				table.insert(
-					matching_pairs,
-					{abs_glob = abs_glob, opts = opts}
-				)
+				table.insert(matching_pairs, {abs_glob = abs_glob, opts = opts})
 			end
 		end
 	end

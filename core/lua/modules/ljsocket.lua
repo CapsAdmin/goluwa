@@ -26,9 +26,7 @@ do
 			socket[func_name] = function(...)
 				local len = func(...)
 
-				if len < 0 then
-					return nil, socket.lasterror()
-				end
+				if len < 0 then return nil, socket.lasterror() end
 
 				return len
 			end
@@ -257,9 +255,7 @@ do
 			function socket.initialize()
 				local data = wsa_data()
 
-				if C.WSAStartup(WORD(2, 2), data) == 0 then
-					return data
-				end
+				if C.WSAStartup(WORD(2, 2), data) == 0 then return data end
 
 				return nil, socket.lasterror()
 			end
@@ -297,7 +293,12 @@ do
 			local IOC_IN = 0x80000000
 
 			local function _IOW(x, y, t)
-				return bit.bor(IOC_IN, bit.lshift(bit.band(ffi.sizeof(t), IOCPARM_MASK), 16), bit.lshift(x, 8), y)
+				return bit.bor(
+					IOC_IN,
+					bit.lshift(bit.band(ffi.sizeof(t), IOCPARM_MASK), 16),
+					bit.lshift(x, 8),
+					y
+				)
 			end
 
 			local FIONBIO = _IOW(string.byte("f"), 126, "uint32_t") -- -2147195266 -- 2147772030ULL
@@ -356,10 +357,8 @@ do
 			function socket.blocking(fd, b)
 				local flags = ffi.C.fcntl(fd, F_GETFL, 0)
 
-				if flags < 0 then
-					-- error
-					return nil, socket.lasterror()
-				end
+				if flags < 0 then -- error
+				return nil, socket.lasterror() end
 
 				if b then
 					flags = bit.band(flags, bit.bnot(O_NONBLOCK))
@@ -369,9 +368,7 @@ do
 
 				local ret = ffi.C.fcntl(fd, F_SETFL, ffi.new("int", flags))
 
-				if ret < 0 then
-					return nil, socket.lasterror()
-				end
+				if ret < 0 then return nil, socket.lasterror() end
 
 				return true
 			end
@@ -746,9 +743,7 @@ local function capture_flags(what)
 		lookup = flags,
 		reverse = reverse,
 		strict_reverse = function(key)
-			if not key then
-				error("invalid " .. what:sub(0, -2) .. " flag: nil")
-			end
+			if not key then error("invalid " .. what:sub(0, -2) .. " flag: nil") end
 
 			if not reverse[key] then
 				error("invalid " .. what:sub(0, -2) .. " flag: " .. key, 2)
@@ -757,9 +752,7 @@ local function capture_flags(what)
 			return reverse[key]
 		end,
 		strict_lookup = function(key)
-			if not key then
-				error("invalid " .. what:sub(0, -2) .. " flag: nil")
-			end
+			if not key then error("invalid " .. what:sub(0, -2) .. " flag: nil") end
 
 			if not flags[key] then
 				error("invalid " .. what:sub(0, -2) .. " flag: " .. key, 2)
@@ -1069,9 +1062,7 @@ do
 	function meta:bind(host, service)
 		if host == "*" then host = nil end
 
-		if type(service) == "number" then
-			service = tostring(service)
-		end
+		if type(service) == "number" then service = tostring(service) end
 
 		local res
 
@@ -1221,9 +1212,7 @@ do
 		size = size or 64000
 		local buff = ffi.new("char[?]", size)
 
-		if self.on_receive then
-			return self:on_receive(buff, size, flags)
-		end
+		if self.on_receive then return self:on_receive(buff, size, flags) end
 
 		local len, err, num
 		local len_res
@@ -1245,9 +1234,7 @@ do
 		if num == errno.ECONNRESET then
 			self:close()
 
-			if self.debug then
-				print(tostring(self), ": closed")
-			end
+			if self.debug then print(tostring(self), ": closed") end
 
 			return nil, "closed", num
 		end
@@ -1257,17 +1244,13 @@ do
 				return nil, "timeout", num
 			end
 
-			if self.debug then
-				print(tostring(self), " error", num, ":", err)
-			end
+			if self.debug then print(tostring(self), " error", num, ":", err) end
 
 			return len, err, num
 		end
 
 		if len > 0 then
-			if self.debug then
-				print(tostring(self), ": received ", len, " bytes")
-			end
+			if self.debug then print(tostring(self), ": received ", len, " bytes") end
 
 			if src_address then
 				return ffi.string(buff, len),

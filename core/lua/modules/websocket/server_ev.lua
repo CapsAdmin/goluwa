@@ -33,9 +33,7 @@ local client = function(sock, protocol)
 
 		self.state = "CLOSED"
 
-		if user_on_close then
-			user_on_close(self, was_clean, code, reason or "")
-		end
+		if user_on_close then user_on_close(self, was_clean, code, reason or "") end
 
 		sock:shutdown()
 		sock:close()
@@ -123,11 +121,7 @@ local listen = function(opts)
 	assert(opts and (opts.protocols or opts.default))
 	local user_on_error
 	local on_error = function(s, err)
-		if user_on_error then
-			user_on_error(s, err)
-		else
-			print(err)
-		end
+		if user_on_error then user_on_error(s, err) else print(err) end
 	end
 	local protocols = {}
 
@@ -215,9 +209,7 @@ local listen = function(opts)
 								else
 									client_sock:close()
 
-									if on_error then
-										on_error("bad protocol")
-									end
+									if on_error then on_error("bad protocol") end
 
 									return
 								end

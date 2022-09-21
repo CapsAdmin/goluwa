@@ -88,9 +88,7 @@ local function parts_match(glob_parts, glob_i, path_parts, path_i)
 	if glob_part == "**" then
 		-- "**" can consume any number of path parts.
 		for i = path_i, #path_parts + 1 do
-			if parts_match(glob_parts, glob_i + 1, path_parts, i) then
-				return true
-			end
+			if parts_match(glob_parts, glob_i + 1, path_parts, i) then return true end
 		end
 
 		return false

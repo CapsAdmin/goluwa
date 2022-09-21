@@ -48,9 +48,7 @@ do
 	end
 
 	function TOKENIZER:Error(msg, start, stop)
-		if self.OnError then
-			self:OnError(msg, start or self.i, stop or self.i)
-		end
+		if self.OnError then self:OnError(msg, start or self.i, stop or self.i) end
 	end
 
 	local TOKEN = {}
@@ -67,13 +65,11 @@ do
 	end
 
 	function TOKENIZER:BufferWhitespace(type, start, stop)
-		self.whitespace_buffer[self.whitespace_buffer_i] = self:NewToken(
-			{
-				type = type,
-				start = start == 1 and 0 or start,
-				stop = stop,
-			}
-		)
+		self.whitespace_buffer[self.whitespace_buffer_i] = self:NewToken({
+			type = type,
+			start = start == 1 and 0 or start,
+			stop = stop,
+		})
 		self.whitespace_buffer_i = self.whitespace_buffer_i + 1
 	end
 
@@ -224,9 +220,7 @@ do
 		return function(code, on_error, capture_whitespace)
 			local tk = setmetatable({}, TOKENIZER)
 
-			if capture_whitespace == nil then
-				tk.capture_whitespace = true
-			end
+			if capture_whitespace == nil then tk.capture_whitespace = true end
 
 			tk.OnError = on_error or false
 			config.OnInitialize(tk, code, on_error)

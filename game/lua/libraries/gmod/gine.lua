@@ -350,9 +350,14 @@ function gine.Run(skip_addons)
 		end
 	end
 
-	gine.LoadEntities("lua/entities", "ENT", gine.env.scripted_ents.Register, function()
-		return {}
-	end)
+	gine.LoadEntities(
+		"lua/entities",
+		"ENT",
+		gine.env.scripted_ents.Register,
+		function()
+			return {}
+		end
+	)
 
 	gine.LoadEntities(
 		"lua/weapons",

@@ -98,5 +98,5 @@ event.AddListener("GBufferInitialized", function()
 	prototype.SetupComponents("world", {"world", "network"}, "textures/silkicons/world.png")
 end)
 
-if RELOAD then  -- CALL LAST ADDED EVENT?
+if RELOAD then -- CALL LAST ADDED EVENT?
 end

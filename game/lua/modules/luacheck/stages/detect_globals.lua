@@ -168,9 +168,7 @@ function deep_resolve(node, item)
 		for _, key in ipairs(keys) do
 			local key_resolution = resolve_node(key, item)
 
-			if resolved_to_index(key_resolution) then
-				key_resolution = "unknown"
-			end
+			if resolved_to_index(key_resolution) then key_resolution = "unknown" end
 
 			table.insert(resolution, key_resolution)
 		end
@@ -235,9 +233,7 @@ local function detect_globals_in_line(chstate, line)
 		if item.tag == "Eval" then
 			detect_in_node(chstate, item, item.node, is_top_line)
 		elseif item.tag == "Local" then
-			if item.rhs then
-				detect_in_nodes(chstate, item, item.rhs, is_top_line)
-			end
+			if item.rhs then detect_in_nodes(chstate, item, item.rhs, is_top_line) end
 		elseif item.tag == "Set" then
 			detect_in_nodes(chstate, item, item.lhs, is_top_line, true)
 			detect_in_nodes(chstate, item, item.rhs, is_top_line)

@@ -11,7 +11,8 @@ function goluwa.PreDrawGUI()
 	render.GetFrameBuffer():ClearStencil(0) -- out = 0
 	for i = 1, max do
 		local d = 1 + (i / max) - 0.1
-		local x, y = math.sin(system.GetElapsedTime() + i) * 150, math.cos(system.GetElapsedTime() + i) * 150
+		local x, y = math.sin(system.GetElapsedTime() + i) * 150,
+		math.cos(system.GetElapsedTime() + i) * 150
 		render2d.PushStencilRect(x + (w / d), y + (h / d), w - (w / d) * 2, h - (h / d) * 2, i - 1)
 		render2d.SetColor(ColorHSV(i / max, 1, 1):Unpack())
 		render2d.DrawRect(0, 0, w, h)

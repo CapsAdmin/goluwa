@@ -70,30 +70,16 @@ local function encode(value)
 		if value == huge or value == -huge or value ~= value then
 			-- Encode Infinity, -Infinity and NaN as floats
 			fbox[0] = value
-			
 			local bytes = cast("uint8_t*", fbox)
 
 			if bigEndian then
-				return char(
-					0xCA,
-					bytes[0],
-					bytes[1],
-					bytes[2],
-					bytes[3]
-				)
+				return char(0xCA, bytes[0], bytes[1], bytes[2], bytes[3])
 			else
-				return char(
-					0xCA,
-					bytes[3],
-					bytes[2],
-					bytes[1],
-					bytes[0]
-				)
+				return char(0xCA, bytes[3], bytes[2], bytes[1], bytes[0])
 			end
 		elseif floor(value) ~= value then
 			-- Encode other non-ints as doubles
 			dbox[0] = value
-			
 			local bytes = cast("uint8_t*", dbox)
 
 			if bigEndian then

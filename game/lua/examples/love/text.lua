@@ -59,5 +59,10 @@ function goluwa.PreDrawGUI()
 	-- v0.8:
 	-- love.graphics.drawq(img, top_left, 50, 50)
 	-- love.graphics.drawq(img, bottom_left, 50, 200)
-	love.graphics.printf(string.sub(text, 1, (love.timer.getTime() - time_now) * 100), (1280 / 2) - (720 / 2), 50, 640)
+	love.graphics.printf(
+		string.sub(text, 1, (love.timer.getTime() - time_now) * 100),
+		(1280 / 2) - (720 / 2),
+		50,
+		640
+	)
 end

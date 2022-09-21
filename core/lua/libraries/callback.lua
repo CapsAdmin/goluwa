@@ -161,9 +161,7 @@ do
 	end
 
 	function meta:Subscribe(what, callback)
-		if self.parent then
-			return self.parent:Subscribe(what, callback)
-		end
+		if self.parent then return self.parent:Subscribe(what, callback) end
 
 		self.funcs[what] = self.funcs[what] or {}
 		table.insert(self.funcs[what], callback)
@@ -186,9 +184,7 @@ do
 				for _, cb in ipairs(self.funcs[key]) do
 					local ok, ret, err = system.pcall(cb, ...)
 
-					if not ok or ret == false and err then
-						return self:Reject(err)
-					end
+					if not ok or ret == false and err then return self:Reject(err) end
 				end
 			end
 		end

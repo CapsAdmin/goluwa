@@ -384,4 +384,4 @@ if RELOAD then
 	end
 end
 
-_G.scoreboard = scoreboard--return scoreboard
+_G.scoreboard = scoreboard --return scoreboard

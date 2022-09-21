@@ -12,8 +12,7 @@ local base = _G
 local _M = {}
 
 if module then -- heuristic for exporting a global package table
-	ltn12 = _M
-end
+ltn12 = _M end
 
 local filter, source, sink, pump = {}, {}, {}, {}
 _M.filter = filter
@@ -322,9 +321,7 @@ function pump.all(src, snk, step)
 	while true do
 		local ret, err = step(src, snk)
 
-		if not ret then
-			if err then return nil, err else return 1 end
-		end
+		if not ret then if err then return nil, err else return 1 end end
 	end
 end
 

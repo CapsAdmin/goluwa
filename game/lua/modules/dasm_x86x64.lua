@@ -586,9 +586,7 @@ local function dumpregs(out)
 			local name = map_reg_rev[reg]
 			local num = map_reg_num[reg]
 			local opsize = map_opsizename[map_reg_opsize[reg]]
-			out:write(
-				format("  %-5s %-8s %s\n", name, opsize, num < 0 and "(variable)" or num)
-			)
+			out:write(format("  %-5s %-8s %s\n", name, opsize, num < 0 and "(variable)" or num))
 		end
 	end
 end
@@ -603,7 +601,6 @@ local function wputlabel(aprefix, imm, num)
 			imm = -imm - 1
 		else
 			waction(aprefix .. "LG", nil, num)
-			
 		end
 
 		wputxb(imm)
@@ -615,9 +612,7 @@ end
 -- Put signed byte or arg.
 local function wputsbarg(n)
 	if type(n) == "number" then
-		if n < -128 or n > 127 then
-			werror("signed immediate byte out of range")
-		end
+		if n < -128 or n > 127 then werror("signed immediate byte out of range") end
 
 		if n < 0 then n = n + 256 end
 
@@ -630,9 +625,7 @@ end
 -- Put unsigned byte or arg.
 local function wputbarg(n)
 	if type(n) == "number" then
-		if n < 0 or n > 255 then
-			werror("unsigned immediate byte out of range")
-		end
+		if n < 0 or n > 255 then werror("unsigned immediate byte out of range") end
 
 		wputb(n)
 	else
@@ -643,14 +636,10 @@ end
 -- Put unsigned word or arg.
 local function wputwarg(n)
 	if type(n) == "number" then
-		if shr(n, 16) ~= 0 then
-			werror("unsigned immediate word out of range")
-		end
+		if shr(n, 16) ~= 0 then werror("unsigned immediate word out of range") end
 
 		wputb(band(n, 255))
-		
 		wputb(shr(n, 8))
-		
 	else
 		waction("IMM_W", n)
 	end
@@ -720,7 +709,6 @@ local function wputop(sz, op, rex, vex, vregr, vregxb)
 
 			if reg < 0 then
 				reg = 0
-				
 				vreg = vex.v.vreg
 			end
 		end
@@ -754,7 +742,6 @@ local function wputop(sz, op, rex, vex, vregr, vregxb)
 
 	if op >= 16777216 then
 		wputb(shr(op, 24))
-		
 		op = band(op, 0xffffff)
 	end
 
@@ -764,17 +751,13 @@ local function wputop(sz, op, rex, vex, vregr, vregxb)
 
 			if opc3 == 0x0f3a00 or opc3 == 0x0f3800 then
 				wputb(64 + band(rex, 15))
-				
 				rex = 0
-				
 				psz = 2
 			end
 		end
 
 		wputb(shr(op, 16))
-		
 		op = band(op, 0xffff)
-		
 		psz = psz + 1
 	end
 
@@ -783,22 +766,17 @@ local function wputop(sz, op, rex, vex, vregr, vregxb)
 
 		if b == 15 and rex ~= 0 then
 			wputb(64 + band(rex, 15))
-			
 			rex = 0
-			
 			psz = 2
 		end
 
 		wputb(b)
-		
 		op = band(op, 255)
-		
 		psz = psz + 1
 	end
 
 	if rex ~= 0 then
 		wputb(64 + band(rex, 15))
-		
 		psz = 2
 	end
 
@@ -821,13 +799,11 @@ local function wputmrmsib(t, imark, s, vsreg, psz, sk)
 
 	if reg and reg < 0 then
 		reg = 0
-		
 		vreg = t.vreg
 	end
 
 	if xreg and xreg < 0 then
 		xreg = 0
-		
 		vxreg = t.vxreg
 	end
 
@@ -2015,156 +1991,160 @@ local map_op = {
 
 ------------------------------------------------------------------------------
 -- Arithmetic ops.
-for name, n in pairs({
-	add = 0,
-	["or"] = 1,
-	adc = 2,
-	sbb = 3,
-	["and"] = 4,
-	sub = 5,
-	xor = 6,
-	cmp = 7,
-}
+for name, n in pairs(
+	{
+		add = 0,
+		["or"] = 1,
+		adc = 2,
+		sbb = 3,
+		["and"] = 4,
+		sub = 5,
+		xor = 6,
+		cmp = 7,
+	}
 ) do
-local n8 = shl(n, 3)
-map_op[name .. "_2"] = format(
-	"mr:%02XRm|rm:%02XrM|mI1qdw:81%XmI|mS1qdw:83%XmS|Ri1qdwb:%02Xri|mi1qdwb:81%Xmi",
-	1 + n8,
-	3 + n8,
-	n,
-	n,
-	5 + n8,
-	n
-)
+	local n8 = shl(n, 3)
+	map_op[name .. "_2"] = format(
+		"mr:%02XRm|rm:%02XrM|mI1qdw:81%XmI|mS1qdw:83%XmS|Ri1qdwb:%02Xri|mi1qdwb:81%Xmi",
+		1 + n8,
+		3 + n8,
+		n,
+		n,
+		5 + n8,
+		n
+	)
 end
 
 -- Shift ops.
-for name, n in pairs({
-rol = 0,
-ror = 1,
-rcl = 2,
-rcr = 3,
-shl = 4,
-shr = 5,
-sar = 7,
-sal = 4,
-}
+for name, n in pairs(
+	{
+		rol = 0,
+		ror = 1,
+		rcl = 2,
+		rcr = 3,
+		shl = 4,
+		shr = 5,
+		sar = 7,
+		sal = 4,
+	}
 ) do
-map_op[name .. "_2"] = format("m1:D1%Xm|mC1qdwb:D3%Xm|mi:C1%XmU", n, n, n)
+	map_op[name .. "_2"] = format("m1:D1%Xm|mC1qdwb:D3%Xm|mi:C1%XmU", n, n, n)
 end
 
 -- Conditional ops.
 for cc, n in pairs(map_cc) do
-map_op["j" .. cc .. "_1"] = format("J.:n0F8%XJ", n) -- short: 7%X
-map_op["set" .. cc .. "_1"] = format("mb:n0F9%X2m", n)
-map_op["cmov" .. cc .. "_2"] = format("rmqdw:0F4%XrM", n) -- P6+
+	map_op["j" .. cc .. "_1"] = format("J.:n0F8%XJ", n) -- short: 7%X
+	map_op["set" .. cc .. "_1"] = format("mb:n0F9%X2m", n)
+	map_op["cmov" .. cc .. "_2"] = format("rmqdw:0F4%XrM", n) -- P6+
 end
 
 -- FP arithmetic ops.
-for name, n in pairs({
-add = 0,
-mul = 1,
-com = 2,
-comp = 3,
-sub = 4,
-subr = 5,
-div = 6,
-divr = 7,
-}
+for name, n in pairs(
+	{
+		add = 0,
+		mul = 1,
+		com = 2,
+		comp = 3,
+		sub = 4,
+		subr = 5,
+		div = 6,
+		divr = 7,
+	}
 ) do
-local nc = 0xc0 + shl(n, 3)
-local nr = nc + (n < 4 and 0 or (n % 2 == 0 and 8 or -8))
-local fn = "f" .. name
-map_op[fn .. "_1"] = format("ff:D8%02Xr|xd:D8%Xm|xq:nDC%Xm", nc, n, n)
+	local nc = 0xc0 + shl(n, 3)
+	local nr = nc + (n < 4 and 0 or (n % 2 == 0 and 8 or -8))
+	local fn = "f" .. name
+	map_op[fn .. "_1"] = format("ff:D8%02Xr|xd:D8%Xm|xq:nDC%Xm", nc, n, n)
 
-if n == 2 or n == 3 then
-map_op[fn .. "_2"] = format("Fff:D8%02XR|Fx2d:D8%XM|Fx2q:nDC%XM", nc, n, n)
-else
-map_op[fn .. "_2"] = format("Fff:D8%02XR|fFf:DC%02Xr|Fx2d:D8%XM|Fx2q:nDC%XM", nc, nr, n, n)
-map_op[fn .. "p_1"] = format("ff:DE%02Xr", nr)
-map_op[fn .. "p_2"] = format("fFf:DE%02Xr", nr)
-end
+	if n == 2 or n == 3 then
+		map_op[fn .. "_2"] = format("Fff:D8%02XR|Fx2d:D8%XM|Fx2q:nDC%XM", nc, n, n)
+	else
+		map_op[fn .. "_2"] = format("Fff:D8%02XR|fFf:DC%02Xr|Fx2d:D8%XM|Fx2q:nDC%XM", nc, nr, n, n)
+		map_op[fn .. "p_1"] = format("ff:DE%02Xr", nr)
+		map_op[fn .. "p_2"] = format("fFf:DE%02Xr", nr)
+	end
 
-map_op["fi" .. name .. "_1"] = format("xd:DA%Xm|xw:nDE%Xm", n, n)
+	map_op["fi" .. name .. "_1"] = format("xd:DA%Xm|xw:nDE%Xm", n, n)
 end
 
 -- FP conditional moves.
 for cc, n in pairs({b = 0, e = 1, be = 2, u = 3, nb = 4, ne = 5, nbe = 6, nu = 7}) do
-local nc = 0xdac0 + shl(band(n, 3), 3) + shl(band(n, 4), 6)
-map_op["fcmov" .. cc .. "_1"] = format("ff:%04Xr", nc) -- P6+
-map_op["fcmov" .. cc .. "_2"] = format("Fff:%04XR", nc) -- P6+
+	local nc = 0xdac0 + shl(band(n, 3), 3) + shl(band(n, 4), 6)
+	map_op["fcmov" .. cc .. "_1"] = format("ff:%04Xr", nc) -- P6+
+	map_op["fcmov" .. cc .. "_2"] = format("Fff:%04XR", nc) -- P6+
 end
 
 -- SSE / AVX FP arithmetic ops.
 for name, n in pairs({sqrt = 1, add = 8, mul = 9, sub = 12, min = 13, div = 14, max = 15}) do
-map_op[name .. "ps_2"] = format("rmo:0F5%XrM", n)
-map_op[name .. "ss_2"] = format("rro:F30F5%XrM|rx/od:", n)
-map_op[name .. "pd_2"] = format("rmo:660F5%XrM", n)
-map_op[name .. "sd_2"] = format("rro:F20F5%XrM|rx/oq:", n)
+	map_op[name .. "ps_2"] = format("rmo:0F5%XrM", n)
+	map_op[name .. "ss_2"] = format("rro:F30F5%XrM|rx/od:", n)
+	map_op[name .. "pd_2"] = format("rmo:660F5%XrM", n)
+	map_op[name .. "sd_2"] = format("rro:F20F5%XrM|rx/oq:", n)
 
-if n ~= 1 then
-map_op["v" .. name .. "ps_3"] = format("rrmoy:0FV5%XrM", n)
-map_op["v" .. name .. "ss_3"] = format("rrro:F30FV5%XrM|rrx/ood:", n)
-map_op["v" .. name .. "pd_3"] = format("rrmoy:660FV5%XrM", n)
-map_op["v" .. name .. "sd_3"] = format("rrro:F20FV5%XrM|rrx/ooq:", n)
-end
+	if n ~= 1 then
+		map_op["v" .. name .. "ps_3"] = format("rrmoy:0FV5%XrM", n)
+		map_op["v" .. name .. "ss_3"] = format("rrro:F30FV5%XrM|rrx/ood:", n)
+		map_op["v" .. name .. "pd_3"] = format("rrmoy:660FV5%XrM", n)
+		map_op["v" .. name .. "sd_3"] = format("rrro:F20FV5%XrM|rrx/ooq:", n)
+	end
 end
 
 -- SSE2 / AVX / AVX2 integer arithmetic ops (66 0F leaf).
-for name, n in pairs({
-paddb = 0xFC,
-paddw = 0xFD,
-paddd = 0xFE,
-paddq = 0xD4,
-paddsb = 0xEC,
-paddsw = 0xED,
-packssdw = 0x6B,
-packsswb = 0x63,
-packuswb = 0x67,
-paddusb = 0xDC,
-paddusw = 0xDD,
-pand = 0xDB,
-pandn = 0xDF,
-pavgb = 0xE0,
-pavgw = 0xE3,
-pcmpeqb = 0x74,
-pcmpeqd = 0x76,
-pcmpeqw = 0x75,
-pcmpgtb = 0x64,
-pcmpgtd = 0x66,
-pcmpgtw = 0x65,
-pmaddwd = 0xF5,
-pmaxsw = 0xEE,
-pmaxub = 0xDE,
-pminsw = 0xEA,
-pminub = 0xDA,
-pmulhuw = 0xE4,
-pmulhw = 0xE5,
-pmullw = 0xD5,
-pmuludq = 0xF4,
-por = 0xEB,
-psadbw = 0xF6,
-psubb = 0xF8,
-psubw = 0xF9,
-psubd = 0xFA,
-psubq = 0xFB,
-psubsb = 0xE8,
-psubsw = 0xE9,
-psubusb = 0xD8,
-psubusw = 0xD9,
-punpckhbw = 0x68,
-punpckhwd = 0x69,
-punpckhdq = 0x6A,
-punpckhqdq = 0x6D,
-punpcklbw = 0x60,
-punpcklwd = 0x61,
-punpckldq = 0x62,
-punpcklqdq = 0x6C,
-pxor = 0xEF,
-}
+for name, n in pairs(
+	{
+		paddb = 0xFC,
+		paddw = 0xFD,
+		paddd = 0xFE,
+		paddq = 0xD4,
+		paddsb = 0xEC,
+		paddsw = 0xED,
+		packssdw = 0x6B,
+		packsswb = 0x63,
+		packuswb = 0x67,
+		paddusb = 0xDC,
+		paddusw = 0xDD,
+		pand = 0xDB,
+		pandn = 0xDF,
+		pavgb = 0xE0,
+		pavgw = 0xE3,
+		pcmpeqb = 0x74,
+		pcmpeqd = 0x76,
+		pcmpeqw = 0x75,
+		pcmpgtb = 0x64,
+		pcmpgtd = 0x66,
+		pcmpgtw = 0x65,
+		pmaddwd = 0xF5,
+		pmaxsw = 0xEE,
+		pmaxub = 0xDE,
+		pminsw = 0xEA,
+		pminub = 0xDA,
+		pmulhuw = 0xE4,
+		pmulhw = 0xE5,
+		pmullw = 0xD5,
+		pmuludq = 0xF4,
+		por = 0xEB,
+		psadbw = 0xF6,
+		psubb = 0xF8,
+		psubw = 0xF9,
+		psubd = 0xFA,
+		psubq = 0xFB,
+		psubsb = 0xE8,
+		psubsw = 0xE9,
+		psubusb = 0xD8,
+		psubusw = 0xD9,
+		punpckhbw = 0x68,
+		punpckhwd = 0x69,
+		punpckhdq = 0x6A,
+		punpckhqdq = 0x6D,
+		punpcklbw = 0x60,
+		punpcklwd = 0x61,
+		punpckldq = 0x62,
+		punpcklqdq = 0x6C,
+		pxor = 0xEF,
+	}
 ) do
-map_op[name .. "_2"] = format("rmo:660F%02XrM", n)
-map_op["v" .. name .. "_3"] = format("rrmoy:660FV%02XrM", n)
+	map_op[name .. "_2"] = format("rmo:660F%02XrM", n)
+	map_op["v" .. name .. "_3"] = format("rrmoy:660FV%02XrM", n)
 end
 
 ------------------------------------------------------------------------------
@@ -2172,416 +2152,404 @@ local map_vexarg = {u = false, v = 1, V = 2}
 
 -- Process pattern string.
 local function dopattern(pat, args, sz, op, needrex)
-local digit, addin, vex
-local opcode = 0
-local szov = sz
-local narg = 1
-local rex = 0
+	local digit, addin, vex
+	local opcode = 0
+	local szov = sz
+	local narg = 1
+	local rex = 0
 
--- Limit number of section buffer positions used by a single dasm_put().
--- A single opcode needs a maximum of 6 positions.
-if secpos + 6 > maxsecpos then wflush() end
+	-- Limit number of section buffer positions used by a single dasm_put().
+	-- A single opcode needs a maximum of 6 positions.
+	if secpos + 6 > maxsecpos then wflush() end
 
--- Process each character.
-for c in gmatch(pat .. "|", ".") do
-if match(c, "%x") then -- Hex digit.
-digit = byte(c) - 48
+	-- Process each character.
+	for c in gmatch(pat .. "|", ".") do
+		if match(c, "%x") then -- Hex digit.
+			digit = byte(c) - 48
 
-if digit > 48 then
-digit = digit - 39
-elseif digit > 16 then
-digit = digit - 7
-end
+			if digit > 48 then
+				digit = digit - 39
+			elseif digit > 16 then
+				digit = digit - 7
+			end
 
-opcode = opcode * 16 + digit
-addin = nil
-elseif c == "n" then -- Disable operand size mods for opcode.
-szov = nil
-elseif c == "X" then -- Force REX.W.
-rex = 8
-elseif c == "L" then -- Force VEX.L.
-vex.l = true
-elseif c == "r" then -- Merge 1st operand regno. into opcode.
-addin = args[1]
+			opcode = opcode * 16 + digit
+			addin = nil
+		elseif c == "n" then -- Disable operand size mods for opcode.
+			szov = nil
+		elseif c == "X" then -- Force REX.W.
+			rex = 8
+		elseif c == "L" then -- Force VEX.L.
+			vex.l = true
+		elseif c == "r" then -- Merge 1st operand regno. into opcode.
+			addin = args[1]
+			opcode = opcode + (addin.reg % 8)
 
-opcode = opcode + (addin.reg % 8)
+			if narg < 2 then narg = 2 end
+		elseif c == "R" then -- Merge 2nd operand regno. into opcode.
+			addin = args[2]
+			opcode = opcode + (addin.reg % 8)
+			narg = 3
+		elseif c == "m" or c == "M" then -- Encode ModRM/SIB.
+			local s
 
-if narg < 2 then narg = 2 end
-elseif c == "R" then -- Merge 2nd operand regno. into opcode.
-addin = args[2]
+			if addin then
+				s = addin.reg
+				opcode = opcode - band(s, 7) -- Undo regno opcode merge.
+			else
+				s = band(opcode, 15) -- Undo last digit.
+				opcode = shr(opcode, 4)
+			end
 
-opcode = opcode + (addin.reg % 8)
-narg = 3
-elseif c == "m" or c == "M" then -- Encode ModRM/SIB.
-local s
+			local nn = c == "m" and 1 or 2
+			local t = args[nn]
 
-if addin then
-s = addin.reg
-opcode = opcode - band(s, 7) -- Undo regno opcode merge.
-else
-s = band(opcode, 15) -- Undo last digit.
-opcode = shr(opcode, 4)
-end
+			if narg <= nn then narg = nn + 1 end
 
-local nn = c == "m" and 1 or 2
-local t = args[nn]
+			if szov == "q" and rex == 0 then rex = rex + 8 end
 
-if narg <= nn then narg = nn + 1 end
+			if t.reg and t.reg > 7 then rex = rex + 1 end
 
-if szov == "q" and rex == 0 then rex = rex + 8 end
+			if t.xreg and t.xreg > 7 then rex = rex + 2 end
 
-if t.reg and t.reg > 7 then rex = rex + 1 end
+			if s > 7 then rex = rex + 4 end
 
-if t.xreg and t.xreg > 7 then rex = rex + 2 end
+			if needrex then rex = rex + 16 end
 
-if s > 7 then rex = rex + 4 end
+			local psz, sk = wputop(szov, opcode, rex, vex, s < 0, t.vreg or t.vxreg)
+			opcode = nil
+			local imark = sub(pat, -1) -- Force a mark (ugly).
+			-- Put ModRM/SIB with regno/last digit as spare.
+			wputmrmsib(t, imark, s, addin and addin.vreg, psz, sk)
+			addin = nil
+		elseif map_vexarg[c] ~= nil then -- Encode using VEX prefix
+			local b = band(opcode, 255)
+			opcode = shr(opcode, 8)
+			local m = 1
 
-if needrex then rex = rex + 16 end
+			if b == 0x38 then m = 2 elseif b == 0x3a then m = 3 end
 
-local psz, sk = wputop(szov, opcode, rex, vex, s < 0, t.vreg or t.vxreg)
-opcode = nil
-local imark = sub(pat, -1) -- Force a mark (ugly).
--- Put ModRM/SIB with regno/last digit as spare.
-wputmrmsib(t, imark, s, addin and addin.vreg, psz, sk)
-addin = nil
-elseif map_vexarg[c] ~= nil then -- Encode using VEX prefix
-local b = band(opcode, 255)
+			if m ~= 1 then
+				b = band(opcode, 255)
+				opcode = shr(opcode, 8)
+			end
 
-opcode = shr(opcode, 8)
-local m = 1
+			if b ~= 0x0f then
+				werror(
+					"expected `0F', `0F38', or `0F3A' to precede `" .. c .. "' in pattern `" .. pat .. "' for `" .. op .. "'"
+				)
+			end
 
-if b == 0x38 then m = 2 elseif b == 0x3a then m = 3 end
+			local v = map_vexarg[c]
 
-if m ~= 1 then
-b = band(opcode, 255)
+			if v then v = remove(args, v) end
 
-opcode = shr(opcode, 8)
-end
+			b = band(opcode, 255)
+			local p = 0
 
-if b ~= 0x0f then
-werror(
-	"expected `0F', `0F38', or `0F3A' to precede `" .. c .. "' in pattern `" .. pat .. "' for `" .. op .. "'"
-)
-end
+			if b == 0x66 then
+				p = 1
+			elseif b == 0xf3 then
+				p = 2
+			elseif b == 0xf2 then
+				p = 3
+			end
 
-local v = map_vexarg[c]
+			if p ~= 0 then opcode = shr(opcode, 8) end
 
-if v then v = remove(args, v) end
+			if opcode ~= 0 then
+				wputop(nil, opcode, 0)
+				opcode = 0
+			end
 
-b = band(opcode, 255)
-local p = 0
+			vex = {m = m, p = p, v = v}
+		else
+			if opcode then -- Flush opcode.
+				if szov == "q" and rex == 0 then rex = rex + 8 end
 
-if b == 0x66 then
-p = 1
-elseif b == 0xf3 then
-p = 2
-elseif b == 0xf2 then
-p = 3
-end
+				if needrex then rex = rex + 16 end
 
-if p ~= 0 then opcode = shr(opcode, 8) end
+				if addin and addin.reg == -1 then
+					local psz, sk = wputop(szov, opcode - 7, rex, vex, true)
+					wvreg("opcode", addin.vreg, psz, sk)
+				else
+					if addin and addin.reg > 7 then rex = rex + 1 end
 
-if opcode ~= 0 then
-wputop(nil, opcode, 0)
+					wputop(szov, opcode, rex, vex)
+				end
 
-opcode = 0
-end
+				opcode = nil
+			end
 
-vex = {m = m, p = p, v = v}
-else
-if opcode then -- Flush opcode.
-if szov == "q" and rex == 0 then rex = rex + 8 end
+			if c == "|" then break end
 
-if needrex then rex = rex + 16 end
+			if c == "o" then -- Offset (pure 32 bit displacement).
+				wputdarg(args[1].disp)
 
-if addin and addin.reg == -1 then
-	local psz, sk = wputop(szov, opcode - 7, rex, vex, true)
-	wvreg("opcode", addin.vreg, psz, sk)
-else
-	if addin and addin.reg > 7 then rex = rex + 1 end
+				if narg < 2 then narg = 2 end
+			elseif c == "O" then
+				wputdarg(args[2].disp)
+				narg = 3
+			else
+				-- Anything else is an immediate operand.
+				local a = args[narg]
+				narg = narg + 1
+				local mode, imm = a.mode, a.imm
 
-	wputop(szov, opcode, rex, vex)
-end
+				if mode == "iJ" and not match("iIJ", c) then
+					werror("bad operand size for label")
+				end
 
-opcode = nil
-end
+				if c == "S" then
+					wputsbarg(imm)
+				elseif c == "U" then
+					wputbarg(imm)
+				elseif c == "W" then
+					wputwarg(imm)
+				elseif c == "i" or c == "I" then
+					if mode == "iJ" then
+						wputlabel("IMM_", imm, 1)
+					elseif mode == "iI" and c == "I" then
+						waction(sz == "w" and "IMM_WB" or "IMM_DB", imm)
+					else
+						wputszarg(sz, imm)
+					end
+				elseif c == "J" then
+					if mode == "iPJ" then
+						waction("REL_A", imm) -- !x64 (secpos)
+					else
+						wputlabel("REL_", imm, 2)
+					end
+				elseif c == "s" then
+					local reg = a.reg
 
-if c == "|" then break end
-
-if c == "o" then -- Offset (pure 32 bit displacement).
-wputdarg(args[1].disp)
-
-if narg < 2 then narg = 2 end
-elseif c == "O" then
-wputdarg(args[2].disp)
-
-narg = 3
-else
--- Anything else is an immediate operand.
-local a = args[narg]
-narg = narg + 1
-local mode, imm = a.mode, a.imm
-
-if mode == "iJ" and not match("iIJ", c) then
-	werror("bad operand size for label")
-end
-
-if c == "S" then
-	wputsbarg(imm)
-elseif c == "U" then
-	wputbarg(imm)
-elseif c == "W" then
-	wputwarg(imm)
-elseif c == "i" or c == "I" then
-	if mode == "iJ" then
-		wputlabel("IMM_", imm, 1)
-	elseif mode == "iI" and c == "I" then
-		waction(sz == "w" and "IMM_WB" or "IMM_DB", imm)
-	else
-		wputszarg(sz, imm)
+					if reg < 0 then
+						wputb(0)
+						wvreg("imm.hi", a.vreg)
+					else
+						wputb(shl(reg, 4))
+					end
+				else
+					werror("bad char `" .. c .. "' in pattern `" .. pat .. "' for `" .. op .. "'")
+				end
+			end
+		end
 	end
-elseif c == "J" then
-	if mode == "iPJ" then
-		waction("REL_A", imm) -- !x64 (secpos)
-	else
-		wputlabel("REL_", imm, 2)
-	end
-elseif c == "s" then
-	local reg = a.reg
-
-	if reg < 0 then
-		wputb(0)
-		wvreg("imm.hi", a.vreg)
-	else
-		wputb(shl(reg, 4))
-	end
-else
-	werror("bad char `" .. c .. "' in pattern `" .. pat .. "' for `" .. op .. "'")
-end
-end
-end
-end
 end
 
 ------------------------------------------------------------------------------
 -- Mapping of operand modes to short names. Suppress output with '#'.
 local map_modename = {
-r = "reg",
-R = "eax",
-C = "cl",
-x = "mem",
-m = "mrm",
-i = "imm",
-f = "stx",
-F = "st0",
-J = "lbl",
-["1"] = "1",
-I = "#",
-S = "#",
-O = "#",
+	r = "reg",
+	R = "eax",
+	C = "cl",
+	x = "mem",
+	m = "mrm",
+	i = "imm",
+	f = "stx",
+	F = "st0",
+	J = "lbl",
+	["1"] = "1",
+	I = "#",
+	S = "#",
+	O = "#",
 }
 
 -- Return a table/string showing all possible operand modes.
 local function templatehelp(template, nparams)
-if nparams == 0 then return "" end
+	if nparams == 0 then return "" end
 
-local t = {}
+	local t = {}
 
-for tm in gmatch(template, "[^%|]+") do
-local s = map_modename[sub(tm, 1, 1)]
-s = s .. gsub(sub(tm, 2, nparams), ".", function(c)
-return ", " .. map_modename[c]
-end)
+	for tm in gmatch(template, "[^%|]+") do
+		local s = map_modename[sub(tm, 1, 1)]
+		s = s .. gsub(sub(tm, 2, nparams), ".", function(c)
+				return ", " .. map_modename[c]
+			end)
 
-if not match(s, "#") then t[#t + 1] = s end
-end
+		if not match(s, "#") then t[#t + 1] = s end
+	end
 
-return t
+	return t
 end
 
 -- Match operand modes against mode match part of template.
 local function matchtm(tm, args)
-for i = 1, #args do
-if not match(args[i].mode, sub(tm, i, i)) then return end
-end
+	for i = 1, #args do
+		if not match(args[i].mode, sub(tm, i, i)) then return end
+	end
 
-return true
+	return true
 end
 
 -- Handle opcodes defined with template strings.
 map_op[".template__"] = function(params, template, nparams)
-if not params then return templatehelp(template, nparams) end
+	if not params then return templatehelp(template, nparams) end
 
-local args = {}
+	local args = {}
 
--- Zero-operand opcodes have no match part.
-if #params == 0 then
-dopattern(template, args, "d", params.op, nil)
-return
-end
-
--- Determine common operand size (coerce undefined size) or flag as mixed.
-local sz, szmix, needrex
-
-for i, p in ipairs(params) do
-args[i] = parseoperand(p)
-local nsz = args[i].opsize
-
-if nsz then if sz and sz ~= nsz then szmix = true else sz = nsz end end
-
-local nrex = args[i].needrex
-
-if nrex ~= nil then
-if needrex == nil then
-needrex = nrex
-elseif needrex ~= nrex then
-werror("bad mix of byte-addressable registers")
-end
-end
-end
-
--- Try all match:pattern pairs (separated by '|').
-local gotmatch, lastpat
-
-for tm in gmatch(template, "[^%|]+") do
--- Split off size match (starts after mode match) and pattern string.
-local szm, pat = match(tm, "^(.-):(.*)$", #args + 1)
-
-if pat == "" then pat = lastpat else lastpat = pat end
-
-if matchtm(tm, args) then
-local prefix = sub(szm, 1, 1)
-
-if prefix == "/" then -- Exactly match leading operand sizes.
-for i = #szm, 1, -1 do
-	if i == 1 then
-		dopattern(pat, args, sz, params.op, needrex) -- Process pattern.
+	-- Zero-operand opcodes have no match part.
+	if #params == 0 then
+		dopattern(template, args, "d", params.op, nil)
 		return
-	elseif args[i - 1].opsize ~= sub(szm, i, i) then
-		break
 	end
-end
-else -- Match common operand size.
-local szp = sz
 
-if szm == "" then szm = x64 and "qdwb" or "dwb" end -- Default sizes.
-if prefix == "1" then
-	szp = args[1].opsize
-	
-	szmix = nil
-elseif prefix == "2" then
-	szp = args[2].opsize
-	
-	szmix = nil
-end
+	-- Determine common operand size (coerce undefined size) or flag as mixed.
+	local sz, szmix, needrex
 
-if not szmix and (prefix == "." or match(szm, szp or "#")) then
-	dopattern(pat, args, szp, params.op, needrex) -- Process pattern.
-	return
-end
-end
+	for i, p in ipairs(params) do
+		args[i] = parseoperand(p)
+		local nsz = args[i].opsize
 
-gotmatch = true
-end
-end
+		if nsz then if sz and sz ~= nsz then szmix = true else sz = nsz end end
 
-local msg = "bad operand mode"
+		local nrex = args[i].needrex
 
-if gotmatch then
-if szmix then
-msg = "mixed operand size"
-else
-msg = sz and "bad operand size" or "missing operand size"
-end
-end
+		if nrex ~= nil then
+			if needrex == nil then
+				needrex = nrex
+			elseif needrex ~= nrex then
+				werror("bad mix of byte-addressable registers")
+			end
+		end
+	end
 
-werror(msg .. " in `" .. opmodestr(params.op, args) .. "'")
+	-- Try all match:pattern pairs (separated by '|').
+	local gotmatch, lastpat
+
+	for tm in gmatch(template, "[^%|]+") do
+		-- Split off size match (starts after mode match) and pattern string.
+		local szm, pat = match(tm, "^(.-):(.*)$", #args + 1)
+
+		if pat == "" then pat = lastpat else lastpat = pat end
+
+		if matchtm(tm, args) then
+			local prefix = sub(szm, 1, 1)
+
+			if prefix == "/" then -- Exactly match leading operand sizes.
+				for i = #szm, 1, -1 do
+					if i == 1 then
+						dopattern(pat, args, sz, params.op, needrex) -- Process pattern.
+						return
+					elseif args[i - 1].opsize ~= sub(szm, i, i) then
+						break
+					end
+				end
+			else -- Match common operand size.
+				local szp = sz
+
+				if szm == "" then szm = x64 and "qdwb" or "dwb" end -- Default sizes.
+				if prefix == "1" then
+					szp = args[1].opsize
+					szmix = nil
+				elseif prefix == "2" then
+					szp = args[2].opsize
+					szmix = nil
+				end
+
+				if not szmix and (prefix == "." or match(szm, szp or "#")) then
+					dopattern(pat, args, szp, params.op, needrex) -- Process pattern.
+					return
+				end
+			end
+
+			gotmatch = true
+		end
+	end
+
+	local msg = "bad operand mode"
+
+	if gotmatch then
+		if szmix then
+			msg = "mixed operand size"
+		else
+			msg = sz and "bad operand size" or "missing operand size"
+		end
+	end
+
+	werror(msg .. " in `" .. opmodestr(params.op, args) .. "'")
 end
 
 ------------------------------------------------------------------------------
 -- x64-specific opcode for 64 bit immediates and displacements.
 if x64 then
-function map_op.mov64_2(params)
-if not params then return {"reg, imm", "reg, [disp]", "[disp], reg"} end
+	function map_op.mov64_2(params)
+		if not params then return {"reg, imm", "reg, [disp]", "[disp], reg"} end
 
-if secpos + 2 > maxsecpos then wflush() end
+		if secpos + 2 > maxsecpos then wflush() end
 
-local opcode, op64, sz, rex, vreg
-local op64 = match(params[1], "^%[%s*(.-)%s*%]$")
+		local opcode, op64, sz, rex, vreg
+		local op64 = match(params[1], "^%[%s*(.-)%s*%]$")
 
-if op64 then
-local a = parseoperand(params[2])
+		if op64 then
+			local a = parseoperand(params[2])
 
-if a.mode ~= "rmR" then werror("bad operand mode") end
+			if a.mode ~= "rmR" then werror("bad operand mode") end
 
-sz = a.opsize
-rex = sz == "q" and 8 or 0
-opcode = 0xa3
-else
-op64 = match(params[2], "^%[%s*(.-)%s*%]$")
-local a = parseoperand(params[1])
+			sz = a.opsize
+			rex = sz == "q" and 8 or 0
+			opcode = 0xa3
+		else
+			op64 = match(params[2], "^%[%s*(.-)%s*%]$")
+			local a = parseoperand(params[1])
 
-if op64 then
-if a.mode ~= "rmR" then werror("bad operand mode") end
+			if op64 then
+				if a.mode ~= "rmR" then werror("bad operand mode") end
 
-sz = a.opsize
-rex = sz == "q" and 8 or 0
-opcode = 0xa1
-else
-if sub(a.mode, 1, 1) ~= "r" or a.opsize ~= "q" then
-	werror("bad operand mode")
-end
+				sz = a.opsize
+				rex = sz == "q" and 8 or 0
+				opcode = 0xa1
+			else
+				if sub(a.mode, 1, 1) ~= "r" or a.opsize ~= "q" then
+					werror("bad operand mode")
+				end
 
-op64 = params[2]
+				op64 = params[2]
 
-if a.reg == -1 then
-	vreg = a.vreg
-	opcode = 0xb8
-else
-	opcode = 0xb8 + band(a.reg, 7)
-end
+				if a.reg == -1 then
+					vreg = a.vreg
+					opcode = 0xb8
+				else
+					opcode = 0xb8 + band(a.reg, 7)
+				end
 
-rex = a.reg > 7 and 9 or 8
-end
-end
+				rex = a.reg > 7 and 9 or 8
+			end
+		end
 
-local psz, sk = wputop(sz, opcode, rex, nil, vreg)
-wvreg("opcode", vreg, psz, sk)
+		local psz, sk = wputop(sz, opcode, rex, nil, vreg)
+		wvreg("opcode", vreg, psz, sk)
 
-if luamode then
-waction("IMM_D", format("ffi.cast(\"uintptr_t\", %s) %% 2^32", op64))
-waction("IMM_D", format("ffi.cast(\"uintptr_t\", %s) / 2^32", op64))
-else
-waction("IMM_D", format("(unsigned int)(%s)", op64))
-waction("IMM_D", format("(unsigned int)((%s)>>32)", op64))
-end
-end
+		if luamode then
+			waction("IMM_D", format("ffi.cast(\"uintptr_t\", %s) %% 2^32", op64))
+			waction("IMM_D", format("ffi.cast(\"uintptr_t\", %s) / 2^32", op64))
+		else
+			waction("IMM_D", format("(unsigned int)(%s)", op64))
+			waction("IMM_D", format("(unsigned int)((%s)>>32)", op64))
+		end
+	end
 end
 
 ------------------------------------------------------------------------------
 -- Pseudo-opcodes for data storage.
 local function op_data(params)
-if not params then return "imm..." end
+	if not params then return "imm..." end
 
-local sz = sub(params.op, 2, 2)
+	local sz = sub(params.op, 2, 2)
 
-if sz == "a" then sz = addrsize end
+	if sz == "a" then sz = addrsize end
 
-for _, p in ipairs(params) do
-local a = parseoperand(p)
+	for _, p in ipairs(params) do
+		local a = parseoperand(p)
 
-if sub(a.mode, 1, 1) ~= "i" or (a.opsize and a.opsize ~= sz) then
-werror("bad mode or size in `" .. p .. "'")
-end
+		if sub(a.mode, 1, 1) ~= "i" or (a.opsize and a.opsize ~= sz) then
+			werror("bad mode or size in `" .. p .. "'")
+		end
 
-if a.mode == "iJ" then
-wputlabel("IMM_", a.imm, 1)
-else
-wputszarg(sz, a.imm)
-end
+		if a.mode == "iJ" then wputlabel("IMM_", a.imm, 1) else wputszarg(sz, a.imm) end
 
-if secpos + 2 > maxsecpos then wflush() end
-end
+		if secpos + 2 > maxsecpos then wflush() end
+	end
 end
 
 map_op[".byte_*"] = op_data
@@ -2592,270 +2560,265 @@ map_op[".aword_*"] = op_data
 ------------------------------------------------------------------------------
 -- Pseudo-opcode to mark the position where the action list is to be emitted.
 map_op[".actionlist_1"] = function(params)
-if not params then return "cvar" end
+	if not params then return "cvar" end
 
-local name = params[1] -- No syntax check. You get to keep the pieces.
-wline(function(out)
-writeactions(out, name)
-end)
+	local name = params[1] -- No syntax check. You get to keep the pieces.
+	wline(function(out)
+		writeactions(out, name)
+	end)
 end
 -- Pseudo-opcode to mark the position where the global enum is to be emitted.
 map_op[".globals_1"] = function(params)
-if not params then return "prefix" end
+	if not params then return "prefix" end
 
-local prefix = params[1] -- No syntax check. You get to keep the pieces.
-wline(function(out)
-writeglobals(out, prefix)
-end)
+	local prefix = params[1] -- No syntax check. You get to keep the pieces.
+	wline(function(out)
+		writeglobals(out, prefix)
+	end)
 end
 -- Pseudo-opcode to mark the position where the global names are to be emitted.
 map_op[".globalnames_1"] = function(params)
-if not params then return "cvar" end
+	if not params then return "cvar" end
 
-local name = params[1] -- No syntax check. You get to keep the pieces.
-wline(function(out)
-writeglobalnames(out, name)
-end)
+	local name = params[1] -- No syntax check. You get to keep the pieces.
+	wline(function(out)
+		writeglobalnames(out, name)
+	end)
 end
 -- Pseudo-opcode to mark the position where the extern names are to be emitted.
 map_op[".externnames_1"] = function(params)
-if not params then return "cvar" end
+	if not params then return "cvar" end
 
-local name = params[1] -- No syntax check. You get to keep the pieces.
-wline(function(out)
-writeexternnames(out, name)
-end)
+	local name = params[1] -- No syntax check. You get to keep the pieces.
+	wline(function(out)
+		writeexternnames(out, name)
+	end)
 end
 ------------------------------------------------------------------------------
 -- Label pseudo-opcode (converted from trailing colon form).
 map_op[".label_2"] = function(params)
-if not params then return "[1-9] | ->global | =>pcexpr  [, addr]" end
+	if not params then return "[1-9] | ->global | =>pcexpr  [, addr]" end
 
-if secpos + 2 > maxsecpos then wflush() end
+	if secpos + 2 > maxsecpos then wflush() end
 
-local a = parseoperand(params[1])
-local mode, imm = a.mode, a.imm
+	local a = parseoperand(params[1])
+	local mode, imm = a.mode, a.imm
 
-if type(imm) == "number" and (mode == "iJ" or (imm >= 1 and imm <= 9)) then
--- Local label (1: ... 9:) or global label (->global:).
-waction("LABEL_LG", nil, 1)
-wputxb(imm)
-elseif mode == "iJ" then
--- PC label (=>pcexpr:).
-waction("LABEL_PC", imm)
-else
-werror("bad label definition")
-end
+	if type(imm) == "number" and (mode == "iJ" or (imm >= 1 and imm <= 9)) then
+		-- Local label (1: ... 9:) or global label (->global:).
+		waction("LABEL_LG", nil, 1)
+		wputxb(imm)
+	elseif mode == "iJ" then
+		-- PC label (=>pcexpr:).
+		waction("LABEL_PC", imm)
+	else
+		werror("bad label definition")
+	end
 
--- SETLABEL must immediately follow LABEL_LG/LABEL_PC.
-local addr = params[2]
+	-- SETLABEL must immediately follow LABEL_LG/LABEL_PC.
+	local addr = params[2]
 
-if addr then
-local a = parseoperand(addr)
+	if addr then
+		local a = parseoperand(addr)
 
-if a.mode == "iPJ" then
-waction("SETLABEL", a.imm)
-else
-werror("bad label assignment")
-end
-end
+		if a.mode == "iPJ" then
+			waction("SETLABEL", a.imm)
+		else
+			werror("bad label assignment")
+		end
+	end
 end
 map_op[".label_1"] = map_op[".label_2"]
 ------------------------------------------------------------------------------
 -- Alignment pseudo-opcode.
 map_op[".align_1"] = function(params)
-if not params then return "numpow2" end
+	if not params then return "numpow2" end
 
-if secpos + 1 > maxsecpos then wflush() end
+	if secpos + 1 > maxsecpos then wflush() end
 
-local align = tonumber(params[1]) or map_opsizenum[map_opsize[params[1]]]
+	local align = tonumber(params[1]) or map_opsizenum[map_opsize[params[1]]]
 
-if align then
-local x = align
+	if align then
+		local x = align
 
--- Must be a power of 2 in the range (2 ... 256).
-for i = 1, 8 do
-x = x / 2
+		-- Must be a power of 2 in the range (2 ... 256).
+		for i = 1, 8 do
+			x = x / 2
 
-if x == 1 then
-waction("ALIGN", nil, 1)
-wputxb(align - 1) -- Action byte is 2**n-1.
-return
-end
-end
-end
+			if x == 1 then
+				waction("ALIGN", nil, 1)
+				wputxb(align - 1) -- Action byte is 2**n-1.
+				return
+			end
+		end
+	end
 
-werror("bad alignment")
+	werror("bad alignment")
 end
 -- Spacing pseudo-opcode.
 map_op[".space_2"] = function(params)
-if not params then return "num [, filler]" end
+	if not params then return "num [, filler]" end
 
-if secpos + 1 > maxsecpos then wflush() end
+	if secpos + 1 > maxsecpos then wflush() end
 
-waction("SPACE", params[1])
-local fill = params[2]
+	waction("SPACE", params[1])
+	local fill = params[2]
 
-if fill then
-fill = tonumber(fill)
+	if fill then
+		fill = tonumber(fill)
 
-if not fill or fill < 0 or fill > 255 then werror("bad filler") end
-end
+		if not fill or fill < 0 or fill > 255 then werror("bad filler") end
+	end
 
-wputxb(fill or 0)
+	wputxb(fill or 0)
 end
 map_op[".space_1"] = map_op[".space_2"]
 ------------------------------------------------------------------------------
 -- Pseudo-opcode for (primitive) type definitions (map to C types).
 map_op[".type_3"] = function(params, nparams)
-if not params then
-return nparams == 2 and "name, ctype" or "name, ctype, reg"
-end
+	if not params then
+		return nparams == 2 and "name, ctype" or "name, ctype, reg"
+	end
 
-local name, ctype, reg = params[1], params[2], params[3]
+	local name, ctype, reg = params[1], params[2], params[3]
 
-if not match(name, "^[%a_][%w_]*$") then
-werror("bad type name `" .. name .. "'")
-end
+	if not match(name, "^[%a_][%w_]*$") then
+		werror("bad type name `" .. name .. "'")
+	end
 
-local tp = map_type[name]
+	local tp = map_type[name]
 
-if tp then werror("duplicate type `" .. name .. "'") end
+	if tp then werror("duplicate type `" .. name .. "'") end
 
-if reg and not map_reg_valid_base[reg] then
-werror("bad base register `" .. (map_reg_rev[reg] or reg) .. "'")
-end
+	if reg and not map_reg_valid_base[reg] then
+		werror("bad base register `" .. (map_reg_rev[reg] or reg) .. "'")
+	end
 
--- Add #type to current defines table.
-g_map_def["#" .. name] = luamode and "ffi.sizeof(\"" .. ctype .. "\")" or "sizeof(" .. ctype .. ")"
--- Add new type and emit shortcut define.
-local num = ctypenum + 1
-local ctypefmt
+	-- Add #type to current defines table.
+	g_map_def["#" .. name] = luamode and "ffi.sizeof(\"" .. ctype .. "\")" or "sizeof(" .. ctype .. ")"
+	-- Add new type and emit shortcut define.
+	local num = ctypenum + 1
+	local ctypefmt
 
-if luamode then
-ctypefmt = function(tailr)
-local index, field
-index, field = match(tailr, "^(%b[])(.*)")
-index = index and sub(index, 2, -2)
-field = field or tailr
-field = match(field, "^%->(.*)") or match(field, "^%.(.*)")
+	if luamode then
+		ctypefmt = function(tailr)
+			local index, field
+			index, field = match(tailr, "^(%b[])(.*)")
+			index = index and sub(index, 2, -2)
+			field = field or tailr
+			field = match(field, "^%->(.*)") or match(field, "^%.(.*)")
 
-if not (index or field) then werror("invalid syntax `" .. tailr .. "`") end
+			if not (index or field) then werror("invalid syntax `" .. tailr .. "`") end
 
-local Da = index and format("Da%X(%s)", num, index)
-local Dt = field and format("Dt%X(\"%s\")", num, field)
-return Da and Dt and Da .. "+" .. Dt or Da or Dt
-end
-else
-ctypefmt = format("Dt%X(%%s)", num)
-end
+			local Da = index and format("Da%X(%s)", num, index)
+			local Dt = field and format("Dt%X(\"%s\")", num, field)
+			return Da and Dt and Da .. "+" .. Dt or Da or Dt
+		end
+	else
+		ctypefmt = format("Dt%X(%%s)", num)
+	end
 
-map_type[name] = {
-ctype = ctype,
-ctypefmt = ctypefmt,
-reg = reg,
-}
+	map_type[name] = {
+		ctype = ctype,
+		ctypefmt = ctypefmt,
+		reg = reg,
+	}
 
-if luamode then
-wline(
-format(
-"local Dt%X; do local ct=ffi.typeof(\"%s\"); function Dt%X(f) return ffi.offsetof(ct,f) or error(string.format(\"'struct %s' has no member named '%%s'\", f)) end; end",
-num,
-ctype,
-num,
-ctype
-)
-)
-wline(
-format(
-"local Da%X; do local sz=ffi.sizeof(\"%s\"); function Da%X(i) return i*sz end; end",
-num,
-ctype,
-num
-)
-)
-else
-wline(format("#define Dt%X(_V) (int)(ptrdiff_t)&(((%s *)0)_V)", num, ctype))
-end
+	if luamode then
+		wline(
+			format(
+				"local Dt%X; do local ct=ffi.typeof(\"%s\"); function Dt%X(f) return ffi.offsetof(ct,f) or error(string.format(\"'struct %s' has no member named '%%s'\", f)) end; end",
+				num,
+				ctype,
+				num,
+				ctype
+			)
+		)
+		wline(
+			format(
+				"local Da%X; do local sz=ffi.sizeof(\"%s\"); function Da%X(i) return i*sz end; end",
+				num,
+				ctype,
+				num
+			)
+		)
+	else
+		wline(format("#define Dt%X(_V) (int)(ptrdiff_t)&(((%s *)0)_V)", num, ctype))
+	end
 
-ctypenum = num
+	ctypenum = num
 end
 map_op[".type_2"] = map_op[".type_3"]
 
 -- Dump type definitions.
 local function dumptypes(out, lvl)
-local t = {}
+	local t = {}
 
-for name in pairs(map_type) do
-t[#t + 1] = name
-end
+	for name in pairs(map_type) do
+		t[#t + 1] = name
+	end
 
-sort(t)
-out:write("Type definitions:\n")
+	sort(t)
+	out:write("Type definitions:\n")
 
-for _, name in ipairs(t) do
-local tp = map_type[name]
-local reg = tp.reg and map_reg_rev[tp.reg] or ""
-out:write(format("  %-20s %-20s %s\n", name, tp.ctype, reg))
-end
+	for _, name in ipairs(t) do
+		local tp = map_type[name]
+		local reg = tp.reg and map_reg_rev[tp.reg] or ""
+		out:write(format("  %-20s %-20s %s\n", name, tp.ctype, reg))
+	end
 
-out:write("\n")
+	out:write("\n")
 end
 
 ------------------------------------------------------------------------------
 -- Set the current section.
 function _M.section(num)
-waction("SECTION")
-wputxb(num)
-wflush(true) -- SECTION is a terminal action.
+	waction("SECTION")
+	wputxb(num)
+	wflush(true) -- SECTION is a terminal action.
 end
 
 ------------------------------------------------------------------------------
 -- Dump architecture description.
 function _M.dumparch(out)
-out:write(
-format(
-"DynASM %s version %s, released %s\n\n",
-_info.arch,
-_info.version,
-_info.release
-)
-)
-dumpregs(out)
-dumpactions(out)
+	out:write(
+		format("DynASM %s version %s, released %s\n\n", _info.arch, _info.version, _info.release)
+	)
+	dumpregs(out)
+	dumpactions(out)
 end
 
 -- Dump all user defined elements.
 function _M.dumpdef(out, lvl)
-dumptypes(out, lvl)
-dumpglobals(out, lvl)
-dumpexterns(out, lvl)
+	dumptypes(out, lvl)
+	dumpglobals(out, lvl)
+	dumpexterns(out, lvl)
 end
 
 ------------------------------------------------------------------------------
 -- Pass callbacks from/to the DynASM core.
 function _M.passcb(wl, we, wf, ww)
-wline, werror, wfatal, wwarn = wl, we, wf, ww
-return wflush
+	wline, werror, wfatal, wwarn = wl, we, wf, ww
+	return wflush
 end
 
 -- Setup the arch-specific module.
 function _M.setup(arch, opt)
-g_arch, g_opt = arch, opt
-luamode = g_opt.lang == "lua"
-init_actionlist()
-init_map_global()
-init_map_extern()
-init_map_type()
+	g_arch, g_opt = arch, opt
+	luamode = g_opt.lang == "lua"
+	init_actionlist()
+	init_map_global()
+	init_map_extern()
+	init_map_type()
 end
 
 -- Merge the core maps and the arch-specific maps.
 function _M.mergemaps(map_coreop, map_def)
-setmetatable(map_op, {__index = map_coreop})
-setmetatable(map_def, {__index = map_archdef})
--- Hold a ref. to map_def to store `#type` defines in.
-g_map_def = map_def
-return map_op, map_def
+	setmetatable(map_op, {__index = map_coreop})
+	setmetatable(map_def, {__index = map_archdef})
+	-- Hold a ref. to map_def to store `#type` defines in.
+	g_map_def = map_def
+	return map_op, map_def
 end
 
-return _M------------------------------------------------------------------------------
+return _M ------------------------------------------------------------------------------

@@ -609,9 +609,7 @@ statements["local"] = function(state, loc)
 
 	local equals_location = location(state)
 
-	if test_and_skip_token(state, "=") then
-		rhs = parse_expression_list(state)
-	end
+	if test_and_skip_token(state, "=") then rhs = parse_expression_list(state) end
 
 	-- According to Metalua spec, {lhs} should be returned if there is no rhs.
 	-- Metalua does not follow the spec itself and returns {lhs, {}}.

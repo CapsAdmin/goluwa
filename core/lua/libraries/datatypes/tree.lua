@@ -22,9 +22,7 @@ function META:GetEntry(str)
 
 	for _, key in ipairs(keys) do
 		if key ~= "" then
-			if not next[key] then
-				return false, "key " .. key .. " not found"
-			end
+			if not next[key] then return false, "key " .. key .. " not found" end
 
 			next = next[key]
 		end

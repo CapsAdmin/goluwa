@@ -190,9 +190,7 @@ function format.builtin_formatters.default(report, file_names, opts)
 			end
 		end
 
-		if #buf > 0 and buf[#buf]:sub(-1) ~= "\n" then
-			table.insert(buf, "")
-		end
+		if #buf > 0 and buf[#buf]:sub(-1) ~= "\n" then table.insert(buf, "") end
 	end
 
 	local total = (
