@@ -46,15 +46,15 @@ function gine.env.include(path)
 	return ok
 end
 
-function gine.env.module(name, _ENV)
+function gine.env.module(name, env)
 	--logn("gine: module(",name,")")
 	local tbl = package.loaded[name] or gine.env[name] or {}
 
-	if _ENV == package.seeall then
-		_ENV = gine.env
-		setmetatable(tbl, {__index = _ENV})
-	elseif _ENV then
-		wlog(_ENV, 2)
+	if env == package.seeall then
+		env = gine.env
+		setmetatable(tbl, {__index = env})
+	elseif env then
+		wlog(env, 2)
 	end
 
 	if not tbl._NAME then
