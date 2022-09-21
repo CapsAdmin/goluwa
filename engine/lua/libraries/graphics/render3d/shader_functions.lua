@@ -246,8 +246,8 @@ function render3d.AddBilateralBlurPass(PASS, amount, discard_threshold, format, 
 						float depth = get_linearized_depth(uv);
 						float total_weight = 1;
 						vec3 res = vec3(0);
-						vec2 offset;
-						vec2 jitter;
+						vec2 offset = vec2(0);
+						vec2 jitter = vec2(0);
 
 						]] .. (
 							function()
