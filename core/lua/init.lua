@@ -231,6 +231,7 @@ crypto = runfile("lua/libraries/crypto.lua") -- base64 and other hash functions
 serializer = runfile("lua/libraries/serializer.lua") -- for serializing lua data in different formats
 system = runfile("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
 event = runfile("lua/libraries/event.lua") -- event handler
+timer = runfile("lua/libraries/timer.lua") -- timer
 utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 profiler = runfile("lua/libraries/profiler.lua")
 tasks = runfile("!lua/libraries/tasks.lua") -- high level coroutine library
