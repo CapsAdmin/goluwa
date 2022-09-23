@@ -211,7 +211,14 @@ vfs.AddModuleDirectory(e.BIN_PATH .. "lua")
 if desire("ffi") then _G.require("ffi").load = vfs.FFILoadLibrary end
 
 _G.require = vfs.Require
-_G.runfile = vfs.RunFile
+_G.runfile = function(...)
+	local ret = table.pack(vfs.RunFile(...))
+
+	-- not very ideal
+	if ret[1] == false and type(ret[2]) == "string" then error(ret[2], 2) end
+
+	return table.unpack(ret)
+end
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
 package.loaded.bit32 = bit
 -- libraries
@@ -234,7 +241,6 @@ if profiler then
 	_G.LOOM = profiler.ToggleLoom
 end
 
-oh = runfile("lua/libraries/oh/oh.lua") -- lua tokenizer, parser and emitter
 do -- nattlua
 	-- not very nice..
 	fs.PushWorkingDirectory(e.CORE_FOLDER .. "lua/modules/nattlua")
