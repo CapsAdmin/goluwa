@@ -400,7 +400,7 @@ if ARG_LINE:sub(0, #"nattlua") == "nattlua" then
 	end
 
 	table.remove(args, 1)
-	assert(loadfile("core/lua/libraries/nattlua/build_output.lua"))(unpack(args))
+	assert(loadfile("core/lua/modules/nattlua/build_output.lua"))(unpack(args))
 	return
 end
 
