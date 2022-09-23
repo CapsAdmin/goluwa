@@ -24,7 +24,7 @@ for i = 1, 3 do
 	fb:End()
 end
 
-event.Timer(
+timer.Repeat(
 	"lol",
 	1,
 	4,

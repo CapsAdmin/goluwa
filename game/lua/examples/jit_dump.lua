@@ -1,4 +1,4 @@
-event.Delay(5, function()
+timer.Delay(5, function()
 	if vfs.IsFile("data/jit_dump.lua") then
 		vfs.Write("data/old_jit_dump.lua", vfs.Read("data/jit_dump.lua"))
 	end

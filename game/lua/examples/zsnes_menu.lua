@@ -8,7 +8,7 @@ do -- open close
 		window.SetMouseTrapped(false)
 		menu.CreateTopBar()
 		event.AddListener("PreDrawGUI", "StartupMenu", menu.RenderBackground)
-		event.Timer("StartupMenu", 0.050, menu.UpdateBackground)
+		timer.Repeat("StartupMenu", 0.050, menu.UpdateBackground)
 		--local sheep = gui.CreatePanel("sheep")
 		--sheep:SetSize()
 		menu.visible = true
@@ -19,7 +19,7 @@ do -- open close
 
 		window.SetMouseTrapped(true)
 		event.RemoveListener("PreDrawGUI", "StartupMenu")
-		event.RemoveTimer("StartupMenu")
+		timer.RemoveTimer("StartupMenu")
 		prototype.SafeRemove(menu.panel)
 		menu.visible = false
 	end

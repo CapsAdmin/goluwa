@@ -274,7 +274,7 @@ function callback.Resolve(...)
 		self.callbacks.resolve(table.unpack(args))
 	end)
 
-	event.Delay(function()
+	timer.Delay(function()
 		cb:Start()
 	end)
 
@@ -291,7 +291,7 @@ if RELOAD then
 		local resolve = self.callbacks.resolve
 		local reject = self.callbacks.reject
 
-		event.Delay(delay, function()
+		timer.Delay(delay, function()
 			resolve("result!")
 		end)
 	end)

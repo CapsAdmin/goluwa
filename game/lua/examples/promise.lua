@@ -16,11 +16,11 @@ local Delay = callback.WrapTask(function(self, delay, num)
 	local half = self.callbacks.half
 	local resolve = self.callbacks.resolve
 
-	event.Delay(delay * 0.5, function()
+	timer.Delay(delay * 0.5, function()
 		half(delay * 0.5, num)
 	end)
 
-	event.Delay(delay, function()
+	timer.Delay(delay, function()
 		resolve(delay, num)
 	end)
 end)

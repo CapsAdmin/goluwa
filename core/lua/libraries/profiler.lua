@@ -599,7 +599,7 @@ end
 function profiler.MeasureInstrumental(time, file_filter, show_everything)
 	profiler.StartInstrumental(file_filter)
 
-	event.Delay(time, function()
+	timer.Delay(time, function()
 		profiler.StopInstrumental(file_filter, show_everything)
 	end)
 end

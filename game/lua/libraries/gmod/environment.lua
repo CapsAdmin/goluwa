@@ -83,7 +83,7 @@ for meta_name, functions in pairs(data.meta) do
 			function META:Remove()
 				self.__removed = true
 
-				event.Delay(0, function()
+				timer.Delay(0, function()
 					prototype.SafeRemove(self.__obj)
 				end)
 			end

@@ -2,7 +2,7 @@ local tex = render.CreateTexture("2d")
 
 --tex:SetInternalFormat("rgb32f")
 --tex:SetMinFilter("nearest")
-event.Timer("updatefb", 0.1, function()
+timer.Repeat("updatefb", 0.1, function()
 	local t = system.GetElapsedTime()
 	tex:BeginWrite()
 	render2d.PushMatrix()

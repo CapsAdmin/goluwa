@@ -68,7 +68,7 @@ function gine.WrapObject(obj, meta)
 						end
 					end
 
-					event.Delay(function()
+					timer.Delay(function()
 						prototype.MakeNULL(obj)
 					end)
 
@@ -424,7 +424,7 @@ commands.Add("glua=arg_line", function(code)
 end)
 
 if CAPS then
-	event.Delay(0, function() --commands.RunString("ginit base,1")
+	timer.Delay(0, function() --commands.RunString("ginit base,1")
 	end)
 end
 

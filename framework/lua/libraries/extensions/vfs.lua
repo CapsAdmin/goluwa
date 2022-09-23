@@ -5,7 +5,7 @@ function vfs.MonitorFile(file_path, callback)
 	local first = true
 
 	if last then
-		event.Timer(
+		timer.Repeat(
 			file_path,
 			1,
 			0,
@@ -25,7 +25,7 @@ function vfs.MonitorFile(file_path, callback)
 					end
 				else
 					llog("%s was removed", file_path)
-					event.RemoveTimer(file_path)
+					timer.RemoveTimer(file_path)
 				end
 			end
 		)
@@ -39,7 +39,7 @@ function vfs.MonitorFileInclude(source, target)
 	target = target or source
 
 	vfs.MonitorFile(source, function()
-		event.Delay(0, function()
+		timer.Delay(0, function()
 			dofile(target)
 		end)
 	end)

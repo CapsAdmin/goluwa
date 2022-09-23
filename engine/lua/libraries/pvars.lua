@@ -37,7 +37,7 @@ end
 
 function pvars.Save()
 	if pvars.init then
-		event.Delay(
+		timer.Delay(
 			0,
 			function()
 				local vars = {}
@@ -106,7 +106,7 @@ function pvars.Setup2(info)
 	set(info.key, pvars.vars[info.key])
 
 	if info.callback then
-		event.Delay(function()
+		timer.Delay(function()
 			event.Call("PersistentVariableChanged", key, pvars.Get(info.key), val)
 			info.callback(pvars.Get(info.key), true)
 		end)

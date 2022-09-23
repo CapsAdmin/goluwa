@@ -127,11 +127,11 @@ function META:Start(now, ...)
 	end
 
 	if self.EnsureFPS ~= 0 then
-		event.Thinker(start, true, self.EnsureFPS, true)
+		timer.Thinker(start, true, self.EnsureFPS, true)
 	elseif self.Frequency == 0 then
-		event.Thinker(start, true, 0, self.IterationsPerTick)
+		timer.Thinker(start, true, 0, self.IterationsPerTick)
 	else
-		event.Thinker(start, true, 1 / self.Frequency, self.IterationsPerTick)
+		timer.Thinker(start, true, 1 / self.Frequency, self.IterationsPerTick)
 	end
 end
 
@@ -200,8 +200,8 @@ function tasks.CreateTask(on_start, on_finish, now)
 
 	tasks.created[self] = self
 
-	if tasks.IsEnabled() and not event.IsTimer("tasks") then
-		event.Timer("tasks", 0.25, 0, tasks.Update)
+	if tasks.IsEnabled() and not timer.IsTimer("tasks") then
+		timer.Repeat("tasks", 0.25, 0, tasks.Update)
 		tasks.Update()
 	end
 

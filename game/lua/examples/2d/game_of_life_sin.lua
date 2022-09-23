@@ -14,7 +14,7 @@ tex:Fill(function()
 --return math.random(255),math.random(255),math.random(255),math.random(255)
 end)
 
-event.Timer(
+timer.Repeat(
 	"update_cells",
 	0,
 	0,

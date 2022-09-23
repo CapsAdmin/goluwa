@@ -35,7 +35,7 @@ end
 if not irc_socket then
 	client:Connect("threekelv.in")
 
-	event.Delay(0.5, function()
+	timer.Delay(0.5, function()
 		client:Join("#metastruct")
 		chatsounds.Initialize()
 	end)

@@ -16,7 +16,7 @@ function goluwa.SteamFriendsMessage(sender_steam_id, txt, receiver_steam_id)
 
 	subject = sender_steam_id
 
-	event.Delay(0.1, function()
+	timer.Delay(0.1, function()
 		subject = nil
 	end)
 

@@ -3,7 +3,7 @@ local fb = render.CreateFrameBuffer()
 fb:SetTexture(1, render.CreateBlankTexture(size))
 
 --fb:SetTexture("depth_stencil", {internal_format = "depth_stencil", size = size})
-event.Timer(
+timer.Repeat(
 	"lol",
 	0.25,
 	0,

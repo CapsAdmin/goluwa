@@ -231,7 +231,7 @@ function META:OnMouseInput(button, press)
 	self.markup:OnMouseInput(button, press)
 
 	if press then
-		event.Delay(0, function()
+		timer.Delay(0, function()
 			self:GlobalMouseCapture(true)
 		end, "asdf", self)
 	else

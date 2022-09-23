@@ -7,7 +7,7 @@ tex:Fill(function()
 	return 255, 255, 255, math.random() > start and 255 or 0
 end)
 
-event.Timer(
+timer.Repeat(
 	"update_cells",
 	0,
 	0,

@@ -14,7 +14,7 @@ function Thread:start(...)
 	else
 		ENV.running = self
 
-		event.Delay(0, function()
+		timer.Delay(0, function()
 			self.thread:Start()
 			ENV.running = nil
 		end)

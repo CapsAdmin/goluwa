@@ -83,7 +83,7 @@ event.AddListener("ClientChat", "chathud_image_url", function(client, str)
 	end
 
 	if str:find("http") then
-		event.Timer(
+		timer.Repeat(
 			"chathud_image_url_queue",
 			0.25,
 			0,

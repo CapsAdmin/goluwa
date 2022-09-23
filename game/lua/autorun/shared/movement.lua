@@ -229,7 +229,7 @@ event.AddListener("NetworkStarted", function()
 				ent:SetScale(-Vec3(0.15, 1, 0.15))
 				ent:SetPosition(cmd.net_position + (cmd.angles:GetForward() * 5))
 
-				event.Delay(3, function()
+				timer.Delay(3, function()
 					entities.SafeRemove(ent)
 				end)
 			end

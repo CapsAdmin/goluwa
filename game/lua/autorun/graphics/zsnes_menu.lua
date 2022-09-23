@@ -5,10 +5,10 @@ event.AddListener("ShowMenu", "main_menu", function(b, remove)
 	if b then
 		menu.CreateTopBar()
 		event.AddListener("PreDrawGUI", "StartupMenu", menu.RenderBackground)
-		event.Timer("StartupMenu", 0.050, menu.UpdateBackground)
+		timer.Repeat("StartupMenu", 0.050, menu.UpdateBackground)
 	else
 		event.RemoveListener("PreDrawGUI", "StartupMenu")
-		event.RemoveTimer("StartupMenu")
+		timer.RemoveTimer("StartupMenu")
 
 		if not render3d.IsGBufferReady() then
 			prototype.SafeRemove(menu.panel)

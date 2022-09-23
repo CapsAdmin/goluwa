@@ -193,7 +193,7 @@ function chatsounds.LoadListFromAppID(name)
 		table.merge(chatsounds.tree, tree)
 
 		if autocomplete then
-			event.Delay(
+			timer.Delay(
 				0.1,
 				function()
 					chatsounds.GenerateAutocomplete()
@@ -229,7 +229,7 @@ function chatsounds.AddSound(trigger, realm, ...)
 		next = next[word]
 	end
 
-	event.Delay(
+	timer.Delay(
 		0.1,
 		function()
 			chatsounds.GenerateAutocomplete()

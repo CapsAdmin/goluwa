@@ -21,7 +21,7 @@ if CLIENT then
 		retries = retries or 3
 
 		if retries > 0 then
-			event.Delay(3, function()
+			timer.Delay(3, function()
 				if not network.IsConnected() then
 					if network.debug then
 						llog("retrying %s:%s (%i retries left)..", ip, port, retries)
@@ -79,7 +79,7 @@ if SERVER then
 		if network.IsHosting() then
 			network.CloseServer("already hosting")
 
-			event.Delay(1, function()
+			timer.Delay(1, function()
 				network.Host(ip, port)
 			end)
 

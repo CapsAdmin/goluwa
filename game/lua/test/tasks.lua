@@ -22,7 +22,7 @@ foo = promise(function(resolve, ...)
 		function(someval)
 			local val = nil
 
-			event.Delay(5, function()
+			timer.Delay(5, function()
 				resolve(someval)
 			end)
 		end

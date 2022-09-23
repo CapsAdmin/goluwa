@@ -189,7 +189,7 @@ local function getuid(peer)
 	return tonumber(ffi.cast("unsigned long *", peer.data)[0])
 end
 
-event.Timer(
+timer.Repeat(
 	"enet",
 	1 / 30,
 	0,

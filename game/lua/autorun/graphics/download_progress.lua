@@ -118,7 +118,7 @@ function downprog.Stop(url, reason)
 	data.progress:SetFraction(1)
 	data.pnl:Layout()
 
-	event.Delay(reason and 3 or 1, function()
+	timer.Delay(reason and 3 or 1, function()
 		data.pnl:Remove()
 	end)
 
@@ -155,7 +155,7 @@ if RELOAD then
 	downprog.Start(url, 50)
 	downprog.UpdateInformation(url, total)
 
-	event.Timer(
+	timer.Repeat(
 		url,
 		0.1,
 		0,
@@ -166,7 +166,7 @@ if RELOAD then
 
 			if current >= total then
 				downprog.Stop(url)
-				event.RemoveTimer(url)
+				timer.RemoveTimer(url)
 			end
 		end
 	)

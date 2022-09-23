@@ -6,7 +6,7 @@ if limit then
 	local kb_limit = limit * 1024
 	local VERBOSE = VERBOSE
 
-	event.Thinker(
+	timer.Thinker(
 		function()
 			if collectgarbage("count") > kb_limit then
 				collectgarbage()

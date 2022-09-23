@@ -1,6 +1,6 @@
 local time = 0
 
-event.Timer("sun_rotate", 1 / 30, function()
+timer.Repeat("sun_rotate", 1 / 30, function()
 	if input.IsKeyDown("n") or input.IsKeyDown("m") then
 		local world = entities.world
 

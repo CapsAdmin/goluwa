@@ -48,7 +48,7 @@ function clients.Create(uniqueid, is_bot, clientside, filter, local_client, exis
 			message.Send("create_client", filter, uniqueid, is_bot, local_client, false)
 
 			if event.Call("ClientConnect", self) ~= false then
-				event.Delay(function()
+				timer.Delay(function()
 					event.Call("ClientEntered", self)
 				end)
 			end

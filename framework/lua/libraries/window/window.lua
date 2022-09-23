@@ -289,7 +289,7 @@ function window.Open(...)
 				end
 			end
 
-			event.Delay(function()
+			timer.Delay(function()
 				if y > 0 then
 					mouse_trigger("mwheel_up", false)
 				else
@@ -307,7 +307,7 @@ function window.Open(...)
 				end
 			end
 
-			event.Delay(function()
+			timer.Delay(function()
 				if x > 0 then
 					mouse_trigger("mwheel_left", false)
 				else

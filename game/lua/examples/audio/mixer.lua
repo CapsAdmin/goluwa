@@ -146,7 +146,7 @@ do
 	return
 end
 
-event.Timer(
+timer.Repeat(
 	"chatsounds_mixer",
 	frame_size / 2,
 	0,

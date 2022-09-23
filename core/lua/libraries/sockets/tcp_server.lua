@@ -137,7 +137,7 @@ if RELOAD then
 			logn(str)
 			repl.InputLua(str)
 
-			event.Delay(0.5, function()
+			timer.Delay(0.5, function()
 				client:Send(gen_body())
 			end)
 		end

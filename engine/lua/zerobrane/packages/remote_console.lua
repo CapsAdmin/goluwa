@@ -84,7 +84,7 @@ function PLUGIN:Setup()
 
 					pvars.Set("system_texteditor_path", "./../../ide/zbstudio.sh %PATH%:%LINE%")
 
-					event.Timer("remote_console", 1/5, 0, function()
+					timer.Repeat("remote_console", 1/5, 0, function()
 						local input = vfs.Read("os:" .. e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}")
 						if input and input ~= "" then
 							vfs.Write("os:" .. e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}", "")

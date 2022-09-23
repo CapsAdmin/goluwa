@@ -207,7 +207,7 @@ local brush = render.CreateBlankTexture(Vec2() + 128):Fill(function(x, y)
 end)
 local brush_size = 4
 
-event.Timer(
+timer.Repeat(
 	"fb_update",
 	fps,
 	0,

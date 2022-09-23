@@ -79,7 +79,7 @@ local shader = render.CreateShader(
 	}
 )
 
-event.Timer(
+timer.Repeat(
 	"fb_update",
 	0,
 	0,

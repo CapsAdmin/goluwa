@@ -53,7 +53,7 @@ function steam.SetMap(name)
 	steam.bsp_world:RemoveChildren()
 
 	-- hack because promises will force SetModelPath to run one frame later
-	event.Delay(0.1, function()
+	timer.Delay(0.1, function()
 		tasks.WaitForTask(path, function()
 			utility.PushTimeWarning()
 			steam.SpawnMapEntities(path, steam.bsp_world)

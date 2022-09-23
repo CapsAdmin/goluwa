@@ -207,7 +207,7 @@ function META:Initialize()
 			local suppress_char_input = false
 
 			set_callback("Char", function(ptr, uint)
-				event.Delay(function()
+				timer.Delay(function()
 					if suppress_char_input then
 						suppress_char_input = false
 						return

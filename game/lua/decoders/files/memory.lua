@@ -58,7 +58,7 @@ function CONTEXT:CreateFolder(path_info)
 	folder[path_info.folder_name] = folder[path_info.folder_name] or {
 		is_folder = true,
 	}
-	event.Delay(0.5, CONTEXT.VFSClosed, nil, CONTEXT.VFSClosed)
+	timer.Delay(0.5, CONTEXT.VFSClosed, nil, CONTEXT.VFSClosed)
 end
 
 function CONTEXT:GetFiles(path_info)
@@ -99,8 +99,8 @@ end
 
 function CONTEXT:Write(str)
 	-- save 0.5 seconds after a write
-	event.Delay(0.5, CONTEXT.VFSClosed, nil, CONTEXT.VFSClosed)
-	event.Delay(0.1, save_file, self, save_file)
+	timer.Delay(0.5, CONTEXT.VFSClosed, nil, CONTEXT.VFSClosed)
+	timer.Delay(0.1, save_file, self, save_file)
 	self.file.last_modified = os.time()
 	return self.file.buffer:WriteBytes(str)
 end

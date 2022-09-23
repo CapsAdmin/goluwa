@@ -249,21 +249,21 @@ do
 		)
 		gine.env.gamemode.Call("PlayerConnect", ply:Nick(), ply:IPAddress())
 
-		event.Delay(
+		timer.Delay(
 			0.5,
 			function()
 				gine.env.hook.Run("player_spawn", {
 					userid = ply:UserID(),
 				})
 
-				event.Delay(
+				timer.Delay(
 					0,
 					function()
 						gine.env.hook.Run("player_activate", {
 							userid = ply:UserID(),
 						})
 
-						event.Delay(
+						timer.Delay(
 							0,
 							function()
 								gine.env.gamemode.Call("OnEntityCreated", ply)

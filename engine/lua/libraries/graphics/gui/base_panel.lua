@@ -2142,7 +2142,7 @@ do -- layout
 			self.Parent.layout_us = nil
 			self.LayoutSize = nil
 		end
-	--event.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
+	--timer.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
 	end
 
 	function META:ResetLayoutSize()

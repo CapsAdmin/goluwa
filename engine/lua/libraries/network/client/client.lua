@@ -94,7 +94,7 @@ runfile("user_command.lua", META)
 META:Register()
 
 if SERVER then
-	event.Timer(
+	timer.Repeat(
 		"update_clients",
 		1,
 		0,

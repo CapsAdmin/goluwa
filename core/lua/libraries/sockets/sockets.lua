@@ -11,7 +11,7 @@ runfile("http11_server.lua", sockets)
 runfile("download.lua", sockets)
 sockets.pool = sockets.pool or prototype.CreateObjectPool("sockets")
 
-event.Timer(
+timer.Repeat(
 	"sockets",
 	1 / 30,
 	0,

@@ -13,7 +13,7 @@ end)
 LOL = p
 local p = assert(io.popen([[read -p "input:" test; sleep 1; echo "INPUT IS: $test"]], "w"))
 
-event.Delay(1, function()
+timer.Delay(1, function()
 	p:write("test!\n")
 end)
 

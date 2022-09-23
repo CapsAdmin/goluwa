@@ -240,7 +240,7 @@ function META:AddEntry(...)
 	end
 	entry.i = #self.entries + 1
 	table.insert(self.entries, entry)
-	--event.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
+	--timer.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
 	self:SizeColumnsToFit()
 	return entry
 end

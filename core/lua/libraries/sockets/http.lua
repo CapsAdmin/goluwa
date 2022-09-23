@@ -478,7 +478,7 @@ if RELOAD then
 	local f = io.open("/home/caps/Desktop/roboto.txt", "rb")
 	client:InitializeHTTPParser()
 
-	event.Timer(
+	timer.Repeat(
 		"test",
 		0,
 		0,
@@ -486,7 +486,7 @@ if RELOAD then
 			local data = f:read(256)
 
 			if not data then
-				event.RemoveTimer("test")
+				timer.RemoveTimer("test")
 				return
 			end
 

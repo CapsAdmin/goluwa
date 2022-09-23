@@ -55,7 +55,7 @@ function render.GenerateTextures()
 
 		if loading then
 			--loading:SetSize(Vec2()+256)
-			event.Timer(
+			timer.Repeat(
 				"update_loading_texture",
 				1 / 5,
 				0,

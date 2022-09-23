@@ -156,7 +156,7 @@ fb:SetSize(size)
 local available = ffi.new("GLuint[1]")
 local passed = ffi.new("GLuint[1]")
 
-event.Timer("occluder", 0.25, function()
+timer.Repeat("occluder", 0.25, function()
 	if input.IsMouseDown("button_1") then
 		render.PushDepth(true)
 		fb:Begin()

@@ -34,7 +34,7 @@ end)
 function network.PingServer(ip, cb)
 	local lol = io.popen("ping " .. ip .. (WINDOWS and "-n 1" or " -c 1"))
 
-	event.Thinker(function()
+	timer.Thinker(function()
 		local str = lol:read("*all")
 		local time = str:match("time=(%S+)")
 		cb(tonumber(time) / 100)
@@ -90,7 +90,7 @@ do -- string table
 
 		function network.AddString(str)
 			if not network.IsStarted() then
-				event.Delay(0.1, function()
+				timer.Delay(0.1, function()
 					network.AddString(str)
 				end)
 

@@ -1,6 +1,7 @@
-event.timers = event.timers or {}
+local timer = {}
+timer.timers = timer.timers or {}
 
-function event.Thinker(callback, run_now, frequency, iterations, id)
+function timer.Thinker(callback, run_now, frequency, iterations, id)
 	if run_now and callback() ~= nil then return end
 
 	local info = {
@@ -19,10 +20,10 @@ function event.Thinker(callback, run_now, frequency, iterations, id)
 		info.iterations = iterations or 1
 	end
 
-	table.insert(event.timers, info)
+	table.insert(timer.timers, info)
 end
 
-function event.Delay(time, callback, id, obj, ...)
+function timer.Delay(time, callback, id, obj, ...)
 	if not callback then
 		callback = time
 		time = 0
@@ -31,7 +32,7 @@ function event.Delay(time, callback, id, obj, ...)
 	time = time or 0
 
 	if id then
-		for _, v in ipairs(event.timers) do
+		for _, v in ipairs(timer.timers) do
 			if v.key == id then
 				v.realtime = system.GetElapsedTime() + time
 				return
@@ -47,7 +48,7 @@ function event.Delay(time, callback, id, obj, ...)
 	end
 
 	table.insert(
-		event.timers,
+		timer.timers,
 		{
 			key = id or callback,
 			type = "delay",
@@ -58,7 +59,7 @@ function event.Delay(time, callback, id, obj, ...)
 	)
 end
 
-function event.Timer(id, time, repeats, callback, run_now, error_callback)
+function timer.Repeat(id, time, repeats, callback, run_now, error_callback)
 	if not callback then
 		callback = repeats
 		repeats = 0
@@ -69,7 +70,7 @@ function event.Timer(id, time, repeats, callback, run_now, error_callback)
 	repeats = math.max(repeats, 0)
 	local data
 
-	for _, v in ipairs(event.timers) do
+	for _, v in ipairs(timer.timers) do
 		if v.key == id then
 			data = v
 
@@ -90,7 +91,7 @@ function event.Timer(id, time, repeats, callback, run_now, error_callback)
 	data.error_callback = error_callback or function(id, msg)
 		logn(id, msg)
 	end
-	table.insert(event.timers, data)
+	table.insert(timer.timers, data)
 
 	if run_now then
 		callback(repeats - 1)
@@ -98,18 +99,18 @@ function event.Timer(id, time, repeats, callback, run_now, error_callback)
 	end
 end
 
-function event.RemoveTimer(id)
-	for k, v in ipairs(event.timers) do
+function timer.RemoveTimer(id)
+	for k, v in ipairs(timer.timers) do
 		if v.key == id then
-			table.remove(event.timers, k)
+			table.remove(timer.timers, k)
 			--profiler.RemoveSection(v.id)
 			return true
 		end
 	end
 end
 
-function event.StopTimer(id)
-	for k, v in ipairs(event.timers) do
+function timer.StopTimer(id)
+	for k, v in ipairs(timer.timers) do
 		if v.key == id then
 			v.realtime = 0
 			v.times_ran = 1
@@ -119,8 +120,8 @@ function event.StopTimer(id)
 	end
 end
 
-function event.StartTimer(id)
-	for k, v in ipairs(event.timers) do
+function timer.StartTimer(id)
+	for k, v in ipairs(timer.timers) do
 		if v.key == id then
 			v.paused = false
 			return true
@@ -128,18 +129,18 @@ function event.StartTimer(id)
 	end
 end
 
-function event.IsTimer(id)
-	for k, v in ipairs(event.timers) do
+function timer.IsTimer(id)
+	for k, v in ipairs(timer.timers) do
 		if v.key == id then return true end
 	end
 end
 
 local remove_these = {}
 
-function event.UpdateTimers(a_, b_, c_, d_, e_)
+function timer.UpdateTimers(a_, b_, c_, d_, e_)
 	local cur = system.GetElapsedTime()
 
-	for i, data in ipairs(event.timers) do
+	for i, data in ipairs(timer.timers) do
 		if data.type == "thinker" then
 			if data.fps then
 				local time = 0
@@ -222,13 +223,14 @@ function event.UpdateTimers(a_, b_, c_, d_, e_)
 
 	if remove_these[1] then
 		for _, v in ipairs(remove_these) do
-			--print(event.timers[v].type)
-			event.timers[v] = nil
+			--print(timer.timers[v].type)
+			timer.timers[v] = nil
 		end
 
-		table.fixindices(event.timers)
+		table.fixindices(timer.timers)
 		table.clear(remove_these)
 	end
 end
 
-event.AddListener("Update", "timers", event.UpdateTimers, {on_error = system.OnError})
+event.AddListener("Update", "timers", timer.UpdateTimers, {on_error = system.OnError})
+return timer

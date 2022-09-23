@@ -1,5 +1,5 @@
 commands.Add("bot_activity", function()
-	event.Timer(
+	timer.Repeat(
 		"bot_activity",
 		0.25,
 		0,
@@ -50,7 +50,7 @@ BABE:AddEvent("ClientChat")
 
 function BABE:OnClientChat(client, str)
 	if client ~= self and math.random() > 0.75 or str:lower():find("cafebabe") then
-		event.Delay(math.random() * 3, function()
+		timer.Delay(math.random() * 3, function()
 			chat.ClientSay(
 				self,
 				client:GetNick() .. ", " .. string.randomwords(math.random(20), math.random())

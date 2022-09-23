@@ -29,7 +29,7 @@ do
 		suppress_limit = system.GetElapsedTime() + 3
 	end)
 
-	event.Timer(
+	timer.Repeat(
 		"fps_limit",
 		0.1,
 		0,

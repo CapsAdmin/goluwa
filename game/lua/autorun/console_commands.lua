@@ -63,7 +63,7 @@ do -- url monitoring
 		local last_modified
 		local busy
 
-		event.Timer(
+		timer.Repeat(
 			"monitor_" .. url,
 			interval,
 			0,
@@ -108,7 +108,7 @@ do -- url monitoring
 	end)
 
 	commands.Add("unmonitor_url=arg_line", function(url)
-		event.RemoveTimer("monitor_" .. url)
+		timer.RemoveTimer("monitor_" .. url)
 		logf("%s stop monitoring\n", url)
 	end)
 end
@@ -152,7 +152,7 @@ commands.Add("trace_calls=string", function(line, ...)
 			return old_func(...)
 		end)
 
-		event.Delay(1, function()
+		timer.Delay(1, function()
 			idx_func(old_func)
 		end)
 	end

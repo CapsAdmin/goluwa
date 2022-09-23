@@ -49,7 +49,7 @@ mdl:SetPosition(center + Vec3(0, 0, 32))
 mdl:SetSize(0.1)
 
 --mdl:SetAngles(Ang3(0,0,0))
-event.Timer(
+timer.Repeat(
 	"lol",
 	0,
 	0,
@@ -70,7 +70,7 @@ mdl:SetModelPath("models/spider.obj")
 mdl:SetPosition(Vec3(5000, -3000, 200))
 mdl:SetAngles(Ang3(0, 0, 0))
 
-event.Timer(
+timer.Repeat(
 	"lol",
 	0,
 	0,

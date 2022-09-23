@@ -248,7 +248,7 @@ function scoreboard.RemoveClient(client, now)
 			end
 		end
 
-		if now then callback() else event.Delay(3, callback) end
+		if now then callback() else timer.Delay(3, callback) end
 	end
 end
 
