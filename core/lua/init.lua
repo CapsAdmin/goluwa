@@ -235,6 +235,17 @@ if profiler then
 end
 
 oh = runfile("lua/libraries/oh/oh.lua") -- lua tokenizer, parser and emitter
+do -- nattlua
+	-- not very nice..
+	fs.PushWorkingDirectory(e.CORE_FOLDER .. "lua/modules/nattlua")
+	_G.nl = require("nattlua.init")
+	_G.nl.Lexer = require("nattlua.lexer").New
+	_G.nl.Code = require("nattlua.code").New
+	_G.nl.runtime_syntax = require("nattlua.syntax.runtime")
+	_G.nl.typesystem_syntax = require("nattlua.syntax.typesystem")
+	fs.PopWorkingDirectory()
+end
+
 repl = runfile("lua/libraries/repl.lua")
 ffibuild = runfile("lua/libraries/ffibuild.lua") -- used to build binaries
 callback = runfile("lua/libraries/callback.lua") -- promise-like library

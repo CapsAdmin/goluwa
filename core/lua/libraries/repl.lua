@@ -224,34 +224,33 @@ do
 			repl.Write(str)
 		else
 			last_color = nil
-			local tokenizer = oh.lua.Tokenizer(str)
+			local code = nl.Code(str, "repl")
+			local tokens = nl.Lexer(code):GetTokens()
 
-			while true do
-				local type, start, stop, whitespace = tokenizer:ReadToken()
-
-				for i = 1, #whitespace do
-					local v = whitespace[i]
-
+			for _, token in ipairs(tokens) do
+				for _, v in ipairs(token.whitespace) do
 					if v.type == "line_comment" or v.type == "multiline_comment" then
 						set_color("comment")
 					end
 
-					repl.Write(table_concatrange(tokenizer.code, v.start, v.stop))
+					repl.Write(v.value)
 				end
-
-				local chunk = table_concatrange(tokenizer.code, start, stop)
 
 				if
 					type == "letter" and
-					oh.lua.syntax.Keywords[chunk] or
-					oh.lua.syntax.KeywordValues[chunk]
+					nl.runtime_syntax:IsKeyword(token) or
+					nl.typesystem_syntax:IsKeyword(token) or
+					nl.runtime_syntax:IsNonStandardKeyword(token) or
+					nl.typesystem_syntax:IsNonStandardKeyword(token) or
+					nl.runtime_syntax:IsKeywordValue(token) or
+					nl.typesystem_syntax:IsKeywordValue(token)				
 				then
 					set_color("keyword")
 				else
-					set_color(type)
+					set_color(token.type)
 				end
 
-				repl.Write(chunk)
+				repl.Write(token.value)
 
 				if type == "end_of_file" then break end
 			end
@@ -276,26 +275,16 @@ end
 
 function repl.InputLua(str)
 	local ok, err = xpcall(function()
-		local tokenizer = oh.lua.Tokenizer(str)
-		local tokens = tokenizer:GetTokens()
-		local parser = oh.lua.Parser()
-		local ast = parser:BuildAST(tokens)
-		local code = oh.lua.ASTToCode(ast)
-		repl.Echo(code)
-
-		local function print_errors(errors, only_first)
-			for _, v in ipairs(errors) do
-				set_color("error")
-				repl.Write((" "):rep(v.start + 1) .. ("^"):rep(v.stop - v.start + 1))
-				set_color("letter")
-				repl.StyledWrite(" " .. v.msg .. "\n")
-
-				if only_first then break end
-			end
+		local compiler = nl.Compiler(str, "repl")
+		function compiler:OnDiagnostic(code, msg, severity, start, stop, node, ...)
+			set_color("error")
+			repl.Write((" "):rep(start + 1) .. ("^"):rep(stop - start + 1))
+			set_color("letter")
+			repl.StyledWrite(" " .. msg .. "\n")
 		end
-
-		print_errors(tokenizer.errors)
-		print_errors(parser.errors, true)
+		print(compiler)
+		local code = compiler:Emit()
+		repl.Echo(code)
 		local func, err = loadstring(code)
 
 		if func then
