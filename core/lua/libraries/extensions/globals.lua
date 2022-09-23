@@ -28,13 +28,13 @@ do
 		return str
 	end
 	pretty_prints["function"] = function(self)
-		if debug.getprettysource then
+		if debug.get_pretty_source then
 			return (
 				"function[%p][%s](%s)"
 			):format(
 				self,
-				debug.getprettysource(self, true),
-				table.concat(debug.getparams(self), ", ")
+				debug.get_pretty_source(self, true),
+				table.concat(debug.get_params(self), ", ")
 			)
 		end
 
@@ -239,7 +239,7 @@ do -- logging
 	function llog(fmt, ...)
 		fmt = tostringx(fmt)
 		local level = tonumber(select(fmt:count("%") + 1, ...) or 1) or 1
-		local source = debug.getprettysource(level + 1, false, true)
+		local source = debug.get_pretty_source(level + 1, false, true)
 		local main_category = source:match(".+/libraries/(.-)/")
 		local sub_category = source:match(".+/libraries/.-/(.-)/") or source:match(".+/(.-)%.lua")
 
@@ -265,7 +265,7 @@ do -- logging
 		fmt = tostringx(fmt)
 		local level = tonumber(select(fmt:count("%") + 1, ...) or 1) or 1
 		local str = fmt:safeformat(...)
-		local source = debug.getprettysource(level + 1, true)
+		local source = debug.get_pretty_source(level + 1, true)
 		logn(source, ": ", str)
 		return fmt, ...
 	end

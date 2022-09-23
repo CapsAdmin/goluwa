@@ -2,7 +2,7 @@ do
 	local file
 	local max_lines = 10000
 
-	function debug.loglines(b)
+	function debug.log_lines(b)
 		if b == nil then b = not file end
 
 		if b then
@@ -46,8 +46,8 @@ do
 	end
 end
 
-function debug.getname(func)
-	local source = debug.getsource(func)
+function debug.get_name(func)
+	local source = debug.get_source(func)
 	local name, args = source:match("^(%S+)%s-=%s-function%s-(%b())")
 
 	if name then
@@ -60,7 +60,7 @@ function debug.getname(func)
 	return name or "*anonymous*"
 end
 
-function debug.getsource(func)
+function debug.get_source(func)
 	local info = debug.getinfo(func)
 	local src = vfs.Read(e.ROOT_FOLDER .. "/" .. info.source:sub(2))
 
@@ -80,7 +80,7 @@ function debug.getsource(func)
 	return "source unavailble for: " .. info.source
 end
 
-function debug.getprettysource(level, append_line, full_folder)
+function debug.get_pretty_source(level, append_line, full_folder)
 	local info = debug.getinfo(type(level) == "number" and (level + 1) or level)
 
 	if info.source == "=[C]" and type(level) == "number" then
@@ -125,7 +125,7 @@ end
 do
 	local started = {}
 
-	function debug.loglibrary(library, filter, post_calls_only, lib_name)
+	function debug.log_library(library, filter, post_calls_only, lib_name)
 		if type(library) == "string" then
 			lib_name = library
 			library = _G[library]
@@ -250,7 +250,7 @@ function debug.trace(skip_print)
 	return str
 end
 
-function debug.getparams(func)
+function debug.get_params(func)
 	local params = {}
 
 	for i = 1, math.huge do
@@ -262,7 +262,7 @@ function debug.getparams(func)
 	return params
 end
 
-function debug.getparamsx(func)
+function debug.get_paramsx(func)
 	local params = {}
 
 	for i = 1, math.huge do
@@ -274,7 +274,7 @@ function debug.getparamsx(func)
 	return params
 end
 
-function debug.getupvalues(func)
+function debug.get_upvalues(func)
 	local params = {}
 
 	for i = 1, math.huge do
@@ -286,7 +286,7 @@ function debug.getupvalues(func)
 	return params
 end
 
-function debug.dumpcall(level, line, info_match)
+function debug.dump_call(level, line, info_match)
 	level = level + 1
 	local info = debug.getinfo(level)
 	local path = e.ROOT_FOLDER .. info.source:sub(2)
@@ -344,7 +344,7 @@ function debug.dumpcall(level, line, info_match)
 	logn(path)
 	logn("LOCALS: ")
 
-	for _, data in pairs(debug.getparamsx(level + 1)) do
+	for _, data in pairs(debug.get_paramsx(level + 1)) do
 		--if not data.key:find("(",nil,true) then
 		local val
 
@@ -374,7 +374,7 @@ function debug.dumpcall(level, line, info_match)
 	return true
 end
 
-function debug.logcalls(b, type)
+function debug.log_calls(b, type)
 	if not b then
 		debug.sethook()
 		return

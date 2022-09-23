@@ -381,7 +381,7 @@ function table.print(...)
 	luadata.SetModifier("function", function(var)
 		return (
 			"function(%s) --[==[ptr: %p    src: %s]==] end"
-		):format(table.concat(debug.getparams(var), ", "), var, debug.getprettysource(var, true))
+		):format(table.concat(debug.get_params(var), ", "), var, debug.get_pretty_source(var, true))
 	end)
 
 	luadata.SetModifier("fallback", function(var)

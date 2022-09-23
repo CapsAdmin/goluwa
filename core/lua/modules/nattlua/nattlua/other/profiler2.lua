@@ -5,18 +5,22 @@ end
 local wlog = print
 local logn = print
 local log = io.write
-
 local ok, jit_profiler = pcall(require, "jit.profile")
+
 if not ok then jit_profiler = nil end
 
 local get_time = os.clock
 
 local function read_file(path)
-    local f, err = io.open(path)
-    if not f then return nil, err end
-    local s, err = f:read("*a")
-    if not s then return nil, "empty file" end
-    return s
+	local f, err = io.open(path)
+
+	if not f then return nil, err end
+
+	local s, err = f:read("*a")
+
+	if not s then return nil, "empty file" end
+
+	return s
 end
 
 local function math_round(num, idp)
@@ -28,11 +32,12 @@ local function math_round(num, idp)
 	return math.floor(num + 0.5)
 end
 
-
 local ok, jit_vmdef = pcall(require, "jit.vmdef")
+
 if not ok then jit_vmdef = nil end
 
 local ok, jit_util = pcall(require, "jit.util")
+
 if not ok then jit_util = nil end
 
 local utility = {}
@@ -494,7 +499,7 @@ function profiler.GetBenchmark(type, file, dump_line)
 						end
 					end
 				elseif data.func then
-					name = ("%s(%s)"):format(data.func_name, table.concat(debug.getparams(data.func), ", "))
+					name = ("%s(%s)"):format(data.func_name, table.concat(debug.get_params(data.func), ", "))
 				else
 					local full_path = path
 					name = full_path .. ":" .. line
@@ -564,15 +569,15 @@ function profiler.PrintTraceAborts(min_samples)
 			for line, reasons in pairs(lines) do
 				if not next(s) or s[path][line] and s[path][line].samples > min_samples then
 					local str = "unknown line"
-                        local content, err = read_file(path)
+					local content, err = read_file(path)
 
-                        if content then
-                            local lines = split(content, "\n")
-                            str = lines[line]
-                            str = "\"" .. trim(str) .. "\""
-                        else
-                            str = err
-                        end
+					if content then
+						local lines = split(content, "\n")
+						str = lines[line]
+						str = "\"" .. trim(str) .. "\""
+					else
+						str = err
+					end
 
 					for reason, count in pairs(reasons) do
 						if not blacklist[reason] then
@@ -648,7 +653,7 @@ function profiler.PrintStatistical(min_samples)
 						return tr[str]
 					end,
 				},
-                {
+				{
 					key = "samples",
 					tostring = function(val)
 						return val

@@ -674,7 +674,7 @@ function utility.FindReferences(reference)
 		elseif t == "function" then
 			done[var] = true
 
-			for _, v in pairs(debug.getupvalues(var)) do
+			for _, v in pairs(debug.get_upvalues(var)) do
 				if v.val then search(v.val, str .. "^" .. v.key) end
 			end
 		end
@@ -913,7 +913,7 @@ do -- find value
 					local nice_name
 
 					if type(val) == "function" then
-						local params = debug.getparams(val)
+						local params = debug.get_params(val)
 
 						if dot == ":" and params[1] == "self" then
 							table.remove(params, 1)

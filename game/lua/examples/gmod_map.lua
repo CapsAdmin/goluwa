@@ -54,7 +54,7 @@ for k, v in pairs(data) do
 		end
 
 		--print(v.mdl)
-		--	if v.mdl:find("owata_oke") then debug.logcalls(true) end
+		--	if v.mdl:find("owata_oke") then debug.log_calls(true) end
 		--print("yes!")
 		if v.mat and v.mat ~= "" then
 			local mat = render.CreateMaterial("model")

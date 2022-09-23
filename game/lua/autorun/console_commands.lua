@@ -247,7 +247,7 @@ commands.Add("source=string,number|nil", function(path, line_number, ...)
 		table.remove(data, 1)
 
 		if not debug.openfunction(func) then
-			logn(debug.getprettysource(func, true))
+			logn(debug.get_pretty_source(func, true))
 		end
 	else
 		logf("function %q could not be found in _G or in added commands\n", path)

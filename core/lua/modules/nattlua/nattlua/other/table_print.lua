@@ -62,13 +62,13 @@ do
 		return str
 	end
 	pretty_prints["function"] = function(self--[[#: Function]])
-		if debug.getprettysource then
+		if debug.get_pretty_source then
 			return (
 				"function[%p][%s](%s)"
 			):format(
 				self,
-				debug.getprettysource(self, true),
-				table.concat(debug.getparams(self), ", ")
+				debug.get_pretty_source(self, true),
+				table.concat(debug.get_params(self), ", ")
 			)
 		end
 

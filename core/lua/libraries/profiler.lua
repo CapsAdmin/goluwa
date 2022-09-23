@@ -329,7 +329,7 @@ function profiler.GetBenchmark(type, file, dump_line)
 						end
 					end
 				elseif data.func then
-					name = ("%s(%s)"):format(data.func_name, table.concat(debug.getparams(data.func), ", "))
+					name = ("%s(%s)"):format(data.func_name, table.concat(debug.get_params(data.func), ", "))
 				else
 					local full_path = R(path) or path
 					name = full_path .. ":" .. line

@@ -14,7 +14,7 @@ local function add_func(lib_name, name, func, nolibname, meta)
 	local args
 
 	if type(func) == "function" then
-		args = debug.getparams(func)
+		args = debug.get_params(func)
 
 		if meta then table.remove(args, 1) end
 

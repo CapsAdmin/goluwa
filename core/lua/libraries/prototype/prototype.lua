@@ -548,7 +548,7 @@ function prototype.UpdateObjects(meta)
 								tbl.Type,
 								tbl.ClassName,
 								k,
-								table.concatmember(debug.getupvalues(v), "key", ", ")
+								table.concatmember(debug.get_upvalues(v), "key", ", ")
 							)
 						else
 							obj[k] = v

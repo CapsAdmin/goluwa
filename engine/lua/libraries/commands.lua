@@ -360,7 +360,7 @@ do -- commands
 
 		local help = alias .. ":\n"
 		help = help .. "\tusage example:\n\t\t" .. str .. "\n"
-		help = help .. "\tlocation:\n\t\t" .. debug.getprettysource(command.callback, true) .. "\n"
+		help = help .. "\tlocation:\n\t\t" .. debug.get_pretty_source(command.callback, true) .. "\n"
 		return help
 	end
 

@@ -252,7 +252,7 @@ do
 				local info = debug.getinfo(level)
 
 				if info then
-					info.source = debug.getprettysource(level) .. ":" .. (info.currentline or 0)
+					info.source = debug.get_pretty_source(level) .. ":" .. (info.currentline or 0)
 					local args = {}
 
 					for arg = 1, info.nparams do
@@ -314,7 +314,7 @@ do
 			logn("LOCALS: ")
 			logn("{")
 
-			for _, param in pairs(debug.getparamsx(4)) do
+			for _, param in pairs(debug.get_paramsx(4)) do
 				--if not param.key:find("(",nil,true) then
 				local val
 

@@ -31,7 +31,7 @@ function test.test(func, ...)
 	local ret = table.pack(pcall(func, ...))
 
 	if not ret[1] then
-		test.fail(debug.getname(func), ret[2])
+		test.fail(debug.get_name(func), ret[2])
 		return
 	end
 
@@ -47,7 +47,7 @@ function test.test(func, ...)
 				end
 			end
 
-			if msg ~= "" then test.fail(debug.getname(func), msg) end
+			if msg ~= "" then test.fail(debug.get_name(func), msg) end
 		end,
 		expect_compare = function(...)
 			local exp = table.pack(...)
@@ -63,7 +63,7 @@ function test.test(func, ...)
 				end
 			end
 
-			if msg ~= "" then test.fail(debug.getname(func), msg) end
+			if msg ~= "" then test.fail(debug.get_name(func), msg) end
 		end,
 	}
 end
