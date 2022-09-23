@@ -146,7 +146,7 @@ if ffi then -- attributes
 			local val = output[1][info.name]
 
 			if val then
-				if type(val) == "number" or hasindex(val) and val.Unpack then
+				if type(val) == "number" or has_index(val) and val.Unpack then
 					keys[info.name] = true
 					found = true
 				end

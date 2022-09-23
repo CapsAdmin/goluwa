@@ -196,7 +196,7 @@ function event.Delay(time, callback, id, obj, ...)
 		end
 	end
 
-	if obj and hasindex(obj) and obj.IsValid then
+	if obj and has_index(obj) and obj.IsValid then
 		local old = callback
 		callback = function(...)
 			if obj:IsValid() then return old(...) end

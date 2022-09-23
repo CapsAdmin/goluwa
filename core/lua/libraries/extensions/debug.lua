@@ -182,14 +182,14 @@ do
 					end
 				end
 
-				setlogfile()
+				set_log_file()
 				return ...
 			end
 
 			for name, func in pairs(library) do
 				if type(func) == "function" or type(func) == "cdata" then
 					library[name] = function(...)
-						setlogfile(log_name)
+						set_log_file(log_name)
 
 						if not post_calls_only and not filter[name] then
 							local args = {}
@@ -384,9 +384,9 @@ function debug.log_calls(b, type)
 	local hook
 	hook = function()
 		debug.sethook()
-		setlogfile("lua_calls")
+		set_log_file("lua_calls")
 		logn(debug.traceback())
-		setlogfile()
+		set_log_file()
 		debug.sethook(hook, type)
 	end
 	debug.sethook(hook, type)

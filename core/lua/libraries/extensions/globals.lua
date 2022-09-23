@@ -138,16 +138,16 @@ do -- logging
 	local log_files = {}
 	local log_file
 
-	function getlogpath(name)
+	function get_log_path(name)
 		name = name or "console"
 		return base_log_dir .. name .. "_" .. jit.os:lower() .. ".txt"
 	end
 
-	function setlogfile(name)
+	function set_log_file(name)
 		name = name or "console"
 
 		if not log_files[name] then
-			local file = assert(io.open(getlogpath(name), "w"))
+			local file = assert(io.open(get_log_path(name), "w"))
 			file:setvbuf("no")
 			log_files[name] = file
 		end
@@ -155,7 +155,7 @@ do -- logging
 		log_file = log_files[name]
 	end
 
-	function getlogfile(name)
+	function get_log_file(name)
 		name = name or "console"
 		return log_files[name]
 	end
@@ -183,7 +183,7 @@ do -- logging
 	end
 
 	local function raw_log(str)
-		if not log_file then setlogfile() end
+		if not log_file then set_log_file() end
 
 		log_file:write(str)
 
@@ -274,7 +274,7 @@ end
 do
 	local luadata
 
-	function fromstring(str)
+	function from_string(str)
 		local num = tonumber(str)
 
 		if num then return num end
@@ -363,7 +363,7 @@ local idx = function(var)
 	return var.Type
 end
 
-function hasindex(var)
+function has_index(var)
 	if getmetatable(var) == getmetatable(NULL) then return false end
 
 	local T = type(var)
@@ -404,7 +404,7 @@ function typex(var)
 	return t
 end
 
-function istype(var, t)
+function is_type(var, t)
 	if
 		t == "nil" or
 		t == "boolean" or
@@ -422,7 +422,7 @@ function istype(var, t)
 	return typex(var) == t
 end
 
-function istype(var, ...)
+function is_type(var, ...)
 	for _, str in pairs({...}) do
 		if typex(var) == str then return true end
 	end

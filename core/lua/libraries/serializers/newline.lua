@@ -16,7 +16,7 @@ function newline.Decode(str)
 	str = str:gsub("\r\n", "\n") .. "\n"
 
 	for v in str:gmatch("(.-)\n") do
-		if v ~= "" then table.insert(out, fromstring(v)) end
+		if v ~= "" then table.insert(out, from_string(v)) end
 	end
 
 	return out

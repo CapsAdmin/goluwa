@@ -635,7 +635,7 @@ function META:AddProperty(name, set_value, get_value, default, extra_info, obj)
 
 	local fields = extra_info.fields
 
-	if not fields and hasindex(default) then
+	if not fields and has_index(default) then
 		fields = fields or default.Args
 
 		if fields then

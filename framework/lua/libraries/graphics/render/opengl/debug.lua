@@ -43,7 +43,7 @@ function render.SetDebug(b)
 
 					if key ~= "self" then obj = nil end
 
-					if obj and hasindex(obj) and obj.GetDebugTrace and obj:GetDebugTrace() ~= "" then
+					if obj and has_index(obj) and obj.GetDebugTrace and obj:GetDebugTrace() ~= "" then
 						logn(obj:GetDebugTrace())
 					end
 

@@ -429,7 +429,7 @@ function prototype.CreateDerivedObject(super_type, sub_type, override, skip_gc_c
 end
 
 function prototype.SafeRemove(obj)
-	if hasindex(obj) and obj.IsValid and obj.Remove and obj:IsValid() then
+	if has_index(obj) and obj.IsValid and obj.Remove and obj:IsValid() then
 		obj:Remove()
 	end
 end

@@ -243,7 +243,7 @@ do
 					nl.runtime_syntax:IsNonStandardKeyword(token) or
 					nl.typesystem_syntax:IsNonStandardKeyword(token) or
 					nl.runtime_syntax:IsKeywordValue(token) or
-					nl.typesystem_syntax:IsKeywordValue(token)				
+					nl.typesystem_syntax:IsKeywordValue(token)
 				then
 					set_color("keyword")
 				else
@@ -276,12 +276,14 @@ end
 function repl.InputLua(str)
 	local ok, err = xpcall(function()
 		local compiler = nl.Compiler(str, "repl")
+
 		function compiler:OnDiagnostic(code, msg, severity, start, stop, node, ...)
 			set_color("error")
 			repl.Write((" "):rep(start + 1) .. ("^"):rep(stop - start + 1))
 			set_color("letter")
 			repl.StyledWrite(" " .. msg .. "\n")
 		end
+
 		print(compiler)
 		local code = compiler:Emit()
 		repl.Echo(code)
@@ -597,7 +599,7 @@ end)
 
 if os.getenv("GOLUWA_TMUX") then
 	os.remove(R("shared/") .. "tmux_log.txt")
-	os.execute("ln -s " .. getlogpath() .. " " .. R("shared/") .. "tmux_log.txt")
+	os.execute("ln -s " .. get_log_path() .. " " .. R("shared/") .. "tmux_log.txt")
 end
 
 return repl

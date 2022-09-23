@@ -19,7 +19,7 @@ function comma.Decode(str)
 	local out = {}
 
 	for i, v in ipairs(str:split(",")) do
-		out[i] = fromstring(v:trim())
+		out[i] = from_string(v:trim())
 	end
 
 	return out

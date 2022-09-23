@@ -31,7 +31,7 @@ else
 	function structs.GetStructMeta(obj)
 		local meta = getmetatable(obj)
 
-		if meta and hasindex(meta) and meta.ClassName then
+		if meta and has_index(meta) and meta.ClassName then
 			return structs.type_lookup[meta.ClassName]
 		end
 	end

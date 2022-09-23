@@ -18,7 +18,7 @@ function simple.Decode(str)
 	local out = {}
 
 	for k, v in str:gmatch("(.-)=(.-)\n") do
-		out[fromstring(k)] = fromstring(v)
+		out[from_string(k)] = from_string(v)
 	end
 
 	return out

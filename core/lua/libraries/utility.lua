@@ -1029,7 +1029,7 @@ do
 end
 
 function utility.SafeRemove(obj, gc)
-	if hasindex(obj) then
+	if has_index(obj) then
 		if obj.IsValid and not obj:IsValid() then return end
 
 		if type(obj.Remove) == "function" then
@@ -1045,7 +1045,7 @@ end
 utility.remakes = {}
 
 function utility.RemoveOldObject(obj, id)
-	if hasindex(obj) and type(obj.Remove) == "function" then
+	if has_index(obj) and type(obj.Remove) == "function" then
 		id = id or (debug.getinfo(2).currentline .. debug.getinfo(2).source)
 
 		if typex(utility.remakes[id]) == typex(obj) then
