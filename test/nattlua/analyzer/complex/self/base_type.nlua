@@ -1,0 +1,5 @@
+local base = require("nattlua.types.base")
+
+§analyzer:AnalyzeUnreachableCode()
+
+attest.equal<|unpack<|argument_type<|base.MakeUnique|>|>, (base.@Self, true | false)|>

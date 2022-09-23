@@ -1,0 +1,501 @@
+local type { Token } = import("~/nattlua/lexer/token.lua")
+
+local type { Code } = import("~/nattlua/code.lua")
+
+local type statement = {}
+local type expression = {}
+local type Node = {
+	@Name = "Node",
+	type = "expression" | "statement",
+	kind = string,
+	id = number,
+	Code = Code,
+	tokens = Map<|string, Token | List<|Token|>|>,
+	environment = "typesystem" | "runtime",
+	parent = nil | self,
+	code_start = number,
+	code_stop = number,
+	first_node = nil | self,
+	statements = nil | List<|any|>,
+	value = nil | Token,
+	inferred_type = nil | any,
+	inferred_types = nil | List<|any|>,
+}
+type expression["prefix_operator"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:101]
+		tokens = {
+			["value"] = Token,
+			["right"] = Token,
+		},
+		value = any,
+		right = any,
+	}
+type statement["analyzer_function"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:125]
+		tokens = {
+			["expression"] = Token,
+			["function"] = Token,
+			["^"] = Token,
+			["self_call"] = Token,
+			["analyzer"] = Token,
+		},
+		expression = any,
+		self_call = any,
+	}
+type expression["empty_union"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:267]
+		tokens = {
+			["|"] = Token,
+		},
+	}
+type statement["local_assignment"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:314]
+		tokens = {
+			["type"] = Token,
+			["environment"] = Token,
+			["left"] = Token,
+			["right"] = Token,
+			["local"] = Token,
+			["="] = Token,
+		},
+		left = any,
+		right = any,
+	}
+type expression["vararg"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:120]
+		tokens = {
+			["value"] = Token,
+			["..."] = Token,
+		},
+		value = any,
+	}
+type expression["type_table"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:218]
+		tokens = {
+			["{"] = Token,
+			["}"] = Token,
+			["separators"] = Token,
+			["spread"] = Token,
+			["children"] = Token,
+		},
+		spread = any,
+		children = any,
+	}
+type statement["while"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:391]
+		tokens = {
+			["expression"] = Token,
+			["statements"] = Token,
+			["do"] = Token,
+			["while"] = Token,
+			["end"] = Token,
+		},
+		expression = any,
+		statements = any,
+	}
+type expression["analyzer_function"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:11]
+		tokens = {
+			["function"] = Token,
+			["analyzer"] = Token,
+		},
+	}
+type expression["postfix_operator"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:283]
+		tokens = {
+			["value"] = Token,
+		},
+		value = any,
+	}
+type expression["table_expression_value"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:190]
+		tokens = {
+			["key_expression"] = Token,
+			["value_expression"] = Token,
+			["["] = Token,
+			["]"] = Token,
+			["="] = Token,
+		},
+		key_expression = any,
+		value_expression = any,
+	}
+type expression["table_index_value"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:208]
+		tokens = {
+			["value_expression"] = Token,
+			["key"] = Token,
+			["spread"] = Token,
+		},
+		key = any,
+		value_expression = any,
+	}
+type expression["table_key_value"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:200]
+		tokens = {
+			["spread"] = Token,
+			["="] = Token,
+			["identifier"] = Token,
+			["value_expression"] = Token,
+		},
+		value_expression = any,
+	}
+type expression["table"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:519]
+		tokens = {
+			["{"] = Token,
+			["}"] = Token,
+			["separators"] = List<|Token|>,
+		},
+		is_dictionary = boolean,
+		children = List<|
+			expression["table_expression_value"] | expression["table_index_value"] | expression["table_key_value"]
+		|>,
+		spread = boolean,
+		is_array = boolean,
+	}
+type expression["function"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:22]
+		tokens = {
+			["function"] = Token,
+		},
+	}
+type expression["function_signature"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:154]
+		tokens = {
+			["identifiers"] = Token,
+			["arguments)"] = Token,
+			["return_types"] = Token,
+			["="] = Token,
+			["return("] = Token,
+			["return)"] = Token,
+			["function"] = Token,
+			[">"] = Token,
+			["<"] = Token,
+			["identifiers_typesystem"] = Token,
+			[":"] = Token,
+			["arguments("] = Token,
+		},
+		return_types = any,
+		identifiers = any,
+		return_types = any,
+	}
+type expression["value"] = Node & { -- [statement - local_assignment @ nattlua/parser.lua:30]
+		tokens = {
+			["standalone_letter"] = Token,
+			["value"] = Token,
+			[">"] = Token,
+			["<"] = Token,
+			["attribute"] = Token,
+			["type_expression"] = Token,
+			[":"] = Token,
+		},
+		type_expression = any,
+		value = any,
+		attribute = any,
+	}
+type statement["analyzer_debug_code"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:412]
+		tokens = {
+			["lua_code"] = Token,
+		},
+		lua_code = any,
+	}
+type statement["break"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:214]
+		tokens = {
+			["break"] = Token,
+		},
+	}
+type expression["binary_operator"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:32]
+		tokens = {
+			["type"] = Token,
+			["right"] = Token,
+			["value"] = Token,
+			["left"] = Token,
+		},
+		value = any,
+		right = any,
+	}
+type expression["postfix_call"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:292]
+		tokens = {
+			["expressions"] = Token,
+			["call_typesystem)"] = Token,
+			["call("] = Token,
+			["call)"] = Token,
+			["type_call"] = Token,
+			["value"] = Token,
+			["!"] = Token,
+			["call_typesystem("] = Token,
+			["expressions_typesystem"] = Token,
+		},
+		expressions = any,
+		value = any,
+		type_call = any,
+	}
+type statement["do"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:223]
+		tokens = {
+			["do"] = Token,
+			["statements"] = Token,
+			["end"] = Token,
+		},
+		statements = any,
+	}
+type statement["generic_for"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:234]
+		tokens = {
+			["identifiers"] = Token,
+			["for"] = Token,
+			["statements"] = Token,
+			["do"] = Token,
+			["in"] = Token,
+			["expressions"] = Token,
+			["end"] = Token,
+		},
+		identifiers = any,
+		statements = any,
+		expressions = any,
+	}
+type statement["destructure_assignment"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:30]
+		tokens = {
+			["default_comma"] = Token,
+			["{"] = Token,
+			["}"] = Token,
+			["default"] = Token,
+			["="] = Token,
+			["left"] = Token,
+			["right"] = Token,
+		},
+		left = any,
+		right = any,
+		default = any,
+		default_comma = any,
+	}
+type statement["goto_label"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:249]
+		tokens = {
+			["identifier"] = Token,
+			["::"] = Token,
+		},
+	}
+type statement["assignment"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:462]
+		tokens = {
+			["type"] = Token,
+			["environment"] = Token,
+			["="] = Token,
+			["left"] = Token,
+			["right"] = Token,
+		},
+		right = any,
+		left = any,
+		environment = any,
+	}
+type statement["shebang"] = Node & { -- [statement - assignment @ ./nattlua/parser.lua:230]
+		tokens = {
+			["shebang"] = Token,
+		},
+	}
+type statement["goto"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:260]
+		tokens = {
+			["identifier"] = Token,
+			["goto"] = Token,
+		},
+	}
+type statement["local_type_function"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:202]
+		tokens = {
+			["identifiers"] = Token,
+			["arguments)"] = Token,
+			["function"] = Token,
+			["end"] = Token,
+			["statements"] = Token,
+			["local"] = Token,
+			["identifier"] = Token,
+			["arguments("] = Token,
+		},
+		identifiers = any,
+	}
+type statement["end_of_file"] = Node & { -- [statement - local_assignment @ ./nattlua/parser.lua:264]
+		tokens = {
+			["end_of_file"] = Token,
+		},
+	}
+type statement["call_expression"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:492]
+		tokens = {
+			["value"] = Token,
+			["tokens"] = Token,
+		},
+		value = any,
+		tokens = any,
+	}
+type statement["parser_debug_code"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:419]
+		tokens = {
+			["lua_code"] = Token,
+		},
+		lua_code = any,
+	}
+type statement["continue"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:404]
+		tokens = {
+			["continue"] = Token,
+		},
+	}
+type statement["return"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:381]
+		tokens = {
+			["expressions"] = Token,
+			["return"] = Token,
+		},
+		expressions = any,
+	}
+type statement["numeric_for"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:345]
+		tokens = {
+			["identifiers"] = Token,
+			["for"] = Token,
+			["statements"] = Token,
+			["do"] = Token,
+			["="] = Token,
+			["expressions"] = Token,
+			["end"] = Token,
+		},
+		identifiers = any,
+		statements = any,
+		expressions = any,
+	}
+type statement["local_function"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:158]
+		tokens = {
+			["identifier"] = Token,
+			["local"] = Token,
+			["function"] = Token,
+		},
+	}
+type statement["local_analyzer_function"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:178]
+		tokens = {
+			["identifier"] = Token,
+			["function"] = Token,
+			["local"] = Token,
+			["analyzer"] = Token,
+		},
+	}
+type expression["type_string"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:258]
+		tokens = {
+			["type_expression"] = Token,
+			["as"] = Token,
+			["$"] = Token,
+			["value"] = Token,
+		},
+		value = any,
+		type_expression = any,
+	}
+type expression["tuple"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:71]
+		tokens = {
+			["expressions"] = Token,
+			["("] = Token,
+			[")"] = Token,
+		},
+		expressions = any,
+	}
+type expression["type_function"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:171]
+		tokens = {
+			["function"] = Token,
+		},
+	}
+type statement["function"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:103]
+		tokens = {
+			["expression"] = Token,
+			["self_call"] = Token,
+			["function"] = Token,
+			["kind"] = Token,
+		},
+		expression = any,
+		self_call = any,
+		kind = any,
+	}
+type statement["type_function"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:103]
+		tokens = {
+			["expression"] = Token,
+			["self_call"] = Token,
+			["function"] = Token,
+			["kind"] = Token,
+		},
+		expression = any,
+		self_call = any,
+		kind = any,
+	}
+type statement["repeat"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:360]
+		tokens = {
+			["expression"] = Token,
+			["statements"] = Token,
+			["repeat"] = Token,
+			["until"] = Token,
+		},
+		statements = any,
+		expression = any,
+	}
+type statement["if"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:270]
+		tokens = {
+			["expressions"] = Token,
+			["statements"] = Token,
+			["if/else/elseif"] = Token,
+			["then"] = Token,
+			["end"] = Token,
+		},
+		expressions = any,
+		statements = any,
+	}
+type statement["local_destructure_assignment"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:52]
+		tokens = {
+			["}"] = Token,
+			["right"] = Token,
+			["type"] = Token,
+			["environment"] = Token,
+			["{"] = Token,
+			["default_comma"] = Token,
+			["left"] = Token,
+			["default"] = Token,
+			["local"] = Token,
+			["="] = Token,
+		},
+		default = any,
+		default_comma = any,
+		right = any,
+		left = any,
+		environment = any,
+	}
+type expression["table_spread"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:468]
+		tokens = {
+			["expression"] = Token,
+			["..."] = Token,
+		},
+		expression = any,
+	}
+type statement["root"] = Node & { -- [statement - local_assignment @ ./nattlua/parser.lua:225]
+		tokens = {
+			["shebang"] = Token,
+			["eof"] = Token,
+			["statements"] = Token,
+		},
+		statements = any,
+	}
+type statement["semicolon"] = Node & { -- [statement - local_assignment @ nattlua/parser/statements.lua:372]
+		tokens = {
+			[";"] = Token,
+		},
+	}
+type expression["postfix_expression_index"] = Node & { -- [statement - local_assignment @ nattlua/parser/expressions.lua:327]
+		tokens = {
+			["]"] = Token,
+			["["] = Token,
+			["expression"] = Token,
+		},
+		expression = any,
+	}
+local type ExpressionKind = (function()
+	local type union = |
+
+	for kind, node in pairs(expression) do
+		node.type = "expression"
+		node.kind = kind
+		--	node.@Name = node.type .. "_" .. node.kind
+		type union = union | kind
+	end
+
+	return union
+end)()
+local type StatementKind = (function()
+	local type union = |
+
+	for kind, node in pairs(statement) do
+		node.type = "statement"
+		node.kind = kind
+		--	node.@Name = node.type .. "_" .. node.kind
+		type union = union | kind
+	end
+
+	return union
+end)()
+type Node.kind = ExpressionKind | StatementKind
+return {
+	ExpressionKind = ExpressionKind,
+	StatementKind = StatementKind,
+	Node = Node,
+	statement = statement,
+	expression = expression,
+}

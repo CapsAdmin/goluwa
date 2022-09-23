@@ -1,0 +1,185 @@
+-- declare love as global so it will be available for all the other imports
+type love = import("./love_api.nlua")
+
+-- these imports will be bundled
+local Maze = import("./maze.nlua")
+local Vec2 = import("./vec2.nlua")
+
+-- not sure about this, Vec2 the metatable and which doubles as a constructor and NOT the type Vec2
+local type Vec2 = Vec2.@Self
+
+local type Node = {
+	pos = Vec2,
+	wall = boolean,
+	goal = nil | boolean,
+	distance = number,
+	visited = boolean,
+	direction = nil | Vec2,
+}
+
+local maze_width = 13
+local maze_height = 13
+local cell_size = 30
+local grid = {} as {[1..maze_height] = {[1..maze_width] = Node}}
+
+do
+	local maze = Maze(maze_width, maze_height)
+
+	maze:Build(3)
+	local neighbours = {Vec2(-1, 0), Vec2(0, -1), Vec2(1, 0), Vec2(0, 1)}
+
+	local function get_neighbours(pos: Vec2)
+		local tbl = {}
+
+		for _, xy in ipairs(neighbours) do
+			local offset = xy + pos
+			local found = grid[offset.y] and grid[offset.y][offset.x]
+
+			if found then table.insert(tbl, found) end
+		end
+
+		return tbl
+	end
+
+	local stop: Node
+
+	for y = 1, maze.height do
+		grid[y] = grid[y] or {}
+		for x = 1, maze.width do
+			local state = {
+				pos = Vec2(x, y),
+				wall = maze:Get(x - 1, y - 1) == 1,
+			}
+
+			if x > 1 and y > 5 and x < 10 and y < 8 then
+				state.wall = false
+			end
+
+			if x == maze.width and y == maze.height then
+				stop = state
+				stop.goal = true
+			end
+
+			grid[y][x] = state
+		end
+	end
+
+	stop.distance = 0
+	local to_visit = {stop}
+
+	for _, node in ipairs(to_visit) do
+		if node.wall then
+			node.distance = 100000
+			node.visited = true
+		else
+			if node.distance then
+				local neighbours = get_neighbours(node.pos)
+
+				for _, n in ipairs(neighbours) do
+					if not n.visited then
+						n.visited = true
+						n.distance = node.distance + 1
+						table.insert(to_visit, n)
+					end
+				end
+			end
+		end
+	end
+
+	for y = 1, #grid do
+		for x = 1, #grid[y] do
+			local center = grid[y][x]
+
+			if not center.wall then
+				local neighbours = get_neighbours(center.pos)
+				local pos = Vec2(0, 0)
+
+				for _, n in ipairs(neighbours) do
+					if n.distance and center.distance and not n.wall then
+						local dir = n.pos - center.pos
+						pos = pos + (dir * (center.distance - n.distance))
+					end
+				end
+
+				center.direction = pos:GetNormalized()
+			end
+		end
+	end
+end
+
+function love.load()
+	love.window.setMode(cell_size * maze_width, cell_size * maze_height, {resizable = true, vsync = true, x = 0, y = 0})
+end
+
+local function draw_arrow(x1: number, y1: number, x2: number, y2: number, arrlen: number, angle: number)
+	love.graphics.line(x1, y1, x2, y2)
+	local a = math.atan2(y1 - y2, x1 - x2)
+	love.graphics.line(x2, y2, x2 + arrlen * math.cos(a + angle), y2 + arrlen * math.sin(a + angle))
+	love.graphics.line(x2, y2, x2 + arrlen * math.cos(a - angle), y2 + arrlen * math.sin(a - angle))
+end
+
+local function cell2pix(pos: Vec2)
+	local x = (pos.x - 1) * cell_size
+	local y = (pos.y - 1) * cell_size
+	return Vec2(x, y)
+end
+
+function love.draw()
+	for y = 1, #grid do
+		for x = 1, #grid[y] do
+			local state = grid[y][x]
+
+			if state.wall then
+				love.graphics.setColor(1, 1, 1, 1)
+			elseif state.goal then
+				love.graphics.setColor(0, 1, 0, 1)
+			else
+				love.graphics.setColor(1, 0, 0, state.distance and 10 / state.distance or 1)
+			end
+
+			local px = (x - 1) * cell_size
+			local py = (y - 1) * cell_size
+			love.graphics.rectangle("fill", px, py, cell_size, cell_size)
+			love.graphics.setColor(0.5, 0.5, 0.5)
+		end
+	end
+
+	for y = 1, #grid do
+		for x = 1, #grid[y] do
+			local cell = grid[y][x]
+			local dir = cell.direction
+			if dir then
+				local s = cell_size / 2
+				local pixel_pos = cell2pix(cell.pos)
+				
+				local start = pixel_pos - dir * s/2
+				local stop = pixel_pos + dir * s/2
+				
+				-- center the arrow
+				start = start + Vec2(s, s)
+				stop = stop + Vec2(s, s)
+
+				love.graphics.setColor(0.5, 0.5, 0.5, 1)
+				draw_arrow(
+					start.x,
+					start.y,
+					stop.x,
+					stop.y,
+					cell_size / 10,
+					math.pi / 4
+				)
+			end
+		end
+	end
+end
+
+
+_G.hot_reload_last_modified = os.time() + 1
+function love.update()
+	local info = love.filesystem.getInfo("main.lua")
+	if info and _G.hot_reload_last_modified < info.modtime then
+		£ parser.dont_hoist_next_import = true
+		assert(love.filesystem.load("main.lua"))()
+		print("RELOAD")
+	end
+end

@@ -1,0 +1,17 @@
+local fs = import("filesystem.nlua")
+local attr = assert(fs.get_attributes("README.md"))
+attest.equal<|
+	attr,
+	{
+		last_accessed = number,
+		last_changed = number,
+		last_modified = number,
+		size = number,
+		type = "directory" | "file",
+	}
+|>
+local files = assert(fs.get_files("."))
+attest.equal<|files, {[number] = nil | string}|>
+local dir = assert(fs.get_current_directory())
+attest.equal<|dir, string|>
+assert(fs.set_current_directory("foo"))

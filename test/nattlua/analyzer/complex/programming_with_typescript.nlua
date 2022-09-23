@@ -1,0 +1,99 @@
+--based on https://www.youtube.com/watch?v=vGVvJuazs84 
+do
+	local function Push<|X: any, XS: List<|any|>|>
+		return {...XS, X}
+	end
+
+	attest.equal<|Push<|4, {1, 2, 3}|>, {1, 2, 3, 4}|>
+end
+
+do
+	local function If<|A: boolean, B: any, C: any|>
+		return A == true and B or C
+	end
+
+	attest.equal<|If<|true, number, boolean|>, number|>
+	attest.equal<|If<|false, number, boolean|>, boolean|>
+end
+
+do
+	local function XOR<|N: boolean, M: boolean|>
+		return (N and not M) or (not N and M)
+	end
+
+	attest.equal<|XOR<|true, false|>, true|>
+	attest.equal<|XOR<|true, true|>, false|>
+end
+
+do
+	local function IsGabriel<|U: Table|>
+		return U supersetof {name = "Gabriel", team = {name = "dataviz"}} and true or false
+	end
+
+	attest.equal<|IsGabriel<|{name = "Gabriel", team = {name = "dataviz"}}|>, true|>
+	attest.equal<|IsGabriel<|{name = "Gabriel", team = {name = "logs"}}|>, false|>
+	attest.equal<|IsGabriel<|{name = "Gabriel", team = {name = "dataviz", otherProp = string}}|>, true|>
+end
+
+do
+	local analyzer function ContainsAllKeysIn(T: Table, K: Table)
+		return (T:ContainsAllKeysIn(K))
+	end
+
+	local function GetTeam<|U: Table|>
+		return ContainsAllKeysIn<|U, {name = string, team = {name = string}}|> and U.team or nil
+	end
+
+	attest.equal<|GetTeam<|{name = "Gabriel", team = {name = "dataviz"}}|>, {name = "dataviz"}|>
+	attest.equal<|GetTeam<|{name = "Gabriel", team = {name = "dashboard"}}|>, {name = "dashboard"}|>
+	attest.equal<|GetTeam<|{team = {name = "logs"}}|>, nil|>
+end
+
+do
+	local function Map<|arr: ref List<|any|>, func: ref function=(val: arr[number] ~ nil)>(ref any)|>
+		local result = {}
+
+		for i, val in ipairs(arr) do
+			result[i] = func(val)
+		end
+
+		return result
+	end
+
+	-- higher order functions work!
+	local type t = Map<|{1, 2, 7, 4}, function(x)
+		return x == 7 and 3 or x
+	end|>
+	attest.equal<|t, {1, 2, 3, 4}|>
+end
+
+do
+	local type never = |
+
+	local function GetColValues<|columns: List<|{id = string, values = number}|>, id: string|>
+		for k, v in ipairs(columns) do
+			if v.id == id then return v.values end
+		end
+
+		return never
+	end
+
+	local type t = GetColValues<|
+		{
+			{id = "a", values = 1},
+			{id = "b", values = 2},
+			{id = "c", values = 3},
+		},
+		"a"
+	|>
+	attest.equal<|t, 1|>
+	local type t = GetColValues<|
+		{
+			{id = "a", values = 1},
+			{id = "b", values = 2},
+			{id = "c", values = 3},
+		},
+		"adwdawawda"
+	|>
+	attest.equal<|t, never|>
+end

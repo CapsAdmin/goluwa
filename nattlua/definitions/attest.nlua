@@ -1,0 +1,63 @@
+local type attest = {}
+
+analyzer function attest.equal(A: any, B: any, level: nil | literal number)
+	if not A:Equal(B) then
+		analyzer:ThrowError(
+			"expected " .. tostring(B) .. " got " .. tostring(A),
+			level and level:GetData() or 2
+		)
+		return
+	end
+
+	return A
+end
+
+analyzer function attest.literal(A: any)
+	analyzer:ErrorAssert(A:IsLiteral())
+	return A
+end
+
+analyzer function attest.superset_of(A: any, B: any)
+	analyzer:ErrorAssert(B:IsSubsetOf(A))
+	return A
+end
+
+analyzer function attest.subset_of(A: any, B: any)
+	analyzer:ErrorAssert(A:IsSubsetOf(B))
+	return A
+end
+
+analyzer function attest.truthy(obj: any, err: string | nil)
+	if obj:IsCertainlyTrue() then return obj end
+
+	error(err and err:GetData() or "assertion failed")
+end
+
+analyzer function attest.expect_diagnostic(severity: "warning" | "error", msg: string)
+	analyzer.expect_diagnostic = analyzer.expect_diagnostic or {}
+	table.insert(analyzer.expect_diagnostic, {msg = msg:GetData(), severity = severity:GetData()})
+end
+
+analyzer function attest.pcall(callable: Function, ...: ...any)
+	local diagnostics_index = #analyzer:GetDiagnostics()
+	analyzer:PushProtectedCall()
+	local tuple = analyzer:Assert(analyzer:Call(callable, types.Tuple({...})))
+	analyzer:PopProtectedCall()
+	local diagnostics = analyzer:GetDiagnostics()
+
+	do
+		local errors = {}
+
+		for i = math.max(diagnostics_index, 1), #diagnostics do
+			local d = diagnostics[i]
+			local msg = analyzer.compiler:GetCode():BuildSourceCodePointMessage(d.msg, d.start, d.stop)
+			table.insert(errors, msg)
+		end
+
+		if errors[1] then return false, table.concat(errors, "\n") end
+	end
+
+	return true, tuple:Unpack()
+end
+
+_G.attest = attest

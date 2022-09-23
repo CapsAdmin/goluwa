@@ -1,0 +1,115 @@
+type math = {
+	ceil = function=(x: number)>(number),
+	tan = function=(x: number)>(number),
+	log10 = function=(x: number)>(number),
+	sinh = function=(x: number)>(number),
+	ldexp = function=(m: number, e: number)>(number),
+	tointeger = function=(x: number)>(number),
+	cosh = function=(x: number)>(number),
+	min = function=(x: number, ...)>(number),
+	fmod = function=(x: number, y: number)>(number),
+	exp = function=(x: number)>(number),
+	random = function=(m: number, n: number)>(number) | function=(m: number)>(number) | function=()>(number),
+	rad = function=(x: number)>(number),
+	log = function=(x: number, base: number)>(number) | function=(x: number)>(number),
+	cos = function=(x: number)>(number),
+	randomseed = function=(x: number)>(nil),
+	floor = function=(x: number)>(number),
+	tanh = function=(x: number)>(number),
+	max = function=(x: number, ...)>(number),
+	pow = function=(x: number, y: number)>(number),
+	ult = function=(m: number, n: number)>(boolean),
+	acos = function=(x: number)>(number),
+	type = function=(x: number)>(string),
+	abs = function=(x: number)>(number),
+	frexp = function=(x: number)>(number, number),
+	deg = function=(x: number)>(number),
+	modf = function=(x: number)>(number, number),
+	atan2 = function=(y: number, x: number)>(number),
+	asin = function=(x: number)>(number),
+	atan = function=(x: number)>(number),
+	sqrt = function=(x: number)>(number),
+	sin = function=(x: number)>(number),
+}
+type math.huge = inf
+type math.pi = 3.14159265358979323864338327950288
+type math.maxinteger = 0x7FFFFFFFFFFFFFFF
+type math.mininteger = 0x8000000000000000
+
+analyzer function math.type(n: literal number): "float" | "integer" | "nil"
+	return "float"
+end
+
+analyzer function math.sin(n: literal number): number
+	return math.sin(n:GetData())
+end
+
+analyzer function math.abs(n: literal number): number
+	return math.abs(n:GetData())
+end
+
+analyzer function math.cos(n: literal number): number
+	return math.cos(n:GetData())
+end
+
+analyzer function math.ceil(n: literal number): number
+	return math.ceil(n:GetData())
+end
+
+analyzer function math.floor(n: literal number): number
+	return math.floor(n:GetData())
+end
+
+analyzer function math.min(...: ...number)
+	local numbers = {}
+
+	for i = 1, select("#", ...) do
+		local obj = select(i, ...)
+
+		if not obj:IsLiteral() then
+			return types.Number()
+		else
+			numbers[i] = obj:GetData()
+		end
+	end
+
+	return math.min(table.unpack(numbers))
+end
+
+analyzer function math.max(...: ...number)
+	local numbers = {}
+
+	for i = 1, select("#", ...) do
+		local obj = select(i, ...)
+
+		if not obj:IsLiteral() then
+			return types.Number()
+		else
+			numbers[i] = obj:GetData()
+		end
+	end
+
+	return math.max(table.unpack(numbers))
+end
+
+analyzer function math.random(n: nil | number, m: nil | number)
+	if not analyzer.enable_random_functions then
+		if n and n:IsLiteral() and m and m:IsLiteral() then
+			return types.LNumber(n:GetData()):SetMax(m)
+		end
+
+		return types.Number()
+	end
+
+	if n and m then return math.random(n:GetData(), m:GetData()) end
+
+	if n then return math.random(n and n:GetData()) end
+
+	return math.random()
+end
+
+analyzer function math.randomseed(n: number)
+	if not analyzer.enable_random_functions then return end
+
+	return math.randomseed(n:GetData())
+end

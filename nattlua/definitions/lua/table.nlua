@@ -1,0 +1,177 @@
+type table = {
+	maxn = function=(table: Table)>(number),
+	move = function=(a1: Table, f: any, e: any, t: any, a2: Table)>(nil) | function=(a1: Table, f: any, e: any, t: any)>(nil),
+	remove = function=(list: Table, pos: number)>(any) | function=(list: Table)>(any),
+	sort = function=(list: Table, comp: empty_function)>(nil) | function=(list: Table)>(nil),
+	unpack = function=(list: Table, i: number, j: number)>(...) | function=(list: Table, i: number)>(...) | function=(list: Table)>(...),
+	insert = function=(list: Table, pos: number, value: any)>(nil) | function=(list: Table, value: any)>(nil),
+	concat = function=(list: Table, sep: string, i: number, j: number)>(string) | function=(list: Table, sep: string, i: number)>(string) | function=(list: Table, sep: string)>(string) | function=(list: Table)>(string),
+	pack = function=(...)>(Table),
+	new = function=(number, number)>({[number] = any}),
+}
+
+analyzer function table.concat(tbl: List<|string|>, separator: string | nil)
+	if not tbl:IsLiteral() then return types.String() end
+
+	if
+		separator and
+		(
+			separator.Type ~= "string" or
+			not separator:IsLiteral()
+		)
+		and
+		not separator.Type ~= "symbol" and
+		separator:GetData() ~= nil
+	then
+		return types.String()
+	end
+
+	local out = {}
+
+	for i, keyval in ipairs(tbl:GetData()) do
+		if not keyval.val:IsLiteral() or keyval.val.Type == "union" then
+			return types.String()
+		end
+
+		out[i] = keyval.val:GetData()
+	end
+
+	return table.concat(out, separator and separator:GetData() or nil)
+end
+
+analyzer function table.insert(tbl: List<|any|>, ...: ...any)
+	if tbl.Type == "any" then return end
+	local pos, val = ...
+
+	if not val then
+		val = pos
+		pos = tbl:GetLength(analyzer)
+	else
+		pos = tbl:GetLength(analyzer)
+	end
+
+	local contract = tbl:GetContract()
+
+	if contract then
+		local values = contract:GetValueUnion()
+		values:RemoveType(types.Nil())
+		analyzer:Assert(val:IsSubsetOf(values))
+	end
+
+	if not tbl:HasLiteralKeys() then return end
+
+	if pos and pos:IsLiteral() then
+		pos:SetData(pos:GetData() + 1)
+		local max = pos:GetMax()
+
+		if max then max:SetData(max:GetData() + 1) end
+	end
+
+	if analyzer:IsInUncertainLoop() then pos:Widen() end
+
+	assert(type(pos) ~= "number")
+	analyzer:NewIndexOperator(tbl, pos, val)
+end
+
+analyzer function table.remove(tbl: List<|any|>, index: number | nil)
+	if tbl:GetContract() then tbl = tbl:GetContract() end
+
+	if not tbl:IsLiteral() then return tbl:Get(types.Number()) end
+
+	if index and not index:IsLiteral() then return tbl:Get(types.Number()) end
+
+	index = index or 1
+	return table.remove(tbl:GetData(), index:GetData())
+end
+
+analyzer function table.sort(tbl: List<|any|>, func: nil | function=(a: any, b: any)>(boolean))
+	local union = types.Union()
+
+	if tbl.Type == "tuple" then
+		for i, v in ipairs(tbl:GetData()) do
+			union:AddType(v)
+		end
+	elseif tbl.Type == "table" then
+		for i, v in ipairs(tbl:GetData()) do
+			union:AddType(v.val)
+		end
+	end
+
+	if func then
+		func:GetInputSignature():GetData()[1] = union
+		func:GetInputSignature():GetData()[2] = union
+		func:SetArgumentsInferred(true)
+	end
+
+	if tbl:IsLiteral() then
+		if func then
+			table.sort(tbl:GetData(), function(a, b)
+				local b = analyzer:Call(func, types.Tuple({a.val, b.val})):Get(1)
+
+				if b:IsCertainlyTrue() or b:IsCertainlyFalse() then
+					return b:IsCertainlyTrue()
+				else
+					analyzer:Error("cannot sort literal table with function that returns an uncertain boolean")
+				end
+			end)
+		else
+			table.sort(tbl:GetData(), function(a, b)
+				return a.val:GetData() < b.val:GetData()
+			end)
+		end
+
+		for i, kv in ipairs(tbl:GetData()) do
+			kv.key = kv.key:SetData(i)
+		end
+	end
+end
+
+analyzer function table.getn(tbl: List<|any|>)
+	return tbl:GetLength()
+end
+
+analyzer function table.unpack(tbl: List<|any|>)
+	local t = {}
+
+	for i = 1, 32 do
+		local v = tbl:Get(types.LNumber(i))
+
+		if not v then break end
+
+		t[i] = v
+	end
+
+	return table.unpack(t)
+end
+
+type unpack = table.unpack
+
+function table.destructure(tbl: Table, fields: List<|string|>, with_default: boolean | nil)
+	local out = {}
+
+	for i, key in ipairs(fields) do
+		out[i] = tbl[key]
+	end
+
+	if with_default then table.insert(out, 1, tbl) end
+
+	return table.unpack(out)
+end
+
+function table.mergetables(tables: List<|Table|>)
+	local out = {}
+
+	for i, tbl in ipairs(tables) do
+		for k, v in pairs(tbl) do
+			out[k] = v
+		end
+	end
+
+	return out
+end
+
+function table.spread(tbl: nil | List<|any|>)
+	if not tbl then return nil end
+
+	return table.unpack(tbl)
+end

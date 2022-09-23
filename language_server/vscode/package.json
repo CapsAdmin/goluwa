@@ -1,0 +1,94 @@
+{
+  "name": "nattlua",
+  "description": "Nattlua Language Client",
+  "icon": "icon.png",
+  "author": "CapsAdmin",
+  "license": "MIT",
+  "version": "0.0.1",
+  "publisher": "unpublished",
+  "keywords": [
+    "LSP",
+    "Language Server Client"
+  ],
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:lua",
+    "workspaceContains:**/*.lua",
+    "onLanguage:nlua",
+    "workspaceContains:**/*.nlua"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Microsoft/vscode-extension-samples"
+  },
+  "engines": {
+    "vscode": "^1.64.0"
+  },
+  "main": "./out/extension",
+  "contributes": {
+    "configurationDefaults": {
+      "[nattlua]": {
+        "editor.semanticHighlighting.enabled": true
+      }
+    },
+    "languages": [
+      {
+        "id": "nattlua",
+        "extensions": [
+          ".nlua",
+          ".lua"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "nattlua",
+        "scopeName": "source.nlua",
+        "path": "./syntaxes/nlua.tmLanguage.json",
+        "tokenTypes": {
+          "comment.line.double-dash.doc.nlua": "other"
+        }
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "nattlua configuration",
+      "properties": {
+        "nattlua.path": {
+          "type": "string",
+          "default": "/home/caps/.local/bin/nattlua",
+          "description": "path to executable"
+        },
+        "nattlua.arguments": {
+          "type": "array",
+          "default": [
+            "language-server"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "arguments for executable"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn compile",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
+    "build": "npx vsce package",
+    "test": "sh ./scripts/e2e.sh"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.18",
+    "@types/vscode": "^1.64.0",
+    "typescript": "^4.5.5",
+    "vsce": "^2.8.0"
+  }
+}

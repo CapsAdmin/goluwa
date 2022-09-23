@@ -1,0 +1,2162 @@
+local type love = {}
+local type DistanceModel =
+	"none"
+	| "inverse"
+	| "inverseclamped"
+	| "linear"
+	| "linearclamped"
+	| "exponent"
+	| "exponentclamped"
+local type EffectType =
+	"chorus"
+	| "compressor"
+	| "distortion"
+	| "echo"
+	| "equalizer"
+	| "flanger"
+	| "reverb"
+	| "ringmodulator"
+local type EffectWaveform =
+	"sawtooth"
+	| "sine"
+	| "square"
+	| "triangle"
+local type FilterType =
+	"lowpass"
+	| "highpass"
+	| "bandpass"
+local type SourceType =
+	"static"
+	| "stream"
+	| "queue"
+local type TimeUnit =
+	"seconds"
+	| "samples"
+local type CompressedDataFormat =
+	"lz4"
+	| "zlib"
+	| "gzip"
+	| "deflate"
+local type ContainerType =
+	"data"
+	| "string"
+local type EncodeFormat =
+	"base64"
+	| "hex"
+local type HashFunction =
+	"md5"
+	| "sha1"
+	| "sha224"
+	| "sha256"
+	| "sha384"
+	| "sha512"
+local type Event =
+	"focus"
+	| "joystickpressed"
+	| "joystickreleased"
+	| "keypressed"
+	| "keyreleased"
+	| "mousepressed"
+	| "mousereleased"
+	| "quit"
+	| "resize"
+	| "visible"
+	| "mousefocus"
+	| "threaderror"
+	| "joystickadded"
+	| "joystickremoved"
+	| "joystickaxis"
+	| "joystickhat"
+	| "gamepadpressed"
+	| "gamepadreleased"
+	| "gamepadaxis"
+	| "textinput"
+	| "mousemoved"
+	| "lowmemory"
+	| "textedited"
+	| "wheelmoved"
+	| "touchpressed"
+	| "touchreleased"
+	| "touchmoved"
+	| "directorydropped"
+	| "filedropped"
+	| "jp"
+	| "jr"
+	| "kp"
+	| "kr"
+	| "mp"
+	| "mr"
+	| "q"
+	| "f"
+local type BufferMode =
+	"none"
+	| "line"
+	| "full"
+local type FileDecoder =
+	"file"
+	| "base64"
+local type FileMode =
+	"r"
+	| "w"
+	| "a"
+	| "c"
+local type FileType =
+	"file"
+	| "directory"
+	| "symlink"
+	| "other"
+local type HintingMode =
+	"normal"
+	| "light"
+	| "mono"
+	| "none"
+local type AlignMode =
+	"center"
+	| "left"
+	| "right"
+	| "justify"
+local type ArcType =
+	"pie"
+	| "open"
+	| "closed"
+local type AreaSpreadDistribution =
+	"uniform"
+	| "normal"
+	| "ellipse"
+	| "borderellipse"
+	| "borderrectangle"
+	| "none"
+local type BlendAlphaMode =
+	"alphamultiply"
+	| "premultiplied"
+local type BlendMode =
+	"alpha"
+	| "replace"
+	| "screen"
+	| "add"
+	| "subtract"
+	| "multiply"
+	| "lighten"
+	| "darken"
+	| "additive"
+	| "subtractive"
+	| "multiplicative"
+	| "premultiplied"
+local type CompareMode =
+	"equal"
+	| "notequal"
+	| "less"
+	| "lequal"
+	| "gequal"
+	| "greater"
+	| "never"
+	| "always"
+local type CullMode =
+	"back"
+	| "front"
+	| "none"
+local type DrawMode =
+	"fill"
+	| "line"
+local type FilterMode =
+	"linear"
+	| "nearest"
+local type GraphicsFeature =
+	"clampzero"
+	| "lighten"
+	| "multicanvasformats"
+	| "glsl3"
+	| "instancing"
+	| "fullnpot"
+	| "pixelshaderhighp"
+	| "shaderderivatives"
+local type GraphicsLimit =
+	"pointsize"
+	| "texturesize"
+	| "multicanvas"
+	| "canvasmsaa"
+	| "texturelayers"
+	| "volumetexturesize"
+	| "cubetexturesize"
+	| "anisotropy"
+local type IndexDataType =
+	"uint16"
+	| "uint32"
+local type LineJoin =
+	"miter"
+	| "none"
+	| "bevel"
+local type LineStyle =
+	"rough"
+	| "smooth"
+local type MeshDrawMode =
+	"fan"
+	| "strip"
+	| "triangles"
+	| "points"
+local type MipmapMode =
+	"none"
+	| "auto"
+	| "manual"
+local type ParticleInsertMode =
+	"top"
+	| "bottom"
+	| "random"
+local type SpriteBatchUsage =
+	"dynamic"
+	| "static"
+	| "stream"
+local type StackType =
+	"transform"
+	| "all"
+local type StencilAction =
+	"replace"
+	| "increment"
+	| "decrement"
+	| "incrementwrap"
+	| "decrementwrap"
+	| "invert"
+local type TextureType =
+	"2d"
+	| "array"
+	| "cube"
+	| "volume"
+local type VertexAttributeStep =
+	"pervertex"
+	| "perinstance"
+local type VertexWinding =
+	"cw"
+	| "ccw"
+local type WrapMode =
+	"clamp"
+	| "repeat"
+	| "mirroredrepeat"
+	| "clampzero"
+local type CompressedImageFormat =
+	"DXT1"
+	| "DXT3"
+	| "DXT5"
+	| "BC4"
+	| "BC4s"
+	| "BC5"
+	| "BC5s"
+	| "BC6h"
+	| "BC6hs"
+	| "BC7"
+	| "ETC1"
+	| "ETC2rgb"
+	| "ETC2rgba"
+	| "ETC2rgba1"
+	| "EACr"
+	| "EACrs"
+	| "EACrg"
+	| "EACrgs"
+	| "PVR1rgb2"
+	| "PVR1rgb4"
+	| "PVR1rgba2"
+	| "PVR1rgba4"
+	| "ASTC4x4"
+	| "ASTC5x4"
+	| "ASTC5x5"
+	| "ASTC6x5"
+	| "ASTC6x6"
+	| "ASTC8x5"
+	| "ASTC8x6"
+	| "ASTC8x8"
+	| "ASTC10x5"
+	| "ASTC10x6"
+	| "ASTC10x8"
+	| "ASTC10x10"
+	| "ASTC12x10"
+	| "ASTC12x12"
+local type ImageFormat =
+	"tga"
+	| "png"
+	| "jpg"
+	| "bmp"
+local type PixelFormat =
+	"unknown"
+	| "normal"
+	| "hdr"
+	| "r8"
+	| "rg8"
+	| "rgba8"
+	| "srgba8"
+	| "r16"
+	| "rg16"
+	| "rgba16"
+	| "r16f"
+	| "rg16f"
+	| "rgba16f"
+	| "r32f"
+	| "rg32f"
+	| "rgba32f"
+	| "la8"
+	| "rgba4"
+	| "rgb5a1"
+	| "rgb565"
+	| "rgb10a2"
+	| "rg11b10f"
+	| "stencil8"
+	| "depth16"
+	| "depth24"
+	| "depth32f"
+	| "depth24stencil8"
+	| "depth32fstencil8"
+	| "DXT1"
+	| "DXT3"
+	| "DXT5"
+	| "BC4"
+	| "BC4s"
+	| "BC5"
+	| "BC5s"
+	| "BC6h"
+	| "BC6hs"
+	| "BC7"
+	| "ETC1"
+	| "ETC2rgb"
+	| "ETC2rgba"
+	| "ETC2rgba1"
+	| "EACr"
+	| "EACrs"
+	| "EACrg"
+	| "EACrgs"
+	| "PVR1rgb2"
+	| "PVR1rgb4"
+	| "PVR1rgba2"
+	| "PVR1rgba4"
+	| "ASTC4x4"
+	| "ASTC5x4"
+	| "ASTC5x5"
+	| "ASTC6x5"
+	| "ASTC6x6"
+	| "ASTC8x5"
+	| "ASTC8x6"
+	| "ASTC8x8"
+	| "ASTC10x5"
+	| "ASTC10x6"
+	| "ASTC10x8"
+	| "ASTC10x10"
+	| "ASTC12x10"
+	| "ASTC12x12"
+local type GamepadAxis =
+	"leftx"
+	| "lefty"
+	| "rightx"
+	| "righty"
+	| "triggerleft"
+	| "triggerright"
+local type GamepadButton =
+	"a"
+	| "b"
+	| "x"
+	| "y"
+	| "back"
+	| "guide"
+	| "start"
+	| "leftstick"
+	| "rightstick"
+	| "leftshoulder"
+	| "rightshoulder"
+	| "dpup"
+	| "dpdown"
+	| "dpleft"
+	| "dpright"
+local type JoystickHat =
+	"c"
+	| "d"
+	| "l"
+	| "ld"
+	| "lu"
+	| "r"
+	| "rd"
+	| "ru"
+	| "u"
+local type JoystickInputType =
+	"axis"
+	| "button"
+	| "hat"
+local type KeyConstant =
+	[[a]]
+	| [[b]]
+	| [[c]]
+	| [[d]]
+	| [[e]]
+	| [[f]]
+	| [[g]]
+	| [[h]]
+	| [[i]]
+	| [[j]]
+	| [[k]]
+	| [[l]]
+	| [[m]]
+	| [[n]]
+	| [[o]]
+	| [[p]]
+	| [[q]]
+	| [[r]]
+	| [[s]]
+	| [[t]]
+	| [[u]]
+	| [[v]]
+	| [[w]]
+	| [[x]]
+	| [[y]]
+	| [[z]]
+	| [[0]]
+	| [[1]]
+	| [[2]]
+	| [[3]]
+	| [[4]]
+	| [[5]]
+	| [[6]]
+	| [[7]]
+	| [[8]]
+	| [[9]]
+	| [[space]]
+	| [[!]]
+	| [["]]
+	| [[#]]
+	| [[$]]
+	| [[&]]
+	| [[']]
+	| [[(]]
+	| [[)]]
+	| [[*]]
+	| [[+]]
+	| [[,]]
+	| [[-]]
+	| [[.]]
+	| [[/]]
+	| [[:]]
+	| [[;]]
+	| [[<]]
+	| [[=]]
+	| [[>]]
+	| [[?]]
+	| [[@]]
+	| [[[]]
+	| [[\]]
+	| "]"
+	| [[^]]
+	| [[_]]
+	| [[`]]
+	| [[kp0]]
+	| [[kp1]]
+	| [[kp2]]
+	| [[kp3]]
+	| [[kp4]]
+	| [[kp5]]
+	| [[kp6]]
+	| [[kp7]]
+	| [[kp8]]
+	| [[kp9]]
+	| [[kp.]]
+	| [[kp/]]
+	| [[kp*]]
+	| [[kp-]]
+	| [[kp+]]
+	| [[kpenter]]
+	| [[kp=]]
+	| [[up]]
+	| [[down]]
+	| [[right]]
+	| [[left]]
+	| [[home]]
+	| [[end]]
+	| [[pageup]]
+	| [[pagedown]]
+	| [[insert]]
+	| [[backspace]]
+	| [[tab]]
+	| [[clear]]
+	| [[return]]
+	| [[delete]]
+	| [[f1]]
+	| [[f2]]
+	| [[f3]]
+	| [[f4]]
+	| [[f5]]
+	| [[f6]]
+	| [[f7]]
+	| [[f8]]
+	| [[f9]]
+	| [[f10]]
+	| [[f11]]
+	| [[f12]]
+	| [[f13]]
+	| [[f14]]
+	| [[f15]]
+	| [[numlock]]
+	| [[capslock]]
+	| [[scrollock]]
+	| [[rshift]]
+	| [[lshift]]
+	| [[rctrl]]
+	| [[lctrl]]
+	| [[ralt]]
+	| [[lalt]]
+	| [[rmeta]]
+	| [[lmeta]]
+	| [[lsuper]]
+	| [[rsuper]]
+	| [[mode]]
+	| [[compose]]
+	| [[pause]]
+	| [[escape]]
+	| [[help]]
+	| [[print]]
+	| [[sysreq]]
+	| [[break]]
+	| [[menu]]
+	| [[power]]
+	| [[euro]]
+	| [[undo]]
+	| [[www]]
+	| [[mail]]
+	| [[calculator]]
+	| [[appsearch]]
+	| [[apphome]]
+	| [[appback]]
+	| [[appforward]]
+	| [[apprefresh]]
+	| [[appbookmarks]]
+local type Scancode =
+	[[a]]
+	| [[b]]
+	| [[c]]
+	| [[d]]
+	| [[e]]
+	| [[f]]
+	| [[g]]
+	| [[h]]
+	| [[i]]
+	| [[j]]
+	| [[k]]
+	| [[l]]
+	| [[m]]
+	| [[n]]
+	| [[o]]
+	| [[p]]
+	| [[q]]
+	| [[r]]
+	| [[s]]
+	| [[t]]
+	| [[u]]
+	| [[v]]
+	| [[w]]
+	| [[x]]
+	| [[y]]
+	| [[z]]
+	| [[1]]
+	| [[2]]
+	| [[3]]
+	| [[4]]
+	| [[5]]
+	| [[6]]
+	| [[7]]
+	| [[8]]
+	| [[9]]
+	| [[0]]
+	| [[return]]
+	| [[escape]]
+	| [[backspace]]
+	| [[tab]]
+	| [[space]]
+	| [[-]]
+	| [[=]]
+	| [[[]]
+	| "]"
+	| [[\]]
+	| [[nonus#]]
+	| [[;]]
+	| [[']]
+	| [[`]]
+	| [[,]]
+	| [[.]]
+	| [[/]]
+	| [[capslock]]
+	| [[f1]]
+	| [[f2]]
+	| [[f3]]
+	| [[f4]]
+	| [[f5]]
+	| [[f6]]
+	| [[f7]]
+	| [[f8]]
+	| [[f9]]
+	| [[f10]]
+	| [[f11]]
+	| [[f12]]
+	| [[f13]]
+	| [[f14]]
+	| [[f15]]
+	| [[f16]]
+	| [[f17]]
+	| [[f18]]
+	| [[f19]]
+	| [[f20]]
+	| [[f21]]
+	| [[f22]]
+	| [[f23]]
+	| [[f24]]
+	| [[lctrl]]
+	| [[lshift]]
+	| [[lalt]]
+	| [[lgui]]
+	| [[rctrl]]
+	| [[rshift]]
+	| [[ralt]]
+	| [[rgui]]
+	| [[printscreen]]
+	| [[scrolllock]]
+	| [[pause]]
+	| [[insert]]
+	| [[home]]
+	| [[numlock]]
+	| [[pageup]]
+	| [[delete]]
+	| [[end]]
+	| [[pagedown]]
+	| [[right]]
+	| [[left]]
+	| [[down]]
+	| [[up]]
+	| [[nonusbackslash]]
+	| [[application]]
+	| [[execute]]
+	| [[help]]
+	| [[menu]]
+	| [[select]]
+	| [[stop]]
+	| [[again]]
+	| [[undo]]
+	| [[cut]]
+	| [[copy]]
+	| [[paste]]
+	| [[find]]
+	| [[kp/]]
+	| [[kp*]]
+	| [[kp-]]
+	| [[kp+]]
+	| [[kp=]]
+	| [[kpenter]]
+	| [[kp1]]
+	| [[kp2]]
+	| [[kp3]]
+	| [[kp4]]
+	| [[kp5]]
+	| [[kp6]]
+	| [[kp7]]
+	| [[kp8]]
+	| [[kp9]]
+	| [[kp0]]
+	| [[kp.]]
+	| [[international1]]
+	| [[international2]]
+	| [[international3]]
+	| [[international4]]
+	| [[international5]]
+	| [[international6]]
+	| [[international7]]
+	| [[international8]]
+	| [[international9]]
+	| [[lang1]]
+	| [[lang2]]
+	| [[lang3]]
+	| [[lang4]]
+	| [[lang5]]
+	| [[mute]]
+	| [[volumeup]]
+	| [[volumedown]]
+	| [[audionext]]
+	| [[audioprev]]
+	| [[audiostop]]
+	| [[audioplay]]
+	| [[audiomute]]
+	| [[mediaselect]]
+	| [[www]]
+	| [[mail]]
+	| [[calculator]]
+	| [[computer]]
+	| [[acsearch]]
+	| [[achome]]
+	| [[acback]]
+	| [[acforward]]
+	| [[acstop]]
+	| [[acrefresh]]
+	| [[acbookmarks]]
+	| [[power]]
+	| [[brightnessdown]]
+	| [[brightnessup]]
+	| [[displayswitch]]
+	| [[kbdillumtoggle]]
+	| [[kbdillumdown]]
+	| [[kbdillumup]]
+	| [[eject]]
+	| [[sleep]]
+	| [[alterase]]
+	| [[sysreq]]
+	| [[cancel]]
+	| [[clear]]
+	| [[prior]]
+	| [[return2]]
+	| [[separator]]
+	| [[out]]
+	| [[oper]]
+	| [[clearagain]]
+	| [[crsel]]
+	| [[exsel]]
+	| [[kp00]]
+	| [[kp000]]
+	| [[thsousandsseparator]]
+	| [[decimalseparator]]
+	| [[currencyunit]]
+	| [[currencysubunit]]
+	| [[app1]]
+	| [[app2]]
+	| [[unknown]]
+local type MatrixLayout =
+	"row"
+	| "column"
+local type CursorType =
+	"image"
+	| "arrow"
+	| "ibeam"
+	| "wait"
+	| "waitarrow"
+	| "crosshair"
+	| "sizenwse"
+	| "sizenesw"
+	| "sizewe"
+	| "sizens"
+	| "sizeall"
+	| "no"
+	| "hand"
+local type BodyType =
+	"static"
+	| "dynamic"
+	| "kinematic"
+local type JointType =
+	"distance"
+	| "friction"
+	| "gear"
+	| "mouse"
+	| "prismatic"
+	| "pulley"
+	| "revolute"
+	| "rope"
+	| "weld"
+local type ShapeType =
+	"circle"
+	| "polygon"
+	| "edge"
+	| "chain"
+local type PowerState =
+	"unknown"
+	| "battery"
+	| "nobattery"
+	| "charging"
+	| "charged"
+local type DisplayOrientation =
+	"unknown"
+	| "landscape"
+	| "landscapeflipped"
+	| "portrait"
+	| "portraitflipped"
+local type FullscreenType =
+	"desktop"
+	| "exclusive"
+	| "normal"
+local type MessageBoxType =
+	"info"
+	| "warning"
+	| "error"
+local type Data = {}
+type Data.__index = Data
+type Data.@MetaTable = Data
+type Data.@Name = "Data"
+local type Object = {}
+type Object.__index = Object
+type Object.@MetaTable = Object
+type Object.@Name = "Object"
+local type RecordingDevice = {}
+type RecordingDevice.__index = RecordingDevice
+type RecordingDevice.@MetaTable = RecordingDevice
+type RecordingDevice.@Name = "RecordingDevice"
+local type Source = {}
+type Source.__index = Source
+type Source.@MetaTable = Source
+type Source.@Name = "Source"
+local type ByteData = {}
+type ByteData.__index = ByteData
+type ByteData.@MetaTable = ByteData
+type ByteData.@Name = "ByteData"
+local type CompressedData = {}
+type CompressedData.__index = CompressedData
+type CompressedData.@MetaTable = CompressedData
+type CompressedData.@Name = "CompressedData"
+local type DroppedFile = {}
+type DroppedFile.__index = DroppedFile
+type DroppedFile.@MetaTable = DroppedFile
+type DroppedFile.@Name = "DroppedFile"
+local type File = {}
+type File.__index = File
+type File.@MetaTable = File
+type File.@Name = "File"
+local type FileData = {}
+type FileData.__index = FileData
+type FileData.@MetaTable = FileData
+type FileData.@Name = "FileData"
+local type GlyphData = {}
+type GlyphData.__index = GlyphData
+type GlyphData.@MetaTable = GlyphData
+type GlyphData.@Name = "GlyphData"
+local type Rasterizer = {}
+type Rasterizer.__index = Rasterizer
+type Rasterizer.@MetaTable = Rasterizer
+type Rasterizer.@Name = "Rasterizer"
+local type Canvas = {}
+type Canvas.__index = Canvas
+type Canvas.@MetaTable = Canvas
+type Canvas.@Name = "Canvas"
+local type Drawable = {}
+type Drawable.__index = Drawable
+type Drawable.@MetaTable = Drawable
+type Drawable.@Name = "Drawable"
+local type Font = {}
+type Font.__index = Font
+type Font.@MetaTable = Font
+type Font.@Name = "Font"
+local type Image = {}
+type Image.__index = Image
+type Image.@MetaTable = Image
+type Image.@Name = "Image"
+local type Mesh = {}
+type Mesh.__index = Mesh
+type Mesh.@MetaTable = Mesh
+type Mesh.@Name = "Mesh"
+local type ParticleSystem = {}
+type ParticleSystem.__index = ParticleSystem
+type ParticleSystem.@MetaTable = ParticleSystem
+type ParticleSystem.@Name = "ParticleSystem"
+local type Quad = {}
+type Quad.__index = Quad
+type Quad.@MetaTable = Quad
+type Quad.@Name = "Quad"
+local type Shader = {}
+type Shader.__index = Shader
+type Shader.@MetaTable = Shader
+type Shader.@Name = "Shader"
+local type SpriteBatch = {}
+type SpriteBatch.__index = SpriteBatch
+type SpriteBatch.@MetaTable = SpriteBatch
+type SpriteBatch.@Name = "SpriteBatch"
+local type Text = {}
+type Text.__index = Text
+type Text.@MetaTable = Text
+type Text.@Name = "Text"
+local type Texture = {}
+type Texture.__index = Texture
+type Texture.@MetaTable = Texture
+type Texture.@Name = "Texture"
+local type Video = {}
+type Video.__index = Video
+type Video.@MetaTable = Video
+type Video.@Name = "Video"
+local type CompressedImageData = {}
+type CompressedImageData.__index = CompressedImageData
+type CompressedImageData.@MetaTable = CompressedImageData
+type CompressedImageData.@Name = "CompressedImageData"
+local type ImageData = {}
+type ImageData.__index = ImageData
+type ImageData.@MetaTable = ImageData
+type ImageData.@Name = "ImageData"
+local type Joystick = {}
+type Joystick.__index = Joystick
+type Joystick.@MetaTable = Joystick
+type Joystick.@Name = "Joystick"
+local type BezierCurve = {}
+type BezierCurve.__index = BezierCurve
+type BezierCurve.@MetaTable = BezierCurve
+type BezierCurve.@Name = "BezierCurve"
+local type RandomGenerator = {}
+type RandomGenerator.__index = RandomGenerator
+type RandomGenerator.@MetaTable = RandomGenerator
+type RandomGenerator.@Name = "RandomGenerator"
+local type Transform = {}
+type Transform.__index = Transform
+type Transform.@MetaTable = Transform
+type Transform.@Name = "Transform"
+local type Cursor = {}
+type Cursor.__index = Cursor
+type Cursor.@MetaTable = Cursor
+type Cursor.@Name = "Cursor"
+local type Body = {}
+type Body.__index = Body
+type Body.@MetaTable = Body
+type Body.@Name = "Body"
+local type ChainShape = {}
+type ChainShape.__index = ChainShape
+type ChainShape.@MetaTable = ChainShape
+type ChainShape.@Name = "ChainShape"
+local type CircleShape = {}
+type CircleShape.__index = CircleShape
+type CircleShape.@MetaTable = CircleShape
+type CircleShape.@Name = "CircleShape"
+local type Contact = {}
+type Contact.__index = Contact
+type Contact.@MetaTable = Contact
+type Contact.@Name = "Contact"
+local type DistanceJoint = {}
+type DistanceJoint.__index = DistanceJoint
+type DistanceJoint.@MetaTable = DistanceJoint
+type DistanceJoint.@Name = "DistanceJoint"
+local type EdgeShape = {}
+type EdgeShape.__index = EdgeShape
+type EdgeShape.@MetaTable = EdgeShape
+type EdgeShape.@Name = "EdgeShape"
+local type Fixture = {}
+type Fixture.__index = Fixture
+type Fixture.@MetaTable = Fixture
+type Fixture.@Name = "Fixture"
+local type FrictionJoint = {}
+type FrictionJoint.__index = FrictionJoint
+type FrictionJoint.@MetaTable = FrictionJoint
+type FrictionJoint.@Name = "FrictionJoint"
+local type GearJoint = {}
+type GearJoint.__index = GearJoint
+type GearJoint.@MetaTable = GearJoint
+type GearJoint.@Name = "GearJoint"
+local type Joint = {}
+type Joint.__index = Joint
+type Joint.@MetaTable = Joint
+type Joint.@Name = "Joint"
+local type MotorJoint = {}
+type MotorJoint.__index = MotorJoint
+type MotorJoint.@MetaTable = MotorJoint
+type MotorJoint.@Name = "MotorJoint"
+local type MouseJoint = {}
+type MouseJoint.__index = MouseJoint
+type MouseJoint.@MetaTable = MouseJoint
+type MouseJoint.@Name = "MouseJoint"
+local type PolygonShape = {}
+type PolygonShape.__index = PolygonShape
+type PolygonShape.@MetaTable = PolygonShape
+type PolygonShape.@Name = "PolygonShape"
+local type PrismaticJoint = {}
+type PrismaticJoint.__index = PrismaticJoint
+type PrismaticJoint.@MetaTable = PrismaticJoint
+type PrismaticJoint.@Name = "PrismaticJoint"
+local type PulleyJoint = {}
+type PulleyJoint.__index = PulleyJoint
+type PulleyJoint.@MetaTable = PulleyJoint
+type PulleyJoint.@Name = "PulleyJoint"
+local type RevoluteJoint = {}
+type RevoluteJoint.__index = RevoluteJoint
+type RevoluteJoint.@MetaTable = RevoluteJoint
+type RevoluteJoint.@Name = "RevoluteJoint"
+local type RopeJoint = {}
+type RopeJoint.__index = RopeJoint
+type RopeJoint.@MetaTable = RopeJoint
+type RopeJoint.@Name = "RopeJoint"
+local type Shape = {}
+type Shape.__index = Shape
+type Shape.@MetaTable = Shape
+type Shape.@Name = "Shape"
+local type WeldJoint = {}
+type WeldJoint.__index = WeldJoint
+type WeldJoint.@MetaTable = WeldJoint
+type WeldJoint.@Name = "WeldJoint"
+local type WheelJoint = {}
+type WheelJoint.__index = WheelJoint
+type WheelJoint.@MetaTable = WheelJoint
+type WheelJoint.@Name = "WheelJoint"
+local type World = {}
+type World.__index = World
+type World.@MetaTable = World
+type World.@Name = "World"
+local type Decoder = {}
+type Decoder.__index = Decoder
+type Decoder.@MetaTable = Decoder
+type Decoder.@Name = "Decoder"
+local type SoundData = {}
+type SoundData.__index = SoundData
+type SoundData.@MetaTable = SoundData
+type SoundData.@Name = "SoundData"
+local type Channel = {}
+type Channel.__index = Channel
+type Channel.@MetaTable = Channel
+type Channel.@Name = "Channel"
+local type Thread = {}
+type Thread.__index = Thread
+type Thread.@MetaTable = Thread
+type Thread.@Name = "Thread"
+local type VideoStream = {}
+type VideoStream.__index = VideoStream
+type VideoStream.@MetaTable = VideoStream
+type VideoStream.@Name = "VideoStream"
+type Data.@BaseTable = Object
+type Data.clone = function=(Data)>(Data)
+type Data.getFFIPointer = function=(Data)>(cdata)
+type Data.getPointer = function=(Data)>(userdata)
+type Data.getSize = function=(Data)>(number)
+type Data.getString = function=(Data)>(string)
+
+type Object.release = function=(Object)>(boolean)
+type Object.type = function=(Object)>(string)
+type Object.typeOf = function=(Object, string)>(boolean)
+
+type RecordingDevice.@BaseTable = Object
+type RecordingDevice.getBitDepth = function=(RecordingDevice)>(number)
+type RecordingDevice.getChannelCount = function=(RecordingDevice)>(number)
+type RecordingDevice.getData = function=(RecordingDevice)>(SoundData)
+type RecordingDevice.getName = function=(RecordingDevice)>(string)
+type RecordingDevice.getSampleCount = function=(RecordingDevice)>(number)
+type RecordingDevice.getSampleRate = function=(RecordingDevice)>(number)
+type RecordingDevice.isRecording = function=(RecordingDevice)>(boolean)
+type RecordingDevice.start = function=(RecordingDevice, number, number | nil, number | nil, number | nil)>(boolean)
+type RecordingDevice.stop = function=(RecordingDevice)>(SoundData)
+
+type Source.@BaseTable = Object
+type Source.clone = function=(Source)>(Source)
+type Source.getActiveEffects = function=(Source)>(Table)
+type Source.getAirAbsorption = function=(Source)>(number)
+type Source.getAttenuationDistances = function=(Source)>(number, number)
+type Source.getChannelCount = function=(Source)>(number)
+type Source.getCone = function=(Source)>(number, number, number)
+type Source.getDirection = function=(Source)>(number, number, number)
+type Source.getDuration = function=(Source, TimeUnit | nil)>(number)
+type Source.getEffect = function=(Source, string, Table | nil)>({volume = number, highgain = number, lowgain = number, })
+type Source.getFilter = function=(Source)>({type = FilterType, volume = number, highgain = number, lowgain = number, })
+type Source.getFreeBufferCount = function=(Source)>(number)
+type Source.getPitch = function=(Source)>(number)
+type Source.getPosition = function=(Source)>(number, number, number)
+type Source.getRolloff = function=(Source)>(number)
+type Source.getType = function=(Source)>(SourceType)
+type Source.getVelocity = function=(Source)>(number, number, number)
+type Source.getVolume = function=(Source)>(number)
+type Source.getVolumeLimits = function=(Source)>(number, number)
+type Source.isLooping = function=(Source)>(boolean)
+type Source.isPlaying = function=(Source)>(boolean)
+type Source.isRelative = function=(Source)>(boolean)
+type Source.pause = function=(Source)>()
+type Source.play = function=(Source)>(boolean)
+type Source.queue = function=(Source, SoundData)>(boolean)
+type Source.seek = function=(Source, number, TimeUnit | nil)>()
+type Source.setAirAbsorption = function=(Source, number)>()
+type Source.setAttenuationDistances = function=(Source, number, number)>()
+type Source.setCone = function=(Source, number, number, number | nil)>()
+type Source.setDirection = function=(Source, number, number, number)>()
+type Source.setEffect = function=(Source, string, boolean | nil)>(boolean)|function=(Source, string, {type = FilterType, volume = number, highgain = number, lowgain = number, })>(boolean)
+type Source.setFilter = function=(Source, {type = FilterType, volume = number, highgain = number, lowgain = number, })>(boolean)|function=(Source)>()
+type Source.setLooping = function=(Source, boolean)>()
+type Source.setPitch = function=(Source, number)>()
+type Source.setPosition = function=(Source, number, number, number)>()
+type Source.setRelative = function=(Source, boolean | nil)>()
+type Source.setRolloff = function=(Source, number)>()
+type Source.setVelocity = function=(Source, number, number, number)>()
+type Source.setVolume = function=(Source, number)>()
+type Source.setVolumeLimits = function=(Source, number, number)>()
+type Source.stop = function=(Source)>()
+type Source.tell = function=(Source, TimeUnit | nil)>(number)
+
+type ByteData.@BaseTable = Object
+
+type CompressedData.@BaseTable = Data
+type CompressedData.getFormat = function=(CompressedData)>(CompressedDataFormat)
+
+type DroppedFile.@BaseTable = File
+
+type File.@BaseTable = Object
+type File.close = function=(File)>(boolean)
+type File.flush = function=(File)>(boolean, string)
+type File.getBuffer = function=(File)>(BufferMode, number)
+type File.getFilename = function=(File)>(string)
+type File.getMode = function=(File)>(FileMode)
+type File.getSize = function=(File)>(number)
+type File.isEOF = function=(File)>(boolean)
+type File.isOpen = function=(File)>(boolean)
+type File.lines = function=(File)>(Function)
+type File.open = function=(File, FileMode)>(boolean, string)
+type File.read = function=(File, number | nil)>(string, number)|function=(File, ContainerType, number | nil)>(FileData | string, number)
+type File.seek = function=(File, number)>(boolean)
+type File.setBuffer = function=(File, BufferMode, number | nil)>(boolean, string)
+type File.tell = function=(File)>(number)
+type File.write = function=(File, string, number | nil)>(boolean, string)|function=(File, Data, number | nil)>(boolean, string)
+
+type FileData.@BaseTable = Data
+type FileData.getExtension = function=(FileData)>(string)
+type FileData.getFilename = function=(FileData)>(string)
+
+type GlyphData.@BaseTable = Data
+type GlyphData.getAdvance = function=(GlyphData)>(number)
+type GlyphData.getBearing = function=(GlyphData)>(number, number)
+type GlyphData.getBoundingBox = function=(GlyphData)>(number, number, number, number)
+type GlyphData.getDimensions = function=(GlyphData)>(number, number)
+type GlyphData.getFormat = function=(GlyphData)>(PixelFormat)
+type GlyphData.getGlyph = function=(GlyphData)>(number)
+type GlyphData.getGlyphString = function=(GlyphData)>(string)
+type GlyphData.getHeight = function=(GlyphData)>(number)
+type GlyphData.getWidth = function=(GlyphData)>(number)
+
+type Rasterizer.@BaseTable = Object
+type Rasterizer.getAdvance = function=(Rasterizer)>(number)
+type Rasterizer.getAscent = function=(Rasterizer)>(number)
+type Rasterizer.getDescent = function=(Rasterizer)>(number)
+type Rasterizer.getGlyphCount = function=(Rasterizer)>(number)
+type Rasterizer.getGlyphData = function=(Rasterizer, string)>(GlyphData)|function=(Rasterizer, number)>(GlyphData)
+type Rasterizer.getHeight = function=(Rasterizer)>(number)
+type Rasterizer.getLineHeight = function=(Rasterizer)>(number)
+type Rasterizer.hasGlyphs = function=(Rasterizer, string | number, string | number, ...string | number)>(boolean)
+
+type Canvas.@BaseTable = Texture
+type Canvas.generateMipmaps = function=(Canvas)>()
+type Canvas.getMSAA = function=(Canvas)>(number)
+type Canvas.getMipmapMode = function=(Canvas)>(MipmapMode)
+type Canvas.newImageData = function=(Canvas)>(ImageData)|function=(Canvas, number, number | nil, number, number, number, number)>(ImageData)
+type Canvas.renderTo = function=(Canvas, Function)>()
+
+type Drawable.@BaseTable = Object
+
+type Font.@BaseTable = Object
+type Font.getAscent = function=(Font)>(number)
+type Font.getBaseline = function=(Font)>(number)
+type Font.getDPIScale = function=(Font)>(number)
+type Font.getDescent = function=(Font)>(number)
+type Font.getFilter = function=(Font)>(FilterMode, FilterMode, number)
+type Font.getHeight = function=(Font)>(number)
+type Font.getKerning = function=(Font, string, string)>(number)|function=(Font, number, number)>(number)
+type Font.getLineHeight = function=(Font)>(number)
+type Font.getWidth = function=(Font, string)>(number)
+type Font.getWrap = function=(Font, string, number)>(number, Table)
+type Font.hasGlyphs = function=(Font, string)>(boolean)|function=(Font, string, string)>(boolean)|function=(Font, number, number)>(boolean)
+type Font.setFallbacks = function=(Font, Font, ...Font)>()
+type Font.setFilter = function=(Font, FilterMode, FilterMode, number | nil)>()
+type Font.setLineHeight = function=(Font, number)>()
+
+type Image.@BaseTable = Texture
+type Image.getFlags = function=(Image)>(Table)
+type Image.isCompressed = function=(Image)>(boolean)
+type Image.replacePixels = function=(Image, ImageData, number, number | nil, number | nil, number | nil, boolean)>()
+
+type Mesh.@BaseTable = Drawable
+type Mesh.attachAttribute = function=(Mesh, string, Mesh)>()|function=(Mesh, string, Mesh, VertexAttributeStep | nil, string | nil)>()
+type Mesh.attachAttribute = function=(Mesh, string, Mesh)>()|function=(Mesh, string, Mesh, VertexAttributeStep | nil, string | nil)>()
+type Mesh.detachAttribute = function=(Mesh, string)>(boolean)
+type Mesh.getDrawMode = function=(Mesh)>(MeshDrawMode)
+type Mesh.getDrawRange = function=(Mesh)>(number, number)
+type Mesh.getTexture = function=(Mesh)>(Texture)
+type Mesh.getVertex = function=(Mesh, number)>(number, ...number)|function=(Mesh, number)>(number, number, number, number, number, number, number, number)
+type Mesh.getVertexAttribute = function=(Mesh, number, number)>(number, number, ...number)
+type Mesh.getVertexCount = function=(Mesh)>(number)
+type Mesh.getVertexFormat = function=(Mesh)>(Table)
+type Mesh.getVertexMap = function=(Mesh)>(Table)
+type Mesh.isAttributeEnabled = function=(Mesh, string)>(boolean)
+type Mesh.setAttributeEnabled = function=(Mesh, string, boolean)>()
+type Mesh.setDrawMode = function=(Mesh, MeshDrawMode)>()
+type Mesh.setDrawRange = function=(Mesh, number, number)>()|function=(Mesh)>()
+type Mesh.setTexture = function=(Mesh, Texture)>()|function=(Mesh)>()
+type Mesh.setVertex = function=(Mesh, number, number, ...number)>()|function=(Mesh, number, {attributecomponent = number, ...number, })>()|function=(Mesh, number, number, number, number, number, number | nil, number | nil, number | nil, number | nil)>()|function=(Mesh, number, {number, number, number, number, number | nil, number | nil, number | nil, number | nil, })>()
+type Mesh.setVertexAttribute = function=(Mesh, number, number, number, number, ...number)>()
+type Mesh.setVertexMap = function=(Mesh, Table)>()|function=(Mesh, number, number, number)>()|function=(Mesh, Data, IndexDataType)>()
+type Mesh.setVertices = function=(Mesh, {attributecomponent = number, ...number, }, number | nil)>()|function=(Mesh, Data, number | nil)>()|function=(Mesh, {number, number, number, number, number | nil, number | nil, number | nil, number | nil, })>()
+
+type ParticleSystem.@BaseTable = Drawable
+type ParticleSystem.clone = function=(ParticleSystem)>(ParticleSystem)
+type ParticleSystem.emit = function=(ParticleSystem, number)>()
+type ParticleSystem.getBufferSize = function=(ParticleSystem)>(number)
+type ParticleSystem.getColors = function=(ParticleSystem)>(number, number, number, number, number, number, number, number, number, number, number, number)
+type ParticleSystem.getCount = function=(ParticleSystem)>(number)
+type ParticleSystem.getDirection = function=(ParticleSystem)>(number)
+type ParticleSystem.getEmissionArea = function=(ParticleSystem)>(AreaSpreadDistribution, number, number, number, boolean)
+type ParticleSystem.getEmissionRate = function=(ParticleSystem)>(number)
+type ParticleSystem.getEmitterLifetime = function=(ParticleSystem)>(number)
+type ParticleSystem.getInsertMode = function=(ParticleSystem)>(ParticleInsertMode)
+type ParticleSystem.getLinearAcceleration = function=(ParticleSystem)>(number, number, number, number)
+type ParticleSystem.getLinearDamping = function=(ParticleSystem)>(number, number)
+type ParticleSystem.getOffset = function=(ParticleSystem)>(number, number)
+type ParticleSystem.getParticleLifetime = function=(ParticleSystem)>(number, number)
+type ParticleSystem.getPosition = function=(ParticleSystem)>(number, number)
+type ParticleSystem.getQuads = function=(ParticleSystem)>(Table)
+type ParticleSystem.getRadialAcceleration = function=(ParticleSystem)>(number, number)
+type ParticleSystem.getRotation = function=(ParticleSystem)>(number, number)
+type ParticleSystem.getSizeVariation = function=(ParticleSystem)>(number)
+type ParticleSystem.getSizes = function=(ParticleSystem)>(number, number, number)
+type ParticleSystem.getSpeed = function=(ParticleSystem)>(number, number)
+type ParticleSystem.getSpin = function=(ParticleSystem)>(number, number, number)
+type ParticleSystem.getSpinVariation = function=(ParticleSystem)>(number)
+type ParticleSystem.getSpread = function=(ParticleSystem)>(number)
+type ParticleSystem.getTangentialAcceleration = function=(ParticleSystem)>(number, number)
+type ParticleSystem.getTexture = function=(ParticleSystem)>(Texture)
+type ParticleSystem.hasRelativeRotation = function=(ParticleSystem)>(boolean)
+type ParticleSystem.isActive = function=(ParticleSystem)>(boolean)
+type ParticleSystem.isPaused = function=(ParticleSystem)>(boolean)
+type ParticleSystem.isStopped = function=(ParticleSystem)>(boolean)
+type ParticleSystem.moveTo = function=(ParticleSystem, number, number)>()
+type ParticleSystem.pause = function=(ParticleSystem)>()
+type ParticleSystem.reset = function=(ParticleSystem)>()
+type ParticleSystem.setBufferSize = function=(ParticleSystem, number)>()
+type ParticleSystem.setColors = function=(ParticleSystem, number, number, number, number, number, number, number, number, number, number, number, number)>()
+type ParticleSystem.setDirection = function=(ParticleSystem, number)>()
+type ParticleSystem.setEmissionArea = function=(ParticleSystem, AreaSpreadDistribution, number, number, number | nil, boolean | nil)>()
+type ParticleSystem.setEmissionRate = function=(ParticleSystem, number)>()
+type ParticleSystem.setEmitterLifetime = function=(ParticleSystem, number)>()
+type ParticleSystem.setInsertMode = function=(ParticleSystem, ParticleInsertMode)>()
+type ParticleSystem.setLinearAcceleration = function=(ParticleSystem, number, number, number | nil, number | nil)>()
+type ParticleSystem.setLinearDamping = function=(ParticleSystem, number, number | nil)>()
+type ParticleSystem.setOffset = function=(ParticleSystem, number, number)>()
+type ParticleSystem.setParticleLifetime = function=(ParticleSystem, number, number | nil)>()
+type ParticleSystem.setPosition = function=(ParticleSystem, number, number)>()
+type ParticleSystem.setQuads = function=(ParticleSystem, Quad, Quad)>()|function=(ParticleSystem, Table)>()
+type ParticleSystem.setRadialAcceleration = function=(ParticleSystem, number, number | nil)>()
+type ParticleSystem.setRelativeRotation = function=(ParticleSystem, boolean)>()
+type ParticleSystem.setRotation = function=(ParticleSystem, number, number | nil)>()
+type ParticleSystem.setSizeVariation = function=(ParticleSystem, number)>()
+type ParticleSystem.setSizes = function=(ParticleSystem, number, number, number)>()
+type ParticleSystem.setSpeed = function=(ParticleSystem, number, number | nil)>()
+type ParticleSystem.setSpin = function=(ParticleSystem, number, number | nil)>()
+type ParticleSystem.setSpinVariation = function=(ParticleSystem, number)>()
+type ParticleSystem.setSpread = function=(ParticleSystem, number)>()
+type ParticleSystem.setTangentialAcceleration = function=(ParticleSystem, number, number | nil)>()
+type ParticleSystem.setTexture = function=(ParticleSystem, Texture)>()
+type ParticleSystem.start = function=(ParticleSystem)>()
+type ParticleSystem.stop = function=(ParticleSystem)>()
+type ParticleSystem.update = function=(ParticleSystem, number)>()
+
+type Quad.@BaseTable = Object
+type Quad.getTextureDimensions = function=(Quad)>(number, number)
+type Quad.getViewport = function=(Quad)>(number, number, number, number)
+type Quad.setViewport = function=(Quad, number, number, number, number, number, number)>()
+
+type Shader.@BaseTable = Object
+type Shader.getWarnings = function=(Shader)>(string)
+type Shader.hasUniform = function=(Shader, string)>(boolean)
+type Shader.send = function=(Shader, string, number, ...number)>()|function=(Shader, string, Table, ...Table)>()|function=(Shader, string, Table, ...Table)>()|function=(Shader, string, Texture)>()|function=(Shader, string, boolean, ...boolean)>()|function=(Shader, string, MatrixLayout, Table, ...Table)>()|function=(Shader, string, Data, number | nil, number | nil)>()|function=(Shader, string, Data, MatrixLayout, number | nil, number | nil)>()|function=(Shader, string, MatrixLayout, Data, number | nil, number | nil)>()
+type Shader.sendColor = function=(Shader, string, Table, ...Table)>()
+
+type SpriteBatch.@BaseTable = Drawable
+type SpriteBatch.add = function=(SpriteBatch, number, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>(number)|function=(SpriteBatch, Quad, number, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>(number)
+type SpriteBatch.addLayer = function=(SpriteBatch, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>(number)|function=(SpriteBatch, number, Quad, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>(number)|function=(SpriteBatch, number, Transform)>(number)|function=(SpriteBatch, number, Quad, Transform)>(number)
+type SpriteBatch.attachAttribute = function=(SpriteBatch, string, Mesh)>()
+type SpriteBatch.clear = function=(SpriteBatch)>()
+type SpriteBatch.flush = function=(SpriteBatch)>()
+type SpriteBatch.getBufferSize = function=(SpriteBatch)>(number)
+type SpriteBatch.getColor = function=(SpriteBatch)>(number, number, number, number)
+type SpriteBatch.getCount = function=(SpriteBatch)>(number)
+type SpriteBatch.getTexture = function=(SpriteBatch)>(Texture)
+type SpriteBatch.set = function=(SpriteBatch, number, number, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=(SpriteBatch, number, Quad, number, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()
+type SpriteBatch.setColor = function=(SpriteBatch, number, number, number, number | nil)>()|function=(SpriteBatch)>()
+type SpriteBatch.setDrawRange = function=(SpriteBatch, number, number)>()|function=(SpriteBatch)>()
+type SpriteBatch.setLayer = function=(SpriteBatch, number, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=(SpriteBatch, number, number, Quad, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=(SpriteBatch, number, number, Transform)>()|function=(SpriteBatch, number, number, Quad, Transform)>()
+type SpriteBatch.setTexture = function=(SpriteBatch, Texture)>()
+
+type Text.@BaseTable = Drawable
+type Text.add = function=(Text, string, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>(number)|function=(Text, {color1 = Table, string1 = string, color2 = Table, string2 = string, (Table | string), }, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>(number)
+type Text.addf = function=(Text, string, number, AlignMode, number, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>(number)|function=(Text, {color1 = Table, string1 = string, color2 = Table, string2 = string, (Table | string), }, number, AlignMode, number, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>(number)
+type Text.clear = function=(Text)>()
+type Text.getDimensions = function=(Text)>(number, number)|function=(Text, number)>(number, number)
+type Text.getFont = function=(Text)>(Font)
+type Text.getHeight = function=(Text)>(number)|function=(Text, number)>(number)
+type Text.getWidth = function=(Text)>(number)|function=(Text, number)>(number)
+type Text.set = function=(Text, string)>()|function=(Text, {color1 = Table, string1 = string, color2 = Table, string2 = string, (Table | string), })>()
+type Text.setFont = function=(Text, Font)>()
+type Text.setf = function=(Text, string, number, AlignMode)>()|function=(Text, {color1 = Table, string1 = string, color2 = Table, string2 = string, (Table | string), }, number, AlignMode)>()
+
+type Texture.@BaseTable = Drawable
+type Texture.getDPIScale = function=(Texture)>(number)
+type Texture.getDepth = function=(Texture)>(number)
+type Texture.getDepthSampleMode = function=(Texture)>(CompareMode | nil)
+type Texture.getDimensions = function=(Texture)>(number, number)
+type Texture.getFilter = function=(Texture)>(FilterMode, FilterMode, number)
+type Texture.getFormat = function=(Texture)>(PixelFormat)
+type Texture.getHeight = function=(Texture)>(number)
+type Texture.getLayerCount = function=(Texture)>(number)
+type Texture.getMipmapCount = function=(Texture)>(number)
+type Texture.getMipmapFilter = function=(Texture)>(FilterMode, number)
+type Texture.getPixelDimensions = function=(Texture)>(number, number)
+type Texture.getPixelHeight = function=(Texture)>(number)
+type Texture.getPixelWidth = function=(Texture)>(number)
+type Texture.getTextureType = function=(Texture)>(TextureType)
+type Texture.getWidth = function=(Texture)>(number)
+type Texture.getWrap = function=(Texture)>(WrapMode, WrapMode, WrapMode)
+type Texture.isReadable = function=(Texture)>(boolean)
+type Texture.setDepthSampleMode = function=(Texture, CompareMode)>()
+type Texture.setFilter = function=(Texture, FilterMode, FilterMode, number | nil)>()
+type Texture.setMipmapFilter = function=(Texture, FilterMode, number | nil)>()|function=(Texture)>()
+type Texture.setWrap = function=(Texture, WrapMode, WrapMode | nil, WrapMode | nil)>()
+
+type Video.@BaseTable = Drawable
+type Video.getDimensions = function=(Video)>(number, number)
+type Video.getFilter = function=(Video)>(FilterMode, FilterMode, number)
+type Video.getHeight = function=(Video)>(number)
+type Video.getSource = function=(Video)>(Source)
+type Video.getStream = function=(Video)>(VideoStream)
+type Video.getWidth = function=(Video)>(number)
+type Video.isPlaying = function=(Video)>(boolean)
+type Video.pause = function=(Video)>()
+type Video.play = function=(Video)>()
+type Video.rewind = function=(Video)>()
+type Video.seek = function=(Video, number)>()
+type Video.setFilter = function=(Video, FilterMode, FilterMode, number | nil)>()
+type Video.setSource = function=(Video, Source | nil)>()
+type Video.tell = function=(Video)>(number)
+
+type CompressedImageData.@BaseTable = Data
+type CompressedImageData.getDimensions = function=(CompressedImageData)>(number, number)|function=(CompressedImageData, number)>(number, number)
+type CompressedImageData.getFormat = function=(CompressedImageData)>(CompressedImageFormat)
+type CompressedImageData.getHeight = function=(CompressedImageData)>(number)|function=(CompressedImageData, number)>(number)
+type CompressedImageData.getMipmapCount = function=(CompressedImageData)>(number)
+type CompressedImageData.getWidth = function=(CompressedImageData)>(number)|function=(CompressedImageData, number)>(number)
+
+type ImageData.@BaseTable = Data
+type ImageData.encode = function=(ImageData, ImageFormat, string | nil)>(FileData)|function=(ImageData, string)>()|function=(ImageData, string, ImageFormat)>()
+type ImageData.getDimensions = function=(ImageData)>(number, number)
+type ImageData.getHeight = function=(ImageData)>(number)
+type ImageData.getPixel = function=(ImageData, number, number)>(number, number, number, number)
+type ImageData.getWidth = function=(ImageData)>(number)
+type ImageData.mapPixel = function=(ImageData, Function, number | nil, number | nil, number | nil, number | nil)>()
+type ImageData.paste = function=(ImageData, ImageData, number, number, number, number, number, number)>()
+type ImageData.setPixel = function=(ImageData, number, number, number, number, number, number)>()
+type ImageData.getFormat = function=(ImageData)>(PixelFormat)
+
+type Joystick.@BaseTable = Object
+type Joystick.getAxes = function=(Joystick)>(number, number, number)
+type Joystick.getAxis = function=(Joystick, number)>(number)
+type Joystick.getAxisCount = function=(Joystick)>(number)
+type Joystick.getButtonCount = function=(Joystick)>(number)
+type Joystick.getDeviceInfo = function=(Joystick)>(number, number, number)
+type Joystick.getGUID = function=(Joystick)>(string)
+type Joystick.getGamepadAxis = function=(Joystick, GamepadAxis)>(number)
+type Joystick.getGamepadMapping = function=(Joystick, GamepadAxis)>(JoystickInputType, number, JoystickHat)|function=(Joystick, GamepadButton)>(JoystickInputType, number, JoystickHat)
+type Joystick.getGamepadMappingString = function=(Joystick)>(string)
+type Joystick.getHat = function=(Joystick, number)>(JoystickHat)
+type Joystick.getHatCount = function=(Joystick)>(number)
+type Joystick.getID = function=(Joystick)>(number, number)
+type Joystick.getName = function=(Joystick)>(string)
+type Joystick.getVibration = function=(Joystick)>(number, number)
+type Joystick.isConnected = function=(Joystick)>(boolean)
+type Joystick.isDown = function=(Joystick, number)>(boolean)
+type Joystick.isGamepad = function=(Joystick)>(boolean)
+type Joystick.isGamepadDown = function=(Joystick, GamepadButton)>(boolean)
+type Joystick.isVibrationSupported = function=(Joystick)>(boolean)
+type Joystick.setVibration = function=(Joystick, number, number)>(boolean)|function=(Joystick)>(boolean)|function=(Joystick, number, number, number | nil)>(boolean)
+
+type BezierCurve.@BaseTable = Object
+type BezierCurve.evaluate = function=(BezierCurve, number)>(number, number)
+type BezierCurve.getControlPoint = function=(BezierCurve, number)>(number, number)
+type BezierCurve.getControlPointCount = function=(BezierCurve)>(number)
+type BezierCurve.getDegree = function=(BezierCurve)>(number)
+type BezierCurve.getDerivative = function=(BezierCurve)>(BezierCurve)
+type BezierCurve.getSegment = function=(BezierCurve, number, number)>(BezierCurve)
+type BezierCurve.insertControlPoint = function=(BezierCurve, number, number, number | nil)>()
+type BezierCurve.removeControlPoint = function=(BezierCurve, number)>()
+type BezierCurve.render = function=(BezierCurve, number | nil)>(Table)
+type BezierCurve.renderSegment = function=(BezierCurve, number, number, number | nil)>(Table)
+type BezierCurve.rotate = function=(BezierCurve, number, number | nil, number | nil)>()
+type BezierCurve.scale = function=(BezierCurve, number, number | nil, number | nil)>()
+type BezierCurve.setControlPoint = function=(BezierCurve, number, number, number)>()
+type BezierCurve.translate = function=(BezierCurve, number, number)>()
+
+type RandomGenerator.@BaseTable = Object
+type RandomGenerator.getSeed = function=(RandomGenerator)>(number, number)
+type RandomGenerator.getState = function=(RandomGenerator)>(string)
+type RandomGenerator.random = function=(RandomGenerator)>(number)|function=(RandomGenerator, number)>(number)|function=(RandomGenerator, number, number)>(number)
+type RandomGenerator.randomNormal = function=(RandomGenerator, number | nil, number | nil)>(number)
+type RandomGenerator.setSeed = function=(RandomGenerator, number)>()|function=(RandomGenerator, number, number)>()
+type RandomGenerator.setState = function=(RandomGenerator, string)>()
+
+type Transform.@BaseTable = Object
+type Transform.apply = function=(Transform, Transform)>(Transform)
+type Transform.clone = function=(Transform)>(Transform)
+type Transform.getMatrix = function=(Transform)>(number, number, ...number, number)
+type Transform.inverse = function=(Transform)>(Transform)
+type Transform.inverseTransformPoint = function=(Transform, number, number)>(number, number)
+type Transform.isAffine2DTransform = function=(Transform)>(boolean)
+type Transform.reset = function=(Transform)>(Transform)
+type Transform.rotate = function=(Transform, number)>(Transform)
+type Transform.scale = function=(Transform, number, number | nil)>(Transform)
+type Transform.setMatrix = function=(Transform, number, number, ...number, number)>(Transform)|function=(Transform, MatrixLayout, number, number, ...number, number)>(Transform)|function=(Transform, MatrixLayout, Table)>(Transform)|function=(Transform, MatrixLayout, Table)>(Transform)
+type Transform.setTransformation = function=(Transform, number, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>(Transform)
+type Transform.shear = function=(Transform, number, number)>(Transform)
+type Transform.transformPoint = function=(Transform, number, number)>(number, number)
+type Transform.translate = function=(Transform, number, number)>(Transform)
+
+type Cursor.@BaseTable = Object
+type Cursor.getType = function=(Cursor)>(CursorType)
+
+type Body.@BaseTable = Object
+type Body.applyAngularImpulse = function=(Body, number)>()
+type Body.applyForce = function=(Body, number, number)>()|function=(Body, number, number, number, number)>()
+type Body.applyLinearImpulse = function=(Body, number, number)>()|function=(Body, number, number, number, number)>()
+type Body.applyTorque = function=(Body, number)>()
+type Body.destroy = function=(Body)>()
+type Body.getAngle = function=(Body)>(number)
+type Body.getAngularDamping = function=(Body)>(number)
+type Body.getAngularVelocity = function=(Body)>(number)
+type Body.getContacts = function=(Body)>(Table)
+type Body.getFixtures = function=(Body)>(Table)
+type Body.getGravityScale = function=(Body)>(number)
+type Body.getInertia = function=(Body)>(number)
+type Body.getJoints = function=(Body)>(Table)
+type Body.getLinearDamping = function=(Body)>(number)
+type Body.getLinearVelocity = function=(Body)>(number, number)
+type Body.getLinearVelocityFromLocalPoint = function=(Body, number, number)>(number, number)
+type Body.getLinearVelocityFromWorldPoint = function=(Body, number, number)>(number, number)
+type Body.getLocalCenter = function=(Body)>(number, number)
+type Body.getLocalPoint = function=(Body, number, number)>(number, number)
+type Body.getLocalPoints = function=(Body, number, number, number, number, ...number)>(number, number, number, number, ...number)
+type Body.getLocalVector = function=(Body, number, number)>(number, number)
+type Body.getMass = function=(Body)>(number)
+type Body.getMassData = function=(Body)>(number, number, number, number)
+type Body.getPosition = function=(Body)>(number, number)
+type Body.getTransform = function=(Body)>(number, number, number)
+type Body.getType = function=(Body)>(BodyType)
+type Body.getUserData = function=(Body)>(any)
+type Body.getWorld = function=(Body)>(World)
+type Body.getWorldCenter = function=(Body)>(number, number)
+type Body.getWorldPoint = function=(Body, number, number)>(number, number)
+type Body.getWorldPoints = function=(Body, number, number, number, number)>(number, number, number, number)
+type Body.getWorldVector = function=(Body, number, number)>(number, number)
+type Body.getX = function=(Body)>(number)
+type Body.getY = function=(Body)>(number)
+type Body.isActive = function=(Body)>(boolean)
+type Body.isAwake = function=(Body)>(boolean)
+type Body.isBullet = function=(Body)>(boolean)
+type Body.isDestroyed = function=(Body)>(boolean)
+type Body.isFixedRotation = function=(Body)>(boolean)
+type Body.isSleepingAllowed = function=(Body)>(boolean)
+type Body.isTouching = function=(Body, Body)>(boolean)
+type Body.resetMassData = function=(Body)>()
+type Body.setActive = function=(Body, boolean)>()
+type Body.setAngle = function=(Body, number)>()
+type Body.setAngularDamping = function=(Body, number)>()
+type Body.setAngularVelocity = function=(Body, number)>()
+type Body.setAwake = function=(Body, boolean)>()
+type Body.setBullet = function=(Body, boolean)>()
+type Body.setFixedRotation = function=(Body, boolean)>()
+type Body.setGravityScale = function=(Body, number)>()
+type Body.setInertia = function=(Body, number)>()
+type Body.setLinearDamping = function=(Body, number)>()
+type Body.setLinearVelocity = function=(Body, number, number)>()
+type Body.setMass = function=(Body, number)>()
+type Body.setMassData = function=(Body, number, number, number, number)>()
+type Body.setPosition = function=(Body, number, number)>()
+type Body.setSleepingAllowed = function=(Body, boolean)>()
+type Body.setTransform = function=(Body, number, number, number)>()
+type Body.setType = function=(Body, BodyType)>()
+type Body.setUserData = function=(Body, any)>()
+type Body.setX = function=(Body, number)>()
+type Body.setY = function=(Body, number)>()
+
+type ChainShape.@BaseTable = Shape
+type ChainShape.getChildEdge = function=(ChainShape, number)>(EdgeShape)
+type ChainShape.getNextVertex = function=(ChainShape)>(number, number)
+type ChainShape.getPoint = function=(ChainShape, number)>(number, number)
+type ChainShape.getPoints = function=(ChainShape)>(number, number, number, number)
+type ChainShape.getPreviousVertex = function=(ChainShape)>(number, number)
+type ChainShape.getVertexCount = function=(ChainShape)>(number)
+type ChainShape.setNextVertex = function=(ChainShape, number, number)>()
+type ChainShape.setPreviousVertex = function=(ChainShape, number, number)>()
+
+type CircleShape.@BaseTable = Shape
+type CircleShape.getPoint = function=(CircleShape)>(number, number)
+type CircleShape.getRadius = function=(CircleShape)>(number)
+type CircleShape.setPoint = function=(CircleShape, number, number)>()
+type CircleShape.setRadius = function=(CircleShape, number)>()
+
+type Contact.@BaseTable = Object
+type Contact.getChildren = function=(Contact)>(number, number)
+type Contact.getFixtures = function=(Contact)>(Fixture, Fixture)
+type Contact.getFriction = function=(Contact)>(number)
+type Contact.getNormal = function=(Contact)>(number, number)
+type Contact.getPositions = function=(Contact)>(number, number, number, number)
+type Contact.getRestitution = function=(Contact)>(number)
+type Contact.isEnabled = function=(Contact)>(boolean)
+type Contact.isTouching = function=(Contact)>(boolean)
+type Contact.resetFriction = function=(Contact)>()
+type Contact.resetRestitution = function=(Contact)>()
+type Contact.setEnabled = function=(Contact, boolean)>()
+type Contact.setFriction = function=(Contact, number)>()
+type Contact.setRestitution = function=(Contact, number)>()
+
+type DistanceJoint.@BaseTable = Joint
+type DistanceJoint.getDampingRatio = function=(DistanceJoint)>(number)
+type DistanceJoint.getFrequency = function=(DistanceJoint)>(number)
+type DistanceJoint.getLength = function=(DistanceJoint)>(number)
+type DistanceJoint.setDampingRatio = function=(DistanceJoint, number)>()
+type DistanceJoint.setFrequency = function=(DistanceJoint, number)>()
+type DistanceJoint.setLength = function=(DistanceJoint, number)>()
+
+type EdgeShape.@BaseTable = Shape
+type EdgeShape.getNextVertex = function=(EdgeShape)>(number, number)
+type EdgeShape.getPoints = function=(EdgeShape)>(number, number, number, number)
+type EdgeShape.getPreviousVertex = function=(EdgeShape)>(number, number)
+type EdgeShape.setNextVertex = function=(EdgeShape, number, number)>()
+type EdgeShape.setPreviousVertex = function=(EdgeShape, number, number)>()
+
+type Fixture.@BaseTable = Object
+type Fixture.destroy = function=(Fixture)>()
+type Fixture.getBody = function=(Fixture)>(Body)
+type Fixture.getBoundingBox = function=(Fixture, number | nil)>(number, number, number, number)
+type Fixture.getCategory = function=(Fixture)>(number, number)
+type Fixture.getDensity = function=(Fixture)>(number)
+type Fixture.getFilterData = function=(Fixture)>(number, number, number)
+type Fixture.getFriction = function=(Fixture)>(number)
+type Fixture.getGroupIndex = function=(Fixture)>(number)
+type Fixture.getMask = function=(Fixture)>(number, number)
+type Fixture.getMassData = function=(Fixture)>(number, number, number, number)
+type Fixture.getRestitution = function=(Fixture)>(number)
+type Fixture.getShape = function=(Fixture)>(Shape)
+type Fixture.getUserData = function=(Fixture)>(any)
+type Fixture.isDestroyed = function=(Fixture)>(boolean)
+type Fixture.isSensor = function=(Fixture)>(boolean)
+type Fixture.rayCast = function=(Fixture, number, number, number, number, number, number | nil)>(number, number, number)
+type Fixture.setCategory = function=(Fixture, number, number)>()
+type Fixture.setDensity = function=(Fixture, number)>()
+type Fixture.setFilterData = function=(Fixture, number, number, number)>()
+type Fixture.setFriction = function=(Fixture, number)>()
+type Fixture.setGroupIndex = function=(Fixture, number)>()
+type Fixture.setMask = function=(Fixture, number, number)>()
+type Fixture.setRestitution = function=(Fixture, number)>()
+type Fixture.setSensor = function=(Fixture, boolean)>()
+type Fixture.setUserData = function=(Fixture, any)>()
+type Fixture.testPoint = function=(Fixture, number, number)>(boolean)
+
+type FrictionJoint.@BaseTable = Joint
+type FrictionJoint.getMaxForce = function=(FrictionJoint)>(number)
+type FrictionJoint.getMaxTorque = function=(FrictionJoint)>(number)
+type FrictionJoint.setMaxForce = function=(FrictionJoint, number)>()
+type FrictionJoint.setMaxTorque = function=(FrictionJoint, number)>()
+
+type GearJoint.@BaseTable = Joint
+type GearJoint.getJoints = function=(GearJoint)>(Joint, Joint)
+type GearJoint.getRatio = function=(GearJoint)>(number)
+type GearJoint.setRatio = function=(GearJoint, number)>()
+
+type Joint.@BaseTable = Object
+type Joint.destroy = function=(Joint)>()
+type Joint.getAnchors = function=(Joint)>(number, number, number, number)
+type Joint.getBodies = function=(Joint)>(Body, Body)
+type Joint.getCollideConnected = function=(Joint)>(boolean)
+type Joint.getReactionForce = function=(Joint, number)>(number, number)
+type Joint.getReactionTorque = function=(Joint, number)>(number)
+type Joint.getType = function=(Joint)>(JointType)
+type Joint.getUserData = function=(Joint)>(any)
+type Joint.isDestroyed = function=(Joint)>(boolean)
+type Joint.setUserData = function=(Joint, any)>()
+
+type MotorJoint.@BaseTable = Joint
+type MotorJoint.getAngularOffset = function=(MotorJoint)>(number)
+type MotorJoint.getLinearOffset = function=(MotorJoint)>(number, number)
+type MotorJoint.setAngularOffset = function=(MotorJoint, number)>()
+type MotorJoint.setLinearOffset = function=(MotorJoint, number, number)>()
+
+type MouseJoint.@BaseTable = Joint
+type MouseJoint.getDampingRatio = function=(MouseJoint)>(number)
+type MouseJoint.getFrequency = function=(MouseJoint)>(number)
+type MouseJoint.getMaxForce = function=(MouseJoint)>(number)
+type MouseJoint.getTarget = function=(MouseJoint)>(number, number)
+type MouseJoint.setDampingRatio = function=(MouseJoint, number)>()
+type MouseJoint.setFrequency = function=(MouseJoint, number)>()
+type MouseJoint.setMaxForce = function=(MouseJoint, number)>()
+type MouseJoint.setTarget = function=(MouseJoint, number, number)>()
+
+type PolygonShape.@BaseTable = Shape
+type PolygonShape.getPoints = function=(PolygonShape)>(number, number, number, number)
+
+type PrismaticJoint.@BaseTable = Joint
+type PrismaticJoint.areLimitsEnabled = function=(PrismaticJoint)>(boolean)
+type PrismaticJoint.getAxis = function=(PrismaticJoint)>(number, number)
+type PrismaticJoint.getJointSpeed = function=(PrismaticJoint)>(number)
+type PrismaticJoint.getJointTranslation = function=(PrismaticJoint)>(number)
+type PrismaticJoint.getLimits = function=(PrismaticJoint)>(number, number)
+type PrismaticJoint.getLowerLimit = function=(PrismaticJoint)>(number)
+type PrismaticJoint.getMaxMotorForce = function=(PrismaticJoint)>(number)
+type PrismaticJoint.getMotorForce = function=(PrismaticJoint, number)>(number)
+type PrismaticJoint.getMotorSpeed = function=(PrismaticJoint)>(number)
+type PrismaticJoint.getReferenceAngle = function=(PrismaticJoint)>(number)
+type PrismaticJoint.getUpperLimit = function=(PrismaticJoint)>(number)
+type PrismaticJoint.isMotorEnabled = function=(PrismaticJoint)>(boolean)
+type PrismaticJoint.setLimits = function=(PrismaticJoint, number, number)>()
+type PrismaticJoint.setLimitsEnabled = function=(PrismaticJoint)>(boolean)
+type PrismaticJoint.setLowerLimit = function=(PrismaticJoint, number)>()
+type PrismaticJoint.setMaxMotorForce = function=(PrismaticJoint, number)>()
+type PrismaticJoint.setMotorEnabled = function=(PrismaticJoint, boolean)>()
+type PrismaticJoint.setMotorSpeed = function=(PrismaticJoint, number)>()
+type PrismaticJoint.setUpperLimit = function=(PrismaticJoint, number)>()
+
+type PulleyJoint.@BaseTable = Joint
+type PulleyJoint.getConstant = function=(PulleyJoint)>(number)
+type PulleyJoint.getGroundAnchors = function=(PulleyJoint)>(number, number, number, number)
+type PulleyJoint.getLengthA = function=(PulleyJoint)>(number)
+type PulleyJoint.getLengthB = function=(PulleyJoint)>(number)
+type PulleyJoint.getMaxLengths = function=(PulleyJoint)>(number, number)
+type PulleyJoint.getRatio = function=(PulleyJoint)>(number)
+type PulleyJoint.setConstant = function=(PulleyJoint, number)>()
+type PulleyJoint.setMaxLengths = function=(PulleyJoint, number, number)>()
+type PulleyJoint.setRatio = function=(PulleyJoint, number)>()
+
+type RevoluteJoint.@BaseTable = Joint
+type RevoluteJoint.areLimitsEnabled = function=(RevoluteJoint)>(boolean)
+type RevoluteJoint.getJointAngle = function=(RevoluteJoint)>(number)
+type RevoluteJoint.getJointSpeed = function=(RevoluteJoint)>(number)
+type RevoluteJoint.getLimits = function=(RevoluteJoint)>(number, number)
+type RevoluteJoint.getLowerLimit = function=(RevoluteJoint)>(number)
+type RevoluteJoint.getMaxMotorTorque = function=(RevoluteJoint)>(number)
+type RevoluteJoint.getMotorSpeed = function=(RevoluteJoint)>(number)
+type RevoluteJoint.getMotorTorque = function=(RevoluteJoint)>(number)
+type RevoluteJoint.getReferenceAngle = function=(RevoluteJoint)>(number)
+type RevoluteJoint.getUpperLimit = function=(RevoluteJoint)>(number)
+type RevoluteJoint.hasLimitsEnabled = function=(RevoluteJoint)>(boolean)
+type RevoluteJoint.isMotorEnabled = function=(RevoluteJoint)>(boolean)
+type RevoluteJoint.setLimits = function=(RevoluteJoint, number, number)>()
+type RevoluteJoint.setLimitsEnabled = function=(RevoluteJoint, boolean)>()
+type RevoluteJoint.setLowerLimit = function=(RevoluteJoint, number)>()
+type RevoluteJoint.setMaxMotorTorque = function=(RevoluteJoint, number)>()
+type RevoluteJoint.setMotorEnabled = function=(RevoluteJoint, boolean)>()
+type RevoluteJoint.setMotorSpeed = function=(RevoluteJoint, number)>()
+type RevoluteJoint.setUpperLimit = function=(RevoluteJoint, number)>()
+
+type RopeJoint.@BaseTable = Joint
+type RopeJoint.getMaxLength = function=(RopeJoint)>(number)
+type RopeJoint.setMaxLength = function=(RopeJoint, number)>()
+
+type Shape.@BaseTable = Object
+type Shape.computeAABB = function=(Shape, number, number, number, number | nil)>(number, number, number, number)
+type Shape.computeMass = function=(Shape, number)>(number, number, number, number)
+type Shape.getChildCount = function=(Shape)>(number)
+type Shape.getRadius = function=(Shape)>(number)
+type Shape.getType = function=(Shape)>(ShapeType)
+type Shape.rayCast = function=(Shape, number, number, number, number, number, number, number, number, number | nil)>(number, number, number)
+type Shape.testPoint = function=(Shape, number, number, number, number, number)>(boolean)
+
+type WeldJoint.@BaseTable = Joint
+type WeldJoint.getDampingRatio = function=(WeldJoint)>(number)
+type WeldJoint.getFrequency = function=(WeldJoint)>(number)
+type WeldJoint.getReferenceAngle = function=(WeldJoint)>(number)
+type WeldJoint.setDampingRatio = function=(WeldJoint, number)>()
+type WeldJoint.setFrequency = function=(WeldJoint, number)>()
+
+type WheelJoint.@BaseTable = Joint
+type WheelJoint.getAxis = function=(WheelJoint)>(number, number)
+type WheelJoint.getJointSpeed = function=(WheelJoint)>(number)
+type WheelJoint.getJointTranslation = function=(WheelJoint)>(number)
+type WheelJoint.getMaxMotorTorque = function=(WheelJoint)>(number)
+type WheelJoint.getMotorSpeed = function=(WheelJoint)>(number)
+type WheelJoint.getMotorTorque = function=(WheelJoint, number)>(number)
+type WheelJoint.getSpringDampingRatio = function=(WheelJoint)>(number)
+type WheelJoint.getSpringFrequency = function=(WheelJoint)>(number)
+type WheelJoint.isMotorEnabled = function=(WheelJoint)>(boolean)
+type WheelJoint.setMaxMotorTorque = function=(WheelJoint, number)>()
+type WheelJoint.setMotorEnabled = function=(WheelJoint, boolean)>()
+type WheelJoint.setMotorSpeed = function=(WheelJoint, number)>()
+type WheelJoint.setSpringDampingRatio = function=(WheelJoint, number)>()
+type WheelJoint.setSpringFrequency = function=(WheelJoint, number)>()
+
+type World.@BaseTable = Object
+type World.destroy = function=(World)>()
+type World.getBodies = function=(World)>(Table)
+type World.getBodyCount = function=(World)>(number)
+type World.getCallbacks = function=(World)>(Function, Function, Function, Function)
+type World.getContactCount = function=(World)>(number)
+type World.getContactFilter = function=(World)>(Function)
+type World.getContacts = function=(World)>(Table)
+type World.getGravity = function=(World)>(number, number)
+type World.getJointCount = function=(World)>(number)
+type World.getJoints = function=(World)>(Table)
+type World.isDestroyed = function=(World)>(boolean)
+type World.isLocked = function=(World)>(boolean)
+type World.isSleepingAllowed = function=(World)>(boolean)
+type World.queryBoundingBox = function=(World, number, number, number, number, Function)>()
+type World.rayCast = function=(World, Fixture, number, number, number, number, number)>(number)
+type World.setCallbacks = function=(World, Function, Function, Function, Function)>()
+type World.setContactFilter = function=(World, Function)>()
+type World.setGravity = function=(World, number, number)>()
+type World.setSleepingAllowed = function=(World, boolean)>()
+type World.translateOrigin = function=(World, number, number)>()
+type World.update = function=(World, number, number | nil, number | nil)>()
+
+type Decoder.@BaseTable = Object
+type Decoder.clone = function=(Decoder)>(Decoder)
+type Decoder.decode = function=(Decoder)>(SoundData)
+type Decoder.getBitDepth = function=(Decoder)>(number)
+type Decoder.getChannelCount = function=(Decoder)>(number)
+type Decoder.getDuration = function=(Decoder)>(number)
+type Decoder.getSampleRate = function=(Decoder)>(number)
+type Decoder.seek = function=(Decoder, number)>()
+
+type SoundData.@BaseTable = Data
+type SoundData.getBitDepth = function=(SoundData)>(number)
+type SoundData.getChannelCount = function=(SoundData)>(number)
+type SoundData.getDuration = function=(SoundData)>(number)
+type SoundData.getSample = function=(SoundData, number)>(number)|function=(SoundData, number, number)>(number)
+type SoundData.getSampleCount = function=(SoundData)>(number)
+type SoundData.getSampleRate = function=(SoundData)>(number)
+type SoundData.setSample = function=(SoundData, number, number)>()|function=(SoundData, number, number, number)>()
+
+type Channel.@BaseTable = Object
+type Channel.clear = function=(Channel)>()
+type Channel.demand = function=(Channel)>(any)|function=(Channel, number)>(any)
+type Channel.getCount = function=(Channel)>(number)
+type Channel.hasRead = function=(Channel, number)>(boolean)
+type Channel.peek = function=(Channel)>(any)
+type Channel.performAtomic = function=(Channel, Function, any, ...any)>(any, ...any)
+type Channel.pop = function=(Channel)>(any)
+type Channel.push = function=(Channel, any)>(number)
+type Channel.supply = function=(Channel, any)>(boolean)|function=(Channel, any, number)>(boolean)
+
+type Thread.@BaseTable = Object
+type Thread.getError = function=(Thread)>(string)
+type Thread.isRunning = function=(Thread)>(boolean)
+type Thread.start = function=(Thread)>()|function=(Thread, any, any, ...any)>()
+type Thread.wait = function=(Thread)>()
+
+type VideoStream.@BaseTable = Object
+type VideoStream.getFilename = function=(VideoStream)>(string)
+type VideoStream.isPlaying = function=(VideoStream)>(boolean)
+type VideoStream.pause = function=(VideoStream)>()
+type VideoStream.play = function=(VideoStream)>()
+type VideoStream.rewind = function=(VideoStream)>()
+type VideoStream.seek = function=(VideoStream, number)>()
+type VideoStream.tell = function=(VideoStream)>(number)
+
+type love.getVersion = function=()>(number, number, number, string)
+
+type love.hasDeprecationOutput = function=()>(boolean)
+
+type love.isVersionCompatible = function=(string)>(boolean)|function=(number, number, number)>(boolean)
+
+type love.setDeprecationOutput = function=(boolean)>()
+
+type love.conf = function=({identity = string | nil, appendidentity = boolean | nil, version = string | nil, console = boolean | nil, accelerometerjoystick = boolean | nil, externalstorage = boolean | nil, gammacorrect = boolean | nil, audio = {mic = boolean | nil, mixwithsystem = boolean | nil, }, window = {title = string | nil, icon = string | nil, width = number | nil, height = number | nil, borderless = boolean | nil, resizable = boolean | nil, minwidth = number | nil, minheight = number | nil, fullscreen = boolean | nil, fullscreentype = string | nil, usedpiscale = boolean | nil, vsync = number | nil, depth = number | nil, stencil = number | nil, msaa = number | nil, display = number | nil, highdpi = boolean | nil, x = number | nil, y = number | nil, }, modules = {audio = boolean | nil, event = boolean | nil, graphics = boolean | nil, image = boolean | nil, joystick = boolean | nil, keyboard = boolean | nil, math = boolean | nil, mouse = boolean | nil, physics = boolean | nil, sound = boolean | nil, system = boolean | nil, timer = boolean | nil, touch = boolean | nil, video = boolean | nil, window = boolean | nil, thread = boolean | nil, }, })>()
+
+type love.directorydropped = function=(string)>()
+
+type love.displayrotated = function=(number, DisplayOrientation)>()
+
+type love.draw = function=()>()
+
+type love.errorhandler = function=(string)>()
+
+type love.filedropped = function=(DroppedFile)>()
+
+type love.focus = function=(boolean)>()
+
+type love.gamepadaxis = function=(Joystick, GamepadAxis, number)>()
+
+type love.gamepadpressed = function=(Joystick, GamepadButton)>()
+
+type love.gamepadreleased = function=(Joystick, GamepadButton)>()
+
+type love.joystickadded = function=(Joystick)>()
+
+type love.joystickaxis = function=(Joystick, number, number)>()
+
+type love.joystickhat = function=(Joystick, number, JoystickHat)>()
+
+type love.joystickpressed = function=(Joystick, number)>()
+
+type love.joystickreleased = function=(Joystick, number)>()
+
+type love.joystickremoved = function=(Joystick)>()
+
+type love.keypressed = function=(KeyConstant, Scancode, boolean)>()|function=(KeyConstant, boolean)>()
+
+type love.keyreleased = function=(KeyConstant, Scancode)>()
+
+type love.load = function=(Table, Table)>()
+
+type love.lowmemory = function=()>()
+
+type love.mousefocus = function=(boolean)>()
+
+type love.mousemoved = function=(number, number, number, number, boolean)>()
+
+type love.mousepressed = function=(number, number, number, boolean, number)>()
+
+type love.mousereleased = function=(number, number, number, boolean, number)>()
+
+type love.quit = function=()>(boolean)
+
+type love.resize = function=(number, number)>()
+
+type love.run = function=()>(Function)
+
+type love.textedited = function=(string, number, number)>()
+
+type love.textinput = function=(string)>()
+
+type love.threaderror = function=(Thread, string)>()
+
+type love.touchmoved = function=(userdata, number, number, number, number, number)>()
+
+type love.touchpressed = function=(userdata, number, number, number, number, number)>()
+
+type love.touchreleased = function=(userdata, number, number, number, number, number)>()
+
+type love.update = function=(number)>()
+
+type love.visible = function=(boolean)>()
+
+type love.wheelmoved = function=(number, number)>()
+
+type love.audio = {}
+type love.audio.getActiveEffects = function=()>(Table)
+type love.audio.getActiveSourceCount = function=()>(number)
+type love.audio.getDistanceModel = function=()>(DistanceModel)
+type love.audio.getDopplerScale = function=()>(number)
+type love.audio.getEffect = function=(string)>(Table)
+type love.audio.getMaxSceneEffects = function=()>(number)
+type love.audio.getMaxSourceEffects = function=()>(number)
+type love.audio.getOrientation = function=()>(number, number)
+type love.audio.getPosition = function=()>(number, number, number)
+type love.audio.getRecordingDevices = function=()>(Table)
+type love.audio.getSourceCount = function=()>(number)
+type love.audio.getVelocity = function=()>(number, number, number)
+type love.audio.getVolume = function=()>(number)
+type love.audio.isEffectsSupported = function=()>(boolean)
+type love.audio.newQueueableSource = function=(number, number, number, number | nil)>(Source)
+type love.audio.newSource = function=(string, SourceType)>(Source)|function=(File, SourceType)>(Source)|function=(Decoder, SourceType)>(Source)|function=(FileData, SourceType)>(Source)|function=(SoundData)>(Source)
+type love.audio.pause = function=()>(Table)|function=(Source, ...Source)>()|function=(Table)>()
+type love.audio.play = function=(Source)>()|function=(Table)>()|function=(Source, Source, ...Source)>()
+type love.audio.setDistanceModel = function=(DistanceModel)>()
+type love.audio.setDopplerScale = function=(number)>()
+type love.audio.setEffect = function=(string, {type = EffectType, volume = number, ...number, })>(boolean)|function=(string, boolean | nil)>(boolean)
+type love.audio.setMixWithSystem = function=(boolean)>(boolean)
+type love.audio.setOrientation = function=(number, number)>()
+type love.audio.setPosition = function=(number, number, number)>()
+type love.audio.setVelocity = function=(number, number, number)>()
+type love.audio.setVolume = function=(number)>()
+type love.audio.stop = function=()>()|function=(Source)>()|function=(Source, Source, ...Source)>()|function=(Table)>()
+
+type love.data = {}
+type love.data.compress = function=(ContainerType, CompressedDataFormat, string, number | nil)>(CompressedData | string)|function=(ContainerType, CompressedDataFormat, Data, number | nil)>(CompressedData | string)
+type love.data.decode = function=(ContainerType, EncodeFormat, string)>(ByteData | string)|function=(ContainerType, EncodeFormat, Data)>(ByteData | string)
+type love.data.decompress = function=(ContainerType, CompressedData)>(Data | string)|function=(ContainerType, CompressedDataFormat, string)>(Data | string)|function=(ContainerType, CompressedDataFormat, Data)>(Data | string)
+type love.data.encode = function=(ContainerType, EncodeFormat, string, number | nil)>(ByteData | string)|function=(ContainerType, EncodeFormat, Data, number | nil)>(ByteData | string)
+type love.data.getPackedSize = function=(string)>(number)
+type love.data.hash = function=(HashFunction, string)>(string)|function=(HashFunction, Data)>(string)
+type love.data.newByteData = function=(string)>(ByteData)|function=(Data, number | nil, number | nil)>(ByteData)|function=(number)>(ByteData)
+type love.data.newDataView = function=(Data, number, number)>(Data)
+type love.data.pack = function=(ContainerType, string, number | boolean | string, ...number | boolean | string)>(Data | string)
+type love.data.unpack = function=(string, string, number | nil)>(number | boolean | string, ...number | boolean | string, number)|function=(string, Data, number | nil)>(number | boolean | string, ...number | boolean | string, number)
+
+type love.event = {}
+type love.event.clear = function=()>()
+type love.event.poll = function=()>(Function)
+type love.event.pump = function=()>()
+type love.event.push = function=(Event, any | nil, any | nil, any | nil, any | nil, any | nil, any | nil, ...any | nil)>()
+type love.event.quit = function=(number | nil)>()|function=(string)>()
+type love.event.wait = function=()>(Event, any, any, any, any, any, any, ...any)
+
+type love.filesystem = {}
+type love.filesystem.append = function=(string, string, number | nil)>(boolean, string)|function=(string, Data, number | nil)>(boolean, string)
+type love.filesystem.areSymlinksEnabled = function=()>(boolean)
+type love.filesystem.createDirectory = function=(string)>(boolean)
+type love.filesystem.getAppdataDirectory = function=()>(string)
+type love.filesystem.getCRequirePath = function=()>(string)
+type love.filesystem.getDirectoryItems = function=(string)>(Table)|function=(string, Function)>(Table)
+type love.filesystem.getIdentity = function=()>(string)
+type love.filesystem.getInfo = function=(string, FileType | nil)>({type = FileType, size = number, modtime = number, })|function=(string, Table)>({type = FileType, size = number, modtime = number, })|function=(string, FileType, Table)>({type = FileType, size = number, modtime = number, })
+type love.filesystem.getRealDirectory = function=(string)>(string)
+type love.filesystem.getRequirePath = function=()>(string)
+type love.filesystem.getSaveDirectory = function=()>(string)
+type love.filesystem.getSource = function=()>(string)
+type love.filesystem.getSourceBaseDirectory = function=()>(string)
+type love.filesystem.getUserDirectory = function=()>(string)
+type love.filesystem.getWorkingDirectory = function=()>(string)
+type love.filesystem.init = function=(string)>()
+type love.filesystem.isFused = function=()>(boolean)
+type love.filesystem.lines = function=(string)>(Function)
+type love.filesystem.load = function=(string)>(Function, string)
+type love.filesystem.mount = function=(string, string, boolean | nil)>(boolean)|function=(FileData, string, boolean | nil)>(boolean)|function=(Data, string, string, boolean | nil)>(boolean)
+type love.filesystem.newFile = function=(string)>(File)|function=(string, FileMode)>(File, string)
+type love.filesystem.newFileData = function=(string, string)>(FileData)|function=(Data, string)>(FileData)|function=(string)>(FileData, string)
+type love.filesystem.read = function=(string, number | nil)>(string, number, nil, string)|function=(ContainerType, string, number | nil)>(FileData | string, number, nil, string)
+type love.filesystem.remove = function=(string)>(boolean)
+type love.filesystem.setCRequirePath = function=(string)>()
+type love.filesystem.setIdentity = function=(string)>()|function=(string)>()
+type love.filesystem.setRequirePath = function=(string)>()
+type love.filesystem.setSource = function=(string)>()
+type love.filesystem.setSymlinksEnabled = function=(boolean)>()
+type love.filesystem.unmount = function=(string)>(boolean)
+type love.filesystem.write = function=(string, string, number | nil)>(boolean, string)|function=(string, Data, number | nil)>(boolean, string)
+
+type love.font = {}
+type love.font.newBMFontRasterizer = function=(ImageData, string, number | nil)>(Rasterizer)|function=(string, string, number | nil)>(Rasterizer)
+type love.font.newGlyphData = function=(Rasterizer, number)>()
+type love.font.newImageRasterizer = function=(ImageData, string, number | nil, number | nil)>(Rasterizer)
+type love.font.newRasterizer = function=(string)>(Rasterizer)|function=(FileData)>(Rasterizer)|function=(number | nil, HintingMode | nil, number | nil)>(Rasterizer)|function=(string, number | nil, HintingMode | nil, number | nil)>(Rasterizer)|function=(FileData, number | nil, HintingMode | nil, number | nil)>(Rasterizer)|function=(ImageData, string, number | nil)>(Rasterizer)|function=(string, string, number | nil)>(Rasterizer)
+type love.font.newTrueTypeRasterizer = function=(number | nil, HintingMode | nil, number | nil)>(Rasterizer)|function=(string, number | nil, HintingMode | nil, number | nil)>(Rasterizer)|function=(FileData, number | nil, HintingMode | nil, number | nil)>(Rasterizer)
+
+type love.graphics = {}
+type love.graphics.applyTransform = function=(Transform)>()
+type love.graphics.arc = function=(DrawMode, number, number, number, number, number, number | nil)>()|function=(DrawMode, ArcType, number, number, number, number, number, number | nil)>()
+type love.graphics.captureScreenshot = function=(string)>()|function=(Function)>()|function=(Channel)>()
+type love.graphics.circle = function=(DrawMode, number, number, number)>()|function=(DrawMode, number, number, number, number)>()
+type love.graphics.clear = function=()>()|function=(number, number, number, number | nil, boolean | nil, boolean | nil)>()|function=(Table, ...Table, boolean | nil, boolean | nil)>()|function=(boolean, boolean, boolean)>()
+type love.graphics.discard = function=(boolean | nil, boolean | nil)>()|function=(Table, boolean | nil)>()
+type love.graphics.draw = function=(Drawable, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=(Texture, Quad, number, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=(Drawable, Transform)>()|function=(Texture, Quad, Transform)>()
+type love.graphics.drawInstanced = function=(Mesh, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=(Mesh, number, Transform)>()
+type love.graphics.drawLayer = function=(Texture, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=(Texture, number, Quad, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=(Texture, number, Transform)>()|function=(Texture, number, Quad, Transform)>()
+type love.graphics.ellipse = function=(DrawMode, number, number, number, number)>()|function=(DrawMode, number, number, number, number, number)>()
+type love.graphics.flushBatch = function=()>()
+type love.graphics.getBackgroundColor = function=()>(number, number, number, number)
+type love.graphics.getBlendMode = function=()>(BlendMode, BlendAlphaMode)
+type love.graphics.getCanvas = function=()>(Canvas)
+type love.graphics.getCanvasFormats = function=()>(Table)|function=(boolean)>(Table)
+type love.graphics.getColor = function=()>(number, number, number, number)
+type love.graphics.getColorMask = function=()>(boolean, boolean, boolean, boolean)
+type love.graphics.getDPIScale = function=()>(number)
+type love.graphics.getDefaultFilter = function=()>(FilterMode, FilterMode, number)
+type love.graphics.getDepthMode = function=()>(CompareMode, boolean)
+type love.graphics.getDimensions = function=()>(number, number)
+type love.graphics.getFont = function=()>(Font)
+type love.graphics.getFrontFaceWinding = function=()>(VertexWinding)
+type love.graphics.getHeight = function=()>(number)
+type love.graphics.getImageFormats = function=()>(Table)
+type love.graphics.getLineJoin = function=()>(LineJoin)
+type love.graphics.getLineStyle = function=()>(LineStyle)
+type love.graphics.getLineWidth = function=()>(number)
+type love.graphics.getMeshCullMode = function=()>(CullMode)
+type love.graphics.getPixelDimenions = function=()>(number, number)
+type love.graphics.getPixelHeight = function=()>(number)
+type love.graphics.getPixelWidth = function=()>(number)
+type love.graphics.getPointSize = function=()>(number)
+type love.graphics.getRendererInfo = function=()>(string, string, string, string)
+type love.graphics.getScissor = function=()>(number, number, number, number)
+type love.graphics.getShader = function=()>(Shader)
+type love.graphics.getStackDepth = function=()>(number)
+type love.graphics.getStats = function=()>({drawcalls = number, canvasswitches = number, texturememory = number, images = number, canvases = number, fonts = number, shaderswitches = number, drawcallsbatched = number, })|function=(Table)>({drawcalls = number, canvasswitches = number, texturememory = number, images = number, canvases = number, fonts = number, shaderswitches = number, drawcallsbatched = number, })
+type love.graphics.getStencilTest = function=()>(CompareMode, number)
+type love.graphics.getSupported = function=()>(Table)
+type love.graphics.getSystemLimits = function=()>(Table)
+type love.graphics.getTextureTypes = function=()>(Table)
+type love.graphics.getWidth = function=()>(number)
+type love.graphics.intersectScissor = function=(number, number, number, number)>()
+type love.graphics.inverseTransformPoint = function=(number, number)>(number, number)
+type love.graphics.isActive = function=()>(boolean)
+type love.graphics.isGammaCorrect = function=()>(boolean)
+type love.graphics.isWireframe = function=()>(boolean)
+type love.graphics.line = function=(number, number, number, number, ...number)>()|function=(Table)>()
+type love.graphics.newArrayImage = function=(Table, {mipmaps = boolean | nil, linear = boolean | nil, dpiscale = number | nil, } | nil)>(Image)
+type love.graphics.newCanvas = function=()>(Canvas)|function=(number, number)>(Canvas)|function=(number, number, {type = TextureType | nil, format = PixelFormat | nil, readable = boolean, msaa = number | nil, dpiscale = number | nil, mipmaps = MipmapMode | nil, })>(Canvas)|function=(number, number, number, {type = TextureType | nil, format = PixelFormat | nil, readable = boolean, msaa = number | nil, dpiscale = number | nil, mipmaps = MipmapMode | nil, })>(Canvas)
+type love.graphics.newCubeImage = function=(string, {mipmaps = boolean | nil, linear = boolean | nil, } | nil)>(Image)|function=(Table, {mipmaps = boolean | nil, linear = boolean | nil, } | nil)>(Image)
+type love.graphics.newFont = function=(string)>(Font)|function=(string, number, HintingMode | nil, number | nil)>(Font)|function=(string, string)>(Font)|function=(number | nil, HintingMode | nil, number | nil)>(Font)
+type love.graphics.newImage = function=(string, {dpiscale = number | nil, linear = boolean | nil, mipmaps = boolean | nil, })>(Image)|function=(FileData, {dpiscale = number | nil, linear = boolean | nil, mipmaps = boolean | nil, })>(Image)|function=(ImageData, {dpiscale = number | nil, linear = boolean | nil, mipmaps = boolean | nil, })>(Image)|function=(CompressedImageData, {dpiscale = number | nil, linear = boolean | nil, mipmaps = boolean | nil, })>(Image)
+type love.graphics.newImageFont = function=(string, string)>(Font)|function=(ImageData, string)>(Font)|function=(string, string, number)>(Font)
+type love.graphics.newMesh = function=({number, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, }, MeshDrawMode | nil, SpriteBatchUsage | nil)>(Mesh)|function=(number, MeshDrawMode | nil, SpriteBatchUsage | nil)>(Mesh)|function=({attribute = Table, ...Table, }, {attributecomponent = number, ...number, }, MeshDrawMode | nil, SpriteBatchUsage | nil)>(Mesh)|function=({attribute = Table, ...Table, }, number, MeshDrawMode | nil, SpriteBatchUsage | nil)>(Mesh)|function=(number, Texture | nil, MeshDrawMode | nil)>(Mesh)
+type love.graphics.newParticleSystem = function=(Image, number | nil)>(ParticleSystem)|function=(Texture, number | nil)>(ParticleSystem)
+type love.graphics.newQuad = function=(number, number, number, number, number, number)>(Quad)
+type love.graphics.newShader = function=(string)>(Shader)|function=(string, string)>(Shader)
+type love.graphics.newSpriteBatch = function=(Image, number | nil)>(SpriteBatch)|function=(Image, number | nil, SpriteBatchUsage | nil)>(SpriteBatch)|function=(Texture, number | nil, SpriteBatchUsage | nil)>(SpriteBatch)
+type love.graphics.newText = function=(Font, string | nil)>(Text)
+type love.graphics.newVideo = function=(string)>(Video)|function=(VideoStream)>(Video)|function=(string, {audio = boolean | nil, dpiscale = number | nil, })>(Video)|function=(string, boolean | nil)>(Video)|function=(VideoStream, boolean | nil)>(Video)
+type love.graphics.newVolumeImage = function=(Table, {mipmaps = boolean | nil, linear = boolean | nil, } | nil)>(Image)
+type love.graphics.origin = function=()>()
+type love.graphics.points = function=(number, number, ...number)>()|function=({x = number, y = number, ...number, })>()|function=({point = Table, ...Table, })>()
+type love.graphics.polygon = function=(DrawMode, ...number)>()|function=(DrawMode, Table)>()
+type love.graphics.pop = function=()>()
+type love.graphics.present = function=()>()
+type love.graphics.print = function=(string, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=({color1 = Table, string1 = string, color2 = Table, string2 = string, (Table | string), }, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=(string, Transform)>()|function=({color1 = Table, string1 = string, color2 = Table, string2 = string, (Table | string), }, Transform)>()|function=(string, Font, Transform)>()|function=({color1 = Table, string1 = string, color2 = Table, string2 = string, (Table | string), }, Font, Transform)>()
+type love.graphics.printf = function=(string, number, number, number, AlignMode | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=(string, Font, number, number, number, AlignMode | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=(string, Transform, number, AlignMode | nil)>()|function=(string, Font, Transform, number, AlignMode | nil)>()|function=({color1 = Table, string1 = string, color2 = Table, string2 = string, (Table | string), }, number, number, number, AlignMode, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=({color1 = Table, string1 = string, color2 = Table, string2 = string, (Table | string), }, Font, number, number, number, AlignMode | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>()|function=({color1 = Table, string1 = string, color2 = Table, string2 = string, (Table | string), }, Transform, number, AlignMode | nil)>()|function=({color1 = Table, string1 = string, color2 = Table, string2 = string, (Table | string), }, Font, Transform, number, AlignMode | nil)>()
+type love.graphics.push = function=()>()|function=(StackType)>()
+type love.graphics.rectangle = function=(DrawMode, number, number, number, number)>()|function=(DrawMode, number, number, number, number, number, number | nil, number | nil)>()
+type love.graphics.replaceTransform = function=(Transform)>()
+type love.graphics.reset = function=()>()
+type love.graphics.rotate = function=(number)>()
+type love.graphics.scale = function=(number, number | nil)>()
+type love.graphics.setBackgroundColor = function=(number, number, number, number | nil)>()|function=()>()|function=()>()
+type love.graphics.setBlendMode = function=(BlendMode)>()|function=(BlendMode, BlendAlphaMode | nil)>()
+type love.graphics.setCanvas = function=(Canvas, number | nil)>()|function=()>()|function=(Canvas, Canvas, ...Canvas)>()|function=(Canvas, number, number | nil)>()|function=({any, any | nil, any, stencil = boolean | nil, depth = boolean | nil, depthstencil = any | nil, })>()
+type love.graphics.setColor = function=(number, number, number, number | nil)>()|function=(Table)>()
+type love.graphics.setColorMask = function=(boolean, boolean, boolean, boolean)>()|function=()>()
+type love.graphics.setDefaultFilter = function=(FilterMode, FilterMode, number | nil)>()
+type love.graphics.setDepthMode = function=(CompareMode, boolean)>()|function=()>()
+type love.graphics.setFont = function=(Font)>()
+type love.graphics.setFrontFaceWinding = function=(VertexWinding)>()
+type love.graphics.setLineJoin = function=(LineJoin)>()
+type love.graphics.setLineStyle = function=(LineStyle)>()
+type love.graphics.setLineWidth = function=(number)>()
+type love.graphics.setMeshCullMode = function=(CullMode)>()
+type love.graphics.setNewFont = function=(number | nil)>(Font)|function=(string, number | nil)>(Font)|function=(File, number | nil)>(Font)|function=(Data, number | nil)>(Font)|function=(Rasterizer)>(Font)
+type love.graphics.setPointSize = function=(number)>()
+type love.graphics.setScissor = function=(number, number, number, number)>()|function=()>()
+type love.graphics.setShader = function=(Shader)>()|function=()>()
+type love.graphics.setStencilTest = function=(CompareMode, number)>()|function=()>()
+type love.graphics.setWireframe = function=(boolean)>()
+type love.graphics.shear = function=(number, number)>()
+type love.graphics.stencil = function=(Function, StencilAction | nil, number | nil, boolean | nil)>()
+type love.graphics.transformPoint = function=(number, number)>(number, number)
+type love.graphics.translate = function=(number, number)>()
+type love.graphics.validateShader = function=(boolean, string)>(boolean, string)|function=(boolean, string, string)>(boolean, string)
+
+type love.image = {}
+type love.image.isCompressed = function=(string)>(boolean)|function=(FileData)>(boolean)
+type love.image.newCompressedData = function=(string)>(CompressedImageData)|function=(FileData)>(CompressedImageData)
+type love.image.newImageData = function=(number, number)>(ImageData)|function=(number, number, PixelFormat | nil, string | nil)>(ImageData)|function=(number, number, string)>(ImageData)|function=(string)>(ImageData)|function=(FileData)>(ImageData)
+
+type love.joystick = {}
+type love.joystick.getGamepadMappingString = function=(string)>(string)
+type love.joystick.getJoystickCount = function=()>(number)
+type love.joystick.getJoysticks = function=()>(Table)
+type love.joystick.loadGamepadMappings = function=(string)>()|function=(string)>()
+type love.joystick.saveGamepadMappings = function=(string)>(string)|function=()>(string)
+type love.joystick.setGamepadMapping = function=(string, GamepadButton, JoystickInputType, number, JoystickHat | nil)>(boolean)|function=(string, GamepadAxis, JoystickInputType, number, JoystickHat | nil)>(boolean)
+
+type love.keyboard = {}
+type love.keyboard.getKeyFromScancode = function=(Scancode)>(KeyConstant)
+type love.keyboard.getScancodeFromKey = function=(KeyConstant)>(Scancode)
+type love.keyboard.hasKeyRepeat = function=()>(boolean)
+type love.keyboard.hasScreenKeyboard = function=()>(boolean)
+type love.keyboard.hasTextInput = function=()>(boolean)
+type love.keyboard.isDown = function=(KeyConstant)>(boolean)|function=(KeyConstant, ...KeyConstant)>(boolean)
+type love.keyboard.isScancodeDown = function=(Scancode, ...Scancode)>(boolean)
+type love.keyboard.setKeyRepeat = function=(boolean)>()
+type love.keyboard.setTextInput = function=(boolean)>()|function=(boolean, number, number, number, number)>()
+
+type love.math = {}
+type love.math.colorFromBytes = function=(number, number, number, number | nil)>(number, number, number, number)
+type love.math.colorToBytes = function=(number, number, number, number | nil)>(number, number, number, number)
+type love.math.compress = function=(string, CompressedDataFormat | nil, number | nil)>(CompressedData)|function=(Data, CompressedDataFormat | nil, number | nil)>(CompressedData)
+type love.math.decompress = function=(CompressedData)>(string)|function=(string, CompressedDataFormat)>(string)|function=(Data, CompressedDataFormat)>(string)
+type love.math.gammaToLinear = function=(number, number, number)>(number, number, number)|function=(Table)>(number, number, number)|function=(number)>(number)
+type love.math.getRandomSeed = function=()>(number, number)
+type love.math.getRandomState = function=()>(string)
+type love.math.isConvex = function=(Table)>(boolean)|function=(number, number, number, number, number, number)>(boolean)
+type love.math.linearToGamma = function=(number, number, number)>(number, number, number)|function=(Table)>(number, number, number)|function=(number)>(number)
+type love.math.newBezierCurve = function=(Table)>(BezierCurve)|function=(number, number, number, number, number, number)>(BezierCurve)
+type love.math.newRandomGenerator = function=()>(RandomGenerator)|function=(number)>(RandomGenerator)|function=(number, number)>(RandomGenerator)
+type love.math.newTransform = function=()>(Transform)|function=(number, number, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil, number | nil)>(Transform)
+type love.math.noise = function=(number)>(number)|function=(number, number)>(number)|function=(number, number, number)>(number)|function=(number, number, number, number)>(number)
+type love.math.random = function=()>(number)|function=(number)>(number)|function=(number, number)>(number)
+type love.math.randomNormal = function=(number | nil, number | nil)>(number)
+type love.math.setRandomSeed = function=(number)>()|function=(number, number)>()
+type love.math.setRandomState = function=(string)>()
+type love.math.triangulate = function=(Table)>(Table)|function=(number, number, number, number, number, number)>(Table)
+
+type love.mouse = {}
+type love.mouse.getCursor = function=()>(Cursor)
+type love.mouse.getPosition = function=()>(number, number)
+type love.mouse.getRelativeMode = function=()>(boolean)
+type love.mouse.getSystemCursor = function=(CursorType)>(Cursor)
+type love.mouse.getX = function=()>(number)
+type love.mouse.getY = function=()>(number)
+type love.mouse.isCursorSupported = function=()>(boolean)
+type love.mouse.isDown = function=(number, ...number)>(boolean)
+type love.mouse.isGrabbed = function=()>(boolean)
+type love.mouse.isVisible = function=()>(boolean)
+type love.mouse.newCursor = function=(ImageData, number | nil, number | nil)>(Cursor)|function=(string, number | nil, number | nil)>(Cursor)|function=(FileData, number | nil, number | nil)>(Cursor)
+type love.mouse.setCursor = function=(Cursor)>()|function=()>()
+type love.mouse.setGrabbed = function=(boolean)>()
+type love.mouse.setPosition = function=(number, number)>()
+type love.mouse.setRelativeMode = function=(boolean)>()
+type love.mouse.setVisible = function=(boolean)>()
+type love.mouse.setX = function=(number)>()
+type love.mouse.setY = function=(number)>()
+
+type love.physics = {}
+type love.physics.getDistance = function=(Fixture, Fixture)>(number, number, number, number, number)
+type love.physics.getMeter = function=()>(number)
+type love.physics.newBody = function=(World, number | nil, number | nil, BodyType | nil)>(Body)
+type love.physics.newChainShape = function=(boolean, number, number, number, number, ...number)>(ChainShape)|function=(boolean, Table)>(ChainShape)
+type love.physics.newCircleShape = function=(number)>(CircleShape)|function=(number, number, number)>(CircleShape)
+type love.physics.newDistanceJoint = function=(Body, Body, number, number, number, number, boolean | nil)>(DistanceJoint)
+type love.physics.newEdgeShape = function=(number, number, number, number)>(EdgeShape)
+type love.physics.newFixture = function=(Body, Shape, number | nil)>(Fixture)
+type love.physics.newFrictionJoint = function=(Body, Body, number, number, boolean | nil)>(FrictionJoint)|function=(Body, Body, number, number, number, number, boolean | nil)>(FrictionJoint)
+type love.physics.newGearJoint = function=(Joint, Joint, number | nil, boolean | nil)>(GearJoint)
+type love.physics.newMotorJoint = function=(Body, Body, number | nil)>(MotorJoint)|function=(Body, Body, number | nil, boolean | nil)>(MotorJoint)
+type love.physics.newMouseJoint = function=(Body, number, number)>(MouseJoint)
+type love.physics.newPolygonShape = function=(number, number, number, number, number, number, ...number)>(PolygonShape)|function=(Table)>(PolygonShape)
+type love.physics.newPrismaticJoint = function=(Body, Body, number, number, number, number, boolean | nil)>(PrismaticJoint)|function=(Body, Body, number, number, number, number, number, number, boolean | nil)>(PrismaticJoint)|function=(Body, Body, number, number, number, number, number, number, boolean | nil, number | nil)>(PrismaticJoint)
+type love.physics.newPulleyJoint = function=(Body, Body, number, number, number, number, number, number, number, number, number | nil, boolean | nil)>(PulleyJoint)
+type love.physics.newRectangleShape = function=(number, number)>(PolygonShape)|function=(number, number, number, number, number | nil)>(PolygonShape)
+type love.physics.newRevoluteJoint = function=(Body, Body, number, number, boolean | nil)>(RevoluteJoint)|function=(Body, Body, number, number, number, number, boolean | nil, number | nil)>(RevoluteJoint)
+type love.physics.newRopeJoint = function=(Body, Body, number, number, number, number, number, boolean | nil)>(RopeJoint)
+type love.physics.newWeldJoint = function=(Body, Body, number, number, boolean | nil)>(WeldJoint)|function=(Body, Body, number, number, number, number, boolean | nil)>(WeldJoint)|function=(Body, Body, number, number, number, number, boolean | nil, number | nil)>(WeldJoint)
+type love.physics.newWheelJoint = function=(Body, Body, number, number, number, number, boolean | nil)>(WheelJoint)|function=(Body, Body, number, number, number, number, number, number, boolean | nil)>(WheelJoint)
+type love.physics.newWorld = function=(number | nil, number | nil, boolean | nil)>(World)
+type love.physics.setMeter = function=(number)>()
+
+type love.sound = {}
+type love.sound.newDecoder = function=(File, number | nil)>(Decoder)|function=(string, number | nil)>(Decoder)
+type love.sound.newSoundData = function=(string)>(SoundData)|function=(File)>(SoundData)|function=(Decoder)>(SoundData)|function=(number, number | nil, number | nil, number | nil)>(SoundData)
+
+type love.system = {}
+type love.system.getClipboardText = function=()>(string)
+type love.system.getOS = function=()>(string)
+type love.system.getPowerInfo = function=()>(PowerState, number, number)
+type love.system.getProcessorCount = function=()>(number)
+type love.system.hasBackgroundMusic = function=()>(boolean)
+type love.system.openURL = function=(string)>(boolean)
+type love.system.setClipboardText = function=(string)>()
+type love.system.vibrate = function=(number | nil)>()
+
+type love.thread = {}
+type love.thread.getChannel = function=(string)>(Channel)
+type love.thread.newChannel = function=()>(Channel)
+type love.thread.newThread = function=(string)>(Thread)|function=(FileData)>(Thread)|function=(string)>(Thread)
+
+type love.timer = {}
+type love.timer.getAverageDelta = function=()>(number)
+type love.timer.getDelta = function=()>(number)
+type love.timer.getFPS = function=()>(number)
+type love.timer.getTime = function=()>(number)
+type love.timer.sleep = function=(number)>()
+type love.timer.step = function=()>(number)
+
+type love.touch = {}
+type love.touch.getPosition = function=(userdata)>(number, number)
+type love.touch.getPressure = function=(userdata)>(number)
+type love.touch.getTouches = function=()>(Table)
+
+type love.video = {}
+type love.video.newVideoStream = function=(string)>(VideoStream)|function=(File)>(VideoStream)
+
+type love.window = {}
+type love.window.close = function=()>()
+type love.window.fromPixels = function=(number)>(number)|function=(number, number)>(number, number)
+type love.window.getDPIScale = function=()>(number)
+type love.window.getDesktopDimensions = function=(number | nil)>(string, string)
+type love.window.getDisplayCount = function=()>(number)
+type love.window.getDisplayName = function=(number | nil)>(string)
+type love.window.getDisplayOrientation = function=(number | nil)>(DisplayOrientation)
+type love.window.getFullscreen = function=()>(boolean, FullscreenType)
+type love.window.getFullscreenModes = function=(number | nil)>(Table)
+type love.window.getIcon = function=()>(ImageData)
+type love.window.getMode = function=()>(number, number, {fullscreen = boolean, fullscreentype = FullscreenType, vsync = boolean, msaa = number, resizable = boolean, borderless = boolean, centered = boolean, display = number, minwidth = number, minheight = number, highdpi = boolean, refreshrate = number, x = number, y = number, srgb = boolean, })
+type love.window.getPosition = function=()>(number, number, number)
+type love.window.getSafeArea = function=()>(number, number, number, number)
+type love.window.getTitle = function=()>(string)
+type love.window.getVSync = function=()>(number)
+type love.window.hasFocus = function=()>(boolean)
+type love.window.hasMouseFocus = function=()>(boolean)
+type love.window.isDisplaySleepEnabled = function=()>(boolean)
+type love.window.isMaximized = function=()>(boolean)
+type love.window.isMinimized = function=()>(boolean)
+type love.window.isOpen = function=()>(boolean)
+type love.window.isVisible = function=()>(boolean)
+type love.window.maximize = function=()>()
+type love.window.minimize = function=()>()
+type love.window.requestAttention = function=(boolean | nil)>()
+type love.window.restore = function=()>()
+type love.window.setDisplaySleepEnabled = function=(boolean)>()
+type love.window.setFullscreen = function=(boolean)>(boolean)|function=(boolean, FullscreenType)>(boolean)
+type love.window.setIcon = function=(ImageData)>(boolean)
+type love.window.setMode = function=(number, number, {fullscreen = boolean | nil, fullscreentype = FullscreenType | nil, vsync = boolean | nil, msaa = number | nil, stencil = boolean | nil, depth = number | nil, resizable = boolean | nil, borderless = boolean | nil, centered = boolean | nil, display = number | nil, minwidth = number | nil, minheight = number | nil, highdpi = boolean | nil, x = number | nil, y = number | nil, usedpiscale = boolean | nil, srgb = boolean | nil, })>(boolean)
+type love.window.setPosition = function=(number, number, number | nil)>()
+type love.window.setTitle = function=(string)>()
+type love.window.setVSync = function=(number)>()
+type love.window.showMessageBox = function=(string, string, MessageBoxType | nil, boolean | nil)>(boolean)|function=(string, string, Table, MessageBoxType | nil, boolean | nil)>(number)
+type love.window.toPixels = function=(number)>(number)|function=(number, number)>(number, number)
+type love.window.updateMode = function=(number, number, {fullscreen = boolean, fullscreentype = FullscreenType, vsync = boolean, msaa = number, resizable = boolean, borderless = boolean, centered = boolean, display = number, minwidth = number, minheight = number, highdpi = boolean, x = number, y = number, })>(boolean)
+
+type love.@MetaTable = {
+    __newindex = function(_, key: ref any) 
+        if not love[key] then
+            type_error("bad!", 2) 
+        end
+    end
+}return love

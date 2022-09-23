@@ -1,0 +1,342 @@
+type _ = any
+type boolean = true | false
+type integer = number
+type Table = {[any] = any} | {}
+type Function = function=(...any)>(...any)
+type userdata = Table
+type cdata = {[number] = any}
+type cdata.@TypeOverride = "cdata"
+type ctype = any
+type thread = Table
+type empty_function = function=(...)>(...any)
+
+analyzer function NonLiteral(obj: any)
+	if obj.Type == "symbol" and (obj:GetData() == true or obj:GetData() == false) then
+		return types.Boolean()
+	end
+
+	if obj.Type == "number" or obj.Type == "string" then
+		obj = obj:Copy()
+		obj:SetLiteral(false)
+		return obj
+	end
+
+	return obj
+end
+
+function List<|val: any|>
+	return {[number] = val | nil}
+end
+
+function Map<|key: any, val: any|>
+	return {[key] = val | nil}
+end
+
+function ErrorReturn<|...: ...any|>
+	return (...,) | (nil, string)
+end
+
+analyzer function Widen(val: any)
+	return val:Copy():Widen()
+end
+
+analyzer function return_type(func: Function, i: number | nil)
+	local i = i and i:GetData() or nil
+	return {func:GetOutputSignature():Slice(i, i)}
+end
+
+analyzer function set_return_type(func: Function, tup: any)
+	func:SetOutputSignature(tup)
+	func:SetExplicitOutputSignature(true)
+	func:SetCalled(false)
+end
+
+analyzer function argument_type(func: Function, i: number | nil)
+	local i = i and i:GetData() or nil
+	return {func:GetInputSignature():Slice(i, i)}
+end
+
+analyzer function exclude(T: any, U: any)
+	T = T:Copy()
+	T:RemoveType(U)
+	return T
+end
+
+analyzer function enum(tbl: Table)
+	assert(tbl:IsLiteral())
+	local union = types.Union()
+	analyzer:PushAnalyzerEnvironment("typesystem")
+
+	for _, keyval in ipairs(tbl:GetData()) do
+		analyzer:SetLocalOrGlobalValue(keyval.key, keyval.val)
+		union:AddType(keyval.val)
+	end
+
+	analyzer:PopAnalyzerEnvironment()
+	union:SetLiteral(true)
+	return union
+end
+
+analyzer function keysof(tbl: Table)
+	local union = types.Union()
+
+	if tbl.Type == "union" then
+		for _, val in ipairs(tbl:GetData()) do
+			if val.Type == "table" then
+				for _, keyval in ipairs(tbl:GetData()) do
+					union:AddType(keyval.key)
+				end
+			end
+		end
+	elseif tbl.Type == "table" then
+		for _, keyval in ipairs(tbl:GetData()) do
+			union:AddType(keyval.key)
+		end
+	end
+
+	return union
+end
+
+analyzer function seal(tbl: Table)
+	if tbl:GetContract() then return end
+
+	for _, keyval in ipairs(tbl:GetData()) do
+		if
+			keyval.val.Type == "function" and
+			keyval.val:GetInputSignature():Get(1).Type == "union"
+		then
+			local first_arg = keyval.val:GetInputSignature():Get(1)
+
+			if first_arg:GetType(tbl) and first_arg:GetType(types.Any()) then
+				keyval.val:GetInputSignature():Set(1, tbl)
+			end
+		end
+	end
+
+	tbl:SetContract(tbl)
+end
+
+function nilable<|tbl: {[string] = any}|>
+	tbl = copy(tbl)
+
+	for key, val in pairs(tbl) do
+		tbl[key] = val | nil
+	end
+
+	return tbl
+end
+
+analyzer function copy(obj: any)
+	local copy = obj:Copy()
+	analyzer:ClearObjectMutations(copy)
+
+	if copy.Type == "table" then copy:SetCreationScope(nil) end
+
+	copy.potential_self = nil
+	return copy
+end
+
+analyzer function UnionValues(values: any)
+	if values.Type ~= "union" then values = types.Union({values}) end
+
+	local i = 1
+	return function()
+		local value = values:GetData()[i]
+		i = i + 1
+		return value
+	end
+end
+
+-- typescript utility functions
+function Partial<|tbl: Table|>
+	local copy = {}
+
+	for key, val in pairs(tbl) do
+		copy[key] = val | nil
+	end
+
+	return copy
+end
+
+function Required<|tbl: Table|>
+	local copy = {}
+
+	for key, val in pairs(tbl) do
+		copy[key] = val ~ nil
+	end
+
+	return copy
+end
+
+-- this is more like a seal function as it allows you to modify the table
+function Readonly<|tbl: Table|>
+	local copy = {}
+
+	for key, val in pairs(tbl) do
+		copy[key] = val
+	end
+
+	copy.@Contract = copy
+	return copy
+end
+
+function Record<|keys: string, tbl: Table|>
+	local out = {}
+
+	for value in UnionValues(keys) do
+		out[value] = tbl
+	end
+
+	return out
+end
+
+function Pick<|tbl: Table, keys: string|>
+	local out = {}
+
+	for value in UnionValues(keys) do
+		if tbl[value] == nil then
+			error("missing key '" .. value .. "' in table", 2)
+		end
+
+		out[value] = tbl[value]
+	end
+
+	return out
+end
+
+analyzer function Delete(tbl: Table, key: string)
+	local out = tbl:Copy()
+	tbl:Delete(key)
+	return out
+end
+
+function Omit<|tbl: Table, keys: string|>
+	local out = copy<|tbl|>
+
+	for value in UnionValues(keys) do
+		if tbl[value] == nil then
+			error("missing key '" .. value .. "' in table", 2)
+		end
+
+		Delete<|out, value|>
+	end
+
+	return out
+end
+
+function Exclude<|a: any, b: any|>
+	return a ~ b
+end
+
+analyzer function Union(...: ...any)
+	return types.Union({...})
+end
+
+function Extract<|a: any, b: any|>
+	local out = Union<||>
+
+	for aval in UnionValues(a) do
+		for bval in UnionValues(b) do
+			if aval < bval then out = out | aval end
+		end
+	end
+
+	return out
+end
+
+analyzer function Parameters(func: Function)
+	return {func:GetInputSignature():Copy():Unpack()}
+end
+
+analyzer function ReturnType(func: Function)
+	return {func:GetOutputSignature():Copy():Unpack()}
+end
+
+function Uppercase<|val: ref string|>
+	return val:upper()
+end
+
+function Lowercase<|val: ref string|>
+	return val:lower()
+end
+
+function Capitalize<|val: ref string|>
+	return val:sub(1, 1):upper() .. val:sub(2)
+end
+
+function Uncapitalize<|val: ref string|>
+	return val:sub(1, 1):lower() .. val:sub(2)
+end
+
+analyzer function TypeName(val: any)
+	return val.Type
+end
+
+analyzer function PushTypeEnvironment(obj: any)
+	local tbl = types.Table()
+	tbl:Set(types.LString("_G"), tbl)
+	local g = analyzer:GetGlobalEnvironment("typesystem")
+	tbl:Set(
+		types.LString("__index"),
+		types.LuaTypeFunction(
+			function(self, key)
+				local ok, err = obj:Get(key)
+
+				if ok then return ok end
+
+				local val, err = analyzer:IndexOperator(g, key)
+
+				if val then return val end
+
+				do
+					analyzer.stem_types = analyzer.stem_types or {}
+					analyzer.stem_types[key:GetData()] = types.Symbol("StemType-" .. tostring(key))
+					return analyzer.stem_types[key:GetData()]
+				end
+
+				analyzer:Error(err)
+				return types.Nil()
+			end,
+			{types.Any(), types.Any()},
+			{}
+		)
+	)
+	tbl:Set(
+		types.LString("__newindex"),
+		types.LuaTypeFunction(
+			function(self, key, val)
+				if analyzer.stem_types then
+					local stem = analyzer.stem_types[key:GetData()]
+
+					if stem then
+						for k, v in pairs(stem) do
+							stem[k] = nil
+						end
+
+						setmetatable(stem, getmetatable(val))
+
+						for k, v in pairs(val) do
+							stem[k] = v
+						end
+					end
+				end
+
+				return analyzer:Assert(obj:Set(key, val))
+			end,
+			{types.Any(), types.Any(), types.Any()},
+			{}
+		)
+	)
+	tbl:SetMetaTable(tbl)
+	analyzer:PushGlobalEnvironment(analyzer.current_statement, tbl, "typesystem")
+	analyzer:PushAnalyzerEnvironment("typesystem")
+end
+
+analyzer function PopTypeEnvironment()
+	analyzer:PopAnalyzerEnvironment("typesystem")
+	analyzer:PopGlobalEnvironment("typesystem")
+end
+
+analyzer function CurrentType(what: "table" | "tuple" | "function" | "union", level: literal nil | number)
+	return analyzer:GetCurrentType(what:GetData(), level and level:GetData())
+end

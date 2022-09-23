@@ -1,0 +1,46 @@
+type coroutine = {
+	create = function=(empty_function)>(thread),
+	close = function=(thread)>(boolean, string),
+	isyieldable = function=()>(boolean),
+	resume = function=(thread, ...)>(boolean, ...),
+	running = function=()>(thread, boolean),
+	status = function=(thread)>(string),
+	wrap = function=(empty_function)>(empty_function),
+	yield = function=(...)>(...),
+}
+
+analyzer function coroutine.yield(...: ...any)
+	analyzer.yielded_results = {...}
+end
+
+analyzer function coroutine.resume(thread: any, ...: ...any)
+	if thread.Type == "any" then
+		-- TODO: thread is untyped, when inferred
+		return types.Boolean()
+	end
+
+	if not thread.co_func then
+		error(tostring(thread) .. " is not a thread!", 2)
+	end
+
+	analyzer:Call(thread.co_func, types.Tuple({...}))
+	return types.Boolean()
+end
+
+analyzer function coroutine.create(func: Function, ...: ...any)
+	local t = types.Table()
+	t.co_func = func
+	return t
+end
+
+analyzer function coroutine.wrap(cb: Function)
+	return function(...)
+		analyzer:Call(cb, types.Tuple({...}))
+		local res = analyzer.yielded_results
+
+		if res then
+			analyzer.yielded_results = nil
+			return table.unpack(res)
+		end
+	end
+end

@@ -1,0 +1,115 @@
+import("~/nattlua/definitions/glua.nlua")
+local aowl = {}
+aowl.commands = {}
+aowl.ArgumentTypes = {
+	["nil"] = function(str)
+		return str
+	end,
+	boolean = function(arg)
+		arg = arg:lower()
+
+		if arg == "1" or arg == "true" or arg == "on" or arg == "yes" or arg == "y" then
+			return true
+		end
+
+		if arg == "0" or arg == "false" or arg == "off" or arg == "no" or arg == "n" then
+			return false
+		end
+
+		return false
+	end,
+	number = function(arg)
+		return tonumber(arg)
+	end,
+	string = function(arg)
+		if #arg > 0 then return arg end
+	end,
+	string_trim = function(arg)
+		arg = arg:Trim()
+
+		if #arg > 0 then return arg end
+	end,
+	string_rest = function(arg)
+		return arg
+	end,
+}
+
+function aowl.StringToType(type, ...)
+	return aowl.ArgumentTypes[type](...)
+end
+
+function aowl.AddCommand(command)
+	attest.equal(command, "help|usage=string")
+
+	-- AOWL LEGACY
+	if type(command) == "table" then command = table.concat(command, "|") end
+
+	local aliases = command
+	local argtypes
+	local defaults
+
+	if command:find("=") then
+		aliases, argtypes = command:match("(.+)=(.+)")
+
+		if not aliases then aliases = command end
+	end
+
+	attest.equal(aliases, "help|usage")
+	attest.equal(argtypes, "string")
+	aliases = aliases:Split("|")
+	attest.equal(aliases, {"help", "usage"})
+
+	if argtypes then
+		argtypes = argtypes:Split(",")
+		attest.equal(argtypes, {"string"})
+
+		for i, v in ipairs(argtypes) do
+			attest.equal(i, 1)
+			attest.equal(v, "string")
+
+			if v:find("|", nil, true) then
+				attest.equal(nil, "should not hit")
+				argtypes[i] = v:Split("|")
+			else
+				argtypes[i] = {v}
+				attest.equal(argtypes, {{"string"}})
+			end
+		end
+
+		attest.equal(argtypes, {{"string"}})
+
+		for i, types in ipairs(argtypes) do
+			for i2, arg in ipairs(types) do
+				if arg:find("[", nil, true) then
+					local temp, default = arg:match("(.+)(%b[])")
+
+					if temp and default and aowl.ArgumentTypes[temp] then
+						defaults = defaults or {}
+						default = default:sub(2, -2)
+
+						-- special case
+						if temp == "string" then
+							defaults[i] = default
+						else
+							defaults[i] = aowl.StringToType(temp, default)
+						end
+
+						types[i2] = temp
+					else
+						log(aliases[1] .. ": no type information found for \"" .. arg .. "\"")
+					end
+				end
+			end
+		end
+	end
+
+	aowl.commands[aliases[1]] = {
+		aliases = aliases,
+		argtypes = argtypes,
+		defaults = defaults,
+	}
+end
+
+aowl.AddCommand("help|usage=string")
+attest.equal(aowl.commands.help.aliases, {"help", "usage"})
+attest.equal(aowl.commands.help.argtypes, {{"string"}})

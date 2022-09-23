@@ -1,0 +1,4 @@
+local liba = assert(loadfile("test/nattlua/analyzer/file_importing/test/lib_returns_1.nlua"))()
+local libb = assert(loadfile("test/nattlua/analyzer/file_importing/test/lib_returns_2.nlua"))()
+local libc = assert(loadfile("test/nattlua/analyzer/file_importing/test/foo/returns_5.lua"))
+return liba.Foo() + libb.Foo() + libc()

@@ -1,0 +1,7 @@
+local lib = {}
+
+function lib.Foo()
+	return 2
+end
+
+return lib
