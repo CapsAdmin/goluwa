@@ -1,0 +1,840 @@
+local type print = any
+local type Instruction = {[number] = number}
+local type InstructionList = {[number] = Instruction}
+
+--usage : luajit fast_brainfudge.lua mandelbrot.bf
+if jit then jit.opt.start("loopunroll=100") end
+
+local STATS = true -- set to true to print optimizations count for each pass
+local vmSettings = {
+	ram = 32768,
+	cellType = "char",
+}
+local autoDetectSubfunctionDispatching = true -- will "guess" number of instruction and if needed enable subfunction dispatching
+local shouldCreateSubFunctions = false -- only use for HUGE programs because it slows down the code
+local subFunctionMinimumSize = 1000
+local subFunctionMaxSize = 2 ^ 16 - 1
+local subFunctionPrefix = "loop_"
+local subFunctions = {}
+local artithmeticsIns = {["+"] = 1, ["-"] = -1, [">"] = 1, ["<"] = -1}
+local INC = 1
+local MOVE = 2
+local PRINT = 3
+local LOOPSTART = 4
+local LOOPEND = 5
+local READ = 6
+local ASSIGNATION = 7
+local MEMSET = 8
+local UNROLLED_ASSIGNATION = 9
+local IFSTART = 10
+local IFEND = 11
+local FUNC_CALL = 12
+local PRINT_REPEAT = 13
+local instructions: {[string] = number} = {
+	["+"] = INC,
+	["-"] = INC,
+	[">"] = MOVE,
+	["<"] = MOVE,
+	["["] = LOOPSTART,
+	["]"] = LOOPEND,
+	["."] = PRINT,
+	[","] = READ,
+}
+local IRToCode: {[number] = string} = {
+	[INC] = "data[i]=data[i]+%i ",
+	[MOVE] = "i=i+%i ",
+	[LOOPSTART] = "while data[i]~=0 do ",
+	[LOOPEND] = "end ",
+	[PRINT] = "w(data[i])",
+	[READ] = "data[i]=r()",
+	[ASSIGNATION] = "data[i]=%i ",
+	[MEMSET] = "ffi_fill(data+i+%i, %i, %i)",
+	[UNROLLED_ASSIGNATION] = "data[i+%i] = data[i+%i] + (-(data[i]/%i))*%i ",
+	[IFSTART] = "if (data[i] ~= 0) then ",
+	[IFEND] = "end ",
+	[FUNC_CALL] = "%s() ",
+	[PRINT_REPEAT] = "w2(data[i], %i)",
+}
+--weight in LuaJIT bc of each IR in subfunction context
+local IRWeightUpValue: {[number] = number} = {
+	[INC] = 7,
+	[MOVE] = 3,
+	[LOOPSTART] = 7,
+	[LOOPEND] = 0,
+	[PRINT] = 5,
+	[READ] = 5,
+	[ASSIGNATION] = 4,
+	[MEMSET] = 9,
+	[UNROLLED_ASSIGNATION] = 15,
+	[IFSTART] = 5,
+	[IFEND] = 0,
+	[FUNC_CALL] = 2,
+	[PRINT_REPEAT] = 6,
+}
+--weight in LuaJIT bc of each IR in main code context
+local IRWeightLocalValue: {[number] = number} = {
+	[INC] = 3,
+	[MOVE] = 1,
+	[LOOPSTART] = 5,
+	[LOOPEND] = 0,
+	[PRINT] = 3,
+	[READ] = 3,
+	[ASSIGNATION] = 2,
+	[MEMSET] = 6, -- todo : recalc weight
+	[UNROLLED_ASSIGNATION] = 9,
+	[IFSTART] = 3,
+	[IFEND] = 0,
+	[FUNC_CALL] = 2,
+	[PRINT_REPEAT] = 4,
+}
+--used for debugging
+local eng: {[number] = string} = {
+	[INC] = "INC",
+	[MOVE] = "MOVE",
+	[PRINT] = "PRINT",
+	[LOOPSTART] = "LOOPSTART",
+	[LOOPEND] = "LOOPEND",
+	[READ] = "READ",
+	[ASSIGNATION] = "ASSIGNATION",
+	[MEMSET] = "MEMSET", -- todo : recalc weight
+	[UNROLLED_ASSIGNATION] = "UNROLLED_ASSIGNATION",
+	[IFSTART] = "IFSTART",
+	[IFEND] = "IFEND",
+	[FUNC_CALL] = "FUNC_CALL",
+	[PRINT_REPEAT] = "PRINT_REPEAT",
+}
+-- number of operands
+local IRSize: {[number] = number} = {
+	[INC] = 1,
+	[MOVE] = 1,
+	[LOOPSTART] = 0,
+	[LOOPEND] = 0,
+	[PRINT] = 0,
+	[READ] = 0,
+	[ASSIGNATION] = 1,
+	[MEMSET] = 3,
+	[UNROLLED_ASSIGNATION] = 4,
+	[IFSTART] = 0,
+	[IFEND] = 0,
+	[FUNC_CALL] = 1,
+	[PRINT_REPEAT] = 1,
+}
+
+local function countIRInsWeight(IRList: InstructionList)
+	local c = 0
+	local i = 1
+	local max = #IRList
+
+	while (i <= max) do
+		c = c + IRWeightLocalValue[IRList[i][1]]
+		i = i + 1
+	end
+
+	return c
+end
+
+-- find the next good candidate of loop that can be extracted of the main code, size between subFunctionMinimumSize and subFunctionMaxSize
+local function nextCandidateWhileLoop(IRList: InstructionList, curPos: number, maxPos: number)
+	while (curPos <= maxPos) do
+		local checkPoint = -1
+		local shouldStopSearching = false
+		local curWeight = 0
+		local loopStart = curPos
+		local i = 0
+		local whileDepth = 0
+		local ifDepth = 0
+
+		while (loopStart + i <= maxPos) do
+			local curIR = IRList[loopStart + i][1]
+
+			if curIR == LOOPSTART then
+				whileDepth = whileDepth + 1
+			elseif curIR == LOOPEND then
+				whileDepth = whileDepth - 1
+			elseif curIR == IFSTART then
+				ifDepth = ifDepth + 1
+			elseif curIR == IFEND then
+				ifDepth = ifDepth - 1
+			end
+
+			curWeight = curWeight + IRWeightUpValue[curIR]
+
+			if whileDepth == 0 and ifDepth == 0 and curWeight > subFunctionMinimumSize then
+				if curWeight <= subFunctionMaxSize then
+					checkPoint = i
+				else
+					shouldStopSearching = true
+				end
+
+				if (loopStart + i == maxPos) then shouldStopSearching = true end
+			end
+
+			-- we cannot keep searching as we exited the current loop/if depth
+			if whileDepth == -1 or ifDepth == -1 or shouldStopSearching == true then
+				local loopEnd = loopStart + checkPoint
+
+				if loopEnd > loopStart then
+					local _loopStartBK = loopStart
+					local IRListOUTPUT = {}
+
+					while loopStart <= loopEnd do
+						table.insert(IRListOUTPUT, IRList[loopStart])
+						loopStart = loopStart + 1
+					end
+
+					return _loopStartBK, IRListOUTPUT
+				else
+					break
+				end
+			end
+
+			i = i + 1
+		end
+
+		curPos = curPos + 1
+	end
+
+	return nil, nil
+end
+
+--cmp if two IR are equal, check IR and operands
+local function IREqual(IR1: Instruction, IR2: Instruction)
+	if IR1[1] ~= IR2[1] then return false end
+
+	local i = 1
+
+	while (i <= IRSize[IR1[1]]) do
+		if IR1[i] ~= IR2[i] then return false end
+
+		i = i + 1
+	end
+
+	return true
+end
+
+-- very short unit test
+local function replaceIRs(
+	haystack: mutable InstructionList,
+	needle: InstructionList,
+	replaceBy: {[number] = {number, number | string}},
+	startPos: number
+)
+	local replacmentCount = 0
+	local i = startPos
+	local max = #haystack
+	local needlesize = #needle
+	local replacmentSize = #replaceBy
+
+	while (i <= max) do
+		local needleI = 0
+
+		while
+			(
+				needleI < needlesize and
+				(
+					i + needleI
+				) <= max and
+				IREqual(haystack[i + needleI], needle[needleI + 1])
+			)
+		do
+			needleI = needleI + 1
+		end
+
+		if needleI == needlesize then
+			local replaceByI = 0
+
+			--remove needle IR
+			while (replaceByI < needlesize) do
+				table.remove(haystack, i)
+				replaceByI = replaceByI + 1
+			end
+
+			--and insert new IR
+			replaceByI = 0
+
+			while (replaceByI < replacmentSize) do
+				-- here we can do a ref copy, not a real copy as we don't plan to edit the instructions/IR content later
+				local temp = replaceBy[replaceByI + 1]
+				table.insert(haystack, i + replaceByI, {temp[1]})
+				replaceByI = replaceByI + 1
+			end
+
+			max = max - needlesize + replacmentSize
+			i = i + replacmentSize
+			replacmentCount = replacmentCount + 1
+		else
+			i = i + 1
+		end
+	end
+
+	return replacmentCount
+end
+
+local function firstPassOptimization(instList: mutable InstructionList)
+	--[[
+	while data[i] ~= 0 do
+		data[i] = data[i] -+ 1
+	end
+	vvvvvvvvvvvvvvvvvvvvvv
+	data[i] = 0 
+]] local i = 1
+	local max = #instList
+	local optimizationCount = 0
+
+	while (i <= max - 3) do
+		if
+			instList[i][1] == LOOPSTART and
+			instList[i + 1][1] == INC and
+			instList[i + 2][1] == LOOPEND
+		then
+			-- checks for the ins pattern, ignoring the content of the loop beside if it's inc or not
+			table.remove(instList, i)
+			table.remove(instList, i)
+
+			-- merge with next ins if possible
+			if instList[i + 1][1] == INC then
+				instList[i] = {ASSIGNATION, instList[i + 1][2]}
+				table.remove(instList, i + 1)
+				max = max - 1
+			else
+				instList[i] = {ASSIGNATION, 0}
+			end
+
+			-- also merge with previous one if possible
+			if (instList[i - 1] and instList[i - 1][1] == INC) then
+				table.remove(instList, i - 1)
+				max = max - 1
+			end
+
+			max = max - 2
+			optimizationCount = optimizationCount + 1
+		end
+
+		i = i + 1
+	end
+
+	if STATS then print("--Assignation pass : ", optimizationCount) end
+end
+
+local function secondPassMemset(instList: InstructionList)
+	if type(rawget(_G, "jit")) ~= "table" then
+		if STATS then
+			print("--memset() pass is DISABLED because ffi.fill is not available on this platform.")
+		end
+
+		return
+	end
+
+	--[[
+	i = i + 1
+	data[i] = 0
+	i = i + 1
+	data[i] = 0
+	i = i + 1
+	data[i] = 0
+	i = i + 1
+	data[i] = 0
+	i = i + 1
+	data[i] = 0
+	i = i + 1
+	data[i] = 0
+	i = i + 1
+	data[i] = 0
+	i = i + 1
+	data[i] = 0
+	i = i + 1
+	data[i] = 0
+
+	vvvvvvvvvvvvvv
+	ffi.fill(data + i,  9, 0)
+	i = i + 9
+	it also might automerge with second i+i instruction and remove if sum is zero
+]] local i = 1
+	local minimumAssignations = 2
+	local max = #instList
+	local currentFindSize = 0
+	local currentAssignation = 0
+	local optimizationCount = 0
+
+	while (i <= max - 2) do
+		if
+			instList[i][1] == MOVE and
+			math.abs(instList[i][2]) == 1 and
+			instList[i + 1][1] == ASSIGNATION
+		then
+			local movingDirection = assert(instList[i][2])
+			currentFindSize = 1
+			currentAssignation = instList[i + 1][2]
+			local i2 = i + 2
+
+			while (i2 <= max) do
+				local ptsShiftCandidate = instList[i2]
+				local dataAssignationCandidate = instList[i2 + 1]
+
+				if
+					ptsShiftCandidate[1] ~= MOVE or
+					ptsShiftCandidate[2] ~= movingDirection or
+					dataAssignationCandidate[1] ~= ASSIGNATION or
+					dataAssignationCandidate[2] ~= currentAssignation
+				then
+					-- create memset instruction
+					if currentFindSize < minimumAssignations then
+						i = i + (currentFindSize * 2) - 1 -- -1 because right after this batch could be another one, don't skip the first member
+						goto doubleBreakMemset
+					end
+
+					local i3 = 0
+
+					-- clear the instruction so you can replace them by the memset one
+					while (i3 < (currentFindSize * 2)) do
+						table.remove(instList, i)
+						i3 = i3 + 1
+					end
+
+					-- the assignation row may not have started with a pointer shift for some reasons, so let's cover this case
+					-- we handle the possible ptr+1 or just ptr as starting mem pos
+					if instList[i - 1][1] == ASSIGNATION and instList[i - 1][2] == currentAssignation then
+						i = i - 1
+						table.remove(instList, i)
+
+						if movingDirection == 1 then
+							table.insert(instList, i, {MEMSET, 0, currentFindSize + 1, currentAssignation})
+						else
+							table.insert(instList, i, {MEMSET, -currentFindSize, currentFindSize + 1, currentAssignation})
+						end
+
+						max = max - (currentFindSize + 1) * 2
+					else
+						if movingDirection == 1 then
+							table.insert(instList, i, {MEMSET, 1, currentFindSize, currentAssignation})
+						else
+							table.insert(instList, i, {MEMSET, -currentFindSize - 1, currentFindSize, currentAssignation})
+						end
+
+						max = max - (currentFindSize * 2 - 1)
+					end
+
+					local nextIns = instList[i + 1]
+
+					-- folding with next possible ptr ins
+					if nextIns[1] == MOVE then
+						if assert(nextIns[2]) + currentFindSize == 0 then
+							table.remove(instList, i + 1)
+							i = i - 1
+						else
+							nextIns[2] = nextIns[2] + (currentFindSize * movingDirection)
+						end
+					else
+						table.insert(instList, i + 1, {MOVE, currentFindSize * movingDirection})
+						i = i + 1
+					end
+
+					optimizationCount = optimizationCount + 1
+
+					goto doubleBreakMemset
+				else
+					currentFindSize = currentFindSize + 1
+				end
+
+				i2 = i2 + 2
+			end
+
+			::doubleBreakMemset::
+		end
+
+		i = i + 1
+	end
+
+	if STATS then print("--memset() pass : ", optimizationCount) end
+end
+
+local function thirdPassUnRolledAssignation(instList: InstructionList)
+	--[[
+
+
+
+
+			while data[i] ~= 0 do
+				data[i] = data[i] - 1 (incBase)
+				i = i + 1 (jmp1)
+				data[i] = data[i] + 2 (inc1)
+				i = i + 3 (jmp2)
+				data[i] = data[i] + 5 (inc2)
+				i = i + 1 (jmp3)
+				data[i] = data[i] + 2 (inc3)
+				i = i + 1 (jmp4)
+				data[i] = data[i] + 1 (inc4)
+				i = i - 6 (jmpReset)
+			end
+			
+
+
+			data[i+jmp1] = data[i+jmp1] + (-(data[i]/incBase))*inc1
+			data[i+jmp2] = data[i+jmp2] + (-(data[i]/incBase))*inc2
+			data[i+jmp3] = data[i+jmp3] + (-(data[i]/incBase))*inc3
+			data[i+jmp4] = data[i+jmp4] + (-(data[i]/incBase))*inc4
+			data[i] = 0
+
+	and--------------------------------------------------
+
+
+
+		while data[i] ~= 0 do
+			i = i - 1
+			data[i] = data[i] - 1
+			i = i + 1
+			data[i] = data[i] - 1
+			i = i - 6
+			data[i] = data[i] + 1
+			i = i + 6
+		end
+
+]] local optimizationCount = 0
+	local i = 1
+	local max = #instList
+
+	while (i <= max - 6) do
+		if instList[i][1] == LOOPSTART then
+			local loopStart = i
+			local loopEnd = i + 1
+
+			if not instList[loopEnd] then return end
+
+			--dead code `[]`
+			if instList[loopEnd][1] == LOOPEND then
+				table.remove(instList, i)
+				table.remove(instList, i)
+				max = max - 2
+				i = i - 1 -- two removed, but at the end it does + 1
+				goto URA_UnexpectedInstruction
+			end
+
+			local relativePosition = 0
+			local assignationTable = {}
+
+			while (instList[loopEnd][1] ~= LOOPEND) do
+				if loopEnd == max then return end
+
+				local curIns = instList[loopEnd][1]
+				local curOperand = assert(instList[loopEnd][2])
+
+				if curIns == MOVE then
+					relativePosition = relativePosition + curOperand
+				elseif curIns == INC then
+					if not assignationTable[relativePosition] then
+						assignationTable[relativePosition] = curOperand
+					else -- not really likely, but let's not close door to potential optimizations
+						assignationTable[relativePosition] = assignationTable[relativePosition] + curOperand
+					end
+				else
+					goto URA_UnexpectedInstruction
+				end
+
+				loopEnd = loopEnd + 1
+			end
+
+			if relativePosition ~= 0 then goto URA_UnexpectedInstruction end
+
+			--assert(assignationTable[0] ~= nil, "Expected base pointer in loop")
+			max = max - (loopEnd - loopStart) - 1
+
+			while (loopEnd >= loopStart) do
+				table.remove(instList, loopStart)
+				loopEnd = loopEnd - 1
+			end
+
+			table.insert(instList, loopStart, {IFSTART})
+			local assignationCount = 1
+
+			for jmp, inc in pairs(assignationTable) do
+				if jmp ~= 0 then
+					assignationCount = assignationCount + 1
+					--	[UNROLLED_ASSIGNATION] = "data[i+%i] = data[i+%i] + (-(data[i]/%i))*%i ",
+					table.insert(
+						instList,
+						loopStart + assignationCount - 1,
+						{UNROLLED_ASSIGNATION, jmp, jmp, assignationTable[0], inc}
+					)
+				end
+			end
+
+			-- not assignationCount + 1 as there is already an offset of 1 reserved for 0 assignation of calculated from the loop definition itself
+			table.insert(instList, loopStart + assignationCount, {ASSIGNATION, 0})
+			table.insert(instList, loopStart + assignationCount + 1, {IFEND})
+			max = max + assignationCount + 2 -- +2 because of IFSTART instruction at the start
+			optimizationCount = optimizationCount + assignationCount
+		end
+
+		::URA_UnexpectedInstruction::
+
+		i = i + 1
+	end
+
+	if STATS then
+		print("--Unrolled dynamic assignation pass : ", optimizationCount)
+	end
+end
+
+local brainfudge = function(s: string)
+	local compilationT = os.clock()
+	s = s:gsub("[^%+%-<>%.,%[%]]+", "") -- remove new lines
+	local instList = {} as InstructionList
+	local slen = #s
+	local i = 2 -- 2 because 1st may be checked before loop
+	local lastInst = s:sub(1, 1)
+	local lastInstType = instructions[lastInst]
+	local arithmeticsCount = 0
+	local optimizationCount = 0
+
+	if (artithmeticsIns[lastInst]) then
+		arithmeticsCount = artithmeticsIns[lastInst]
+	else
+		i = 1
+	end
+
+	while (i <= slen) do
+		local curInst = s:sub(i, i)
+		local curInstType = instructions[curInst]
+		--arithmetic instructions are the ones moving pointer or changing pointer value
+		local arithmeticValue = artithmeticsIns[curInst]
+
+		--folding
+		if curInstType == lastInstType then
+			if arithmeticValue then
+				optimizationCount = optimizationCount + 1
+				arithmeticsCount = arithmeticsCount + arithmeticValue
+			else
+				table.insert(instList, {instructions[curInst]})
+			end
+		else
+			if artithmeticsIns[lastInst] then
+				if arithmeticsCount ~= 0 then
+					table.insert(instList, {instructions[lastInst], arithmeticsCount})
+				end
+
+				if arithmeticValue then
+					arithmeticsCount = arithmeticValue
+				else
+					table.insert(instList, {instructions[curInst]})
+					arithmeticsCount = 0
+				end
+			else
+				if arithmeticValue then
+					arithmeticsCount = arithmeticValue
+				else
+					table.insert(instList, {instructions[curInst]})
+					arithmeticsCount = 0
+				end
+			end
+		end
+
+		lastInst = curInst
+		lastInstType = curInstType
+		i = i + 1
+	end
+
+	if arithmeticsCount ~= 0 then
+		table.insert(instList, {instructions[lastInst], arithmeticsCount})
+	end
+
+	if STATS then print("--Folding pass : ", optimizationCount) end
+
+	optimizationCount = 0
+	i = 1
+	local max = #instList
+
+	while (i <= max) do
+		if instList[i][1] == PRINT then
+			local printCount = 1
+
+			while (i + printCount <= max and instList[i + printCount][1] == PRINT) do
+				printCount = printCount + 1
+			end
+
+			if printCount > 1 then
+				optimizationCount = optimizationCount + printCount
+				local newInst = {PRINT_REPEAT, printCount}
+				max = max - (printCount - 1)
+
+				while (printCount > 0) do
+					table.remove(instList, i)
+					printCount = printCount - 1
+				end
+
+				table.insert(instList, i, newInst)
+			end
+		end
+
+		i = i + 1
+	end
+
+	if STATS then print("--MPrint pass : ", optimizationCount) end
+
+	firstPassOptimization(instList)
+	secondPassMemset(instList)
+	thirdPassUnRolledAssignation(instList)
+
+	if
+		autoDetectSubfunctionDispatching and
+		type(jit) == "table" and
+		countIRInsWeight(instList) > subFunctionMaxSize
+	then
+		shouldCreateSubFunctions = true
+	end
+
+	local insTableStr = {}
+	-- lua 54 & jit compatiblity
+	local unpack = unpack or table.unpack
+	local code = [[local data;
+local ffi
+local ffi_fill
+if type(rawget(_G, "jit")) == 'table' then
+
+	ffi = require("ffi")
+	data = ffi.new("]] .. vmSettings.cellType .. "[" .. vmSettings.ram .. [[]")
+    jit.opt.start("loopunroll=100")
+    ffi_fill = ffi.fill
+else
+	data = {}
+	local i = 0
+	while i < ]] .. vmSettings.ram .. [[ do
+		data[i] = 0
+		i = i + 1
+	end
+end
+local i = 0
+
+local w = function(c)
+	io.write(string.char(c))
+end
+
+local w2 = function(c, count)
+	local char = string.char(c)
+	local i = 0
+	while (i < count) do
+		io.write(char)
+		i = i + 1
+	end
+end
+
+local r = function()
+	return io.read(1):byte()
+end
+
+]]
+
+	if shouldCreateSubFunctions then
+		--luajit only
+		local optReplaceCount = 0
+		local jit_util = require("jit.util")
+		local loadstring = loadstring or load
+		local headerBCSize = jit_util.funcinfo(assert(loadstring(code))).bytecodes
+
+		while countIRInsWeight(instList) > subFunctionMaxSize - headerBCSize do
+			local i = 1
+			local max = #instList
+
+			while (i <= max) do
+				local startPos, patternIRList = nextCandidateWhileLoop(instList, i, max)
+
+				if startPos ~= nil then
+					if patternIRList ~= nil then
+						local funcName = subFunctionPrefix .. tostring(patternIRList):sub(8)
+						subFunctions[funcName] = patternIRList
+						local replaceCount = replaceIRs(instList, patternIRList, {{FUNC_CALL, funcName}}, startPos)
+						optReplaceCount = optReplaceCount + replaceCount
+						max = max - ((replaceCount) * #patternIRList) + 1
+						i = startPos + #patternIRList + 1
+					else
+						break
+					end
+				else
+					break
+				end
+			end
+
+			if optReplaceCount == 0 then error("no code to extract from main()") end
+		end
+
+		if STATS then print("--Refactoring pass : ", optReplaceCount) end
+
+		--output the extracted IR to Lua code
+		local subFunctionTableString = {}
+		local subFunctionsNames = {}
+
+		for k, v in pairs(subFunctions) do
+			table.insert(subFunctionsNames, k)
+		end
+
+		if #subFunctionsNames > 0 then
+			code = code .. "local " .. table.concat(subFunctionsNames, ", ") .. ";\n\n"
+		end
+
+		for fName, IRtbl in pairs(subFunctions) do
+			local subFIR = {}
+			local i2 = 1
+			local max = #IRtbl
+
+			while (i2 <= max) do
+				local IR = assert(IRtbl[i2])
+				subFIR[i2] = string.format(IRToCode[IR[1]], select(2, unpack(IR))):gsub("%+%-", "-")
+				i2 = i2 + 1
+			end
+
+			table.insert(
+				subFunctionTableString,
+				string.format("%s = function() %s end ", fName, table.concat(subFIR, "\n"))
+			)
+		end
+
+		code = code .. table.concat(subFunctionTableString, "\n") .. "\n"
+	end
+
+	i = 1
+	local max = #instList
+
+	while (i <= max) do
+		local IR = assert(instList[i])
+		local ir = assert(IR[1])
+		insTableStr[i] = string.format(IRToCode[ir], select(2, unpack(IR))):gsub("%+%-", "-")
+		i = i + 1
+	end
+
+	code = code .. table.concat(insTableStr, "\n")
+
+	if STATS then print("Compilation time took :", os.clock() - compilationT) end
+
+	return code
+end
+(function(arg: {[number] = string})
+	if #arg == 0 then
+		print("usage : fast_brainfudge.lua brainfudgeFile.b [optionnal output.lua]")
+		return
+	end
+
+	local f = assert(io.open(arg[1]))
+	local text = assert(f:read("*a"))
+	f:close()
+	local code = brainfudge(text)
+
+	if arg[2] then
+		local f = assert(io.open(arg[2], "w"), "Could not write to " .. arg[2])
+		f:write(code)
+		f:close()
+		print("Wrote code to " .. arg[2])
+		return
+	end
+
+	local loadstring = loadstring or load
+	local brainfudgeFunc, error = loadstring(code, string.format("Brainfudge Interpreter %p", code))
+
+	if not brainfudgeFunc then
+		print("--Could not compile to Lua, error : \n--", error)
+		print(code)
+	else
+		local t = os.clock()
+		brainfudgeFunc()
+
+		if STATS then print("\n--Running took (in s): " .. os.clock() - t) end
+	end
+end)(arg)

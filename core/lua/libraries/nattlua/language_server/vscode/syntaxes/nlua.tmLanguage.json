@@ -1,0 +1,231 @@
+{
+  "name": "nattlua",
+  "scopeName": "source.nlua",
+  "patterns": [
+    {
+      "include": "#string"
+    },
+    {
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.comment.lua"
+        }
+      },
+      "match": "\\A(#!).*$\\n?",
+      "name": "comment.line.shebang.lua"
+    },
+    {
+      "include": "#comment"
+    }
+  ],
+  "repository": {
+    "escaped_char": {
+      "patterns": [
+        {
+          "match": "\\\\[abfnrtv\\\\\"'\\n]",
+          "name": "constant.character.escape.lua"
+        },
+        {
+          "match": "\\\\z[\\n\\t ]*",
+          "name": "constant.character.escape.lua"
+        },
+        {
+          "match": "\\\\\\d{1,3}",
+          "name": "constant.character.escape.byte.lua"
+        },
+        {
+          "match": "\\\\x[0-9A-Fa-f][0-9A-Fa-f]",
+          "name": "constant.character.escape.byte.lua"
+        },
+        {
+          "match": "\\\\u\\{[0-9A-Fa-f]+\\}",
+          "name": "constant.character.escape.unicode.lua"
+        },
+        {
+          "match": "\\\\.",
+          "name": "invalid.illegal.character.escape.lua"
+        }
+      ]
+    },
+    "string": {
+      "patterns": [
+        {
+          "begin": "'",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.lua"
+            }
+          },
+          "end": "'[ \\t]*|(?=\\n)",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.lua"
+            }
+          },
+          "name": "string.quoted.single.lua",
+          "patterns": [
+            {
+              "include": "#escaped_char"
+            }
+          ]
+        },
+        {
+          "begin": "\"",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.lua"
+            }
+          },
+          "end": "\"[ \\t]*|(?=\\n)",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.lua"
+            }
+          },
+          "name": "string.quoted.double.lua",
+          "patterns": [
+            {
+              "include": "#escaped_char"
+            }
+          ]
+        },
+        {
+          "begin": "(?<=\\.(cdef|typeof))\\s*(\\[(=*)\\[)",
+          "beginCaptures": {
+            "0": {
+              "name": "string.quoted.other.multiline.lua"
+            },
+            "1": {
+              "name": "punctuation.definition.string.begin.lua"
+            }
+          },
+          "contentName": "meta.embedded.lua",
+          "end": "(\\]\\2\\])[ \\t]*",
+          "endCaptures": {
+            "0": {
+              "name": "string.quoted.other.multiline.lua"
+            },
+            "1": {
+              "name": "punctuation.definition.string.end.lua"
+            }
+          },
+          "patterns": [
+            {
+              "include": "source.c"
+            }
+          ]
+        },
+        {
+          "begin": "(?<!--)\\[(=*)\\[",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.lua"
+            }
+          },
+          "end": "\\]\\1\\][ \\t]*",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.lua"
+            }
+          },
+          "name": "string.quoted.other.multiline.lua"
+        }
+      ]
+    },
+    "comment": {
+      "patterns": [
+        {
+          "begin": "(^[ \\t]+)?(?=--)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.whitespace.comment.leading.lua"
+            }
+          },
+          "end": "(?!\\G)((?!^)[ \\t]+\\n)?",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.whitespace.comment.trailing.lua"
+            }
+          },
+          "patterns": [
+            {
+              "begin": "--\\[(=*)\\[",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.definition.comment.begin.lua"
+                }
+              },
+              "end": "\\]\\1\\]",
+              "endCaptures": {
+                "0": {
+                  "name": "punctuation.definition.comment.end.lua"
+                }
+              },
+              "name": "comment.block.lua"
+            },
+            {
+              "begin": "----",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.definition.comment.lua"
+                }
+              },
+              "end": "\\n",
+              "name": "comment.line.double-dash.lua"
+            },
+            {
+              "begin": "---",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.definition.comment.lua"
+                }
+              },
+              "end": "\\n",
+              "name": "comment.line.double-dash.doc.lua",
+              "patterns": [
+                {
+                  "include": "#luadoc"
+                }
+              ]
+            },
+            {
+              "begin": "--",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.definition.comment.lua"
+                }
+              },
+              "end": "\\n",
+              "name": "comment.line.double-dash.lua"
+            },
+            {
+              "begin": "//",
+              "beginCaptures": {
+                "0": {
+                  "name": "punctuation.definition.comment.lua"
+                }
+              },
+              "end": "\\n",
+              "name": "comment.line.cpp-dash.lua"
+            }
+          ]
+        },
+        {
+          "begin": "\\/\\*",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.begin.lua"
+            }
+          },
+          "end": "\\*\\/",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.end.lua"
+            }
+          },
+          "name": "comment.block.lua"
+        }
+      ]
+    }
+  }
+}

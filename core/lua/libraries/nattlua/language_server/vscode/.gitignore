@@ -1,0 +1,6 @@
+out
+server
+node_modules
+*.lock
+*.log
+*.vsix

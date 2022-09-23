@@ -1,0 +1,29 @@
+-- mutable: suppress warnings about mutating the argument within this function
+-- ref: passes the reference of the type from caller to this function instead of making a copy
+local function AddFunction(
+	META: mutable ref {
+		i = number,
+		code = string,
+		-- I want to express the ability to mutate this type within some constraint
+		[string] = any,
+	}
+)
+	-- mutates META by adding a function
+	function META:PeekByte(): number
+		local b = self.code:byte(self.i)
+		return b
+	end
+end
+
+local META = {} -- as {fails here}
+META.__index = META
+type META.i = number
+type META.code = string
+AddFunction(META)
+
+function META:Foo()
+	return self:PeekByte() + 21
+end
+
+local self = setmetatable({}, META)
+attest.equal(self:Foo(), _  as number)

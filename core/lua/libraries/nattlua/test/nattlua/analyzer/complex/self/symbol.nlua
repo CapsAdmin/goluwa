@@ -1,0 +1,4 @@
+local type { Symbol } = require("nattlua.types.symbol")
+
+local str = Symbol(true)
+attest.equal(str:GetData(), _  as any)

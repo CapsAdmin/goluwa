@@ -1,0 +1,23 @@
+name: test
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout the project
+        uses: actions/checkout@master
+
+      - name: checkout latest luajit 2.1
+        uses: actions/checkout@master
+        with:
+          repository: LuaJIT/LuaJIT
+          ref: v2.1
+          path: luajit
+
+      - name: build luajit
+        run: cd luajit && make && sudo make install && sudo ln -sf luajit-2.1.0-beta3 /usr/local/bin/luajit && cd ..
+
+      - name: test
+        run: ls && luajit test.lua

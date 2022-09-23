@@ -1,0 +1,257 @@
+type string = {
+	find = function=(s: string, pattern: string, init: number | nil, plain: boolean | nil)>(number | nil, number | nil, ...string),
+	len = function=(s: string)>(number),
+	packsize = function=(fmt: string)>(number),
+	match = function=(s: string, pattern: string, init: number | nil)>(...string),
+	upper = function=(s: string)>(string),
+	sub = function=(s: string, i: number, j: number)>(string) | function=(s: string, i: number)>(string),
+	char = function=(...)>(string),
+	rep = function=(s: string, n: number, sep: string)>(string) | function=(s: string, n: number)>(string),
+	lower = function=(s: string)>(string),
+	dump = function=(empty_function: empty_function)>(string),
+	gmatch = function=(s: string, pattern: string)>(empty_function),
+	reverse = function=(s: string)>(string),
+	byte = function=(s: string, i: number | nil, j: number | nil)>(...number),
+	unpack = function=(fmt: string, s: string, pos: number | nil)>(...any),
+	gsub = function=(s: string, pattern: string, repl: string | Table | empty_function, n: number | nil)>(string, number),
+	format = function=(string, ...any)>(string),
+	pack = function=(fmt: string, ...any)>(string),
+}
+
+analyzer function ^string.reverse(str: literal string): string
+	return str:GetData():reverse()
+end
+
+analyzer function ^string.rep(str: string, n: number, sep: nil | string)
+	if str:IsLiteral() and n:IsLiteral() then
+		if sep and sep:IsLiteral() then
+			return types.LString(string.rep(str:GetData(), n:GetData(), sep:GetData()))
+		end
+
+		return types.LString(string.rep(str:GetData(), n:GetData()))
+	end
+
+	return types.String()
+end
+
+analyzer function ^string.char(...: ...number)
+	local out = {}
+
+	for i, num in ipairs({...}) do
+		if num.Type ~= "number" or not num:IsLiteral() then return types.String() end
+
+		out[i] = num:GetData()
+
+		if out[i] < 0 or out[i] > 255 then error("out of range", 2) end
+	end
+
+	return string.char(table.unpack(out))
+end
+
+analyzer function ^string.format(s: string, ...: ...any)
+	if not s:IsLiteral() then return types.String() end
+
+	local ret = {...}
+
+	for i, v in ipairs(ret) do
+		if v:IsLiteral() then
+			ret[i] = v:GetData()
+
+			if v.Type == "function" then ret[i] = v.GetData end
+		else
+			return types.String()
+		end
+	end
+
+	return string.format(s:GetData(), table.unpack(ret))
+end
+
+analyzer function ^string.gmatch(s: string, pattern: string)
+	if s:IsLiteral() and pattern:IsLiteral() then
+		local f = s:GetData():gmatch(pattern:GetData())
+		local i = 1
+		return function()
+			local strings = {f()}
+
+			if strings[1] then
+				for i, v in ipairs(strings) do
+					strings[i] = types.LString(v)
+				end
+
+				return types.Tuple(strings)
+			end
+		end
+	end
+
+	if pattern:IsLiteral() then
+		local _, count = pattern:GetData():gsub("%b()", "")
+		local done = false
+		return function()
+			if done then return end
+
+			done = true
+			return types.Tuple({types.String()}):SetRepeat(count)
+		end
+	end
+
+	local done = false
+	return function()
+		if done then return end
+
+		done = true
+		return types.String()
+	end
+end
+
+analyzer function ^string.lower(str: string)
+	if str:IsLiteral() then return str:GetData():lower() end
+
+	return types.String()
+end
+
+analyzer function ^string.upper(str: string)
+	if str:IsLiteral() then return str:GetData():upper() end
+
+	return types.String()
+end
+
+analyzer function ^string.sub(str: string, a: number, b: number | nil)
+	if str:IsLiteral() and a:IsLiteral() then
+		if b and b:IsLiteral() then
+			return str:GetData():sub(a:GetData(), b:GetData())
+		end
+
+		return str:GetData():sub(a:GetData())
+	end
+
+	return types.String()
+end
+
+analyzer function ^string.byte(str: string, from: number | nil, to: number | nil)
+	if str:IsLiteral() and not from and not to then
+		return string.byte(str:GetData())
+	end
+
+	if str:IsLiteral() and from and from:IsLiteral() and not to then
+		return string.byte(str:GetData(), from:GetData())
+	end
+
+	if str:IsLiteral() and from and from:IsLiteral() and to and to:IsLiteral() then
+		return string.byte(str:GetData(), from:GetData(), to:GetData())
+	end
+
+	if from and from:IsLiteral() and to and to:IsLiteral() then
+		return types.Tuple({}):AddRemainder(types.Tuple({types.Number()}):SetRepeat(to:GetData() - from:GetData() + 1))
+	end
+
+	return types.Tuple({}):AddRemainder(types.Tuple({types.Number()}):SetRepeat(math.huge))
+end
+
+analyzer function ^string.match(str: string, pattern: string, start_position: number | nil)
+	str = str:IsLiteral() and str:GetData()
+	pattern = pattern:IsLiteral() and pattern:GetData()
+	start_position = start_position and
+		start_position:IsLiteral() and
+		start_position:GetData() or
+		1
+
+	if not str or not pattern then
+		return types.Tuple({types.Union({types.String(), types.Nil()})}):SetRepeat(math.huge)
+	end
+
+	local res = {str:match(pattern, start_position)}
+
+	for i, v in ipairs(res) do
+		if type(v) == "string" then
+			res[i] = types.LString(v)
+		else
+			res[i] = types.LNumber(v)
+		end
+	end
+
+	return table.unpack(res)
+end
+
+analyzer function ^string.find(str: string, pattern: string, start_position: number | nil, no_pattern: boolean | nil)
+	str = str:IsLiteral() and str:GetData()
+	pattern = pattern:IsLiteral() and pattern:GetData()
+	start_position = start_position and
+		start_position:IsLiteral() and
+		start_position:GetData() or
+		1
+	no_pattern = no_pattern and no_pattern:IsLiteral() and no_pattern:GetData() or false
+
+	if not str or not pattern then
+		return types.Tuple(
+			{
+				types.Union({types.Number(), types.Nil()}),
+				types.Union({types.Number(), types.Nil()}),
+				types.Union({types.String(), types.Nil()}),
+			}
+		)
+	end
+
+	local start, stop, found = str:find(pattern, start_position, no_pattern)
+
+	if found then types.LString(found) end
+
+	return start, stop, found
+end
+
+analyzer function ^string.len(str: string)
+	if str:IsLiteral() then return types.LNumber(#str:GetData()) end
+
+	return types.Number()
+end
+
+analyzer function ^string.gsub(
+	str: string,
+	pattern: string,
+	replacement: (ref function=(...string)>((...string))) | string | {[string] = string},
+	max_replacements: number | nil
+)
+	str = str:IsLiteral() and str:GetData()
+	pattern = pattern:IsLiteral() and pattern:GetData()
+	max_replacements = max_replacements and max_replacements:GetData()
+
+	if str and pattern and replacement then
+		if replacement.Type == "string" and replacement:IsLiteral() then
+			return string.gsub(str, pattern, replacement:GetData(), max_replacements)
+		elseif replacement.Type == "table" and replacement:IsLiteral() then
+			local out = {}
+
+			for _, kv in ipairs(replacement:GetData()) do
+				if kv.key:IsLiteral() and kv.val:IsLiteral() then
+					out[kv.key:GetData()] = kv.val:GetData()
+				end
+			end
+
+			return string.gsub(str, pattern, out, max_replacements)
+		elseif replacement.Type == "function" then
+			if not replacement:IsExplicitInputSignature() then
+				replacement:SetInputSignature(types.Tuple({types.String()}):SetRepeat(math.huge))
+			end
+
+			replacement:SetCalled(false)
+			return string.gsub(
+				str,
+				pattern,
+				function(...)
+					local ret = analyzer:Assert(analyzer:Call(replacement, analyzer:LuaTypesToTuple({...})))
+					local out = {}
+
+					for _, val in ipairs(ret:GetData()) do
+						if not val:IsLiteral() then return nil end
+
+						table.insert(out, val:GetData())
+					end
+
+					return table.unpack(out)
+				end,
+				max_replacements
+			)
+		end
+	end
+
+	return types.String(), types.Number()
+end

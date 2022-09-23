@@ -1,0 +1,38 @@
+type debug_getinfo = {
+	name = string,
+	namewhat = string,
+	source = string,
+	short_src = string,
+	linedefined = number,
+	lastlinedefined = number,
+	what = string,
+	currentline = number,
+	istailcall = boolean,
+	nups = number,
+	nparams = number,
+	isvararg = boolean,
+	func = any,
+	activelines = {[number] = boolean},
+}
+type debug = {
+	sethook = function=(thread: thread, hook: empty_function, mask: string, count: number)>(nil) | function=(thread: thread, hook: empty_function, mask: string)>(nil) | function=(hook: empty_function, mask: string)>(nil),
+	getregistry = function=()>(nil),
+	traceback = function=(thread: thread, message: any, level: number)>(string) | function=(thread: thread, message: any)>(string) | function=(thread: thread)>(string) | function=()>(string),
+	setlocal = function=(thread: thread, level: number, local_: number, value: any)>(string | nil) | function=(level: number, local_: number, value: any)>(string | nil),
+	getinfo = function=(thread: thread, f: empty_function | number, what: nil | string)>(debug_getinfo | nil) | function=(thread: thread, f: empty_function | number, what: nil | string)>(debug_getinfo | nil) | function=(f: empty_function | number, what: nil | string)>(debug_getinfo | nil),
+	upvalueid = function=(f: empty_function, n: number)>(userdata),
+	setupvalue = function=(f: empty_function, up: number, value: any)>(string | nil),
+	getlocal = function=(thread: thread, f: number | empty_function, local_: number)>(string | nil, any) | function=(f: number | empty_function, local_: number)>(string | nil, any),
+	upvaluejoin = function=(f1: empty_function, n1: number, f2: empty_function, n2: number)>(nil),
+	getupvalue = function=(f: empty_function, up: number)>(string | nil, any),
+	getmetatable = function=(value: any)>(Table | nil),
+	setmetatable = function=(value: any, Table: Table | nil)>(any),
+	gethook = function=(thread: thread)>(empty_function, string, number) | function=()>(empty_function, string, number),
+	getuservalue = function=(u: userdata)>(Table | nil),
+	debug = function=()>(nil),
+	getfenv = function=(o: any)>(Table),
+	setfenv = function=(object: any, Table: Table)>(any),
+	setuservalue = function=(udata: userdata, value: Table | nil)>(userdata),
+}
+type debug.getfenv = getfenv
+type debug.setfenv = setfenv

@@ -1,0 +1,12 @@
+local fs = import("./filesystem.nlua")
+print("get files: ", assert(fs.get_files(".")))
+
+for k, v in ipairs(assert(fs.get_files("."))) do
+	print(k, v)
+end
+
+print(assert(fs.get_current_directory()))
+
+for k, v in pairs(assert(fs.get_attributes("README.md"))) do
+	print(k, v)
+end

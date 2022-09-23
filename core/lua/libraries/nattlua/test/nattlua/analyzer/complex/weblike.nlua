@@ -1,0 +1,60 @@
+local type FieldType = "editable" | "viewOnly"
+local type DefaultProps = {
+	kind = FieldType,
+	value = string,
+	id = nil | string,
+	label = nil | string,
+	className = nil | string,
+	placeholder = nil | string,
+}
+local type ViewOnly = {
+	kind = "viewOnly",
+} & DefaultProps
+local type Editable = {
+	kind = "editable",
+	onChange = function=(any)>(),
+} & DefaultProps
+local type Props = Editable | ViewOnly
+
+local function Field(props: ref Props)
+	local { value, kind, id, label, className, placeholder } = props
+
+	value = value or ""
+	local onChange = props.onChange
+	local labelText = label and label or kind
+	local field = {
+		["viewOnly"] = {className = className, id = id, value = value or placeholder},
+		["editable"] = {
+			className = className,
+			id = id,
+			value = value,
+			placeholder = placeholder or "Now you can type here",
+			onChange = onChange,
+		},
+	}[kind]
+	local fieldStyle = {
+		["viewOnly"] = {
+			border = "",
+			borderRadius = "",
+			padding = "",
+		},
+		["editable"] = {border = "none"},
+	}[kind]
+	return {field, fieldStyle}
+end
+
+local view = Field(
+	{
+		kind = "viewOnly",
+		value = "Hello World",
+		placeholder = "you can change input by typing in the input",
+	}
+)
+local edit = Field(
+	{
+		kind = "editable",
+		onChange = function(val: string) end,
+		value = "Hello World",
+		placeholder = "you can change input by typing in the input",
+	}
+)

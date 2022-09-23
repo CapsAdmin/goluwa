@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"module": "ESNext",
+		"target": "es6",
+		"sourceMap": true,
+		"watch": true,
+		"moduleResolution": "node",
+		"lib": ["ESNext", "DOM"],
+		"rootDir": "./src",
+		"resolveJsonModule": true
+	},
+	"exclude": ["node_modules"]
+}

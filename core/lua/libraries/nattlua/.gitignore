@@ -1,0 +1,5 @@
+**/*.coverage
+jstest/
+test_focus.nlua
+test_focus_result.lua
+temp_build_output.lua

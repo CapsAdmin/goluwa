@@ -1,0 +1,193 @@
+local ffi = require("ffi")
+local _M = {}
+ffi.cdef[[
+    typedef struct ac_t ac_t;
+    typedef struct {
+        int match_begin;
+        int match_end;
+        int pattern_idx;
+    } ac_result_t;
+    ac_t* ac_create(const char** strv, unsigned int* strlenv, unsigned int v_len);
+    ac_result_t ac_match(ac_t* ac, const char* str, unsigned int len);
+    void ac_free(void*);
+
+    char* strncpy(char* destination, const char* source, size_t num);
+]]
+local type ac_t = return_type<|ffi.C.ac_create|>[1] ~ nil
+local C = ffi.C
+local ac = ffi.load("ac")
+
+local function create(dict: List<|string|>)
+	local nentries = #dict
+	local str_v = ffi.new("const char *[?]", nentries)
+	local strlen_v = ffi.new("unsigned int [?]", nentries)
+
+	for i = 1, nentries do
+		local s = dict[i] as dict[number] ~ nil
+		str_v[i - 1] = s
+		strlen_v[i - 1] = #s
+	end
+
+	local automate = ac.ac_create(str_v, strlen_v, nentries)
+
+	if automate ~= nil then return ffi.gc(automate, ffi.C.ac_free) end
+end
+
+_M.create = create
+local ac_create_cache = {}
+
+function _M.create_cached(dict: Map<|any, any|>)
+	if ac_create_cache[dict] == nil then ac_create_cache[dict] = create(dict) end
+
+	return ac_create_cache[dict]
+end
+
+function _M.match(automate: ac_t, str: string)
+	local r = ac.ac_match(automate, str, #str)
+
+	if r.match_begin >= 0 then return r end
+end
+
+function _M.bare_match(automate: ac_t, str: string)
+	local r = ac.ac_match(automate, str, #str)
+	return r.match_begin >= 0
+end
+
+local gbuf_n = 1024
+local gbuf = ffi.new("char [?]", gbuf_n)
+
+local function buf_grow(len: any, nokeep: boolean | nil)
+	if len > gbuf_n then
+		gbuf_n = len
+		local newbuf = ffi.new("char [?]", gbuf_n)
+
+		if not nokeep then ffi.copy(newbuf, gbuf, gbuf_n) end
+
+		gbuf = newbuf
+	end
+end
+
+function _M.replace(automate: ac_t, str: string, replacement: string, ignore_case: boolean)
+	local str_p = ffi.new("const char *", str)
+	local str_n = ffi.new("unsigned int", #str)
+	local compare_str
+	local compare_str_p = str_p
+
+	if ignore_case then
+		compare_str = string.lower(str)
+		compare_str_p = ffi.new("const char *", compare_str)
+	end
+
+	if not compare_str_p then error("uh oh") end
+
+	if not str_p then error("uh oh") end
+
+	buf_grow(#str, true)
+	-- BUG HERE!
+	-- we cannot rely on (gbuf_p - gbuf) to calculate length. it seems like pointer arithmetic triggers bug of luajit
+	-- I have observed typeof(gbuf_p) become "short *", "complex" in error message,
+	-- and (gbuf_p - gbuf) have type of long double which fails the call of ffi.string,
+	-- or cause overflow when I tried to convert the result with tonumber
+	-- guess the bug is related to pointer to ffi.new allocated memory with offset?
+	-- you can change this to gbuf_p = gbuf to observe another kind of bug behaviour
+	local gbuf_p = ffi.new("char *", gbuf)
+
+	if not gbuf_p then error("uh oh") end
+
+	while true do
+		local r = ac.ac_match(automate, compare_str_p, str_n)
+
+		if r.match_begin >= 0 then
+			buf_grow(gbuf_p + r.match_begin + #replacement - gbuf)
+			C.strncpy(gbuf_p, str_p, r.match_begin)
+			gbuf_p = gbuf_p + r.match_begin
+			C.strncpy(gbuf_p, replacement, #replacement)
+			gbuf_p = gbuf_p + #replacement
+			str_p = str_p + r.match_end + 1
+			compare_str_p = compare_str_p + r.match_end + 1
+			str_n = str_n - r.match_end - 1
+		else
+			buf_grow(gbuf_p + str_n - gbuf)
+			C.strncpy(gbuf_p, str_p, str_n)
+			gbuf_p = gbuf_p + str_n
+			-- you can also try call ffi.string(gbuf, tonumber(gbuf_p - gbuf))
+			return ffi.string(gbuf, (gbuf_p - gbuf) as number) --  lol
+		end
+	-- here, add print of info also changes behaviour
+	-- print(tostring(ffi.typeof(gbuf_p)))
+	-- print(gbuf_p - gbuf)
+	-- print(ffi.string(gbuf, gbuf_p - gbuf))
+	end
+end
+
+-- Howerver this works fine
+-- function _M.replace(automate, str, replacement, ignore_case)
+--     local str_p = ffi.new("const char *", str)
+--     local str_n = ffi.new("unsigned int", #str)
+--     local compare_str
+--     local compare_str_p = str_p
+--     if ignore_case then
+--         compare_str = string.lower(str)
+--         compare_str_p = ffi.new("const char *", compare_str)
+--     end
+--     buf_grow(#str, true)
+--     local total_len = 0 
+--     while true do
+--         local r = ac.ac_match(automate, compare_str_p, str_n);
+--         if r.match_begin >= 0 then
+--             buf_grow(total_len)
+--             C.strncpy(gbuf + total_len, str_p, r.match_begin)
+--             total_len = total_len + r.match_begin
+--             C.strncpy(gbuf + total_len, replacement, #replacement)
+--             total_len = total_len + #replacement
+--             str_p = str_p + r.match_end + 1
+--             compare_str_p = compare_str_p + r.match_end + 1
+--             str_n = str_n - r.match_end - 1
+--         else
+--             buf_grow(total_len + str_n)
+--             C.strncpy(gbuf + total_len, str_p, str_n)
+--             return ffi.string(gbuf, total_len + str_n)
+--         end
+--     end
+-- end
+function _M.mask(automate: ac_t, str: string, p: string, ignore_case: boolean)
+	local str_p = ffi.new("const char *", str)
+	local str_n = ffi.new("unsigned int", #str)
+	local compare_str
+	local compare_str_p = str_p
+	local pmark = p:byte()
+
+	if ignore_case then
+		compare_str = string.lower(str)
+		compare_str_p = ffi.new("const char *", compare_str)
+	end
+
+	if not compare_str_p then error("uh oh") end
+
+	if not str_p then error("uh oh") end
+
+	buf_grow(#str, true)
+	local gbuf_p = gbuf
+
+	while true do
+		local r = ac.ac_match(automate, compare_str_p, str_n)
+
+		if r.match_begin >= 0 then
+			C.strncpy(gbuf_p, str_p, r.match_begin)
+
+			for i = r.match_begin, r.match_end do
+				gbuf_p[i] = pmark
+			end
+
+			gbuf_p = gbuf_p + r.match_end + 1
+			compare_str_p = compare_str_p + r.match_end + 1
+			str_p = str_p + r.match_end + 1
+			str_n = str_n + r.match_end + 1
+		else
+			C.strncpy(gbuf_p, str_p, str_n)
+			return ffi.string(gbuf, #str)
+		end
+	end
+end
+
+return _M
