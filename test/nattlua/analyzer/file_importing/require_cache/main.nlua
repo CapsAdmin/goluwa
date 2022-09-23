@@ -1,0 +1,5 @@
+local lib1 = require("test/nattlua/analyzer/file_importing/require_cache/lib")
+local lib2 = require("test/nattlua/analyzer/file_importing/require_cache/lib")
+-- we cannot guarantee this when doing imports
+--§ assert(env.runtime.lib1 == env.runtime.lib2)
+attest.equal(lib1, lib2)

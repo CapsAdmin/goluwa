@@ -1,0 +1,61 @@
+type ffi = {
+	errno = function=(nil | number)>(number),
+	os = "Windows" | "Linux" | "OSX" | "BSD" | "POSIX" | "Other",
+	arch = "x86" | "x64" | "arm" | "ppc" | "ppcspe" | "mips",
+	C = {},
+	cdef = function=(string)>(nil),
+	abi = function=(string)>(boolean),
+	metatype = function=(ctype, Table)>(cdata),
+	new = function=(string | ctype, number | nil, ...any)>(cdata),
+	copy = function=(any, any, number | nil)>(nil),
+	alignof = function=(ctype)>(number),
+	cast = function=(ctype | string, cdata | string | number)>(cdata),
+	typeof = function=(ctype, ...any)>(ctype),
+	load = function=(string, boolean)>(userdata) | function=(string)>(userdata),
+	sizeof = function=(ctype, number)>(number) | function=(ctype)>(number),
+	string = function=(cdata, number | nil)>(string),
+	gc = function=(ctype, empty_function)>(cdata),
+	istype = function=(ctype, any)>(boolean),
+	fill = function=(cdata, number, any)>(nil) | function=(cdata, len: number)>(nil),
+	offsetof = function=(cdata, number)>(number),
+}
+type ffi.C.@Name = "FFI_C"
+type jit = {
+	os = ffi.os,
+	arch = ffi.arch,
+	attach = function=(empty_function, string)>(nil),
+	flush = function=()>(nil),
+	opt = {start = function=(...)>(nil)},
+	tracebarrier = function=()>(nil),
+	version_num = number,
+	version = string,
+	on = function=(empty_function | true, boolean | nil)>(nil),
+	off = function=(empty_function | true, boolean | nil)>(nil),
+	flush = function=(empty_function | true, boolean | nil)>(nil),
+	status = function=()>(boolean, ...string),
+	opt = {
+		start = function=(...string)>(nil),
+		stop = function=()>(nil),
+	},
+	util = {
+		funcinfo = function=(empty_function, position: number | nil)>(
+			{
+				linedefined = number, -- as for debug.getinfo
+				lastlinedefined = number, -- as for debug.getinfo
+				params = number, -- the number of parameters the function takes
+				stackslots = number, -- the number of stack slots the function's local variable use
+				upvalues = number, -- the number of upvalues the function uses
+				bytecodes = number, -- the number of bytecodes it the compiled function
+				gcconsts = number, -- the number of garbage collectable constants
+				nconsts = number, -- the number of lua_Number (double) constants
+				children = boolean, -- Boolean representing whether the function creates closures
+				currentline = number, -- as for debug.getinfo
+				isvararg = boolean, -- if the function is a vararg function
+				source = string, -- as for debug.getinfo
+				loc = string, -- a string describing the source and currentline, like "<source>:<line>"
+				ffid = number, -- the fast function id of the function (if it is one). In this case only upvalues above and addr below are valid
+				addr = any, -- the address of the function (if it is not a Lua function). If it's a C function rather than a fast function, only upvalues above is valid*
+			}
+		),
+	},
+}

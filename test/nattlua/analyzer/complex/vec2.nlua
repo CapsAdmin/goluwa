@@ -1,0 +1,109 @@
+
+local Vec2 = {}
+Vec2.__index = Vec2
+
+type Vec2.@Name = "Vec2"
+type Vec2.@Self = {
+    x = number,
+    y = number
+}
+
+local type Vec2 = Vec2.@Self
+
+function Vec2:__tostring()
+    return ("Vec2(%f, %f)"):format(self.x, self.y)
+end
+
+local function constructor(_, x: number, y: number)
+    return setmetatable({x = x, y = y}, Vec2)
+end
+
+local op = {
+    __add = "+",
+    __sub = "-",
+    __mul = "*",
+    __div = "/",
+}
+
+for key, op in pairs(op) do
+    local code = [[
+        local Vec2 = ...
+        function Vec2.]]..key..[[(a--[=[#: Vec2.@Self]=], b--[=[#: number | Vec2.@Self]=])
+            if type(b) == "number" then
+                return Vec2(a.x ]]..op..[[ b, a.y ]]..op..[[ b)
+            end
+            return Vec2(a.x ]]..op..[[ b.x, a.y ]]..op..[[ b.y)
+        end
+    ]]
+    assert(loadstring(code))(Vec2)
+end
+
+function Vec2.__eq(a: Vec2, b: Vec2)
+    return a.x == b.x and a.y == b.y
+end
+
+function Vec2:GetLength()
+    return math.sqrt(self.x * self.x + self.y * self.y)
+end
+
+Vec2.__len = Vec2.GetLength
+
+
+function Vec2.GetDot(a: Vec2, b: Vec2)
+	return
+		a.x * b.x +
+		a.y * b.y
+end
+
+
+function Vec2:GetNormalized()
+    local len = self:GetLength()
+    if len == 0 then return Vec2(0, 0) end
+    return self / len
+end
+
+function Vec2:GetRad()
+	return math.atan2(self.x, self.y)
+end
+
+function Vec2:Copy()
+    return Vec2(self.x, self.y)
+end
+
+function Vec2:Floor()
+    return Vec2(math.floor(self.x), math.floor(self.y))
+end
+
+function Vec2.Lerp(a: Vec2, b: Vec2, t: number)
+    return a + (b - a) * t
+end
+
+function Vec2:GetRotated(angle: number)
+    local self = self:Copy()
+	local cs = math.cos(angle);
+	local sn = math.sin(angle);
+
+	local xx = self.x * cs - self.y * sn;
+	local yy = self.x * sn + self.y * cs;
+
+	self.x = xx
+	self.y = yy
+
+	return self
+end
+
+function Vec2:GetReflected(normal: Vec2)
+	local proj = self:GetNormalized()
+	local dot = proj:GetDot(normal)
+
+    return Vec2(2 * (-dot) * normal.x + proj.x, 2 * (-dot) * normal.y + proj.y) * self:GetLength()
+end
+
+setmetatable(Vec2, {__call = constructor})
+
+local v = Vec2(0,0)
+local dot = v:Copy():GetDot(v)
+v = v / dot
+v = v + Vec2(1,1) + Vec2(2,0):GetReflected(Vec2(1,1)) - v * v * 2
+
+attest.equal(v, Vec2(_ as number, _ as number))

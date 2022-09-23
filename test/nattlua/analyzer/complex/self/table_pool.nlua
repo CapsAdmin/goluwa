@@ -1,0 +1,55 @@
+do
+	local table_pool = require("nattlua.other.table_pool")
+	local new_token = table_pool(
+		function()
+			return {
+				type = "something" as string,
+				value = "something" as string,
+				whitespace = false  as boolean,
+				start = 0  as number,
+				stop = 0  as number,
+			}
+		end,
+		3105585
+	)
+	local token = new_token()
+	attest.equal(token, _  as {
+		type = string,
+		value = string,
+		whitespace = boolean,
+		start = number,
+		stop = number,
+	})
+end
+
+do
+	local type { Token, TokenType } = import("~/nattlua/lexer/token.lua")
+
+	local table_pool = require("nattlua.other.table_pool")
+	local new_token = table_pool(
+		function()
+			return {
+				type = "unknown",
+				value = "",
+				whitespace = false,
+				is_whitespace = false,
+				start = 0,
+				stop = 0,
+			} as Token
+		end,
+		3105585
+	)
+
+	local function NewToken(type: TokenType, start: number, stop: number, is_whitespace: boolean): Token
+		local tk = new_token()
+		tk.type = type
+		tk.is_whitespace = is_whitespace
+		tk.start = start
+		tk.stop = stop
+		return tk
+	end
+
+	local tk = NewToken("symbol", 1, 2, false)
+	attest.equal(tk.start, _  as number)
+	attest.equal(tk.stop, _  as number)
+end

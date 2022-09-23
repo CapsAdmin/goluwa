@@ -1,0 +1,1 @@
+loadfile("test/run.lua")(...)

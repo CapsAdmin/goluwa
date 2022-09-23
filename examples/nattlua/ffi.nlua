@@ -1,0 +1,68 @@
+-- a "generic type"
+local function CDataPointer<|T: any|>
+	return {
+		[number] = T,
+	}
+end
+
+type VoidPointer = {
+	@MetaTable = self, -- this is a shortcut to setmetatable<|VoidPointer, VoidPointer|>
+	__index = function()
+		error("cannot index a void pointer")
+	end,
+	__newindex = function()
+		error("cannot index a void pointer")
+	end,
+}
+type ffi.C = {
+	@MetaTable = self,
+	__index = analyzer function(self, field: string)
+		-- this is a analyzer function, but the code here is executed by the checker
+		if not field:IsLiteral() then error("field must be a literal") end
+
+		local ffi = require("ffi")
+		local reflect = require("examples.nattlua.ffi_reflect")
+
+		local function ctype_to_nl_type(type_info)
+			if type_info.what == "ptr" then
+				return analyzer:GetLocalOrGlobalValue(types.LString("VoidPointer"))
+			elseif type_info.what == "int" then
+				return types.Number()
+			else
+				error("dunno how to cast " .. type_info.what)
+			end
+		end
+
+		local cdata = ffi.C[field:GetData()]
+		local info = reflect.typeof(cdata)
+
+		if info.what == "func" then
+			local arguments = {}
+
+			for arg_info in info:arguments() do
+				table.insert(arguments, ctype_to_nl_type(arg_info.type))
+			end
+
+			local type
+
+			if info.return_type.what == "ptr" then
+				type = ctype_to_nl_type(info.return_type)
+			else
+				type = analyzer:CallTypesystemUpvalue(types.LString("CDataPointer"), ctype_to_nl_type(info.return_type))
+			end
+
+			return types.Function(types.Tuple(arguments), types.Tuple({type}))
+		end
+	end,
+}
+
+analyzer function ffi.cdef(c_declaration: string, ...: ...any)
+	assert(c_declaration:IsLiteral(), "c_declaration must be a literal")
+	local ffi = require("ffi")
+	ffi.cdef(c_declaration:GetData(), ...)
+end
+
+--- from now it's normal lua code
+local ffi = require("ffi")
+ffi.cdef("void * malloc(size_t)")
+print(ffi.C.malloc()[5]) -- ^ should error

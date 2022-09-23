@@ -1,0 +1,13 @@
+type os = {
+	execute = function=(command: string)>(boolean | nil, string, number | nil) | function=()>(boolean | nil, string, number | nil),
+	rename = function=(oldname: string, newname: string)>(boolean | nil, string, number | nil),
+	getenv = function=(varname: string)>(string | nil),
+	difftime = function=(t2: number, t1: number)>(number),
+	exit = function=(code: boolean | number, close: boolean)>(nil) | function=(code: boolean | number)>(nil) | function=()>(nil),
+	remove = function=(filename: string)>(boolean | nil, string, number | nil),
+	setlocale = function=(local_e: string, category: string)>(string | nil) | function=(local_e: string)>(string | nil),
+	date = function=(format: string, time: number)>(string | Table) | function=(format: string)>(string | Table) | function=()>(string | Table),
+	time = function=(table: Table)>(number) | function=()>(number),
+	clock = function=()>(number),
+	tmpname = function=()>(string),
+}

@@ -1,0 +1,4 @@
+local type { String } = require("nattlua.types.string")
+
+local str = String("hello world")
+attest.equal(str:GetData(), _  as nil | string)

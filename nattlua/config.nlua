@@ -1,0 +1,43 @@
+local type { Node } = import("./parser/nodes.nlua")
+
+local type LexerConfig = {}
+local type ParserConfig = {
+	root = Node,
+	on_node = function=(ref Table, ref Node)>(ref Node),
+	path = string,
+	skip_import = boolean,
+	emit_environment = boolean,
+	inline_require = boolean,
+	file_path = string,
+	file_name = string,
+	working_directory = string,
+	root_statement_override_data = Node,
+	path = string,
+}
+local type AnalyzerConfig = {
+	external_mutation = boolean,
+}
+local type TranspilerConfig = {
+	preserve_whitespace = boolean,
+	no_newlines = boolean,
+	extra_indent = {
+		[string] = {to = string} | string,
+	},
+	string_quote = string,
+	type_annotations = boolean,
+	no_semicolon = boolean,
+	comment_type_annotations = boolean,
+	max_argument_length = number,
+	omit_invalid_code = boolean,
+	force_parenthesis = boolean,
+	module_encapsulation_method = "loadstring",
+	blank_invalid_code = boolean,
+	transpile_extensions = boolean,
+}
+return {
+	LexerConfig = Partial<|LexerConfig|>,
+	ParserConfig = Partial<|ParserConfig|>,
+	AnalyzerConfig = Partial<|AnalyzerConfig|>,
+	TranspilerConfig = Partial<|TranspilerConfig|>,
+	CompilerConfig = Partial<|LexerConfig & ParserConfig & AnalyzerConfig & TranspilerConfig|>,
+}

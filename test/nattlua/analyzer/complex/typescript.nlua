@@ -1,0 +1,194 @@
+do
+	local function Partial<|tbl: Table|>
+		local copy = {}
+
+		for k, v in pairs(tbl) do
+			-- this is not a bit operation
+			-- it's adding the type nil to a copy of the input type
+			copy[k] = v | nil
+		end
+
+		return copy
+	end
+
+	local type Todo = {
+		title = string;
+		description = string;
+	}
+
+	local function updateTodo(todo: Todo, fieldsToUpdate: Partial<|Todo|>)
+		return {...todo, ...fieldsToUpdate}
+	end
+
+	local todo1 = {
+		title = "organize desk",
+		description = "clear clutter",
+	}
+	local todo2 = updateTodo(todo1, {
+		description = "throw out trash",
+	})
+end
+
+do
+	local function Required<|tbl: Table|>
+		local copy = {}
+
+		for key, val in pairs(tbl) do
+			copy[key] = val ~ nil
+		end
+
+		return copy
+	end
+
+	local type Props = {
+		a = nil | number,
+		b = nil | string,
+	}
+	local obj: Props = {a = 5}
+	attest.expect_diagnostic("error", "b.- is missing from")
+	local obj2: Required<|Props|> = {a = 5}
+end
+
+do
+	local function Readonly<|tbl: Table|>
+		local copy = {}
+
+		for key, val in pairs(tbl) do
+			copy[key] = val
+		end
+
+		setmetatable<|
+			copy,
+			{
+				__newindex = function(_, key: ref string)
+					error("Cannot assign to '" .. key .. "' because it is a read-only property.", 2)
+				end,
+			}
+		|>
+		return copy
+	end
+
+	local type Todo = {title = string}
+	local todo: Readonly<|Todo|> = {
+		title = "Delete inactive users",
+	}
+	attest.expect_diagnostic("error", "read%-only")
+	todo.title = "Hello"
+end
+
+do
+	local function Record<|keys: string, tbl: Table|>
+		local out = {}
+
+		for value in UnionValues(keys) do
+			out[value] = tbl
+		end
+
+		return out
+	end
+
+	local type CatInfo = {age = number, breed = string}
+	local type CatName = "miffy" | "boris" | "mordred"
+	local cats: Record<|CatName, CatInfo|> = {
+		miffy = {age = 10, breed = "Persian"},
+		boris = {age = 5, breed = "Maine Coon"},
+		mordred = {age = 16, breed = "British Shorthair"},
+	}
+	local cat = cats.boris
+end
+
+do
+	local analyzer function HasKey(tbl: Table, key: string)
+		return not not tbl:HasKey(key)
+	end
+
+	local function Pick<|tbl: Table, keys: string|>
+		local out = {}
+
+		for value in UnionValues(keys) do
+			if not HasKey(tbl, value) then
+				error("missing key '" .. value .. "' in table", 2)
+				return any
+			end
+
+			out[value] = tbl[value]
+		end
+
+		return out
+	end
+
+	local type Todo = {
+		title = string,
+		description = string,
+		completed = boolean,
+	}
+	local type TodoPreview = Pick<|Todo, "title" | "completed"|>
+	local todo: TodoPreview = {
+		title = "Clean room",
+		completed = false,
+	}
+end
+
+do
+	local function Omit<|tbl: Table, keys: string|>
+		local out = copy<|tbl|>
+
+		for value in UnionValues(keys) do
+			if tbl[value] == nil then
+				error("missing key '" .. value .. "' in table", 2)
+			end
+
+			Delete<|out, value|>
+		end
+
+		return out
+	end
+
+	local type Todo = {
+		title = string;
+		description = string;
+		completed = boolean;
+		createdAt = number;
+	}
+	local type TodoPreview = Omit<|Todo, "description"|>
+	local todo: TodoPreview = {
+		title = "Clean room",
+		completed = false,
+		createdAt = 1615544252770,
+	}
+	local todo: TodoPreview
+	local type TodoInfo = Omit<|Todo, "completed" | "createdAt"|>
+	local todoInfo: TodoInfo = {
+		title = "Pick up kids",
+		description = "Kindergarten closes at 5pm",
+	}
+end
+
+do
+	local function Exclude<|a: any, b: any|>
+		return a ~ b
+	end
+
+	local type T0 = Exclude<|"a" | "b" | "c", "a"|>
+	local type T0 = "b" | "c"
+	local type T1 = Exclude<|"a" | "b" | "c", "a" | "b"|>
+	local type T1 = "c"
+	local type T2 = Exclude<|string | number | function=()>(), Function|>
+end
+
+do
+	local function Extract<|a: any, b: any|>
+		local out = |
+
+		for aval in UnionValues(a) do
+			for bval in UnionValues(b) do
+				if aval < bval then out = out | aval end
+			end
+		end
+
+		return out
+	end
+
+	local type T0 = Extract<|"a" | "b" | "c", "a" | "f"|>
+	local type T1 = Extract<|string | number | function=()>(), Function|>
+end

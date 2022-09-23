@@ -1,0 +1,4 @@
+local type { Tuple } = require("nattlua.types.tuple")
+
+local obj = Tuple({1, 2, 3})
+attest.equal(obj:GetData(), _  as List<|any|>)

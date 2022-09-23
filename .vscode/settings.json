@@ -1,0 +1,44 @@
+{
+  "triggerTaskOnSave.tasks": {
+    "onsave": [
+      "examples/**/*.lua",
+      "nattlua/**/*.lua",
+      "language_server/**/*.lua",
+      "test/**/*.lua",
+      "**/*.nlua",
+      "test_focus.nlua"
+    ]
+  },
+  "search.exclude": {
+    "build_output.lua": true,
+    "examples/projects/luajit/out.lua": true,
+    "language_server/vscode": true,
+    "**.js": true
+  },
+  "files.associations": {
+    "*.nlua": "nattlua",
+    "*.lua": "nattlua",
+    "*.lua.coverage": "nattlua"
+  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "unpublished.nattlua",
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  //"nattlua.trace.client": "verbose",
+  //"nattlua.trace.server": "verbose",
+  "editor.semanticHighlighting.enabled": true,
+  "editor.inlayHints.enabled": "on",
+  "workbench.colorCustomizations": {
+    "editor.background": "#1F1F1F"
+  },
+  "editor.tokenColorCustomizations": {
+    "strings": "#e99648",
+    "numbers": "#fffa9b",
+    "keywords": "#969ebb",
+    "types": "#b3ffd5",
+    "functions": "#83e6ff",
+    "comments": "#ff9797",
+    "variables": "#ffffff"
+  }
+}

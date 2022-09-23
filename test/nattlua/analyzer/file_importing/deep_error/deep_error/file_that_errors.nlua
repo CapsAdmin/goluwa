@@ -1,0 +1,19 @@
+
+--- here comes the error!
+
+-- almost!
+
+
+
+
+-- !!!
+
+
+-- !!
+
+analyzer function error_(msg: string)
+    error(msg:GetData())
+end
+
+-- ERROR4
+error_("finally the error!")

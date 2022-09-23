@@ -1,0 +1,2 @@
+require("nattlua.syntax.runtime")
+require("nattlua.syntax.typesystem")

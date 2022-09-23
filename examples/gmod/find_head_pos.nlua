@@ -1,0 +1,57 @@
+local type { Entity, Vector, Angle } = import("~/nattlua/definitions/glua.nlua")
+
+local type HeadPos = {
+	findheadpos_head_bone = number | nil,
+	findheadpos_head_attachment = number | nil,
+	findheadpos_last_mdl = string | nil,
+}
+
+local function get_first_attachment_by_name(ent: Entity, name: string)
+	local attachments = ent:GetAttachments()
+
+	for i, v in ipairs(attachments) do
+		if v.name == name then return v.id end
+	end
+end
+
+local function FindHeadPosition(ent: Entity & HeadPos)
+	if ent.findheadpos_last_mdl ~= ent:GetModel() then
+		ent.findheadpos_head_bone = nil
+		ent.findheadpos_head_attachment = nil
+		ent.findheadpos_last_mdl = ent:GetModel()
+	end
+
+	if not ent.findheadpos_head_bone then
+		for i = 0, ent:GetBoneCount() or 0 do
+			local name = ent:GetBoneName(i):lower()
+
+			if name:find("head", nil, true) then -- if name:find is always truthy, ent.findheadpos_head_bone is always going to exist
+				ent.findheadpos_head_bone = i
+
+				break
+			end
+		end
+	end
+
+	if ent.findheadpos_head_bone then
+		local m = ent:GetBoneMatrix(ent.findheadpos_head_bone)
+
+		if m then
+			local pos = m:GetTranslation()
+
+			if pos ~= ent:GetPos() then return pos, m:GetAngles() end
+		end
+	else
+		if not ent.findheadpos_head_attachment then
+			ent.findheadpos_head_attachment = get_first_attachment_by_name(ent, "eyes") or
+				get_first_attachment_by_name(ent, "forward")
+		end
+
+		if ent.findheadpos_head_attachment then
+			local angpos = ent:GetAttachment(ent.findheadpos_head_attachment)
+			return angpos.Pos, angpos.Ang
+		end
+	end
+
+	return ent:EyePos(), ent:EyeAngles()
+end

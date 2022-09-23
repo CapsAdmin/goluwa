@@ -1,0 +1,14 @@
+local type FileStat = {
+	last_accessed = number,
+	last_changed = number,
+	last_modified = number,
+	size = number,
+	type = "directory" | "file",
+}
+local type fs_contract = {
+	get_attributes = function=(string, false | nil | true)>(ErrorReturn<|FileStat|>),
+	get_files = function=(string)>(ErrorReturn<|List<|string|>|>),
+	set_current_directory = function=(string)>(ErrorReturn<|true|>),
+	get_current_directory = function=()>(ErrorReturn<|string|>),
+}
+return fs_contract

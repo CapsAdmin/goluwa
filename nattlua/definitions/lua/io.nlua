@@ -1,0 +1,53 @@
+type io = {
+	write = function=(...string)>(nil),
+	flush = function=()>(boolean | nil, string | nil),
+	read = function <|s: "*n" | "*a" | "*l" | number | nil|>
+		if s == "*n" then return nil | number end
+
+		return nil | string
+	end,
+	lines = function=()>(Function),
+	setvbuf = function=(mode: string, size: number)>(boolean | nil, string | nil) | function=(mode: string)>(boolean | nil, string | nil),
+	seek = function=(whence: string, offset: number)>(number | nil, string | nil) | function=(whence: string)>(number | nil, string | nil) | function=()>(number | nil, string | nil),
+}
+type File = {
+	close = function=(self)>(boolean | nil, string, number | nil),
+	write = function=(self, ...(number | string))>(self | nil, string | nil),
+	flush = function=(self)>(boolean | nil, string | nil),
+	read = function <|self: File, s: "*n" | "*a" | "*l" | number | nil|>
+		if s == "*n" then return nil | number end
+
+		return nil | string
+	end,
+	lines = function=(self)>(Function),
+	setvbuf = function=(self, string, number)>(boolean | nil, string | nil) | function=(file: self, mode: string)>(boolean | nil, string | nil),
+	seek = function=(self, string, number)>(number | nil, string | nil) | function=(file: self, whence: string)>(number | nil, string | nil) | function=(file: self)>(number | nil, string | nil),
+}
+type io.open = function=(string, string | nil)>(nil | File)
+type io.popen = function=(string, string | nil)>(nil | File)
+type io.output = function=()>(File)
+type io.stdout = File
+type io.stdin = File
+type io.stderr = File
+
+analyzer function io.type(obj: any)
+	local flags = types.Union()
+	flags:AddType(types.LString("file"))
+	flags:AddType(types.LString("closed file"))
+	print(("%p"):format(obj), ("%p"):format(env.typesystem.File))
+
+	if false and obj:IsSubsetOf(env.typesystem.File) then return flags end
+
+	flags:AddType(types.Nil())
+	return flags
+end
+
+analyzer function io.write(...: ...string)
+	for i, v in ipairs({...}) do
+		if not v:IsLiteral() then return end
+	end
+
+	for i, v in ipairs({...}) do
+		io.write(v:GetData())
+	end
+end

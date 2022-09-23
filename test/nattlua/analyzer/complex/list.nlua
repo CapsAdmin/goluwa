@@ -1,0 +1,48 @@
+local list = {}
+list.__index = list
+list.insert = table.insert
+list.remove = table.remove
+list.move = table.move
+list.concat = table.concat
+list.sort = table.sort
+list.select = _G.select
+list.pairs = _G.ipairs
+list.unpack = _G.unpack
+type list.@Self = List<|any|>
+
+function list:uncalled()
+	attest.equal(self[1], _  as nil | any)
+end
+
+function list:foo()
+	return _  as self[number]
+end
+
+function list.new<|T: any|>(count: nil | number)
+	type list.@Self = List<|T|>
+	return setmetatable({}, list)
+end
+
+do
+	local test = list.new<|number|>()
+	attest.expect_diagnostic<|"error", "subset"|>
+	test:insert("a")
+	local val = test[1]
+	attest.equal(val, _  as nil | number)
+	local val = test:remove()
+	attest.equal(val, _  as nil | number)
+	local val = test:foo()
+	attest.equal(val, _  as nil | number)
+end
+
+do
+	local test = list.new<|string|>()
+	list.new<|number|>() -- attempt to confuse 
+	test:insert("a")
+	local val = test[1]
+	attest.equal(val, _  as nil | string)
+	local val = test:remove()
+	attest.equal(val, _  as nil | string)
+	local val = test:foo()
+	attest.equal(val, _  as nil | string)
+end
