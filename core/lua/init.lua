@@ -351,7 +351,7 @@ if TEST then
 	logn("========= TOP " .. max .. " CALLED FUNCTIONS =========")
 
 	for i = 1, max do
-		logn(debug.getprettysource(list[i].func, true), " = ", list[i].count)
+		logn(debug.get_pretty_source(list[i].func, true), " = ", list[i].count)
 	end
 
 	logn("===========================================")
