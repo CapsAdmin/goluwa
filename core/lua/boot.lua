@@ -392,6 +392,18 @@ local BINARY_DIR = "core/bin/" .. OS .. "_" .. ARCH .. "/"
 local lua_exec = UNIX and "luajit" or "luajit.exe"
 local instructions_path = "storage/shared/copy_binaries_instructions"
 
+if ARG_LINE:sub(0, #"nattlua") == "nattlua" then
+	local args = {}
+
+	for str in (ARG_LINE .. " "):gmatch("[^%s]+") do
+		table.insert(args, str)
+	end
+
+	table.remove(args, 1)
+	assert(loadfile("core/lua/libraries/nattlua/build_output.lua"))(unpack(args))
+	return
+end
+
 if os.isfile(instructions_path) then
 	for from, to in io.readfile(instructions_path):gmatch("(.-);(.-)\n") do
 		io.write("copying ", from, " to ", to, "\n")

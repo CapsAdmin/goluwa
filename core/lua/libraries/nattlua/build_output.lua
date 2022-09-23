@@ -5412,7 +5412,8 @@ local function eliminateComments(options, lines, ...)
 						repeat
 							ss = lineIterator()
 							xassert(ss ~= nil, options, n, "Unterminated comment")
-							pp = ss:find("%*/")						until pp
+							pp = ss:find("%*/")						
+						until pp
 
 						s = s .. " " .. ss:sub(pp + 2)
 					end
@@ -5692,7 +5693,8 @@ local function tokenizeLine(options, s, n, notNewline)
 				l = s:byte(q)
 				xassert(q ~= nil, options, n, "Unterminated string or character constant")
 
-				if l == 92 then q = q + 1 end			until l == b
+				if l == 92 then q = q + 1 end			
+			until l == b
 
 			r = s:sub(p, q)
 			p = q + 1
@@ -5899,14 +5901,16 @@ expandMacros = function(options, macros, tokens, ...)
 						j = i
 
 						repeat
-							j = j + 1						until def[j] == nil or not isBlank(def[j])
+							j = j + 1						
+						until def[j] == nil or not isBlank(def[j])
 					end
 
 					if k <= j then
 						k = j
 
 						repeat
-							k = k + 1						until def[k] == nil or not isBlank(def[k])
+							k = k + 1						
+						until def[k] == nil or not isBlank(def[k])
 					end
 				end
 
@@ -6129,7 +6133,8 @@ local function evaluateCppExpression(options, tokenIterator, n, resolver)
 
 	local function ti()
 		repeat
-			tok = tokenIterator()		until not isBlank(tok)
+			tok = tokenIterator()		
+		until not isBlank(tok)
 
 		return tok
 	end
@@ -6597,7 +6602,8 @@ processDirectives = function(options, macros, lines, ...)
 		if tok == "<" then -- computed include
 			repeat
 				local tok2 = pti()
-				tok = tok .. tostring(tok2)			until tok2 == nil or tok2 == ">" or isNewline(tok2)
+				tok = tok .. tostring(tok2)			
+			until tok2 == nil or tok2 == ">" or isNewline(tok2)
 
 			tok = tok:gsub("%s>$", ">") -- gcc does this 
 		end
@@ -8646,7 +8652,8 @@ local function parseDeclarations(options, globals, tokens, ...)
 			i = i + 1
 			processDeclaration(n, symtable, context, nam, ity, "[enum]", x)
 
-			if tok == "," then ti() else check(",", "}") end		until tok == nil or tok == "}"
+			if tok == "," then ti() else check(",", "}") end		
+		until tok == nil or tok == "}"
 
 		check("}")
 		ti()
@@ -20315,6 +20322,8 @@ function META:EmitRepeatStatement(node)
 	self:EmitBlock(node.statements)
 	self:Whitespace("\t")
 	self:PopLoop()
+	self:Whitespace("\n")
+	self:Whitespace("\t")
 	self:EmitToken(node.tokens["until"])
 	self:Whitespace(" ")
 	self:EmitExpression(node.expression)

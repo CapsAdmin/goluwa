@@ -43,11 +43,13 @@ if cmd == "format" then
 
 	for _, directory in ipairs(allowed) do
 		for _, path in ipairs(get_files_recursive("./" .. directory, {".lua"})) do
-			local code = read_file(path)
-			local Compiler = require("nattlua.compiler").New
-			local compiler = Compiler(code, "@" .. path, config)
-			local code = assert(compiler:Emit())
-			write_file(path, code)
+			if not path:find("libraries/nattlua", nil, true) then
+				local code = read_file(path)
+				local Compiler = require("nattlua.compiler").New
+				local compiler = Compiler(code, "@" .. path, config)
+				local code = assert(compiler:Emit())
+				write_file(path, code)
+			end
 		end
 	end
 end
