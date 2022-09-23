@@ -58,7 +58,7 @@ local file_types = {
 local function get_file_type(path)
 	for file_type, extensions in pairs(file_types) do
 		for i, extension in ipairs(extensions) do
-			if path:endswith("." .. extension) then return file_type end
+			if path:ends_with("." .. extension) then return file_type end
 		end
 	end
 end

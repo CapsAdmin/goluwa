@@ -6,7 +6,7 @@ vfs.Search("lua/", {"lua"}, function(path)
 	local str = vfs.Read(path)
 
 	if str then
-		str = str:totable()
+		str = str:to_list()
 
 		for i = 1, #str do
 			local c = str[i]

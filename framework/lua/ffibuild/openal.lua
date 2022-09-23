@@ -210,7 +210,7 @@ for lib_name, enum_name in pairs({al = "AL_", alc = "ALC_"}) do
 			translate_path = function(path)
 				local name = vfs.RemoveExtensionFromPath(vfs.GetFileNameFromPath(path))
 
-				if name:startswith("libopenal") then return "libopenal" end
+				if name:starts_with("libopenal") then return "libopenal" end
 			end,
 		}
 	)

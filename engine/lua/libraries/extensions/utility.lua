@@ -28,7 +28,7 @@ do
 			os = "Other" -- xbox360 ?
 		end
 
-		if def:startswith("!") then
+		if def:starts_with("!") then
 			if os:find(jit.os, nil, true) then
 				return ""
 			else

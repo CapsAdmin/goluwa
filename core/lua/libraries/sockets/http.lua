@@ -84,7 +84,7 @@ function sockets.MixinHTTP(META)
 				local num = tonumber("0x" .. hex_num)
 				return rest:sub(1, num),
 				rest:sub(num + 3),
-				rest:sub(num + 3):startswith("0\r\n\r\n")
+				rest:sub(num + 3):starts_with("0\r\n\r\n")
 			end
 		end
 
@@ -93,7 +93,7 @@ function sockets.MixinHTTP(META)
 
 			if state.stage == "header" then
 				if not is_response then
-					if #state.raw_header > 4 and not state.raw_header:startswith("HTTP") then
+					if #state.raw_header > 4 and not state.raw_header:starts_with("HTTP") then
 						return self:Error(
 							"header does not start with HTTP (first 10 bytes: " .. state.raw_header:sub(10) .. ")"
 						)
@@ -286,7 +286,7 @@ function sockets.DecodeURI(uri)
 
 	if not scheme then return nil, "unable to parse URI: " .. uri end
 
-	if path:startswith("//") then
+	if path:starts_with("//") then
 		path = path:sub(3)
 		host, rest = path:match("^(.-)(/.*)$")
 
@@ -342,7 +342,7 @@ function sockets.EncodeURI(tbl)
 				str = str .. k .. "=" .. v .. "&"
 			end
 
-			if str:endswith("&") then str = str:sub(0, -2) end
+			if str:ends_with("&") then str = str:sub(0, -2) end
 		end
 
 		str = str:gsub("[^%w%-_%.%!%~%*%'%(%)]", function(c)

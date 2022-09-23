@@ -79,7 +79,7 @@ function sockets.Download(url, on_finish, on_error, on_chunks, on_header, on_cod
 	local total_size = math.huge
 
 	function client:OnReceiveStatus(status, reason)
-		if status:startswith("4") then
+		if status:starts_with("4") then
 			self:Error(reason)
 			return false
 		elseif on_code then
@@ -178,7 +178,7 @@ function sockets.DownloadToPath(url, path, on_finish, on_error, on_progress, on_
 	http:Request("GET", url, header)
 
 	function http:OnReceiveStatus(status, reason)
-		if status:startswith("4") then
+		if status:starts_with("4") then
 			event.Call("DownloadStop", self, url, nil, "recevied code " .. status)
 			return false
 		else

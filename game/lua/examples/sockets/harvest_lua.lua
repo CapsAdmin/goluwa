@@ -25,7 +25,7 @@ fs.PopWorkingDirectory()
 fs.CreateDirectory("harvest_lua/flat")
 
 for path in io.popen("locate .lua"):lines() do
-	if path:endswith(".lua") then
+	if path:ends_with(".lua") then
 		local f, err = io.open(path)
 
 		if f then
@@ -43,7 +43,7 @@ for path in io.popen("locate .lua"):lines() do
 end
 
 for _, path in ipairs(fs.get_files_recursive("harvest_lua")) do
-	if path:endswith(".lua") then
+	if path:ends_with(".lua") then
 		local f = assert(io.open(path))
 		local content = f:read("*all")
 		f:close()

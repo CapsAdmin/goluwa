@@ -178,17 +178,17 @@ end
 function render.GetTextureFormatInfo(format)
 	local reverse = false
 
-	if format:startswith("bgra") then
+	if format:starts_with("bgra") then
 		format = format:gsub("bgra", "rgba")
 		reverse = true
 	end
 
-	if format:startswith("bgr") then
+	if format:starts_with("bgr") then
 		format = format:gsub("bgr", "rgb")
 		reverse = true
 	end
 
-	if format:startswith("gr") then
+	if format:starts_with("gr") then
 		format = format:gsub("gr", "rg")
 		reverse = true
 	end

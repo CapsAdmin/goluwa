@@ -15,7 +15,7 @@ local allowed = {
 local hex_allowed = {}
 
 for i, v in ipairs(allowed) do
-	hex_allowed[i] = "|" .. v:hexformat():trim():gsub("%s", ""):upper() .. "|"
+	hex_allowed[i] = "|" .. v:hex_format():trim():gsub("%s", ""):upper() .. "|"
 end
 
 audio.AddDecoder("mpg123", function(vfs_file, path_hint)

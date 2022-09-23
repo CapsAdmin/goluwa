@@ -281,7 +281,7 @@ _G.sockets = runfile("lua/libraries/sockets/sockets.lua")
 _G.http = runfile("lua/libraries/http.lua")
 _G.test = runfile("lua/libraries/test.lua")
 
-if not TEST and not os.getenv("GOLUWA_ARG_LINE"):startswith("build") then
+if not TEST and not os.getenv("GOLUWA_ARG_LINE"):starts_with("build") then
 	local ok, err = pcall(repl.Start)
 
 	if not ok then logn(err) end
@@ -306,7 +306,7 @@ if VERBOSE then
 	logn("[runfile] ", os.clock() - start_time, " seconds spent in core/lua/init.lua")
 end
 
-if os.getenv("GOLUWA_ARG_LINE"):startswith("build") then
+if os.getenv("GOLUWA_ARG_LINE"):starts_with("build") then
 	local what = os.getenv("GOLUWA_ARG_LINE"):sub(7)
 
 	if what == "*" then

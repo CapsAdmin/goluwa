@@ -341,7 +341,7 @@ function repl.KeyPressed(key)
 			repl.Echo(str)
 			repl.ClearScreen()
 			repl.SetCaretPosition(0, 0)
-		elseif str:startswith("exit") then
+		elseif str:starts_with("exit") then
 			repl.Echo(str)
 			system.ShutDown(tonumber(str:match("exit (%d+)")) or 0)
 		elseif str ~= "" then
@@ -521,7 +521,7 @@ function repl.Update()
 	while events[1] do
 		local what, arg = unpack(table.remove(events, 1))
 
-		if what == "string" and arg:endswith("__ENTERHACK__") then
+		if what == "string" and arg:ends_with("__ENTERHACK__") then
 			repl.CharInput(arg:sub(0, -#"__ENTERHACK__" - 1))
 			repl.KeyPressed("enter")
 			return
@@ -563,7 +563,7 @@ function repl.IsFocused()
 			pipe:close()
 
 			for _, line in ipairs(str:split("\n")) do
-				if line:find("goluwa", nil, true) and line:endswith("(attached)") then
+				if line:find("goluwa", nil, true) and line:ends_with("(attached)") then
 					return true
 				end
 			end

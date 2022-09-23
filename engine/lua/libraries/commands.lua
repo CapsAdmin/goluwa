@@ -600,7 +600,7 @@ do -- commands
 				logn(help)
 			else
 				for _, sub_cmd in ipairs(commands.sub_commands) do
-					if sub_cmd:startswith(cmd) then
+					if sub_cmd:starts_with(cmd) then
 						logn(assert(commands.GetHelpText(sub_cmd)))
 					end
 				end

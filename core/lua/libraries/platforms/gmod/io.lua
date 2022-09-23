@@ -148,7 +148,7 @@ function io.write(...)
 		str = str .. tostring(select(i, ...))
 	end
 
-	for _, chunk in ipairs(str:lengthsplit(3000)) do
+	for _, chunk in ipairs(str:length_split(3000)) do
 		Msg(chunk)
 	end
 end

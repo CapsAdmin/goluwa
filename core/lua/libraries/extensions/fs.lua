@@ -26,7 +26,7 @@ function fs.CreateDirectory(path, force)
 end
 
 function fs.Remove(path)
-	if path:endswith("/") then return fs.remove_directory(path) end
+	if path:ends_with("/") then return fs.remove_directory(path) end
 
 	return fs.remove_file(path)
 end
@@ -67,14 +67,14 @@ function fs.CopyRecursively(from, to, verbose)
 	local errors = {}
 
 	table.sort(files, function(a, b)
-		return a:endswith("/") and not b:endswith("/")
+		return a:ends_with("/") and not b:ends_with("/")
 	end)
 
 	for i, path in ipairs(files) do
 		local new_path = to .. path:sub(#from + 1)
 		local ok, err
 
-		if path:endswith("/") then
+		if path:ends_with("/") then
 			-- TODO: force creating directories shouldn't be nesseceary
 			-- the sorting mechanism further up probably doesn't work correctly
 			ok, err = fs.CreateDirectory(new_path, true)
@@ -107,7 +107,7 @@ function fs.GetFilesRecursive(path, blacklist)
 	if type(blacklist) == "table" then
 		cb = function(path)
 			for _, v in ipairs(blacklist) do
-				if path:endswith(v) then return false end
+				if path:ends_with(v) then return false end
 			end
 		end
 	end
@@ -117,20 +117,20 @@ end
 
 do
 	function fs.NormalizePath(path, relative)
-		if not relative and not path:startswith("/") and path:sub(2, 2) ~= ":" then
+		if not relative and not path:starts_with("/") and path:sub(2, 2) ~= ":" then
 			local abs = fs.NormalizePath(fs.GetWorkingDirectory())
 
-			if not abs:endswith("/") then abs = abs .. "/" end
+			if not abs:ends_with("/") then abs = abs .. "/" end
 
 			path = abs .. path
 		end
 
 		local preserved_prefix = ""
 
-		if path:startswith([[\\?\]]) then
+		if path:starts_with([[\\?\]]) then
 			preserved_prefix = [[\\?\]]
 			path = path:sub(5)
-		elseif path:startswith([[\\]]) then
+		elseif path:starts_with([[\\]]) then
 			preserved_prefix = [[\\]]
 			path = path:sub(3)
 		elseif path:sub(2, 2) == ":" then

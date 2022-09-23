@@ -91,7 +91,7 @@ do -- generic
 	META.__len = META.GetSize
 
 	function META:GetDebugString()
-		return self:GetString():readablehex()
+		return self:GetString():readable_hex()
 	end
 
 	function META:AddHeader(buffer)

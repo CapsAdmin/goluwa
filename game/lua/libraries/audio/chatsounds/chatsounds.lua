@@ -265,7 +265,7 @@ do
 	local function build_word_list(str)
 		local words = {}
 		local temp = {}
-		local last = string.getchartype(str:sub(1, 1))
+		local last = string.get_char_type(str:sub(1, 1))
 		local exp = false
 		local exp_level = 0
 		local capture_exp = true
@@ -274,7 +274,7 @@ do
 		for i = 1, #str + 1 do
 			local char = str:sub(i, i)
 			local next = str:sub(i + 1, i + 1)
-			local type = string.getchartype(char)
+			local type = string.get_char_type(char)
 
 			if type ~= "space" then
 				-- 0.1234
@@ -291,20 +291,26 @@ do
 						)
 						and
 						next and
-						string.getchartype(next) == "digit"
+						string.get_char_type(next) == "digit"
 					)
 					or
 					(
 						char == "-" and
 						next == "." and
 						str:sub(i + 2, i + 2) and
-						string.getchartype(str:sub(i + 2, i + 2)) == "digit"
+						string.get_char_type(str:sub(i + 2, i + 2)) == "digit"
 					)
 				then
 					type = "digit"
 				end
 
-				if type == "digit" and (last == "letters" or string.getchartype(next) == "letters") then
+				if
+					type == "digit" and
+					(
+						last == "letters" or
+						string.get_char_type(next) == "letters"
+					)
+				then
 					type = "letters"
 				end
 
@@ -385,7 +391,7 @@ do
 					if level == 0 then break end
 
 					if word then
-						if word:startswith("[") and word:endswith("]") then
+						if word:starts_with("[") and word:ends_with("]") then
 							local ok, func = expression.Compile(word:sub(2, -2))
 
 							if ok then
@@ -959,7 +965,7 @@ function chatsounds.Say(str, seed, custom_id)
 		return str:rep(count)
 	end)
 
-	if str:endswith("!") then
+	if str:ends_with("!") then
 		str = "(" .. str .. "):volume(" .. (str:count("!") + 1) .. ")"
 	end
 

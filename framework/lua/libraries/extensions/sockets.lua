@@ -11,7 +11,7 @@ function sockets.SendUDPData(ip, port, str)
 	local ok, msg = sck:sendto(str, ip, port)
 
 	if ok then
-		sockets.DebugPrint(nil, "SendUDPData sent data to %s:%i (%s)", ip, port, str:readablehex())
+		sockets.DebugPrint(nil, "SendUDPData sent data to %s:%i (%s)", ip, port, str:readable_hex())
 	else
 		sockets.DebugPrint(nil, "SendUDPData failed %q", msg)
 	end

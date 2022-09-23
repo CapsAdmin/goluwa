@@ -18,7 +18,7 @@ end
 
 function input.Unbind(key)
 	for k, v in pairs(input.binds) do
-		if k:startswith(key) then
+		if k:starts_with(key) then
 			input.binds[k] = nil
 			commands.Remove(v.cmd)
 

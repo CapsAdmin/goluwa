@@ -19,7 +19,7 @@ local function move(x, y)
 		local info = get_caret_char(math.min(x, 0), math.min(y, 0))
 
 		if info then
-			local type = info.char:getchartype()
+			local type = info.char:get_char_type()
 
 			if x ~= 0 then
 				local i = 0
@@ -29,7 +29,7 @@ local function move(x, y)
 					i = i + dir
 					local info = get_char(caret_pos.x + i, caret_pos.y)
 
-					if not info or info.char:getchartype() ~= type then
+					if not info or info.char:get_char_type() ~= type then
 						x = i
 
 						break
@@ -47,7 +47,7 @@ local function move(x, y)
 					i = i + dir
 					info = get_char(caret_pos.x, caret_pos.y + i)
 
-					if not info or info.char:getchartype() ~= type then
+					if not info or info.char:get_char_type() ~= type then
 						y = i
 
 						break
@@ -101,7 +101,7 @@ local function invalidate()
 
 	for y, line in ipairs(grid) do
 		for x, info in ipairs(line) do
-			if info.char:getchartype() ~= "space" then
+			if info.char:get_char_type() ~= "space" then
 				--gfx.DrawText(info.char, x*w, y*h)
 				font:SetPolyChar(poly, draw_i, x * w, y * h, info.char)
 				draw_i = draw_i + 1

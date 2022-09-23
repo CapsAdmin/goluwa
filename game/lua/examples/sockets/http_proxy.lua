@@ -13,7 +13,7 @@ function PROXY_SERVER:OnClientConnected(client)
 			llog("%s:%s wants to request %s", ip, port, url)
 		end
 
-		if not url or not url:startswith("https://gitlab.com/CapsAdmin/") then
+		if not url or not url:starts_with("https://gitlab.com/CapsAdmin/") then
 			client:Remove()
 			return
 		end

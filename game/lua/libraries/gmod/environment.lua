@@ -129,7 +129,7 @@ if gine.debug then
 			meta,
 			{
 				__newindex = function(s, k, v)
-					if not k:startswith("__") then
+					if not k:starts_with("__") then
 						wlog("adding meta function that doesn't exist in glua: %s", k, 2)
 					end
 

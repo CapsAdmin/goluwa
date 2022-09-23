@@ -121,7 +121,7 @@ function line.CallEvent(what, a, b, c, d, e, f)
 end
 
 function line.FixPath(path)
-	if path:startswith("/") or path:startswith("\\") then return path:sub(2) end
+	if path:starts_with("/") or path:starts_with("\\") then return path:sub(2) end
 
 	return path
 end
@@ -172,7 +172,7 @@ function line.RunGame(folder, ...)
 
 				if package_loaded[name] then return package_loaded[name] end
 
-				if name:startswith("love.") and love[name:match(".+%.(.+)")] then
+				if name:starts_with("love.") and love[name:match(".+%.(.+)")] then
 					return love[name:match(".+%.(.+)")]
 				end
 
@@ -306,7 +306,7 @@ commands.Add("love_run=string,var_arg", function(name, ...)
 	elseif name:find("github") then
 		local url = name
 
-		if name:startswith("github/") then
+		if name:starts_with("github/") then
 			url = name:gsub("github/", "https://github.com/") .. "/archive/master.zip"
 		else
 			url = url .. "/archive/master.zip"

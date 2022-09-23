@@ -109,14 +109,14 @@ for str in xml:gmatch("<command>(.-)</command>") do
 
 	cast_str = cast_str:sub(0, -3) .. ")"
 
-	if cast_str:endswith("(*)") then cast_str = cast_str .. "()" end
+	if cast_str:ends_with("(*)") then cast_str = cast_str .. "()" end
 
 	local get_function
 
 	if
 		func_name:find("Get", nil, true) and
 		args[1] and
-		args[#args].type:endswith("*") and
+		args[#args].type:ends_with("*") and
 		not args[#args].type:find("void")
 	then
 		get_function = true
@@ -153,14 +153,14 @@ for name, str in xml:gmatch("<require comment=\"(.-) object functions\">(.-)</re
 			if v.args[1] and v.args[1].group_name == name then
 				local friendly = func_name:sub(3):gsub(name2 or name, ""):gsub(name, "")
 
-				if not friendly:startswith("Create") then found[friendly] = v end
+				if not friendly:starts_with("Create") then found[friendly] = v end
 			end
 		end
 
 		for k, v in pairs(found) do
 			if found["Get" .. k] or found["Get" .. k .. "v"] then k = "Set" .. k end
 
-			if k:endswith("EXT") and not found[k:sub(0, -4)] then k = k:sub(0, -4) end
+			if k:ends_with("EXT") and not found[k:sub(0, -4)] then k = k:sub(0, -4) end
 
 			objects[name][k] = v
 		end

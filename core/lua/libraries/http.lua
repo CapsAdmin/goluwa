@@ -175,7 +175,7 @@ do
 			if
 				data.headers and
 				table.lowercasedlookup(data.headers, "content-type") and
-				table.lowercasedlookup(data.headers, "content-type"):startswith("application/json")
+				table.lowercasedlookup(data.headers, "content-type"):starts_with("application/json")
 			then
 				post_data = serializer.Encode("json", data.body)
 			else
@@ -192,7 +192,7 @@ do
 				on_chunks = self.callbacks.chunks,
 				callback = function(data)
 					if
-						table.lowercasedlookup(data.header, "content-type"):startswith("application/json")
+						table.lowercasedlookup(data.header, "content-type"):starts_with("application/json")
 					then
 						resolve(serializer.Decode("json", data.body))
 					else
@@ -200,7 +200,7 @@ do
 					end
 				end,
 				code_callback = function(code, status)
-					if not tostring(code):startswith("2") and not tostring(code):startswith("3") then
+					if not tostring(code):starts_with("2") and not tostring(code):starts_with("3") then
 						socket:Remove()
 						reject(status .. "(" .. code .. ") url:" .. url)
 						return false
@@ -291,7 +291,7 @@ function http.EncodeQuery(tbl)
 		str = str .. k .. "=" .. v .. "&"
 	end
 
-	if str:endswith("&") then str = str:sub(0, -2) end
+	if str:ends_with("&") then str = str:sub(0, -2) end
 
 	return str
 end

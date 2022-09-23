@@ -147,14 +147,14 @@ function ffibuild.GetSharedLibrariesInDirectory(dir)
 		local find = vfs.GetSharedLibraryExtension()
 
 		if UNIX then
-			if ext:startswith(find) or ext:endswith(find) then
+			if ext:starts_with(find) or ext:ends_with(find) then
 				if #ext == #find or ext:sub(#find + 1, #find + 1) == "." then
 					table.insert(out, path)
 				end
 			end
 		end
 
-		if WINDOWS then if ext:endswith(find) then table.insert(out, path) end end
+		if WINDOWS then if ext:ends_with(find) then table.insert(out, path) end end
 	end
 
 	return out
@@ -2062,7 +2062,7 @@ do -- lua helper functions
 			if not ok then
 				llog("build failed, exited with code %s", code)
 
-				if os.getenv("GOLUWA_ARG_LINE"):startswith("build") then
+				if os.getenv("GOLUWA_ARG_LINE"):starts_with("build") then
 					system.ShutDown(code)
 				end
 
@@ -2078,7 +2078,7 @@ do -- lua helper functions
 			if res then
 				local name = (WINDOWS and "" or "lib") .. info.name
 
-				if name:startswith("liblib") then name = name:sub(4) end
+				if name:starts_with("liblib") then name = name:sub(4) end
 
 				if res == true and info.filter_library then
 					name = vfs.RemoveExtensionFromPath(vfs.GetFileNameFromPath(path))
@@ -2213,13 +2213,13 @@ function ffibuild.PatchBinaries()
 	local git_dir = root .. "__goluwa-binaries/"
 
 	for _, path in ipairs(vfs.GetFilesRecursive(git_dir)) do
-		if path:endswith(".so") then
+		if path:ends_with(".so") then
 			local bin = vfs.Read(path)
 			bin = bin:gsub("(lib%w+%.so%.%d*)", function(name)
 				if
-					name:startswith("libtls") or
-					name:startswith("libcrypto") or
-					name:startswith("libssl")
+					name:starts_with("libtls") or
+					name:starts_with("libcrypto") or
+					name:starts_with("libssl")
 				then
 					local start, stop = name:find(".so")
 					return name:sub(0, stop) .. ("\0"):rep(#name - stop)

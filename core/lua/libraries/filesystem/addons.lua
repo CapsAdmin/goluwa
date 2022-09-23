@@ -116,11 +116,11 @@ function vfs.FetchBniariesForAddon(addon, callback)
 				if
 					(
 						ext ~= "" or
-						vfs.GetFileNameFromPath(path):startswith("luajit")
+						vfs.GetFileNameFromPath(path):starts_with("luajit")
 					) and
 					path:find(signature, nil, true)
 				then
-					if path:startswith(addon) then
+					if path:starts_with(addon) then
 						table.insert(found, {url = base_url .. path, path = path})
 					end
 				end
@@ -144,9 +144,9 @@ function vfs.MountAddons(dir)
 		if info.name ~= e.INTERNAL_ADDON_NAME then
 			if
 				vfs.IsDirectory(info.full_path:sub(#info.filesystem + 2)) and
-				not info.name:startswith(".")
+				not info.name:starts_with(".")
 				and
-				not info.name:startswith("__")
+				not info.name:starts_with("__")
 				and
 				(
 					not whitelist or

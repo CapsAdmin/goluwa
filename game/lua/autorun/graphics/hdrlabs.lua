@@ -10,7 +10,7 @@ resource.Download(base_url):Then(function(html_path)
 
 				for _, dir in ipairs(vfs.Find(path .. "/", true)) do
 					for _, path in ipairs(vfs.Find(dir .. "/", true)) do
-						if path:endswith(".hdr") or path:endswith(".exr") then
+						if path:ends_with(".hdr") or path:ends_with(".exr") then
 							table.insert(found, {size = vfs.GetSize(path), path = path})
 						end
 					end

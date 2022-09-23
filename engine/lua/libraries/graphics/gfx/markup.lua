@@ -205,9 +205,9 @@ function META:GetNextCharacterClassPosition(delta, next_space)
 
 	if delta > 0 then
 		if pos > 0 and self.chars[pos - 1] then
-			local type = string.getchartype(self.chars[pos - 1].str)
+			local type = string.get_char_type(self.chars[pos - 1].str)
 
-			while pos > 0 and self.chars[pos] and string.getchartype(self.chars[pos].str) == type do
+			while pos > 0 and self.chars[pos] and string.get_char_type(self.chars[pos].str) == type do
 				pos = pos + 1
 			end
 		end
@@ -218,7 +218,7 @@ function META:GetNextCharacterClassPosition(delta, next_space)
 			while
 				pos > 0 and
 				self.chars[pos] and
-				string.getchartype(self.chars[pos].str) == "space" and
+				string.get_char_type(self.chars[pos].str) == "space" and
 				self.chars[pos].str ~= "\n"
 			do
 				pos = pos + 1
@@ -231,7 +231,7 @@ function META:GetNextCharacterClassPosition(delta, next_space)
 		if next_space then
 			while
 				pos > 1 and
-				string.getchartype(self.chars[pos - 1].str) == "space" and
+				string.get_char_type(self.chars[pos - 1].str) == "space" and
 				self.chars[pos - 1].str ~= "\n"
 			do
 				pos = pos - 1
@@ -239,9 +239,9 @@ function META:GetNextCharacterClassPosition(delta, next_space)
 		end
 
 		if self.chars[pos - 1] then
-			local type = string.getchartype(self.chars[pos - 1].str)
+			local type = string.get_char_type(self.chars[pos - 1].str)
 
-			while pos > 1 and string.getchartype(self.chars[pos - 1].str) == type do
+			while pos > 1 and string.get_char_type(self.chars[pos - 1].str) == type do
 				pos = pos - 1
 			end
 		end
@@ -1036,7 +1036,7 @@ do -- parse tags
 			end
 
 			for i, v in ipairs(tbl) do
-				if v:startswith("<") then
+				if v:starts_with("<") then
 					tbl[i] = replace:replace("@", v)
 				else
 					tbl[i] = v:gsub("(.)", function(c)
@@ -1349,12 +1349,16 @@ do -- invalidate
 					end
 
 					if chunk then
-						if not chunk.internal and chunk.type == "string" and string.haswhitespace(chunk.val) then
+						if
+							not chunk.internal and
+							chunk.type == "string" and
+							string.has_whitespace(chunk.val)
+						then
 							if self.LineWrap then
 								local str = {}
 
 								for _, char in ipairs(utf8.totable(chunk.val)) do
-									if string.iswhitespace(char) then
+									if string.is_whitespace(char) then
 										if #str ~= 0 then
 											add_chunk(self, out, {type = "string", val = table.concat(str)})
 											table.clear(str)

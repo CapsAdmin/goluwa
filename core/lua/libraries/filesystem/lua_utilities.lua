@@ -143,7 +143,7 @@ do -- runfile
 			return ok, err
 		end
 
-		if source:startswith("!") then
+		if source:starts_with("!") then
 			source = source:sub(2)
 
 			if filerun_stack[#filerun_stack] then
@@ -218,7 +218,7 @@ do -- runfile
 		if vfs.IsPathAbsolute(path) then
 			func, err, full_path = vfs.LoadFile(path)
 		else
-			if path:startswith("lua/") then
+			if path:starts_with("lua/") then
 				func, err, full_path = vfs.LoadFile(path)
 			end
 
@@ -247,7 +247,7 @@ do -- runfile
 		if func then
 			dir = path:match("(.+/)(.+)")
 
-			if not full_path:startswith(e.ROOT_FOLDER) then
+			if not full_path:starts_with(e.ROOT_FOLDER) then
 				fs.PushWorkingDirectory(dir)
 			end
 
@@ -280,7 +280,7 @@ do -- runfile
 
 			vfs.PopFromFileRunStack()
 
-			if not full_path:startswith(e.ROOT_FOLDER) then
+			if not full_path:starts_with(e.ROOT_FOLDER) then
 				fs.PopWorkingDirectory(dir)
 			end
 

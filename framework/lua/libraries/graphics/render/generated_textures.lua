@@ -100,7 +100,7 @@ function render.GenerateTextures()
 	end
 
 	for k, v in pairs(render) do
-		if type(k) == "string" and k:endswith("_texture") and typex(v) == "texture" then
+		if type(k) == "string" and k:ends_with("_texture") and typex(v) == "texture" then
 			local name = k:match("(.+)_texture")
 			render.texture_path_cache[name] = v
 			v.Path = name

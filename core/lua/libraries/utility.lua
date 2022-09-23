@@ -11,7 +11,7 @@ do
 
 					if not info then break end
 
-					if info.source:endswith(file_path) then
+					if info.source:ends_with(file_path) then
 						done[info.currentline] = true
 					end
 				end
@@ -290,13 +290,13 @@ do
 		local paths = {}
 		str = str:trim()
 
-		if handle_path(str):endswith("/**") then
+		if handle_path(str):ends_with("/**") then
 			vfs.GetFilesRecursive(handle_path(str:sub(0, -3)), extensions, function(path)
 				table.insert(paths, R(path))
 			end)
-		elseif handle_path(str):endswith("/*") then
+		elseif handle_path(str):ends_with("/*") then
 			for _, path in ipairs(vfs.Find(handle_path(str:sub(0, -2)), true)) do
-				if not extensions or vfs.GetExtensionFromPath(path):endswiththese(extensions) then
+				if not extensions or vfs.GetExtensionFromPath(path):ends_with_these(extensions) then
 					table.insert(paths, path)
 				end
 			end
@@ -308,7 +308,7 @@ do
 					vfs.IsFile(path) and
 					(
 						not extensions or
-						vfs.GetExtensionFromPath(path):endswiththese(extensions)
+						vfs.GetExtensionFromPath(path):ends_with_these(extensions)
 					)
 				then
 					table.insert(paths, R(path))
@@ -322,7 +322,7 @@ do
 					vfs.IsFile(path) and
 					(
 						not extensions or
-						vfs.GetExtensionFromPath(path):endswiththese(extensions)
+						vfs.GetExtensionFromPath(path):ends_with_these(extensions)
 					)
 				then
 					table.insert(paths, R(path))
@@ -332,7 +332,7 @@ do
 			vfs.IsFile(handle_path(str)) and
 			(
 				not extensions or
-				vfs.GetExtensionFromPath(str):endswiththese(extensions)
+				vfs.GetExtensionFromPath(str):ends_with_these(extensions)
 			)
 		then
 			table.insert(paths, R(handle_path(str)))

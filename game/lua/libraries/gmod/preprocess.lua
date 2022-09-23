@@ -33,7 +33,7 @@ function gine.PreprocessLua(code, add_newlines)
 	local multiline_comment_start_pos
 	local multiline_open = false
 	local in_multiline
-	local chars = ("   " .. code .. "   "):totable()
+	local chars = ("   " .. code .. "   "):to_list()
 
 	for i = 1, #chars do
 		if chars[i] == "\\" then
@@ -143,7 +143,7 @@ function gine.PreprocessLua(code, add_newlines)
 
 	local code = table.concat(chars):sub(4, -4)
 
-	if code:wholeword("continue") and not loadstring(code) then
+	if code:whole_word("continue") and not loadstring(code) then
 		local tokens = {}
 		local CONTINUE_LABEL = "CONTINUE"
 

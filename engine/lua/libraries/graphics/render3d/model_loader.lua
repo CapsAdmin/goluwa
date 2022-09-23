@@ -31,7 +31,7 @@ end
 
 function render3d.FindModelDecoder(path)
 	for _, decoder in ipairs(render3d.model_decoders) do
-		if path:endswith(decoder.ext) or decoder.ext == "" then
+		if path:ends_with(decoder.ext) or decoder.ext == "" then
 			return decoder.callback
 		end
 	end
@@ -64,7 +64,7 @@ function render3d.LoadModel(path, callback, callback2, on_fail)
 	event.Call("PreLoad3DModel", path)
 	cb:start(path, callback, {mesh = callback2, on_fail = on_fail})
 
-	resource.Download(path, nil, path:endswith(".mdl")):Then(function(full_path)
+	resource.Download(path, nil, path:ends_with(".mdl")):Then(function(full_path)
 		local out = {}
 		local thread = tasks.CreateTask()
 		thread.debug = true

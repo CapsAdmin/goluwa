@@ -174,7 +174,7 @@ local replies = {
 }
 
 function META:HandleMessage(line)
-	if line:startswith("PING :") then self:Send(line:gsub("PING", "PONG")) end
+	if line:starts_with("PING :") then self:Send(line:gsub("PING", "PONG")) end
 
 	local name, id, target, chanmode, str = line:match(":(.-) (.-) (.-) (.-) :(.+)")
 	id = replies[tonumber(id)]
@@ -215,7 +215,7 @@ function META:HandleMessage(line)
 						"RPL_ENDOFNAMES",
 						function(users)
 							for i, user in ipairs(string.split(users, " ")) do
-								if user:startswith("@") then user = user:sub(2) end
+								if user:starts_with("@") then user = user:sub(2) end
 
 								self.Users[user] = self.Users[user] or true
 							end

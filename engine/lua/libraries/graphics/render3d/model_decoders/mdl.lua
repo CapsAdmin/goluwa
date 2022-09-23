@@ -216,7 +216,7 @@ local function find_file(path, ...)
 		for _, v in pairs(vfs.Find(path:match("(.+/)"), true)) do
 			if v:match(".+/(.+)%."):lower() == path:match(".+/(.+)"):lower() then
 				for _, ext in ipairs(extensions) do
-					if v:endswith(ext) then return assert(vfs.Open(v)) end
+					if v:ends_with(ext) then return assert(vfs.Open(v)) end
 				end
 			end
 		end
@@ -228,7 +228,7 @@ end
 local function load_mdl(path)
 	local buffer = find_file(path, ".mdl")
 	local header = buffer:ReadStructure(header)
-	header.name = "models/" .. header.name:removepadding():gsub("\\", "/")
+	header.name = "models/" .. header.name:remove_padding():gsub("\\", "/")
 
 	local function parse(name, callback)
 		local out = {}
@@ -282,7 +282,7 @@ local function load_mdl(path)
 			for i = 1, header.material_count do
 				local mat = vfs.FixPathSlashes(buffer:ReadString())
 
-				if mat ~= "" and not mat:endswith("/") then
+				if mat ~= "" and not mat:ends_with("/") then
 					header.materials[i] = mat
 				end
 			end
@@ -714,7 +714,9 @@ end
 render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 	local models = {}
 
-	if full_path:endswith(".mdl") then full_path = full_path:sub(1, -#".mdl" - 1) end
+	if full_path:ends_with(".mdl") then
+		full_path = full_path:sub(1, -#".mdl" - 1)
+	end
 
 	--utility.PushTimeWarning()
 	local mdl = load_mdl(full_path)

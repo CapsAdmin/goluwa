@@ -103,7 +103,7 @@ do
 		local translate = {}
 
 		for k, v in pairs(gine.env) do
-			if type(k) == "string" and k:startswith("STENCILCOMPARISONFUNCTION_") then
+			if type(k) == "string" and k:starts_with("STENCILCOMPARISONFUNCTION_") then
 				translate[v] = k:match("STENCILCOMPARISONFUNCTION_(.+)"):lower()
 			end
 		end
@@ -133,7 +133,7 @@ do
 		local translate = {}
 
 		for k, v in pairs(gine.env) do
-			if type(k) == "string" and k:startswith("STENCILOPERATION_") then
+			if type(k) == "string" and k:starts_with("STENCILOPERATION_") then
 				translate[v] = k:match("STENCILOPERATION_(.+)"):lower()
 			end
 		end

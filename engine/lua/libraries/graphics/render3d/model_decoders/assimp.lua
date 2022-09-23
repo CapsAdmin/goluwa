@@ -30,7 +30,7 @@ render3d.AddModelDecoder(
 						local tries = {path, full_path:match("(.+/)") .. path}
 
 						-- ue4
-						if model_data.material.name:startswith("/") then
+						if model_data.material.name:starts_with("/") then
 							table.insert(
 								tries,
 								1,

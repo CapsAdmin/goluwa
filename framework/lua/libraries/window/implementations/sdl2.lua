@@ -95,7 +95,7 @@ do
 	local window_flags = {}
 
 	for k, v in pairs(sdl.e) do
-		if k:startswith("WINDOW_") then window_flags[k] = v end
+		if k:starts_with("WINDOW_") then window_flags[k] = v end
 	end
 
 	function META:OnUpdate(dt)
@@ -140,7 +140,7 @@ do
 			local case = events.window.event
 
 			if events.window.windowID == self.sdl_windowid then
-				--for k,v in pairs(sdl.e) do if v == case and k:startswith("WINDOWEVENT_") then print(k) break end end
+				--for k,v in pairs(sdl.e) do if v == case and k:starts_with("WINDOWEVENT_") then print(k) break end end
 				local window_state = utility.FlagsToTable(sdl.GetWindowFlags(self.wnd_ptr), window_flags)
 				self.Focused = window_state.WINDOW_INPUT_FOCUS or false
 

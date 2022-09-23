@@ -36,7 +36,7 @@ do
 	function gine.env.net.Broadcast() end
 
 	for k, v in pairs(gine.env.net) do
-		if k:startswith("Write") or k:startswith("Start") then
+		if k:starts_with("Write") or k:starts_with("Start") then
 			gine.env.net[k] = function() end
 		end
 	end

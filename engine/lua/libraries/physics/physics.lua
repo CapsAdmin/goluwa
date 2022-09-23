@@ -58,7 +58,7 @@ do -- physcs models
 			thread.debug = true
 
 			function thread:OnStart()
-				if steam.LoadMap and path:endswith(".bsp") then
+				if steam.LoadMap and path:ends_with(".bsp") then
 					-- :(
 					if
 						GRAPHICS and

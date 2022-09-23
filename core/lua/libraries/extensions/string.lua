@@ -53,7 +53,7 @@ function string.buildclass(...)
 	return out
 end
 
-function string.iswhitespace(char)
+function string.is_whitespace(char)
 	return char == "\32" or
 		char == "\9" or
 		char == "\10" or
@@ -61,7 +61,7 @@ function string.iswhitespace(char)
 		char == "\12"
 end
 
-function string.haswhitespace(str)
+function string.has_whitespace(str)
 	for i = 1, #str do
 		local b = str:byte(i)
 
@@ -69,11 +69,7 @@ function string.haswhitespace(str)
 	end
 end
 
-function string.upperchar(self, pos)
-	return self:sub(0, pos - 1) .. self:sub(pos, pos):upper() .. self:sub(pos + 1)
-end
-
-function string.wholeword(self, what)
+function string.whole_word(self, what)
 	return self:find("%f[%a%d_]" .. what .. "%f[^%a%d_]") ~= nil
 end
 
@@ -204,7 +200,7 @@ function string.random(length, min, max)
 end
 
 -- gsub doesn't seem to remove \0
-function string.removepadding(str, padding)
+function string.remove_padding(str, padding)
 	padding = padding or "\0"
 	local new = {}
 
@@ -227,7 +223,7 @@ function string.hex(str)
 	return table.concat(copy)
 end
 
-function string.readablehex(str)
+function string.readable_hex(str)
 	return (
 		str:gsub("(.)", function(str)
 			str = ("%X"):format(str:byte())
@@ -315,11 +311,11 @@ do
 	end
 end
 
-function string.hexformat(str, chunk_width, row_width, space_separator)
+function string.hex_format(str, chunk_width, row_width, space_separator)
 	row_width = row_width or 4
 	chunk_width = chunk_width or 4
 	space_separator = space_separator or " "
-	local str = str:readablehex():lower():split(" ")
+	local str = str:readable_hex():lower():split(" ")
 	local out = {}
 	local chunk_i = 1
 	local row_i = 1
@@ -346,10 +342,10 @@ function string.hexformat(str, chunk_width, row_width, space_separator)
 	return table.concat(out):trim()
 end
 
-function string.binformat(str, row_width, space_separator, with_hex, format)
+function string.bin_format(str, row_width, space_separator, with_hex, format)
 	row_width = row_width or 8
 	space_separator = space_separator or " "
-	local str = str:totable()
+	local str = str:to_list()
 	local out = {}
 	local chunk_i = 1
 	local row_i = 1
@@ -361,10 +357,10 @@ function string.binformat(str, row_width, space_separator, with_hex, format)
 
 		if format then
 			local str = ""
-			local bin = bin:totable()
+			local bin = bin:to_list()
 			local offset = 1
 
-			for _, num in ipairs(format:totable()) do
+			for _, num in ipairs(format:to_list()) do
 				num = tonumber(num)
 				table.insert(bin, num + offset, "-")
 				offset = offset + 1
@@ -388,10 +384,10 @@ function string.binformat(str, row_width, space_separator, with_hex, format)
 	return table.concat(out):trim()
 end
 
-function string.octformat(str, row_width, space_separator, with_hex)
+function string.oct_format(str, row_width, space_separator, with_hex)
 	row_width = row_width or 8
 	space_separator = space_separator or " "
-	local str = str:totable()
+	local str = str:to_list()
 	local out = {}
 	local chunk_i = 1
 	local row_i = 1
@@ -415,17 +411,17 @@ function string.octformat(str, row_width, space_separator, with_hex)
 	return table.concat(out):trim()
 end
 
-function string.endswith(a, b)
+function string.ends_with(a, b)
 	return a:sub(-#b) == b
 end
 
-function string.endswiththese(a, b)
+function string.ends_with_these(a, b)
 	for _, str in ipairs(b) do
 		if a:sub(-#str) == str then return true end
 	end
 end
 
-function string.startswith(a, b)
+function string.starts_with(a, b)
 	return a:sub(0, #b) == b
 end
 
@@ -457,7 +453,7 @@ function string.levenshtein(a, b)
 	return distance[#a][#b]
 end
 
-function string.lengthsplit(str, len)
+function string.length_split(str, len)
 	if #str > len then
 		local tbl = {}
 		local max = math.floor(#str / len)
@@ -476,7 +472,7 @@ function string.lengthsplit(str, len)
 	return {str}
 end
 
-function string.getchartype(char)
+function string.get_char_type(char)
 	if char:find("%p") and char ~= "_" then
 		return "punctation"
 	elseif char:find("%s") then
@@ -502,13 +498,13 @@ local types = {
 	"%z",
 }
 
-function string.charclass(char)
+function string.char_class(char)
 	for _, v in ipairs(types) do
 		if char:find(v) then return v end
 	end
 end
 
-function string.safeformat(str, ...)
+function string.safe_format(str, ...)
 	str = str:gsub("%%(%d+)", "%%s")
 	local count = select(2, str:gsub("(%%)", ""))
 
@@ -534,20 +530,20 @@ function string.safeformat(str, ...)
 	return string.format(str, unpack(copy))
 end
 
-function string.findsimple(self, find)
+function string.find_simple(self, find)
 	return self:find(find, nil, true) ~= nil
 end
 
-function string.findsimplelower(self, find)
+function string.find_simple_lower(self, find)
 	return self:lower():find(find:lower(), nil, true) ~= nil
 end
 
 function string.compare(self, target)
 	return self == target or
-		self:findsimple(target) or
+		self:find_simple(target) or
 		self:lower() == target:lower()
 		or
-		self:findsimplelower(target)
+		self:find_simple_lower(target)
 end
 
 function string.trim(self, char)
@@ -567,15 +563,15 @@ function string.trim(self, char)
 	return self
 end
 
-function string.getchar(self, pos)
+function string.get_char(self, pos)
 	return string.sub(self, pos, pos)
 end
 
-function string.getbyte(self, pos)
-	return self:getchar(pos):byte() or 0
+function string.get_byte(self, pos)
+	return self:get_char(pos):byte() or 0
 end
 
-function string.totable(self)
+function string.to_list(self)
 	local tbl = table.new(#self, 0)
 
 	for i = 1, #self do
@@ -586,7 +582,7 @@ function string.totable(self)
 end
 
 function string.split(self, separator, plain_search)
-	if separator == nil or separator == "" then return self:totable() end
+	if separator == nil or separator == "" then return self:to_list() end
 
 	if plain_search == nil then plain_search = true end
 
@@ -629,7 +625,7 @@ function string.count(self, what, plain)
 	return count
 end
 
-function string.containsonly(self, pattern)
+function string.contains_only(self, pattern)
 	return self:gsub(pattern, "") == ""
 end
 
@@ -675,12 +671,8 @@ local pattern_escape_replacements = {
 	["\0"] = "%z",
 }
 
-function string.escapepattern(str)
+function string.escape_pattern(str)
 	return (str:gsub(".", pattern_escape_replacements))
-end
-
-function string.getchar(self, pos)
-	return self:sub(pos, pos)
 end
 
 do
@@ -1064,7 +1056,7 @@ do
 		12,
 	}
 
-	function string.utf8totable(str)
+	function string.to_utf8_list(str)
 		local state = UTF8_ACCEPT
 		local codepoint = 0
 		local offset = 0

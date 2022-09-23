@@ -9,7 +9,11 @@ ffibuild.Build(
     ]],
 		gcc_flags = "-I./include",
 		filter_library = function(path)
-			if path:endswith("libtls") or path:endswith("libssl") or path:endswith("libcrypto") then
+			if
+				path:ends_with("libtls") or
+				path:ends_with("libssl") or
+				path:ends_with("libcrypto")
+			then
 				return true
 			end
 		end,

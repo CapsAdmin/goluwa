@@ -26,7 +26,7 @@ local function set_panel_env(pnl)
 	function meta:__newindex(key, val)
 		if pnl["Set" .. key] then pnl["Set" .. key](pnl, val) end
 
-		if key:startswith("On") then pnl[key] = val end
+		if key:starts_with("On") then pnl[key] = val end
 	end
 
 	local env = setmetatable({}, meta)

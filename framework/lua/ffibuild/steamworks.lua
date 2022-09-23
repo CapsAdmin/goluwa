@@ -64,8 +64,8 @@ do -- typedefs
 				a("typedef %s;", line)
 			else
 				if
-					not info.type:startswith("struct") and
-					not info.type:startswith("union")
+					not info.type:starts_with("struct") and
+					not info.type:starts_with("union")
 					and
 					not pcall(ffi.typeof, info.type)
 				then
@@ -160,10 +160,10 @@ do -- structs
 				local struct = info.struct
 
 				for _, info in pairs(json.structs) do
-					if info.struct:startswith(struct) then
+					if info.struct:starts_with(struct) then
 						local struct = info.struct:gsub(struct .. "::", "")
 
-						if struct:startswith(name) then
+						if struct:starts_with(name) then
 							add_fields(info, level + 1)
 							json.structs[_] = nil
 						end
@@ -223,7 +223,7 @@ do -- methods
 			info.returntype = info.returntype:gsub("class ", "")
 
 			if not pcall(ffi.typeof, info.returntype) then
-				if info.returntype:startswith("struct") then
+				if info.returntype:starts_with("struct") then
 					info.returntype = "struct " .. prepend .. info.returntype:gsub("^struct ", "")
 				else
 					info.returntype = prepend .. info.returntype

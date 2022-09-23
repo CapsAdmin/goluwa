@@ -443,7 +443,7 @@ function chatsounds.BuildSoundInfoTranslations()
 						not path:find("manifest")
 						and
 						path:find("%.txt") and
-						not path:endswith("game_sounds_vo_phonemes.txt")
+						not path:ends_with("game_sounds_vo_phonemes.txt")
 					then
 						local str = vfs.Read(path)
 
@@ -764,7 +764,7 @@ function chatsounds.TranslateSoundLists()
 										end
 									end
 
-									if not new_trigger or data.path:endswith(".wav") then
+									if not new_trigger or data.path:ends_with(".wav") then
 										local file = vfs.Open(data.path)
 
 										if file then
@@ -1011,11 +1011,11 @@ function chatsounds.ExtractSoundsFromLists()
 					file:Close()
 				end
 			else
-				if read_path:endswith(".mp3") then
+				if read_path:ends_with(".mp3") then
 					logn(
 						"FAIL: [source file] ",
 						"invalid header in mp3? first 4 bytes: ",
-						file:PeakBytes(4):hexformat()
+						file:PeakBytes(4):hex_format()
 					)
 					failed = failed + 1
 					return
@@ -1151,7 +1151,7 @@ commands.Add("chatsounds_fetch_tf2_captions", function()
 									logn(k .. s, " = ", c)
 								end
 							else
-								if lua:endswith("halloween.lua") then k = "sf14" .. k end
+								if lua:ends_with("halloween.lua") then k = "sf14" .. k end
 
 								out[k] = clean_sentence(v)
 								logn(k, " = ", v)

@@ -1247,9 +1247,9 @@ do -- vmt object
 
 				--if not vfs.IsFile(val) then
 				if
-					not val:startswith("/") and
+					not val:starts_with("/") and
 					val:sub(2, 2) ~= ":" and
-					not val:startswith("materials/")
+					not val:starts_with("materials/")
 				then
 					val = "materials/" .. val
 				end
@@ -1280,7 +1280,7 @@ do -- vmt object
 			val = val:gsub("%s+", " "):trim()
 			local x, y
 
-			if val:startswith("[") then
+			if val:starts_with("[") then
 				x, y = unpack(val:sub(2, -2):split(" "))
 				x = tonumber(x) or 0
 				y = tonumber(y) or 0
@@ -1294,7 +1294,7 @@ do -- vmt object
 			val = val:gsub("%s+", " "):trim()
 			local x, y, z
 
-			if val:startswith("[") then
+			if val:starts_with("[") then
 				x, y, z = unpack(val:sub(2, -2):split(" "))
 				x = tonumber(x) or 0
 				y = tonumber(y) or 0
@@ -1308,7 +1308,7 @@ do -- vmt object
 		elseif info.type == "vec4" or info.type == "color" then
 			val = val:gsub("%s+", " "):trim()
 
-			if val:startswith("[") or val:find(" ", nil, true) then
+			if val:starts_with("[") or val:find(" ", nil, true) then
 				x, y, z, w = unpack(val:sub(2, -2):split(" "))
 				x = tonumber(x) or 0
 				y = tonumber(y) or 0
@@ -1324,7 +1324,7 @@ do -- vmt object
 			val = val:gsub("%s+", " "):trim()
 			local mat = Matrix44()
 
-			if val:startswith("[") then
+			if val:starts_with("[") then
 				local args = val:sub(2, -2):split(" ")
 
 				for i = 1, 16 do

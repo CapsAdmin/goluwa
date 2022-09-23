@@ -34,7 +34,7 @@ ss
 	]],
 		gcc_flags = "-I./include",
 		filter_library = function(path)
-			if path:endswith("libSDL2") then return true end
+			if path:ends_with("libSDL2") then return true end
 		end,
 		process_header = function(header)
 			vfs.Write("rofl.h", header)

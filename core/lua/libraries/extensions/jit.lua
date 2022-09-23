@@ -14,7 +14,7 @@ if jit.util then
 	function jit.util.funcinfo(...)
 		local t = old(...)
 
-		if t.loc and t.source and t.source:startswith("@") then
+		if t.loc and t.source and t.source:starts_with("@") then
 			t.loc = t.source:sub(2) .. ":" .. t.loc:match(".+:(.+)")
 		end
 

@@ -36,7 +36,7 @@ do
 		mat.name = path
 		local self = gine.WrapObject(mat, "IMaterial")
 
-		if not path:lower():endswith(".vtf") and path:find(".+%.") then
+		if not path:lower():ends_with(".vtf") and path:find(".+%.") then
 			mat:SetShader("unlitgeneric")
 			self:SetString("$basetexture", path)
 		else

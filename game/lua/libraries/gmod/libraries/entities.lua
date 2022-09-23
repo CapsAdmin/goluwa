@@ -1,7 +1,7 @@
 function gine.LoadEntities(base_folder, global, register, create_table)
 	for file_name in vfs.Iterate(base_folder .. "/") do
 		--logn("gine: registering ",base_folder," ", file_name)
-		if file_name:endswith(".lua") then
+		if file_name:ends_with(".lua") then
 			local tbl = create_table()
 			tbl.Folder = base_folder:sub(0, -5)
 			gine.env[global] = tbl

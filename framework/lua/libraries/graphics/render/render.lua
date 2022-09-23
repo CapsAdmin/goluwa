@@ -28,9 +28,9 @@ do
 			if not cache[str] then
 				local new
 
-				if str:startswith("ARB_") then
+				if str:starts_with("ARB_") then
 					new = "EXT" .. str:sub(4)
-				elseif str:startswith("EXT_") then
+				elseif str:starts_with("EXT_") then
 					new = "ARB" .. str:sub(4)
 				end
 

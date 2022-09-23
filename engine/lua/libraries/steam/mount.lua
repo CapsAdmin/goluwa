@@ -189,7 +189,7 @@ function steam.GetSourceGames()
 		for _, game_dir in ipairs(steam.GetGameFolders()) do
 			if vfs.IsDirectory("os:" .. game_dir .. "/game") then
 				for _, dir in ipairs(vfs.Find("os:" .. game_dir .. "game/", true)) do
-					if not dir:endswith("/core") then
+					if not dir:ends_with("/core") then
 						dir = dir .. "/"
 						local path = "os:" .. dir .. "gameinfo.gi"
 						local str = vfs.Read(path)
@@ -280,15 +280,15 @@ function steam.GetSourceGames()
 
 						path = vfs.FixPathSlashes(path)
 
-						if path:endswith("*") then
+						if path:ends_with("*") then
 							if not done[path] then
 								table.insert(fixed, path)
 								done[path] = true
 							end
 						else
-							if path:endswith(".") then path = path:sub(0, -2) end
+							if path:ends_with(".") then path = path:sub(0, -2) end
 
-							if path:endswith("/") then
+							if path:ends_with("/") then
 								local test = path .. "/"
 
 								if vfs.IsDirectory(test) then
@@ -325,7 +325,7 @@ function steam.GetSourceGames()
 									end
 								end
 
-								if test:endswith(".vpk") and not vfs.IsFile("os:" .. test) then
+								if test:ends_with(".vpk") and not vfs.IsFile("os:" .. test) then
 									local path = test:gsub("(.+/.+)%.vpk", "%1_dir.vpk") .. "/"
 
 									if not done[path] then
@@ -335,7 +335,7 @@ function steam.GetSourceGames()
 								end
 							end
 
-							if path:endswith(".vpk") and not vfs.IsFile("os:" .. path) then
+							if path:ends_with(".vpk") and not vfs.IsFile("os:" .. path) then
 								local path = path:gsub("(.+/.+)%.vpk", "%1_dir.vpk") .. "/"
 
 								if not done[path] then
@@ -352,11 +352,11 @@ function steam.GetSourceGames()
 				local sorted = {}
 
 				for _, v in ipairs(fixed) do
-					if v:endswith(".vpk/") then table.insert(sorted, v) end
+					if v:ends_with(".vpk/") then table.insert(sorted, v) end
 				end
 
 				for _, v in ipairs(fixed) do
-					if not v:endswith(".vpk/") then table.insert(sorted, v) end
+					if not v:ends_with(".vpk/") then table.insert(sorted, v) end
 				end
 
 				tbl.filesystem.searchpaths = sorted
@@ -395,7 +395,7 @@ do
 		steam.UnmountSourceGame(game_info)
 
 		for _, path in ipairs(game_info.filesystem.searchpaths) do
-			if path:endswith("*") then
+			if path:ends_with("*") then
 				for _, path in ipairs(vfs.Find(path:sub(0, -2), true)) do
 					if vfs.IsDirectory(path) then
 						if
@@ -413,7 +413,7 @@ do
 					end
 				end
 			else
-				if not path:endswith(".vpk/") then
+				if not path:ends_with(".vpk/") then
 					for _, v in ipairs(vfs.Find(path .. "/maps/workshop/")) do
 						llog("mounting workshop map %s", v)
 						vfs.Mount(path .. "/maps/workshop/" .. v, "maps/", game_info)

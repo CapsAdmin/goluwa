@@ -135,7 +135,7 @@ render.global_shader_code = render.global_shader_code or {}
 function render.AddGlobalShaderCode(glsl_code, function_name)
 	function_name = function_name or glsl_code:match(".+%s([a-zA-Z0-9_]-)%b()%s-%b{}%s*$")
 
-	if glsl_code:endswith(".brdf") then
+	if glsl_code:ends_with(".brdf") then
 		local str = vfs.Read(glsl_code)
 
 		if str then
@@ -220,11 +220,11 @@ function render.GetGlobalShaderVariables(code, const)
 			if
 				(
 					const == true and
-					info.type:startswith("const")
+					info.type:starts_with("const")
 				) or
 				(
 					const == false and
-					not info.type:startswith("const")
+					not info.type:starts_with("const")
 				)
 				or
 				const == nil

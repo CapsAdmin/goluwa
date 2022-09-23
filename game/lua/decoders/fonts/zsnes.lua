@@ -4,7 +4,7 @@ local META = prototype.CreateTemplate("zsnes")
 local pixel_padding = 2
 
 function META:Initialize()
-	if not self.Path:endswith(".txt") then return false, "not a valid font" end
+	if not self.Path:ends_with(".txt") then return false, "not a valid font" end
 
 	if vfs.IsFile("cache/zfont") then
 		self.font_data = serializer.ReadFile("msgpack", "cache/zfont")

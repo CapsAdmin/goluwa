@@ -83,7 +83,7 @@ function chatsounds.BuildFromGithub(repo, location, list_id)
 			local i = 1
 
 			for path in str:gmatch("\"path\":%s?\"(.-)\"[\n,}]") do
-				if path:startswith(location) and path:endswith(".ogg") then
+				if path:starts_with(location) and path:ends_with(".ogg") then
 					path = path:sub(#location + 2) -- start character after location, and another /
 					local tbl = path:split("/")
 					local realm = tbl[1]
@@ -97,7 +97,7 @@ function chatsounds.BuildFromGithub(repo, location, list_id)
 						path,
 					}
 
-					if trigger:startswith("-") then
+					if trigger:starts_with("-") then
 						sounds[i][2] = sounds[i][2]:sub(2)
 						sounds[i][4] = realm .. "/" .. trigger .. ".txt"
 					end

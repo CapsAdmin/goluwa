@@ -45,7 +45,7 @@ local function parse_scene(id)
 					local type_size = require("ffi").sizeof(info.Encoding == "varint" and "uint8_t" or t:lower():gsub("Array", "_t"))
 					file:SetPosition(info.Offset)
 					print("indices", t, info.Encoding, ":")
-					print(file:ReadBytes(info.Size * (type_size * item_size)):hexformat())
+					print(file:ReadBytes(info.Size * (type_size * item_size)):hex_format())
 				end
 			end
 
@@ -68,7 +68,7 @@ local function parse_scene(id)
 							local type_size = require("ffi").sizeof(info.Encoding == "varint" and "uint8_t" or t:lower():gsub("Array", "_t"))
 							file:SetPosition(info.Offset)
 							print("vertices", t, info.Encoding, ":")
-							print(file:ReadBytes(info.Size * (type_size * item_size)):hexformat())
+							print(file:ReadBytes(info.Size * (type_size * item_size)):hex_format())
 						end
 
 						if name == "Normal" then
@@ -83,7 +83,7 @@ local function parse_scene(id)
 							local type_size = require("ffi").sizeof(info.Encoding == "varint" and "uint8_t" or t:lower():gsub("Array", "_t"))
 							file:SetPosition(info.Offset)
 							print("normals", t, info.Encoding, ":")
-							print(file:ReadBytes(info.Size * (type_size * item_size)):hexformat())
+							print(file:ReadBytes(info.Size * (type_size * item_size)):hex_format())
 						end
 					end
 				end

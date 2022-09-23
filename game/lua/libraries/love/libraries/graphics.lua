@@ -882,7 +882,7 @@ do
 		end
 
 		function love.graphics.newShader(frag, vert)
-			if frag:endswith(".glsl") then
+			if frag:ends_with(".glsl") then
 				frag = love.filesystem.read(frag)
 				vert = love.filesystem.read(frag)
 			end

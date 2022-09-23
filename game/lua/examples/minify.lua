@@ -26,11 +26,11 @@ local function preprocess(lua, path, parent_path)
 		args = args:sub(2, -2):split(",")
 		local path = table.remove(args, 1)
 
-		if not path:startswith("\"") then return end
+		if not path:starts_with("\"") then return end
 
 		path = path:sub(2, -2)
 
-		if path:startswith("!") then path = path:sub(2) end
+		if path:starts_with("!") then path = path:sub(2) end
 
 		if path:find("shader_cvar") then
 			path = path:gsub("\"%.%.shader_cvar:Get%(%)%.%.\"", "flat")
@@ -50,11 +50,11 @@ local function preprocess(lua, path, parent_path)
 
 		if path:find("/gamemode/") then return end
 
-		if path:endswith("*") then
+		if path:ends_with("*") then
 			local s = ""
 
 			for _, path in ipairs(vfs.Find(path:sub(0, -2), true)) do
-				if path:endswith(".lua") then
+				if path:ends_with(".lua") then
 					if not vfs.IsFile(path) and vfs.IsFile(parent_path:match("(.+/)") .. path) then
 						path = parent_path:match("(.+/)") .. path
 					end

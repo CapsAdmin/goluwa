@@ -243,7 +243,7 @@ timer.Repeat(
 								"%s: received %s of data: %s",
 								socket,
 								utility.FormatFileSize(#str),
-								str:hexformat()
+								str:hex_format()
 							)
 						end
 
@@ -257,7 +257,7 @@ timer.Repeat(
 								socket,
 								utility.FormatFileSize(#str),
 								peer,
-								str:hexformat()
+								str:hex_format()
 							)
 						end
 

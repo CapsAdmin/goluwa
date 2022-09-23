@@ -23,7 +23,7 @@ local function header_to_table(str)
 		local swap_endianess = false
 		field = field:trim()
 
-		if field:startswith("swap") then
+		if field:starts_with("swap") then
 			field = field:sub(#"swap" + 1)
 			swap_endianess = true
 		end
@@ -1243,7 +1243,7 @@ META.__len = META.GetSize
 
 function META:GetDebugString()
 	self:PushPosition(1)
-	local str = self:GetString():readablehex()
+	local str = self:GetString():readable_hex()
 	self:PopPosition()
 	return str
 end

@@ -377,7 +377,7 @@ local function get_load_menu(ent)
 					for file_name in vfs.Iterate(where) do
 						local path = where .. file_name
 
-						if vfs.IsFile(path) and file_name:endswith(".tbl") then
+						if vfs.IsFile(path) and file_name:ends_with(".tbl") then
 							local tbl = serializer.ReadFile("luadata", where .. file_name)
 
 							if tbl then

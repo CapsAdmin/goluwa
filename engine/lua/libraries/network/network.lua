@@ -177,13 +177,13 @@ do
 			client:SetNick(client:GetNick() .. "_client")
 			client.OnPrivateMessage = network.OnIRCMessage
 			client.OnJoin = function(s, nick)
-				if nick:endswith("_server") then
+				if nick:ends_with("_server") then
 					client.asked[nick] = true
 					client:PRIVMSG(nick .. " info")
 				end
 			end
 			client.OnPart = function(s, nick, ip)
-				if nick:endswith("_server") then network.available_servers[ip] = nil end
+				if nick:ends_with("_server") then network.available_servers[ip] = nil end
 			end
 			client.OnReady = function()
 				logn("successfully joined irc channel")
@@ -211,7 +211,7 @@ do
 		local found = 0
 
 		for user in pairs(network.irc_client:GetUsers()) do
-			if user:endswith("_server") then
+			if user:ends_with("_server") then
 				irc_client.asked[user] = true
 				irc_client:PRIVMSG(user .. " info")
 				found = found + 1

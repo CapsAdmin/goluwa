@@ -37,7 +37,7 @@ local property_translate = {
 		"IlluminationColor",
 		function(v)
 			if type(v) == "string" then
-				if v:startswith("[") then v = v:sub(2, -2) end
+				if v:starts_with("[") then v = v:sub(2, -2) end
 
 				local r, g, b = unpack_numbers(v)
 				return Color(r, g, b, 1)

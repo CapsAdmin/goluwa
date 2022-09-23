@@ -258,7 +258,7 @@ resource.Download = callback.WrapKeyedTask(
 			local crc = crc or crypto.CRC32(path)
 			local found = vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "url/" .. crc .. "/file", true)
 
-			if found[1] and found[1]:endswith(".temp") then
+			if found[1] and found[1]:ends_with(".temp") then
 				llog("deleting unfinished download: ", path)
 
 				for _, path in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "url/" .. crc .. "/", true)) do

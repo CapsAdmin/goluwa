@@ -115,7 +115,7 @@ function vfs.CreateDirectoriesFromPath(path, force)
 	local folders = path_info:GetFolders("full")
 	local max = #folders
 
-	if not path:endswith("/") then max = max - 1 end
+	if not path:ends_with("/") then max = max - 1 end
 
 	for i = 1, max do
 		local folder = folders[i]

@@ -3,7 +3,7 @@ do
 
 	local function find_enums(name)
 		for k, v in pairs(gine.env) do
-			if k:startswith(name .. "_") then
+			if k:starts_with(name .. "_") then
 				translate_key[k:match(name .. "_(.+)"):lower()] = v
 			end
 		end

@@ -134,7 +134,7 @@ function gine.IsGLuaPath(path, gmod_dir_only)
 
 	if not gmod_dir_only then
 		for i, v in ipairs(gine.glua_paths) do
-			if path:startswith(v) then return true end
+			if path:starts_with(v) then return true end
 		end
 	end
 
@@ -222,7 +222,7 @@ function gine.Initialize(gamemode, skip_addons)
 
 		if not skip_addons then
 			local function mount(full_path)
-				if full_path:match(".+/(.+)"):startswith("__") then return end
+				if full_path:match(".+/(.+)"):starts_with("__") then return end
 
 				table.insert(gine.addons, full_path)
 				vfs.Mount(full_path)

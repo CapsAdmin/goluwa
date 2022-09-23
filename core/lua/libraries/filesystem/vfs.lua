@@ -273,7 +273,7 @@ do -- translate path to useful data
 
 		local relative = not vfs.IsPathAbsolute(path)
 
-		if is_folder and not path:endswith("/") then path = path .. "/" end
+		if is_folder and not path:ends_with("/") then path = path .. "/" end
 
 		out.full_path = path
 		out.relative = relative

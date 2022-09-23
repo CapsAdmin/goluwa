@@ -40,7 +40,7 @@ local function replace(chars, i, str, with)
 end
 
 for i, char in ipairs(chars) do
-	local t = char:getchartype()
+	local t = char:get_char_type()
 
 	if char == [["]] or char == [[']] then in_string = char end
 

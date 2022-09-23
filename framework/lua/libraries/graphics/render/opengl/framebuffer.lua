@@ -59,7 +59,7 @@ local function attachment_to_enum(self, var)
 		return var
 	elseif type(var) == "number" then
 		return base_color + var - 1
-	elseif var:startswith("color") then
+	elseif var:starts_with("color") then
 		return base_color + (tonumber(var:match(".-(%d)")) or 0) - 1
 	end
 end

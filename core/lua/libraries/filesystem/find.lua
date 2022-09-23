@@ -117,7 +117,7 @@ do
 		for _, v in ipairs(vfs.GetFiles({path = path, verbose = true, no_sort = true})) do
 			local is_dir = vfs.IsDirectory(v.full_path)
 
-			if (not ext or v.name:endswiththese(ext)) and (not is_dir or include_directories) then
+			if (not ext or v.name:ends_with_these(ext)) and (not is_dir or include_directories) then
 				if callback then
 					if callback(v.full_path, v.userdata or userdata, v) ~= nil then
 						return

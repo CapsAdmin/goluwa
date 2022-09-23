@@ -171,7 +171,7 @@ do
 	}
 
 	function ColorName(name)
-		if name:startswith("#") then return ColorHex(name) end
+		if name:starts_with("#") then return ColorHex(name) end
 
 		return ColorHex(names[name:lower()] or names.black)
 	end

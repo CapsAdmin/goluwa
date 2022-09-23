@@ -262,7 +262,7 @@ function thread:OnStart()
 							self:Wait()
 
 							for _, dir in ipairs(userdata.filesystem.searchpaths) do
-								if not dir:endswith("/") then dir = dir .. "/" end
+								if not dir:ends_with("/") then dir = dir .. "/" end
 
 								local path = dir .. path
 
@@ -439,7 +439,7 @@ function thread:OnStart()
 			local appid = info.userdata.filesystem.steamappid
 			local path = info.full_path
 
-			if path:find("english") and not path:find("/platform/") and path:endswith(".txt") then
+			if path:find("english") and not path:find("/platform/") and path:ends_with(".txt") then
 				logn("reading ", path)
 				local str = assert(vfs.Read(path))
 				-- stupid hack because some caption files are encoded weirdly which would break lua patterns
@@ -467,7 +467,7 @@ function thread:OnStart()
 				end
 
 				for k, v in pairs(tbl) do
-					if k:startswith("#") then
+					if k:starts_with("#") then
 						local path = vfs.FixPathSlashes(k:sub(2))
 
 						if temp_data[appid].full_paths[path] then
@@ -538,7 +538,7 @@ function thread:OnStart()
 				for i = #paths, 1, -1 do
 					local path = paths[i]
 
-					if path:endswith(".wav") then
+					if path:ends_with(".wav") then
 						local file = assert(vfs.Open(path))
 
 						if file then

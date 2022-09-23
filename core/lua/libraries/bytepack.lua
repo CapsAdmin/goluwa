@@ -185,7 +185,7 @@ end
 
 --[==[
 local packed = bytepack.uint32_t.encode(0xdeadbeef, true)
-print(packed:hexformat(), 0xdeadbeef)
+print(packed:hex_format(), 0xdeadbeef)
 local unpacked = bytepack.uint32_t.decode(packed, true)
 print(("%x"):format(unpacked), unpacked == 0xdeadbeef, unpacked)
 do return end
@@ -193,7 +193,7 @@ do return end
 for k,v in pairs(bytepack) do
     local packed = bytepack[k].encode(0xDEADBEEF)
     local unpacked = bytepack[k].decode(packed)
-    print(k, packed:hexformat():trim(), unpacked == 0xDEADBEEF)
+    print(k, packed:hex_format():trim(), unpacked == 0xDEADBEEF)
 end
 ]]
 
@@ -254,7 +254,7 @@ do
 		local capture
 		local arg_type
 
-		if k:endswith("]") then
+		if k:ends_with("]") then
 			arg_type = k:match("%b[]"):sub(2, -2)
 			capture = arg_types[arg_type] or error("unknown arg type " .. v)
 			k = k:sub(0, -4)

@@ -176,7 +176,7 @@ local function find_font(name, callback, on_error)
 		local full_path
 
 		if info.archive then
-			if not content:startswith("PK\003\004") then
+			if not content:starts_with("PK\003\004") then
 				llog("%s is not a zip file (does not start with zip header)", url)
 				local path = "data/error_" .. crypto.CRC32(url) .. ".dat"
 				llog("writing content to %s", path)
@@ -227,7 +227,7 @@ local META = prototype.CreateTemplate("freetype")
 
 function META:Initialize()
 	-- zsnes font loader hack..
-	if self.Path:endswith(".txt") then return false, "not a valid font" end
+	if self.Path:ends_with(".txt") then return false, "not a valid font" end
 
 	if not fonts.freetype_lib then
 		local lib = ffi.new("struct FT_LibraryRec_ * [1]")

@@ -40,14 +40,14 @@ do
 		if what == "code" then
 			local code = self.http.code
 
-			if not self.NoCodeError and not code:startswith("2") and not code:startswith("3") then
+			if not self.NoCodeError and not code:starts_with("2") and not code:starts_with("3") then
 				return self:Error(code .. " " .. status)
 			end
 		elseif what == "header" then
 			local header = self.http.header
 			local code = self.http.code
 
-			if code and code ~= "304" and code:startswith("3") and header["location"] then
+			if code and code ~= "304" and code:starts_with("3") and header["location"] then
 				self:Redirect(header["location"])
 				return false
 			end
@@ -92,7 +92,7 @@ function META:Redirect(location)
 	self:assert(self.socket:close())
 	self:SocketRestart()
 
-	if location:startswith("/") then
+	if location:starts_with("/") then
 		local host = req.header.Host or req.uri.host
 
 		if req.uri.port then host = host .. ":" .. req.uri.port end

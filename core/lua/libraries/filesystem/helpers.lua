@@ -109,7 +109,7 @@ function vfs.CopyFileFileOnBoot(from, to)
 
 	if not from then return nil, "source does not exist" end
 
-	local ok, err = vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath(to:startswith("os:") and to or ("os:" .. to)))
+	local ok, err = vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath(to:starts_with("os:") and to or ("os:" .. to)))
 
 	if not ok then return ok, err end
 
@@ -245,8 +245,8 @@ add_helper(
 
 		if fs then
 			for _, dir in ipairs({"data", "cache", "shared"}) do
-				if path:startswith(dir .. "/") or path:startswith("os:" .. dir .. "/") then
-					if path:startswith("os:") then path = path:sub(4) end
+				if path:starts_with(dir .. "/") or path:starts_with("os:" .. dir .. "/") then
+					if path:starts_with("os:") then path = path:sub(4) end
 
 					path = path:sub(#(dir .. "/") + 1)
 					local base = e.USERDATA_FOLDER
@@ -364,7 +364,7 @@ function vfs.WatchLuaFiles(b)
 	local watchers = {}
 
 	for i, path in ipairs(vfs.GetFilesRecursive("lua/", {"lua"})) do
-		if not path:endswith("core/lua/boot.lua") then
+		if not path:ends_with("core/lua/boot.lua") then
 			table.insert(watchers, {path = path, watcher = fs.watch(R(path))})
 		end
 	end
@@ -406,13 +406,13 @@ function vfs.WatchLuaFiles2(b)
 	local paths = {}
 
 	for _, dir in ipairs(fs.get_files(".")) do
-		if fs.get_type(dir) == "directory" and not dir:startswith(".") and dir ~= "storage" then
+		if fs.get_type(dir) == "directory" and not dir:starts_with(".") and dir ~= "storage" then
 			local files, err = fs.get_files_recursive(dir)
 
 			if files then
 				for _, path in ipairs(files) do
-					if path:endswith(".lua") or path:endswith(".oh") then
-						if not path:endswith("core/lua/boot.lua") then
+					if path:ends_with(".lua") or path:ends_with(".oh") then
+						if not path:ends_with("core/lua/boot.lua") then
 							table.insert(paths, {path = e.ROOT_FOLDER .. path})
 						end
 					end

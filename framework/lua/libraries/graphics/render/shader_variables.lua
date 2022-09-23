@@ -19,7 +19,7 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 	local referenced = false
 
 	for k, v in pairs(block) do
-		if k:startswith("referenced_by_") and v == 1 then
+		if k:starts_with("referenced_by_") and v == 1 then
 			referenced = true
 
 			break

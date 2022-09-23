@@ -4,7 +4,7 @@ test(vfs.Read, "data/test.txt").expect("foo")
 test(vfs.Delete, "data/test.txt").expect(true)
 
 test(vfs.Read, "data/test.txt").expect_compare(nil, function(arg)
-	return arg:startswith("unable to open file:")
+	return arg:starts_with("unable to open file:")
 end)
 
 do

@@ -20,7 +20,7 @@ function steam.LoadVMT(path, on_property, on_error, on_shader)
 	on_error = on_error or logn
 
 	resource.Download(path, nil, true):Then(function(path)
-		if path:endswith(".vtf") then
+		if path:ends_with(".vtf") then
 			on_property("basetexture", path, path, {})
 			-- default normal map?
 			return
@@ -85,7 +85,7 @@ function steam.LoadVMT(path, on_property, on_error, on_shader)
 		if not vmt.bumpmap and vmt.basetexture and not special_textures[vmt.basetexture] then
 			local new_path = vfs.FixPathSlashes(vmt.basetexture)
 
-			if not new_path:endswith(".vtf") then new_path = new_path .. ".vtf" end
+			if not new_path:ends_with(".vtf") then new_path = new_path .. ".vtf" end
 
 			new_path = new_path:gsub("%.vtf", "_normal.vtf")
 
@@ -112,7 +112,7 @@ function steam.LoadVMT(path, on_property, on_error, on_shader)
 				else
 					local new_path = vfs.FixPathSlashes("materials/" .. v)
 
-					if not new_path:endswith(".vtf") then new_path = new_path .. ".vtf" end
+					if not new_path:ends_with(".vtf") then new_path = new_path .. ".vtf" end
 
 					local cb = resource.Download(new_path, nil, true):Then(function(path)
 						on_property(k, path, fullpath, vmt)

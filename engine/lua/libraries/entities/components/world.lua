@@ -90,7 +90,7 @@ event.AddListener("GBufferInitialized", function()
 	end
 
 	for _, info in pairs(render3d.GetGBufferValues()) do
-		if info.k:startswith("world_") then ADD(info.k:sub(7), info.v) end
+		if info.k:starts_with("world_") then ADD(info.k:sub(7), info.v) end
 	end
 
 	META:EndStorable()

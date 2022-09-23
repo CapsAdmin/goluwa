@@ -300,7 +300,7 @@ function profiler.GetBenchmark(type, file, dump_line)
 	local out = {}
 
 	for path, lines in pairs(profiler.data[type]) do
-		if path:startswith("@") then path = path:sub(2) end
+		if path:starts_with("@") then path = path:sub(2) end
 
 		if not file or path:find(file) then
 			for line, data in pairs(lines) do

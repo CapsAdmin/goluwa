@@ -53,7 +53,7 @@ do -- loaders
 			local func, err, how = package.loadlib(path, init_func_name)
 
 			if not func then
-				if how == "open" and not err:startswith(path) or vfs.IsFile(path) then
+				if how == "open" and not err:starts_with(path) or vfs.IsFile(path) then
 					local deps = utility.GetLikelyLibraryDependenciesFormatted(full_path)
 
 					if deps then err = err .. "\n" .. deps end
@@ -78,7 +78,7 @@ do -- loaders
 			local func, err, how = package.loadlib(path, symbol)
 
 			if not func then
-				if how == "open" and not err:startswith(path) or vfs.IsFile(path) then
+				if how == "open" and not err:starts_with(path) or vfs.IsFile(path) then
 					err = err .. "\n" .. utility.GetLikelyLibraryDependenciesFormatted(path)
 				end
 			end

@@ -577,7 +577,7 @@ function steam.GetAppIdFromName(search)
 		end
 	end
 
-	if search:endswith("ds") then
+	if search:ends_with("ds") then
 		search = search:gsub("ds$", "Dedicated Server")
 	end
 

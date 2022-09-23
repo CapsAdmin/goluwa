@@ -23,7 +23,7 @@ end
 function fs.get_files(path)
 	dprint("fs.get_files: ", path)
 
-	if path:startswith("/") then path = path:sub(2) end
+	if path:starts_with("/") then path = path:sub(2) end
 
 	local original_path = path
 	dprint("fs.get_files: is " .. path .. " cached?")
@@ -39,7 +39,7 @@ function fs.get_files(path)
 
 	local where = "GAME"
 
-	if path:startswith("data/") then
+	if path:starts_with("data/") then
 		path = path:sub(6)
 		where = "DATA"
 	end

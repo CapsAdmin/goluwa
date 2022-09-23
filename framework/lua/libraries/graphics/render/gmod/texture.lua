@@ -73,7 +73,7 @@ function META:SetPath(path, gmod_path)
 
 			local mat
 
-			if path:endswith(".vtf") then
+			if path:ends_with(".vtf") then
 				mat = CreateMaterial(
 					"goluwa_" .. path,
 					"UnlitGeneric",

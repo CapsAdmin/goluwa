@@ -70,11 +70,11 @@ local function split_path(path_info)
 	if not archive_path and not relative then
 		archive_path, relative = false, "not a valid archive path"
 	else
-		if archive_path:endswith("/") then
+		if archive_path:ends_with("/") then
 			archive_path = archive_path:sub(0, -2)
 		end
 
-		if archive_path:endswith(".gma") or archive_path:endswith(".vpk") then
+		if archive_path:ends_with(".gma") or archive_path:ends_with(".vpk") then
 			archive_path, relative = false, "TODO"
 		end
 	end
@@ -171,7 +171,7 @@ function CONTEXT:IsFolder(path_info)
 	if not files then return files, err end
 
 	for _, path in ipairs(files) do
-		if path:startswith(data.relative) then
+		if path:starts_with(data.relative) then
 			found = true
 
 			break
@@ -239,7 +239,7 @@ function CONTEXT:GetFiles(path_info)
 			local dir2, name = path:match("^(.+/)(.+)")
 
 			if dir == dir2 and name then
-				if name:endswith("/") then name = name:sub(0, -2) end
+				if name:ends_with("/") then name = name:sub(0, -2) end
 
 				table.insert(out, name)
 			end

@@ -41,7 +41,7 @@ local function parse_path(str)
 		for i, v in ipairs(flags:sub(2, -2):split(",")) do
 			local b = true
 
-			if v:startswith("~") then
+			if v:starts_with("~") then
 				v = v:sub(2)
 				b = false
 			end
@@ -120,7 +120,7 @@ do -- todo
 			end)
 
 			if vfs.IsFile(path_face) then
-				if path_face:endswith(".vmt") then
+				if path_face:ends_with(".vmt") then
 					local _, vmt = next(
 						utility.VDFToTable(vfs.Read(path_face), function(key)
 							return (key:lower():gsub("%$", ""))

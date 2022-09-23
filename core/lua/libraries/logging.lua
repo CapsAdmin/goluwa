@@ -85,7 +85,7 @@ do
 
 		for i, chunk in ipairs(str:split("%")) do
 			if i > 1 then
-				if chunk:startswith("s") then args[i] = tostringx(args[i]) end
+				if chunk:starts_with("s") then args[i] = tostringx(args[i]) end
 			end
 		end
 
@@ -130,7 +130,7 @@ function logfile.LibraryLog(fmt, ...)
 
 	if main_category == "extensions" then main_category = nil end
 
-	local str = fmt:safeformat(...)
+	local str = fmt:safe_format(...)
 
 	if not main_category or not sub_category or main_category == sub_category then
 		return logf("[%s] %s\n", main_category or sub_category, str)
@@ -145,7 +145,7 @@ end
 function logfile.WarningLog(fmt, ...)
 	fmt = tostringx(fmt)
 	local level = tonumber(select(fmt:count("%") + 1, ...) or 1) or 1
-	local str = fmt:safeformat(...)
+	local str = fmt:safe_format(...)
 	local source = debug.get_pretty_source(level + 1, true)
 	logn(source, ": ", str)
 	return fmt, ...
