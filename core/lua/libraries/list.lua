@@ -1,7 +1,13 @@
 local list = {}
 list.pack = table.pack
 list.unpack = table.unpack
-list.clear = list.clear or
+list.insert = table.insert
+list.remove = table.remove
+list.move = table.move
+list.concat = table.concat
+list.sort = table.sort
+list.pairs = _G.ipairs
+list.clear = table.clear or
 	desire("table.clear") or
 	function(t)
 		for i in ipairs(t) do
@@ -39,13 +45,13 @@ function list.scroll(tbl, offset)
 
 	if offset > 0 then
 		for _ = 1, offset do
-			local val = table.remove(tbl, 1)
-			table.insert(tbl, val)
+			local val = list.remove(tbl, 1)
+			list.insert(tbl, val)
 		end
 	else
 		for _ = 1, math.abs(offset) do
-			local val = table.remove(tbl)
-			table.insert(tbl, 1, val)
+			local val = list.remove(tbl)
+			list.insert(tbl, 1, val)
 		end
 	end
 end
@@ -64,7 +70,7 @@ function list.is_list(t)
 end
 
 do
-	local table_concat = table.concat
+	local list_concat = list.concat
 
 	function list.concat_range(tbl, start, stop)
 		local length = stop - start
@@ -76,7 +82,7 @@ do
 			str_i = str_i + 1
 		end
 
-		return table_concat(str)
+		return list_concat(str)
 	end
 end
 
@@ -106,7 +112,7 @@ end
 function list.remove_value(tbl, val)
 	for i, v in ipairs(tbl) do
 		if v == val then
-			table.remove(tbl, i)
+			list.remove(tbl, i)
 
 			break
 		end
@@ -144,11 +150,11 @@ function list.fix_indices(tbl)
 	local temp = {}
 
 	for k, v in pairs(tbl) do
-		table.insert(temp, {v = v, k = tonumber(k) or 0})
+		list.insert(temp, {v = v, k = tonumber(k) or 0})
 		tbl[k] = nil
 	end
 
-	table.sort(temp, function(a, b)
+	list.sort(temp, function(a, b)
 		return a.k < b.k
 	end)
 
@@ -191,7 +197,7 @@ function list.concat_member(tbl, key, sep)
 		temp[i] = tostring(v[key])
 	end
 
-	return table.concat(tbl, sep)
+	return list.concat(tbl, sep)
 end
 
 do
@@ -199,11 +205,11 @@ do
 	local ipairs = ipairs
 	local META = {}
 	META.__index = META
-	META.concat = table.concat
-	META.insert = table.insert
-	META.remove = table.remove
-	META.unpack = table.unpack
-	META.sort = table.sort
+	META.concat = list.concat
+	META.insert = list.insert
+	META.remove = list.remove
+	META.unpack = list.unpack
+	META.sort = list.sort
 
 	function META:pairs()
 		return ipairs(self)

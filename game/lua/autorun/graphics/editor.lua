@@ -347,7 +347,7 @@ local function get_save_menu(ent)
 				local out = {}
 
 				for file_name in vfs.Iterate("saved/") do
-					table.insert(
+					list.insert(
 						out,
 						{
 							file_name:gsub("%.tbl", ""),
@@ -381,7 +381,7 @@ local function get_load_menu(ent)
 							local tbl = serializer.ReadFile("luadata", where .. file_name)
 
 							if tbl then
-								table.insert(
+								list.insert(
 									out,
 									{
 										is_file = true,
@@ -392,7 +392,7 @@ local function get_load_menu(ent)
 								)
 							end
 						else
-							table.insert(
+							list.insert(
 								out,
 								{
 									name = file_name,
@@ -413,7 +413,7 @@ local function get_load_menu(ent)
 					for _, v in ipairs(files) do
 						if v.is_file then
 							if v.name == "autoload" then
-								table.insert(
+								list.insert(
 									out,
 									1,
 									{
@@ -424,12 +424,12 @@ local function get_load_menu(ent)
 										editor.frame:GetSkin().icons.transmit_go,
 									}
 								)
-								table.insert(out, 2, {})
+								list.insert(out, 2, {})
 							else
 								local config = prototype.GetConfigurations()[v.ent_tbl.config]
 
 								if config then
-									table.insert(
+									list.insert(
 										out,
 										{
 											v.name,
@@ -442,7 +442,7 @@ local function get_load_menu(ent)
 								end
 							end
 						else
-							table.insert(out, {v.name, populate(v.files), editor.frame:GetSkin().icons.load})
+							list.insert(out, {v.name, populate(v.files), editor.frame:GetSkin().icons.load})
 						end
 					end
 
@@ -558,7 +558,7 @@ function editor.Open()
 		local options = {}
 
 		local function add(...)
-			table.insert(options, {...})
+			list.insert(options, {...})
 		end
 
 		local clipboard = serializer.Decode("luadata", window.GetClipboard(), true)
@@ -631,7 +631,7 @@ function editor.Open()
 			local tbl = {}
 
 			for config_name, info in pairs(group.configs) do
-				table.insert(
+				list.insert(
 					tbl,
 					{
 						L(info.name),
@@ -728,7 +728,7 @@ function editor.Open()
 		local ents = {}
 
 		for _, v in pairs(entities.GetAll()) do
-			if not v:HasParent() then table.insert(ents, v) end
+			if not v:HasParent() then list.insert(ents, v) end
 		end
 
 		fill(EDITOR_ROOT or ents, tree)

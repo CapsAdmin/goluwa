@@ -10,7 +10,7 @@ local blacklist = {
 local function trace_dump_callback(what, trace_id, func, pc, trace_error_id, trace_error_arg)
 	if what == "abort" then
 		local info = jit.util.funcinfo(func, pc)
-		table.insert(profiler.raw_data.trace_aborts, {info, trace_error_id, trace_error_arg})
+		list.insert(profiler.raw_data.trace_aborts, {info, trace_error_id, trace_error_arg})
 	end
 end
 
@@ -18,7 +18,7 @@ local function parse_raw_trace_abort_data()
 	local data = profiler.data.trace_aborts
 
 	for _ = 1, #profiler.raw_data.trace_aborts do
-		local args = table.remove(profiler.raw_data.trace_aborts)
+		local args = list.remove(profiler.raw_data.trace_aborts)
 		local info = args[1]
 		local trace_error_id = args[2]
 		local trace_error_arg = args[3]
@@ -62,7 +62,7 @@ local function parse_raw_statistical_data()
 	local data = profiler.data.statistical
 
 	for _ = 1, #profiler.raw_data.statistical do
-		local args = table.remove(profiler.raw_data.statistical)
+		local args = list.remove(profiler.raw_data.statistical)
 		local str, samples, vmstate = args[1], args[2], args[3]
 		local children = {}
 
@@ -73,9 +73,9 @@ local function parse_raw_statistical_data()
 				line = line:gsub("%[builtin#(%d+)%]", function(x)
 					return jit.vmdef.ffnames[tonumber(x)]
 				end)
-				table.insert(children, {name = line or -1, external_function = true})
+				list.insert(children, {name = line or -1, external_function = true})
 			else
-				table.insert(
+				list.insert(
 					children,
 					{path = path, line = tonumber(line_number) or -1, external_function = false}
 				)
@@ -83,7 +83,7 @@ local function parse_raw_statistical_data()
 		end
 
 		local info = children[#children]
-		table.remove(children, #children)
+		list.remove(children, #children)
 		local path = info.path or info.name
 		local line = tonumber(info.line) or -1
 		data[path] = data[path] or {}
@@ -119,15 +119,15 @@ local function parse_raw_statistical_data()
 			data[path][line].start_time = data[path][line].start_time or system.GetTime()
 			data[path][line].parents[tostring(parent)] = parent
 			parent.children[tostring(data[path][line])] = data[path][line]
-		--table.insert(data[path][line].parents, parent)
-		--table.insert(parent.children, data[path][line])
+		--list.insert(data[path][line].parents, parent)
+		--list.insert(parent.children, data[path][line])
 		end
 	end
 end
 
 local function statistical_callback(thread, samples, vmstate)
 	local str = jit.profiler.dumpstack(thread, "pl\n", 1000)
-	table.insert(profiler.raw_data.statistical, {str, samples, vmstate})
+	list.insert(profiler.raw_data.statistical, {str, samples, vmstate})
 end
 
 function profiler.EnableStatisticalProfiling(b)
@@ -197,7 +197,7 @@ do
 
 		local info = debug.getinfo(3)
 		local start_time = system.GetTime()
-		table.insert(
+		list.insert(
 			stack,
 			{
 				section_name = section_name,
@@ -211,7 +211,7 @@ do
 	function profiler.PopSection()
 		if not enabled then return end
 
-		local res = table.remove(stack)
+		local res = list.remove(stack)
 
 		if res then
 			local time = system.GetTime() - res.start_time
@@ -249,7 +249,7 @@ do
 
 		if reset then table.clear(profiler.data.sections) end
 
-		table.clear(stack)
+		list.clear(stack)
 	end
 
 	profiler.PushSection()
@@ -260,14 +260,14 @@ do -- timer
 	local stack = {}
 
 	function profiler.StartTimer(str, ...)
-		table.insert(stack, {str = str and str:format(...), level = #stack})
+		list.insert(stack, {str = str and str:format(...), level = #stack})
 		local last = stack[#stack]
-		last.time = system.GetTime() -- just to make sure there's overhead with table.insert and whatnot
+		last.time = system.GetTime() -- just to make sure there's overhead with list.insert and whatnot
 	end
 
 	function profiler.StopTimer(no_print)
 		local time = system.GetTime()
-		local data = table.remove(stack)
+		local data = list.remove(stack)
 		local delta = time - data.time
 
 		if not no_print then
@@ -329,7 +329,7 @@ function profiler.GetBenchmark(type, file, dump_line)
 						end
 					end
 				elseif data.func then
-					name = ("%s(%s)"):format(data.func_name, table.concat(debug.get_params(data.func), ", "))
+					name = ("%s(%s)"):format(data.func_name, list.concat(debug.get_params(data.func), ", "))
 				else
 					local full_path = R(path) or path
 					name = full_path .. ":" .. line
@@ -365,7 +365,7 @@ function profiler.GetBenchmark(type, file, dump_line)
 				data.samples = data.samples or 0
 				data.sample_duration = system.GetTime() - data.start_time
 				data.times_called = data.samples
-				table.insert(out, data)
+				list.insert(out, data)
 			end
 		end
 	end
@@ -413,8 +413,8 @@ function profiler.PrintTraceAborts(min_samples)
 
 					for reason, count in pairs(reasons) do
 						if not blacklist[reason] then
-							table.insert(temp, "\t\t" .. reason:trim() .. " (x" .. count .. ")")
-							table.insert(temp, "\t\t\t" .. line .. ": " .. str)
+							list.insert(temp, "\t\t" .. reason:trim() .. " (x" .. count .. ")")
+							list.insert(temp, "\t\t\t" .. line .. ": " .. str)
 						end
 					end
 				end
@@ -422,7 +422,7 @@ function profiler.PrintTraceAborts(min_samples)
 
 			if #temp > 0 then
 				logn("\t", full_path)
-				logn(table.concat(temp, "\n"))
+				logn(list.concat(temp, "\n"))
 			end
 		end
 	end
@@ -735,10 +735,10 @@ function profiler.MeasureFunctions(tbl, count)
 	local res = {}
 
 	for name, func in pairs(tbl) do
-		table.insert(res, {time = profiler.MeasureFunction(func, count, name, true), name = name})
+		list.insert(res, {time = profiler.MeasureFunction(func, count, name, true), name = name})
 	end
 
-	table.sort(res, function(a, b)
+	list.sort(res, function(a, b)
 		return a.time < b.time
 	end)
 

@@ -2,10 +2,10 @@ function table.random_pairs(tbl)
 	local sorted = {}
 
 	for key, val in pairs(tbl) do
-		table.insert(sorted, {key = key, val = val, rand = math.random()})
+		list.insert(sorted, {key = key, val = val, rand = math.random()})
 	end
 
-	table.sort(sorted, function(a, b)
+	list.sort(sorted, function(a, b)
 		return a.rand > b.rand
 	end)
 
@@ -35,14 +35,14 @@ function table.lowecase_lookup(tbl, key)
 	end
 end
 
-if not table.pack then
-	function table.pack(...)
+if not list.pack then
+	function list.pack(...)
 		return {n = select("#", ...), ...}
 	end
 end
 
-if not table.unpack then
-	function table.unpack(tbl, start, stop)
+if not list.unpack then
+	function list.unpack(tbl, start, stop)
 		start = start or 1
 		stop = stop or tbl.n
 		return unpack(tbl, start, stop)
@@ -50,24 +50,24 @@ if not table.unpack then
 end
 
 function table.to_list(tbl, sort)
-	local list = {}
+	local lst = {}
 
 	for key, val in pairs(tbl) do
-		table.insert(list, {key = key, val = val})
+		list.insert(lst, {key = key, val = val})
 	end
 
-	if sort then table.sort(list, sort) end
+	if sort then list.sort(lst, sort) end
 
-	return list
+	return lst
 end
 
 function table.sorted_pairs(tbl, sort)
-	local list = table.to_list(tbl, sort)
+	local lst = table.to_list(tbl, sort)
 	local i = 0
 	return function()
 		i = i + 1
 
-		if list[i] then return list[i].key, list[i].val end
+		if lst[i] then return lst[i].key, lst[i].val end
 	end
 end
 
@@ -131,7 +131,7 @@ function table.virtual_merge(tbl, nodes)
 						if type(val) ~= "table" then
 							return val
 						else
-							table.insert(found, val)
+							list.insert(found, val)
 						end
 					end
 				end
@@ -146,7 +146,7 @@ end
 
 function table.add(a, b)
 	for _, v in pairs(b) do
-		table.insert(a, v)
+		list.insert(a, v)
 	end
 end
 
@@ -180,7 +180,7 @@ function table.print(...)
 	luadata.SetModifier("function", function(var)
 		return (
 			"function(%s) --[==[ptr: %p    src: %s]==] end"
-		):format(table.concat(debug.get_params(var), ", "), var, debug.get_pretty_source(var, true))
+		):format(list.concat(debug.get_params(var), ", "), var, debug.get_pretty_source(var, true))
 	end)
 
 	luadata.SetModifier("fallback", function(var)

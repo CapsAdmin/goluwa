@@ -60,7 +60,7 @@ if jit.bc then
 			},
 			true
 		)
-		return table.concat(str)
+		return list.concat(str)
 	end
 end
 
@@ -162,9 +162,9 @@ do
 
 		for k, v in pairs(current) do
 			if type(v) == "number" then
-				table.insert(options, k .. "=" .. v)
+				list.insert(options, k .. "=" .. v)
 			elseif type(v) == "boolean" then
-				table.insert(options, v and ("+" .. k) or ("-" .. k))
+				list.insert(options, v and ("+" .. k) or ("-" .. k))
 			end
 		end
 

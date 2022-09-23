@@ -15,7 +15,7 @@ event.AddListener("PostDrawGUI", "test", function()
 
 			if y == 0 then
 				local len = Vec3(c.r, c.g, c.b):GetLength()
-				table.insert(bars, len)
+				list.insert(bars, len)
 				avg = avg + len
 				i = i + 1
 			end

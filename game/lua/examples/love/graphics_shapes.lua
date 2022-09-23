@@ -5,7 +5,7 @@ local function CreateTexturedCircle(image, segments)
 	segments = segments or 40
 	local vertices = {}
 	-- The first vertex is at the center, and has a red tint. We're centering the circle around the origin (0, 0).
-	table.insert(vertices, {0, 0, 0.5, 0.5, 255, 0, 0})
+	list.insert(vertices, {0, 0, 0.5, 0.5, 255, 0, 0})
 
 	-- Create the vertices at the edge of the circle.
 	for i = 0, segments do
@@ -17,7 +17,7 @@ local function CreateTexturedCircle(image, segments)
 		local u = (x + 1) * 0.5
 		local v = (y + 1) * 0.5
 		-- The per-vertex color defaults to white.
-		table.insert(vertices, {x, y, u, v})
+		list.insert(vertices, {x, y, u, v})
 	end
 
 	-- The "fan" draw mode is perfect for our circle.

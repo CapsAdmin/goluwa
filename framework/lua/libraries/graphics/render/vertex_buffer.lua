@@ -93,13 +93,13 @@ if ffi then -- attributes
 		local lookup = ""
 
 		for _, info in ipairs(self.mesh_layout.attributes) do
-			table.insert(declaration, ("$ %s;"):format(info.name))
-			table.insert(ctypes, info.type_info.ctype)
+			list.insert(declaration, ("$ %s;"):format(info.name))
+			list.insert(ctypes, info.type_info.ctype)
 			lookup = lookup .. info.type_info.type
 		end
 
-		table.insert(declaration, " }")
-		declaration = table.concat(declaration, "")
+		list.insert(declaration, " }")
+		declaration = list.concat(declaration, "")
 		lookup = lookup .. declaration
 		local ctype = cache[lookup] or ffi.typeof(declaration, unpack(ctypes))
 		cache[lookup] = ctype

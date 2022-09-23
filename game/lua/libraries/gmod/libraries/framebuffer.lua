@@ -26,17 +26,17 @@ function gine.env.GetRenderTargetEx(name, w, h, size_mode, depth_mode, texture_f
 	local texture_flags_str = {}
 
 	for k, v in pairs(texture_flags) do
-		if v then table.insert(texture_flags_str, k) end
+		if v then list.insert(texture_flags_str, k) end
 	end
 
-	texture_flags_str = "[" .. table.concat(texture_flags_str, ", ") .. "]"
+	texture_flags_str = "[" .. list.concat(texture_flags_str, ", ") .. "]"
 	local rt_flags_str = {}
 
 	for k, v in pairs(rt_flags) do
-		if v then table.insert(rt_flags_str, k) end
+		if v then list.insert(rt_flags_str, k) end
 	end
 
-	rt_flags_str = "[" .. table.concat(rt_flags_str, ", ") .. "]"
+	rt_flags_str = "[" .. list.concat(rt_flags_str, ", ") .. "]"
 	--[[llog("GetRenderTarget(Ex):")
 	table.print({
 		name = name,

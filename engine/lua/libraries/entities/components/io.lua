@@ -80,7 +80,7 @@ do
 
 		for i, info in ipairs(self.output_objects) do
 			if not info.obj:IsValid() then
-				table.remove(self.output_objects, i)
+				list.remove(self.output_objects, i)
 
 				break
 			end
@@ -138,7 +138,7 @@ do
 
 	function META:ConnectToObject(obj, var_name, i, field)
 		i = i or 1
-		table.insert(
+		list.insert(
 			self.output_objects,
 			{
 				obj = obj,

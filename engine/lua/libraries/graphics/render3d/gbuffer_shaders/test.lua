@@ -244,7 +244,7 @@ PASS.Position = -1
 PASS.Name = "test"
 PASS.Default = true
 PASS.Source = {}
-table.insert(
+list.insert(
 	PASS.Source,
 	{
 		buffer = {
@@ -283,7 +283,7 @@ table.insert(
 	}
 )
 render3d.AddBilateralBlurPass(PASS, "pow(get_roughness(uv)*0.12, 1.5)", 0.98, "r11f_g11f_b10f", 1)
-table.insert(
+list.insert(
 	PASS.Source,
 	{
 		source = [[

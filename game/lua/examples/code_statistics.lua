@@ -46,7 +46,7 @@ for _, path in ipairs(vfs.GetFilesRecursive("lua/", {".lua"}, nil, blacklist_dir
 			words[word] = (words[word] or 0) + 1
 		end
 
-		table.insert(data.files, {path = path, lines = lines})
+		list.insert(data.files, {path = path, lines = lines})
 	else
 		print(path)
 	end
@@ -58,15 +58,15 @@ end
 
 data.total_chars = data.total_chars - data.total_words
 
-table.sort(data.files, function(a, b)
+list.sort(data.files, function(a, b)
 	return a.lines > b.lines
 end)
 
 for word, count in pairs(words) do
-	table.insert(data.words, {word = word, count = count})
+	list.insert(data.words, {word = word, count = count})
 end
 
-table.sort(data.words, function(a, b)
+list.sort(data.words, function(a, b)
 	return a.count > b.count
 end)
 

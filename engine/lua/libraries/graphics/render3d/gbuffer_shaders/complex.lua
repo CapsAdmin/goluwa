@@ -38,7 +38,7 @@ do
 	PASS.Position = 1
 	PASS.Name = "complex"
 	PASS.Source = {}
-	table.insert(
+	list.insert(
 		PASS.Source,
 		{
 			buffer = {
@@ -89,7 +89,7 @@ do
 
 	render3d.AddBilateralBlurPass(PASS, "pow(get_roughness(uv)*0.12, 1.5)", 0.98, "r11f_g11f_b10f", 1)
 	--, 0.001) -- depth testing is more accurate but much slower
-	table.insert(
+	list.insert(
 		PASS.Source,
 		{
 			source = [[

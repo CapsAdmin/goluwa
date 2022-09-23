@@ -99,10 +99,10 @@ do
 		local cb = callback.Create()
 		cb.parent = self
 		cb.warn_unhandled = false
-		table.insert(self.children, cb)
+		list.insert(self.children, cb)
 
-		table.insert(self.funcs.resolved, function(...)
-			local ret = table.pack(func(...))
+		list.insert(self.funcs.resolved, function(...)
+			local ret = list.pack(func(...))
 			local returned_cb = ret[1]
 
 			if getmetatable(returned_cb) == meta then
@@ -113,12 +113,12 @@ do
 				return returned_cb:Then(function(...)
 					return cb:Resolve(...)
 				end),
-				table.unpack(ret, 2)
+				list.unpack(ret, 2)
 			else
 				cb:Resolve(...)
 			end
 
-			return table.unpack(ret)
+			return list.unpack(ret)
 		end)
 
 		if self.start_on_callback then
@@ -130,12 +130,12 @@ do
 	end
 
 	function meta:Catch(func)
-		table.insert(self.funcs.rejected, func)
+		list.insert(self.funcs.rejected, func)
 		return self
 	end
 
 	function meta:Done(callback)
-		table.insert(self.funcs.done, callback)
+		list.insert(self.funcs.done, callback)
 		return self
 	end
 
@@ -164,7 +164,7 @@ do
 		if self.parent then return self.parent:Subscribe(what, callback) end
 
 		self.funcs[what] = self.funcs[what] or {}
-		table.insert(self.funcs[what], callback)
+		list.insert(self.funcs[what], callback)
 		return self
 	end
 
@@ -209,16 +209,16 @@ function callback.WrapKeyedTask(create_callback, max, queue_callback, start_on_c
 	max = max or math.huge
 
 	local function add(key, ...)
-		local args = table.pack(...)
+		local args = list.pack(...)
 
 		if not callbacks[key] or callbacks[key].is_resolved or callbacks[key].is_rejected then
 			callbacks[key] = callback.Create(function(self)
-				create_callback(self, key, table.unpack(args))
+				create_callback(self, key, list.unpack(args))
 			end)
 			callbacks[key].start_on_callback = start_on_callback
 
 			if total >= max then
-				table.insert(queue, callbacks[key])
+				list.insert(queue, callbacks[key])
 				callbacks[key].key = key
 
 				if queue_callback then
@@ -232,7 +232,7 @@ function callback.WrapKeyedTask(create_callback, max, queue_callback, start_on_c
 						total = total - 1
 
 						if total < max then
-							local cb = table.remove(queue)
+							local cb = list.remove(queue)
 
 							if cb then
 								if queue_callback then
@@ -259,9 +259,9 @@ end
 
 function callback.WrapTask(create_callback)
 	return function(...)
-		local args = table.pack(...)
+		local args = list.pack(...)
 		local cb = callback.Create(function(self)
-			create_callback(self, table.unpack(args))
+			create_callback(self, list.unpack(args))
 		end)
 		cb:Start()
 		return cb
@@ -269,9 +269,9 @@ function callback.WrapTask(create_callback)
 end
 
 function callback.Resolve(...)
-	local args = table.pack(...)
+	local args = list.pack(...)
 	local cb = callback.Create(function(self)
-		self.callbacks.resolve(table.unpack(args))
+		self.callbacks.resolve(list.unpack(args))
 	end)
 
 	timer.Delay(function()

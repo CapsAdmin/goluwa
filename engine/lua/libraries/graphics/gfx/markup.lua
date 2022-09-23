@@ -94,7 +94,7 @@ end
 
 function META:BeginLifeTime(time, fade_time)
 	fade_time = fade_time or 2
-	table.insert(
+	list.insert(
 		self.chunks,
 		{
 			type = "start_fade",
@@ -106,15 +106,15 @@ function META:BeginLifeTime(time, fade_time)
 end
 
 function META:EndLifeTime()
-	table.insert(self.chunks, {type = "end_fade", val = true})
+	list.insert(self.chunks, {type = "end_fade", val = true})
 end
 
 function META:AddTagStopper()
-	table.insert(self.chunks, {type = "tag_stopper", val = true})
+	list.insert(self.chunks, {type = "tag_stopper", val = true})
 end
 
 function META:AddColor(color)
-	table.insert(self.chunks, {type = "color", val = color})
+	list.insert(self.chunks, {type = "color", val = color})
 	self.need_layout = true
 end
 
@@ -123,17 +123,17 @@ function META:AddString(str, tags)
 
 	if tags then
 		for _, chunk in ipairs(self:StringTagsToTable(str)) do
-			table.insert(self.chunks, chunk)
+			list.insert(self.chunks, chunk)
 		end
 	else
-		table.insert(self.chunks, {type = "string", val = str})
+		list.insert(self.chunks, {type = "string", val = str})
 	end
 
 	self.need_layout = true
 end
 
 function META:AddFont(font)
-	table.insert(self.chunks, {type = "font", val = font})
+	list.insert(self.chunks, {type = "font", val = font})
 	self.need_layout = true
 end
 
@@ -145,7 +145,7 @@ function META:Add(var, tags)
 	elseif t == "string" or t == "number" then
 		self:AddString(var, tags)
 	elseif t == "table" and var.type and var.val then
-		table.insert(self.chunks, var)
+		list.insert(self.chunks, var)
 	elseif t ~= "cdata" then
 		llog("tried to parse unknown type %q", t)
 	end
@@ -184,7 +184,7 @@ function META:CallTagFunction(chunk, name, ...)
 					if type(val) == "table" then val = val.default end
 				end
 
-				table.insert(args, val)
+				list.insert(args, val)
 			end
 
 			args = {pcall(func, unpack(args))}
@@ -311,7 +311,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 				)
 			)
 		then
-			table.insert(self.chunks, chunk.i, {type = "string", val = str})
+			list.insert(self.chunks, chunk.i, {type = "string", val = str})
 		else
 			if chunk.internal then
 				local chunk = self.chunks[chunk.i - 1]
@@ -332,7 +332,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 
 					chunk.val = utf8.sub(chunk.val, 1, sub_pos - 1) .. str .. utf8.sub(chunk.val, sub_pos)
 				else
-					table.remove(self.chunks, chunk.i)
+					list.remove(self.chunks, chunk.i)
 				end
 			end
 		end
@@ -960,11 +960,11 @@ do -- parse tags
 				in_lua = true
 			elseif in_lua and char == "]" then -- todo: longest match
 				in_lua = false
-				local exp = table.concat(str, "")
+				local exp = list.concat(str, "")
 				local ok, func = expression.Compile(exp)
 
 				if ok then
-					table.insert(out, func)
+					list.insert(out, func)
 				else
 					logf("%s\n", exp)
 					logf("markup expression error: %s", func)
@@ -974,16 +974,16 @@ do -- parse tags
 				str = {}
 			elseif char == "," and not in_lua then
 				if #str > 0 then
-					table.insert(out, table.concat(str, ""))
+					list.insert(out, list.concat(str, ""))
 					str = {}
 				end
 			else
-				table.insert(str, char)
+				list.insert(str, char)
 			end
 		end
 
 		if #str > 0 then
-			table.insert(out, table.concat(str, ""))
+			list.insert(out, list.concat(str, ""))
 			str = {}
 		end
 
@@ -1018,11 +1018,11 @@ do -- parse tags
 
 				local res = str:sub(current_pos, start_pos - 1)
 
-				if res ~= "" then table.insert(tbl, res) end
+				if res ~= "" then list.insert(tbl, res) end
 
 				local res = str:sub(start_pos, end_pos)
 
-				if res ~= "" then table.insert(tbl, res) end
+				if res ~= "" then list.insert(tbl, res) end
 
 				current_pos = end_pos + 1
 			end
@@ -1030,7 +1030,7 @@ do -- parse tags
 			if current_pos > 1 then
 				local res = str:sub(current_pos)
 
-				if res ~= "" then table.insert(tbl, res) end
+				if res ~= "" then list.insert(tbl, res) end
 			else
 				tbl[1] = str
 			end
@@ -1045,7 +1045,7 @@ do -- parse tags
 				end
 			end
 
-			return table.concat(tbl)
+			return list.concat(tbl)
 		end)
 		local chunks = {}
 		local found = false
@@ -1059,7 +1059,7 @@ do -- parse tags
 			if char == "<" then
 				-- if we've been parsing a string add it
 				if current_string then
-					table.insert(chunks, {type = "string", val = table.concat(current_string, "")})
+					list.insert(chunks, {type = "string", val = list.concat(current_string, "")})
 				end
 
 				-- stat a new tag
@@ -1068,7 +1068,7 @@ do -- parse tags
 			elseif char == ">" and in_tag then
 				-- maybe the string was "sdasd :> sdsadasd <color123>..."
 				if current_tag then
-					local tag_str = table.concat(current_tag, "") .. ">"
+					local tag_str = list.concat(current_tag, "") .. ">"
 					local tag, arg_str = tag_str:match("<(.-)=(.+)>")
 					local stop_tag = false
 
@@ -1154,24 +1154,24 @@ do -- parse tags
 						if not is_expression and tag == "font" then
 							if stop_tag then
 								if last_font then
-									table.insert(chunks, {type = "font", val = last_font})
+									list.insert(chunks, {type = "font", val = last_font})
 								end
 							else
 								local font = fonts.FindFont(args[1])
-								table.insert(chunks, {type = "font", val = font})
+								list.insert(chunks, {type = "font", val = font})
 								last_font = font
 							end
 						elseif not is_expression and tag == "color" then
 							if stop_tag then
 								if last_color then
-									table.insert(chunks, {type = "color", val = Color(unpack(last_color))})
+									list.insert(chunks, {type = "color", val = Color(unpack(last_color))})
 								end
 							else
-								table.insert(chunks, {type = "color", val = Color(unpack(args))})
+								list.insert(chunks, {type = "color", val = Color(unpack(args))})
 								last_color = args
 							end
 						else
-							table.insert(
+							list.insert(
 								chunks,
 								{
 									type = "custom",
@@ -1187,14 +1187,14 @@ do -- parse tags
 			end
 
 			if in_tag then
-				table.insert(current_tag, char)
+				list.insert(current_tag, char)
 			elseif char ~= ">" then
-				table.insert(current_string, char)
+				list.insert(current_string, char)
 			end
 		end
 
 		if found then
-			table.insert(chunks, {type = "string", val = table.concat(current_string, "")})
+			list.insert(chunks, {type = "string", val = list.concat(current_string, "")})
 		else
 			chunks = {{type = "string", val = str}}
 		end
@@ -1315,9 +1315,9 @@ do -- invalidate
 		chunk.h = chunk.h or 0
 
 		if pos then
-			table.insert(out, pos, chunk)
+			list.insert(out, pos, chunk)
 		else
-			table.insert(out, chunk)
+			list.insert(out, chunk)
 		end
 	end
 
@@ -1360,7 +1360,7 @@ do -- invalidate
 								for _, char in ipairs(utf8.totable(chunk.val)) do
 									if string.is_whitespace(char) then
 										if #str ~= 0 then
-											add_chunk(self, out, {type = "string", val = table.concat(str)})
+											add_chunk(self, out, {type = "string", val = list.concat(str)})
 											table.clear(str)
 										end
 
@@ -1370,12 +1370,12 @@ do -- invalidate
 											add_chunk(self, out, {type = "string", val = char, whitespace = true})
 										end
 									else
-										table.insert(str, char)
+										list.insert(str, char)
 									end
 								end
 
 								if #str ~= 0 then
-									add_chunk(self, out, {type = "string", val = table.concat(str)})
+									add_chunk(self, out, {type = "string", val = list.concat(str)})
 								end
 							else
 								if chunk.val == "\n" then
@@ -1421,7 +1421,7 @@ do -- invalidate
 		if left_width >= max_width and left_word:ulength() > 1 then
 			additional_split(self, left_word, max_width, out)
 		else
-			table.insert(
+			list.insert(
 				out,
 				1,
 				{
@@ -1438,7 +1438,7 @@ do -- invalidate
 		if right_width >= max_width and right_word:ulength() > 1 then
 			additional_split(self, right_word, max_width, out)
 		else
-			table.insert(
+			list.insert(
 				out,
 				1,
 				{
@@ -1460,12 +1460,12 @@ do -- invalidate
 			if chunk.type == "string" and not chunk.val:find("^%s+$") then
 				if chunk.val:ulength() > 1 then
 					if not chunk.nolinebreak and chunk.w >= self.MaxWidth then
-						table.remove(chunks, i)
+						list.remove(chunks, i)
 
 						for _, new_chunk in ipairs(additional_split(self, chunk.val, self.MaxWidth)) do
 							new_chunk.old_chunk = chunk
 							new_chunk.h = chunk.h
-							table.insert(chunks, i, new_chunk)
+							list.insert(chunks, i, new_chunk)
 						end
 					end
 				end
@@ -1689,12 +1689,12 @@ do -- invalidate
 								if not chunk.val.stop_tag then
 									start_found = start_found + 1
 								else
-									table.insert(stops, chunk)
+									list.insert(stops, chunk)
 
 									if start_found == 1 then break end
 								end
 							else
-								table.insert(line, chunk)
+								list.insert(line, chunk)
 							end
 						else
 							break
@@ -1741,7 +1741,7 @@ do -- invalidate
 					chunk:build_chars()
 
 					for _, char in ipairs(chunk.chars) do
-						table.insert(
+						list.insert(
 							self.chars,
 							{
 								chunk = chunk,
@@ -1756,7 +1756,7 @@ do -- invalidate
 							}
 						)
 						char_line_pos = char_line_pos + 1
-						table.insert(char_line_str, char.char)
+						list.insert(char_line_str, char.char)
 					end
 				elseif chunk.type == "newline" then
 					local data = {}
@@ -1766,7 +1766,7 @@ do -- invalidate
 					data.y = chunk.y
 					data.right = chunk.x + chunk.w
 					data.top = chunk.y + chunk.h
-					table.insert(
+					list.insert(
 						self.chars,
 						{
 							chunk = chunk,
@@ -1779,10 +1779,10 @@ do -- invalidate
 					)
 					char_line = char_line + 1
 					char_line_pos = 0
-					table.insert(self.lines, table.concat(char_line_str, ""))
+					list.insert(self.lines, list.concat(char_line_str, ""))
 					table.clear(char_line_str)
 				elseif chunk.w > 0 and chunk.h > 0 then
-					table.insert(
+					list.insert(
 						self.chars,
 						{
 							chunk = chunk,
@@ -1804,7 +1804,7 @@ do -- invalidate
 						}
 					)
 					char_line_pos = char_line_pos + 1
-					table.insert(char_line_str, " ")
+					list.insert(char_line_str, " ")
 				end
 
 				chunk.tag_center_x = chunk.tag_center_x or 0
@@ -1813,7 +1813,7 @@ do -- invalidate
 				chunk.tag_height = chunk.tag_height or 0
 			end
 
-			table.insert(chunk_line, chunk)
+			list.insert(chunk_line, chunk)
 		end
 
 		for _, chunk in ipairs(chunk_line) do
@@ -1838,8 +1838,8 @@ do -- invalidate
 		end
 
 		-- add the last line since there's probably not a newline at the very end
-		table.insert(self.lines, table.concat(char_line_str, ""))
-		self.text = table.concat(self.lines, "\n")
+		list.insert(self.lines, list.concat(char_line_str, ""))
+		self.text = list.concat(self.lines, "\n")
 		self.line_count = line
 		self.width = width
 		self.height = height
@@ -1899,14 +1899,14 @@ do -- invalidate
 
 					if chunk.font ~= last_font then
 						data = {}
-						table.insert(strings, {font = chunk.font, data = data})
+						list.insert(strings, {font = chunk.font, data = data})
 					end
 				end
 
 				if data then
-					table.insert(data, Vec2(chunk.x, chunk.y))
-					table.insert(data, chunk.color)
-					table.insert(data, chunk.val or "\n")
+					list.insert(data, Vec2(chunk.x, chunk.y))
+					list.insert(data, chunk.color)
+					list.insert(data, chunk.val or "\n")
 				end
 
 				if chunk.font then last_font = chunk.font end
@@ -2037,7 +2037,7 @@ do -- shortcuts
 						first_line = false
 
 						if not back and self.chunks[i + 1].type ~= "string" then
-							table.insert(self.chunks, i + 1, {type = "string", val = "\t"})
+							list.insert(self.chunks, i + 1, {type = "string", val = "\t"})
 						else
 							local pos = i
 
@@ -2133,7 +2133,7 @@ do -- caret
 
 			for i, char in ipairs(self.chars) do
 				if y >= char.data.y and y <= char.data.top then
-					table.insert(line, {i, char})
+					list.insert(line, {i, char})
 				end
 			end
 
@@ -2407,7 +2407,7 @@ do -- selection
 			end
 		end
 
-		return table.concat(out)
+		return list.concat(out)
 	end
 
 	function META:SetText(str, tags)
@@ -2435,12 +2435,12 @@ do -- selection
 					-- this will ensure a clean output
 					-- but maybe this should be cleaned in the invalidate function instead?
 					if chunk.font and last_font ~= chunk.font then
-						table.insert(out, ("<font=%s>"):format(chunk.font:GetName()))
+						list.insert(out, ("<font=%s>"):format(chunk.font:GetName()))
 						last_font = chunk.font
 					end
 
 					if chunk.color and last_color ~= chunk.color then
-						table.insert(
+						list.insert(
 							out,
 							(
 								"<color=%s,%s,%s,%s>"
@@ -2454,24 +2454,24 @@ do -- selection
 						last_color = chunk.color
 					end
 
-					table.insert(out, char.str)
+					list.insert(out, char.str)
 
 					if chunk.type == "custom" then
 						if chunk.val.type == "texture" then
-							table.insert(out, ("<texture=%s>"):format(chunk.val.args[1]))
+							list.insert(out, ("<texture=%s>"):format(chunk.val.args[1]))
 						end
 					end
 				end
 			end
 		end
 
-		return table.concat(out, "")
+		return list.concat(out, "")
 	end
 
 	function META:Undo()
 		if not self.undo then return end
 
-		local chunks = table.remove(self.undo)
+		local chunks = list.remove(self.undo)
 
 		if chunks then
 			self:SetTable(chunks)
@@ -2487,7 +2487,7 @@ do -- selection
 			chunks[i] = {type = v.type, val = table.copy(v.val)}
 		end
 
-		table.insert(self.undo, chunks)
+		list.insert(self.undo, chunks)
 	end
 
 	function META:DeleteSelection(skip_move)
@@ -2658,7 +2658,7 @@ do -- input
 				self:DeleteSelection()
 
 				for i, chunk in ipairs(self:StringTagsToTable(str)) do
-					table.insert(self.chunks, self.caret_pos.char.chunk.i + i - 1, chunk)
+					list.insert(self.chunks, self.caret_pos.char.chunk.i + i - 1, chunk)
 				end
 
 				self:Invalidate()
@@ -2886,7 +2886,7 @@ do -- drawing
 								--print("pre_draw", chunk.val.type, chunk.i)
 								-- only if there's a post_draw
 								if self.tags[chunk.val.type].post_draw then
-									table.insert(self.started_tags[chunk.val.type], chunk)
+									list.insert(self.started_tags[chunk.val.type], chunk)
 								end
 							end
 
@@ -2900,7 +2900,7 @@ do -- drawing
 
 						-- draw_over
 						if chunk.tag_stop_draw then
-							if table.remove(self.started_tags[chunk.val.type]) then
+							if list.remove(self.started_tags[chunk.val.type]) then
 								--print("post_draw", chunk.val.type, chunk.i)
 								self:CallTagFunction(chunk.start_chunk, "post_draw", chunk.start_chunk.x, chunk.start_chunk.y)
 							end
@@ -2912,7 +2912,7 @@ do -- drawing
 						--print("post_draw_chunks", chunk.type, chunk.i, chunk.chunks_inbetween, chunk.start_chunk.val.type)
 						if
 							self.started_tags[chunk.start_chunk.val.type] and
-							table.remove(self.started_tags[chunk.start_chunk.val.type])
+							list.remove(self.started_tags[chunk.start_chunk.val.type])
 						then
 							--print("post_draw", chunk.start_chunk.val.type, chunk.i)
 							self:CallTagFunction(chunk.start_chunk, "post_draw", chunk.start_chunk.x, chunk.start_chunk.y)

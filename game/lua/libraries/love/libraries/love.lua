@@ -44,17 +44,17 @@ function love.errhand(msg)
 	love.graphics.setColor(255, 255, 255, 255)
 	local trace = debug.traceback()
 	local err = {}
-	table.insert(err, "Error\n")
-	table.insert(err, msg .. "\n\n")
+	list.insert(err, "Error\n")
+	list.insert(err, msg .. "\n\n")
 
 	for l in string.gmatch(trace, "(.-)\n") do
 		if not string.match(l, "boot.lua") then
 			l = string.gsub(l, "stack traceback:", "Traceback\n")
-			table.insert(err, l)
+			list.insert(err, l)
 		end
 	end
 
-	local p = table.concat(err, "\n")
+	local p = list.concat(err, "\n")
 	p = string.gsub(p, "\t", "")
 	p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
 	love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)

@@ -24,10 +24,10 @@ parent:BuildChildrenList()
 
 function goluwa.Update()
 	local t = (system.GetElapsedTime() - start) / 50
-	local list = parent:GetChildrenList()
-	local len = #list
+	local lst = parent:GetChildrenList()
+	local len = #lst
 
-	for i, child in ipairs(list) do
+	for i, child in ipairs(lst) do
 		child:SetAngles(Ang3(t, t, -t))
 		t = t * 1.001
 	end

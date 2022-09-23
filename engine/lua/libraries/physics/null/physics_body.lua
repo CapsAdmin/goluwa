@@ -321,7 +321,7 @@ end
 function META:OnRemove()
 	for k, v in ipairs(physics.bodies) do
 		if v == self then
-			table.remove(physics.bodies, k)
+			list.remove(physics.bodies, k)
 
 			break
 		end
@@ -342,6 +342,6 @@ META:Register()
 
 function physics.CreateBody()
 	local self = META:CreateObject()
-	table.insert(physics.bodies, self)
+	list.insert(physics.bodies, self)
 	return self
 end

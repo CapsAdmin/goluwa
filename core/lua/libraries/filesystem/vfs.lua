@@ -30,7 +30,7 @@ do -- mounting/links
 		end
 
 		--llog("mounting ", path_info_where.full_path, " -> ", path_info_to.full_path)
-		table.insert(
+		list.insert(
 			vfs.mounted_paths,
 			{
 				where = path_info_where,
@@ -48,7 +48,7 @@ do -- mounting/links
 
 		for i, v in ipairs(vfs.mounted_paths) do
 			if v.full_where:lower() == where:lower() and v.full_to:lower() == to:lower() then
-				table.remove(vfs.mounted_paths, i)
+				list.remove(vfs.mounted_paths, i)
 				return true
 			end
 		end
@@ -177,16 +177,16 @@ do -- file systems
 
 		for k, v in ipairs(vfs.filesystems) do
 			if v.Name == META.Name then
-				table.remove(vfs.filesystems, k)
+				list.remove(vfs.filesystems, k)
 				context.mounted_paths = v.mounted_paths
 
 				break
 			end
 		end
 
-		table.insert(vfs.filesystems, context)
+		list.insert(vfs.filesystems, context)
 
-		table.sort(vfs.filesystems, function(a, b)
+		list.sort(vfs.filesystems, function(a, b)
 			return a.Position < b.Position
 		end)
 
@@ -230,18 +230,18 @@ do -- translate path to useful data
 
 				if folder == "" then break end
 
-				table.insert(folders, 1, folder)
+				list.insert(folders, 1, folder)
 			end
 
-			--table.remove(folders) -- remove the filename
+			--list.remove(folders) -- remove the filename
 			return folders
 		else
 			local folders = self.full_path:split("/")
 
 			-- if the folder is something like "/foo/bar/" remove the first /
-			if self.full_path:sub(1, 1) == "/" then table.remove(folders, 1) end
+			if self.full_path:sub(1, 1) == "/" then list.remove(folders, 1) end
 
-			table.remove(folders) -- remove the filename
+			list.remove(folders) -- remove the filename
 			return folders
 		end
 	end
@@ -287,7 +287,7 @@ function vfs.Open(path, mode, sub_mode)
 	local errors = {}
 	local paths = vfs.TranslatePath(path)
 
-	if #paths == 0 then table.insert(errors, path .. " does not exist") end
+	if #paths == 0 then list.insert(errors, path .. " does not exist") end
 
 	for i, data in ipairs(paths) do
 		local file = prototype.CreateDerivedObject("file_system", data.context.Name)
@@ -303,11 +303,11 @@ function vfs.Open(path, mode, sub_mode)
 			file:Remove()
 			local err = "\t" .. data.context.Name .. ": " .. err
 
-			if errors[#errors] ~= err then table.insert(errors, err) end
+			if errors[#errors] ~= err then list.insert(errors, err) end
 		end
 	end
 
-	return false, "unable to open file: \n" .. table.concat(errors, "\n")
+	return false, "unable to open file: \n" .. list.concat(errors, "\n")
 end
 
 runfile("lua/libraries/filesystem/path_utilities.lua", vfs)

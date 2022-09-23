@@ -6,13 +6,13 @@ function comma.Encode(tbl)
 
 	for i, v in ipairs(tbl) do
 		if type(v) ~= "string" then
-			table.insert(str, serializer.GetLibrary("luadata").Encode(v))
+			list.insert(str, serializer.GetLibrary("luadata").Encode(v))
 		else
-			table.insert(str, v)
+			list.insert(str, v)
 		end
 	end
 
-	return table.concat(str, ",")
+	return list.concat(str, ",")
 end
 
 function comma.Decode(str)

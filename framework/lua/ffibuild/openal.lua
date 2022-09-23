@@ -60,7 +60,7 @@ for lib_name, enum_name in pairs({al = "AL_", alc = "ALC_"}) do
 				local args = {}
 
 				for _, name in ipairs({"al", "alc", "alext", "efx"}) do
-					table.insert(args, {"./include/AL/" .. name .. ".h", enum_name})
+					list.insert(args, {"./include/AL/" .. name .. ".h", enum_name})
 				end
 
 				local enums = meta_data:BuildEnums("^" .. enum_name .. "(.+)", args)

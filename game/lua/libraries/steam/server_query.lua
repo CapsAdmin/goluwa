@@ -199,7 +199,7 @@ local function query_server(ip, port, query, callback)
 			self.buffer_chunks[info.Number + 1] = buffer:ReadRest()
 
 			if table.count(self.buffer_chunks) - 1 == info.Total then
-				callback(packet.CreateBuffer(table.concat(self.buffer_chunks)):ReadStructure(query.response))
+				callback(packet.CreateBuffer(list.concat(self.buffer_chunks)):ReadStructure(query.response))
 			end
 		elseif header == -1 then
 			if query.challenge and not self.challenge then

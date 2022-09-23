@@ -17,7 +17,7 @@ local function query(str)
 			row[v.key] = v.value
 		end
 
-		table.insert(out, row)
+		list.insert(out, row)
 	end)
 
 	if out[1] then return out end

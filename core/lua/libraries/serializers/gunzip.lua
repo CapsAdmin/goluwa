@@ -16,7 +16,7 @@ serializer.AddLibrary(
 				disable_crc = true,
 			}
 		)
-		return table.concat(out)
+		return list.concat(out)
 	end,
 	desire("deflatelua")
 )

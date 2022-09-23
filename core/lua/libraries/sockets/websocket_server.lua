@@ -46,11 +46,11 @@ function META:OnClientConnected(client)
 				if decoded then
 					if not first_opcode then first_opcode = opcode end
 
-					table.insert(frames, decoded)
+					list.insert(frames, decoded)
 					encoded = rest
 
 					if fin == true then
-						local message = table.concat(frames)
+						local message = list.concat(frames)
 
 						if first_opcode == frame.CLOSE or opcode == frame.CLOSE then
 							local code, reason = frame.decode_close(message)

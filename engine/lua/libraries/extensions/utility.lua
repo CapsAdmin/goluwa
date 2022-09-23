@@ -79,7 +79,7 @@ do
 					if key then
 						if lower_or_modify_keys then key = lower_or_modify_keys(key) end
 
-						local val = table.concat(capture, "")
+						local val = list.concat(capture, "")
 
 						if preprocess and val:find("|") then
 							for k, v in pairs(preprocess) do
@@ -113,14 +113,14 @@ do
 						end
 
 						if type(current[key]) == "table" then
-							table.insert(current[key], val)
+							list.insert(current[key], val)
 						elseif current[key] and current[key] ~= val then
 							current[key] = {current[key], val}
 						else
 							if key:find("+", nil, true) then
 								for _, key in ipairs(key:split("+")) do
 									if type(current[key]) == "table" then
-										table.insert(current[key], val)
+										list.insert(current[key], val)
 									elseif current[key] and current[key] ~= val then
 										current[key] = {current[key], val}
 									else
@@ -134,23 +134,23 @@ do
 
 						key = nil
 					else
-						key = table.concat(capture, "")
+						key = list.concat(capture, "")
 					end
 
 					in_string = false
 					no_quotes = false
-					table.clear(capture)
+					list.clear(capture)
 				else
 					in_string = true
 				end
 			else
 				if in_string then
-					table.insert(capture, char)
+					list.insert(capture, char)
 				elseif char == [[{]] then
 					if key then
 						if lower_or_modify_keys then key = lower_or_modify_keys(key) end
 
-						table.insert(stack, current)
+						list.insert(stack, current)
 						current[key] = {}
 						current = current[key]
 						key = nil
@@ -168,11 +168,11 @@ do
 						return nil, "stack imbalance at char " .. i
 					end
 				elseif char == [[}]] then
-					current = table.remove(stack) or out
+					current = list.remove(stack) or out
 				elseif not char:find("%s") then
 					in_string = true
 					no_quotes = true
-					table.insert(capture, char)
+					list.insert(capture, char)
 				end
 			end
 		end

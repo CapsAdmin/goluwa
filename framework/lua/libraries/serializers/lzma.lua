@@ -46,12 +46,12 @@ serializer.AddLibrary(
 			for i = 1, math.huge do
 				local data = ffi.new("uint8_t[?]", size)
 				local bytes_read = archive.ReadData(a, data, size)
-				table.insert(chunks, ffi.string(data, bytes_read))
+				list.insert(chunks, ffi.string(data, bytes_read))
 
 				if bytes_read ~= size then break end
 			end
 
-			return table.concat(chunks, "")
+			return list.concat(chunks, "")
 		else
 			local size = archive.EntrySize(entry)
 			local data = ffi.new("uint8_t[?]", size)

@@ -38,7 +38,7 @@ function META:Send(message, opcode)
 
 	if not self.ready then
 		self.send_buffer = self.send_buffer or {}
-		table.insert(self.send_buffer, data)
+		list.insert(self.send_buffer, data)
 	else
 		self.socket:Send(data)
 	end
@@ -148,11 +148,11 @@ function sockets.CreateWebsocketClient()
 				if decoded then
 					if not first_opcode then first_opcode = opcode end
 
-					table.insert(frames, decoded)
+					list.insert(frames, decoded)
 					encoded = rest
 
 					if fin == true then
-						local message = table.concat(frames)
+						local message = list.concat(frames)
 
 						if first_opcode == frame.CLOSE or opcode == frame.CLOSE then
 							local code, reason = frame.decode_close(message)
@@ -188,7 +188,7 @@ if RELOAD then
 		str[i] = tostring(i)
 	end
 
-	--str = table.concat(str, " ") .. "THE END"
+	--str = list.concat(str, " ") .. "THE END"
 	str = "hello"
 	print("sending " .. utility.FormatFileSize(#str), #str, str:sub(-100))
 	socket:Send(str)

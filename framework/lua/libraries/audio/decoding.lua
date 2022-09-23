@@ -3,13 +3,13 @@ audio.decoders = audio.decoders or {}
 
 function audio.AddDecoder(id, callback)
 	audio.RemoveDecoder(id)
-	table.insert(audio.decoders, {id = id, callback = callback})
+	list.insert(audio.decoders, {id = id, callback = callback})
 end
 
 function audio.RemoveDecoder(id)
 	for _, v in pairs(audio.decoders) do
 		if v.id == id then
-			table.remove(audio.decoders)
+			list.remove(audio.decoders)
 			return true
 		end
 	end
@@ -29,7 +29,7 @@ function audio.Decode(file, path_hint, id)
 				elseif buffer == nil then
 					llog("%s failed to decode %s: %s", decoder.id, path_hint or "", length)
 				elseif buffer == false then
-					table.insert(errors, decoder.id .. ": " .. length)
+					list.insert(errors, decoder.id .. ": " .. length)
 				end
 			else
 				llog("decoder %q errored: %s", decoder.id, buffer)
@@ -37,7 +37,7 @@ function audio.Decode(file, path_hint, id)
 		end
 	end
 
-	llog("failed to decode ", path_hint, ":\n\t", table.concat(errors, "\n\t"))
+	llog("failed to decode ", path_hint, ":\n\t", list.concat(errors, "\n\t"))
 end
 
 runfile("decoders/*", audio)

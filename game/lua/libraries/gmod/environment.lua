@@ -56,7 +56,7 @@ for func_name, type in pairs(data.globals) do
 	if type == "C" then
 		env[func_name] = env[func_name] or
 			function(...)
-				logf(("glua NYI: %s(%s)\n"):format(func_name, table.concat(tostring_args(...), ",")))
+				logf(("glua NYI: %s(%s)\n"):format(func_name, list.concat(tostring_args(...), ",")))
 			end
 	end
 end
@@ -96,7 +96,7 @@ for meta_name, functions in pairs(data.meta) do
 		if type == "C" then
 			env._R[meta_name][func_name] = env._R[meta_name][func_name] or
 				function(...)
-					wlog("NYI: %s:%s(%s)", meta_name, func_name, table.concat(tostring_args(...), ","), 2)
+					wlog("NYI: %s:%s(%s)", meta_name, func_name, list.concat(tostring_args(...), ","), 2)
 				end
 		end
 	end
@@ -115,7 +115,7 @@ for lib_name, functions in pairs(data.functions) do
 					wlog(
 						(
 							"NYI: %s.%s(%s)"
-						):format(lib_name, func_name, table.concat(tostring_args(...), ",")),
+						):format(lib_name, func_name, list.concat(tostring_args(...), ",")),
 						2
 					)
 				end

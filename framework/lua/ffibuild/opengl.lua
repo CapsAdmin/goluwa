@@ -351,7 +351,7 @@ for name, object_functions in pairs(objects) do
 								tbl[i] = serializer.GetLibrary("luadata").ToString(v)
 							end
 
-							arg_line2 = table.concat(tbl, ", "):sub(0, -3)
+							arg_line2 = list.concat(tbl, ", "):sub(0, -3)
 						end
 
 						arg_line1 = info.arg_line1 or arg_line1
@@ -421,6 +421,6 @@ insert(
 )
 insert("return gl")
 --collectgarbage()
-local code = table.concat(lua, "\n")
+local code = list.concat(lua, "\n")
 vfs.Write("lua/libraries/graphics/ffi/opengl/init.lua", code) --package.loaded["graphics.ffi.opengl"] = nil
 --require("graphics.ffi.opengl")

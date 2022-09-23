@@ -128,10 +128,10 @@ local function utf8replace(str, mapping)
 	local out = {}
 
 	for i, char in ipairs(utf8.totable(str)) do
-		table.insert(out, mapping[char] or char)
+		list.insert(out, mapping[char] or char)
 	end
 
-	return table.concat(out)
+	return list.concat(out)
 end
 
 do
@@ -170,7 +170,7 @@ do
 
 		for _, chunk in ipairs(translate_data:split(";")) do
 			local args = chunk:split(",")
-			local key = table.remove(args, 1)
+			local key = list.remove(args, 1)
 
 			for i, v in ipairs(args) do
 				if v == "COMMA" then v = "," end

@@ -6,7 +6,7 @@ local blacklist = {
 local out = {}
 
 local function add(f, ...)
-	table.insert(out, f:format(...))
+	list.insert(out, f:format(...))
 end
 
 local function add_func(lib_name, name, func, nolibname, meta)
@@ -16,9 +16,9 @@ local function add_func(lib_name, name, func, nolibname, meta)
 	if type(func) == "function" then
 		args = debug.get_params(func)
 
-		if meta then table.remove(args, 1) end
+		if meta then list.remove(args, 1) end
 
-		args = table.concat(args, ", ")
+		args = list.concat(args, ", ")
 		local info = debug.getinfo(func)
 
 		if args == "" and info.isvararg then args = "..." end
@@ -118,7 +118,7 @@ local function add_meta(meta)
 end
 
 local function write(name)
-	vfs.Write("data/wiki/" .. name .. ".md", table.concat(out, "\n"))
+	vfs.Write("data/wiki/" .. name .. ".md", list.concat(out, "\n"))
 	out = {}
 end
 

@@ -81,13 +81,13 @@ function render._Initialize()
 
 							if not info or info.currentline == -1 then break end
 
-							table.insert(lines, info.currentline)
+							list.insert(lines, info.currentline)
 						end
 
 						io.write(
 							string.format(
 								"Line %s %s: %s: %s\n",
-								table.concat(lines, ", "),
+								list.concat(lines, ", "),
 								info.name or "unknown",
 								ffi.string(pLayerPrefix),
 								ffi.string(pMsg)
@@ -447,7 +447,7 @@ function render._Initialize()
 		local indices = {}
 
 		for i = 0, #render.vertices.tbl - 1 do
-			table.insert(indices, i)
+			list.insert(indices, i)
 		end
 
 		render.indices = render.CreateBuffer("index_buffer", create_indices(indices))

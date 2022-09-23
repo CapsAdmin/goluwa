@@ -183,10 +183,10 @@ function META:HandleMessage(line)
 		if target == self:GetNick() then
 			for i, v in ipairs(self.queries) do
 				if id == v.response then
-					table.insert(v.lines, str)
+					list.insert(v.lines, str)
 				elseif id == v.terminator then
-					v.callback(table.concat(v.lines, ""))
-					table.remove(self.queries, i)
+					v.callback(list.concat(v.lines, ""))
+					list.remove(self.queries, i)
 				end
 			end
 
@@ -260,7 +260,7 @@ function META:OnNickChanged(nick, new) end
 
 function META:Query(cmd, response, terminator, callback)
 	self:Send(cmd)
-	table.insert(
+	list.insert(
 		self.queries,
 		{response = response, terminator = terminator, callback = callback, lines = {}}
 	)

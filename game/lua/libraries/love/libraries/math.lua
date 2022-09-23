@@ -118,7 +118,7 @@ do
 		local polygons = {}
 
 		for i = 1, #points, 2 do
-			table.insert(polygons, Vec2(points[i + 0], points[i + 1]))
+			list.insert(polygons, Vec2(points[i + 0], points[i + 1]))
 		end
 
 		self.obj = math2d.CreateBezierCurve(polygons)

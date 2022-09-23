@@ -111,7 +111,7 @@ do -- peer
 	function CLIENT:OnRemove()
 		for i, socket in ipairs(enet.sockets) do
 			if socket == self then
-				table.remove(enet.sockets, i)
+				list.remove(enet.sockets, i)
 
 				break
 			end
@@ -126,7 +126,7 @@ do -- peer
 		outgoing_bandwidth = outgoing_bandwidth or 14400
 		self.host = create_host(nil, nil, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
 		--self.peer = peer
-		table.insert(enet.sockets, self)
+		list.insert(enet.sockets, self)
 
 		if ip and port then self:Connect(ip, port) end
 
@@ -163,7 +163,7 @@ do -- server
 	function SERVER:OnRemove()
 		for i, socket in ipairs(enet.sockets) do
 			if socket == self then
-				table.remove(enet.sockets, i)
+				list.remove(enet.sockets, i)
 
 				break
 			end
@@ -174,7 +174,7 @@ do -- server
 		local self = prototype.CreateObject(SERVER)
 		self.peers = {}
 		self.host = create_host(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
-		table.insert(enet.sockets, self)
+		list.insert(enet.sockets, self)
 		return self
 	end
 
@@ -206,7 +206,7 @@ timer.Repeat(
 						local peer = enet.CreateDummyPeer()
 						peer.peer = evt[0].peer
 						local uid = ffi.new("unsigned long[1]", unique_id)
-						table.insert(enet.uid_ref, uid)
+						list.insert(enet.uid_ref, uid)
 						peer.peer.data = uid
 						unique_id = unique_id + 1
 						socket.peers[getuid(peer.peer)] = peer

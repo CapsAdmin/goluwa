@@ -252,7 +252,7 @@ do -- choice
 
 		if type(tbl[1]) == "string" then
 			for _, v in ipairs(tbl) do
-				table.insert(menu_options, {
+				list.insert(menu_options, {
 					v,
 					function()
 						self:SetValue(v)
@@ -261,7 +261,7 @@ do -- choice
 			end
 		elseif not list.is_list(tbl) then
 			for k, v in pairs(tbl) do
-				table.insert(
+				list.insert(
 					menu_options,
 					{
 						v.friendly or
@@ -274,7 +274,7 @@ do -- choice
 				)
 			end
 
-			table.sort(menu_options, function(a, b)
+			list.sort(menu_options, function(a, b)
 				return a[1] < b[1]
 			end)
 		end
@@ -715,7 +715,7 @@ function META:AddProperty(name, set_value, get_value, default, extra_info, obj)
 			end
 		end
 
-		table.insert(self.added_properties, panel)
+		list.insert(self.added_properties, panel)
 	else
 		local panel = right:CreatePanel("base_property", "property")
 
@@ -740,7 +740,7 @@ function META:AddProperty(name, set_value, get_value, default, extra_info, obj)
 		panel:SetupLayout("fill")
 		panel.left = left
 		property = panel
-		table.insert(self.added_properties, panel)
+		list.insert(self.added_properties, panel)
 	end
 
 	if fields then
@@ -785,7 +785,7 @@ function META:AddProperty(name, set_value, get_value, default, extra_info, obj)
 			right:SetStackable(false)
 			left:SetVisible(false)
 			right:SetVisible(false)
-			table.insert(panels, {left = left, right = right})
+			list.insert(panels, {left = left, right = right})
 		end
 	end
 

@@ -62,7 +62,7 @@ function gine.WrapObject(obj, meta)
 
 					for i, v in ipairs(gine.objectsi[meta]) do
 						if v == obj then
-							table.remove(gine.objectsi[meta], i)
+							list.remove(gine.objectsi[meta], i)
 
 							break
 						end
@@ -77,7 +77,7 @@ function gine.WrapObject(obj, meta)
 			end)
 		end
 
-		table.insert(gine.objectsi[meta], {external = gine.objects[meta][obj], internal = obj})
+		list.insert(gine.objectsi[meta], {external = gine.objects[meta][obj], internal = obj})
 	end
 
 	return gine.objects[meta][obj]
@@ -224,7 +224,7 @@ function gine.Initialize(gamemode, skip_addons)
 			local function mount(full_path)
 				if full_path:match(".+/(.+)"):starts_with("__") then return end
 
-				table.insert(gine.addons, full_path)
+				list.insert(gine.addons, full_path)
 				vfs.Mount(full_path)
 				local dir = R(full_path .. "/lua/includes/modules/")
 
@@ -239,7 +239,7 @@ function gine.Initialize(gamemode, skip_addons)
 					)
 				end
 
-				table.insert(gine.glua_paths, full_path)
+				list.insert(gine.glua_paths, full_path)
 
 				if vfs.IsDirectory(full_path .. "addons") then
 					for dir in vfs.Iterate(full_path .. "addons/", true) do

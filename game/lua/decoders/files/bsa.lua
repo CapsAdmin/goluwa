@@ -53,7 +53,7 @@ function CONTEXT:OnParseArchive(file, archive_path)
 					unsigned int entry_length;
 					unsigned int entry_offset;
 				]])
-			local file_name = table.remove(strings, 1)
+			local file_name = list.remove(strings, 1)
 			local file_path = directory .. file_name
 			file.archive_path = "os:" .. archive_path
 			file.file_name = file_name

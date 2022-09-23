@@ -31,7 +31,7 @@ function META:CompileShader(type, source)
 		error(ffi.string(log, size[0]), 2)
 	end
 
-	table.insert(self.shaders, shader)
+	list.insert(self.shaders, shader)
 end
 
 function META:Link()
@@ -321,9 +321,9 @@ do
 		local names = {}
 
 		for enum in pairs(properties) do
-			table.insert(property_enums, gl.e[enum])
-			table.insert(property_enums_tbl, enum)
-			table.insert(names, enum:sub(4):lower())
+			list.insert(property_enums, gl.e[enum])
+			list.insert(property_enums_tbl, enum)
+			list.insert(names, enum:sub(4):lower())
 		end
 
 		temp[what] = {
@@ -404,7 +404,7 @@ do
 							end
 						end
 					end
-					]] table.insert(properties, values)
+					]] list.insert(properties, values)
 				end
 
 				if next(properties) then out[what:sub(4):lower()] = properties end
@@ -414,7 +414,7 @@ do
 				for _, info in ipairs(out.buffer_variable) do
 					local i = info.block_index + 1
 					out.shader_storage_block[i].variables = out.shader_storage_block[i].variables or {}
-					table.insert(out.shader_storage_block[i].variables, info)
+					list.insert(out.shader_storage_block[i].variables, info)
 				end
 
 				out.buffer_variable = nil
@@ -430,7 +430,7 @@ do
 					if info.block_index >= 0 then
 						local i = info.block_index + 1
 						out.uniform_block[i].variables = out.uniform_block[i].variables or {}
-						table.insert(out.uniform_block[i].variables, info)
+						list.insert(out.uniform_block[i].variables, info)
 						out.uniform[i2] = nil
 					end
 				end
@@ -498,7 +498,7 @@ do
 			tbl.matrix_stride = self:GetActiveUniforms({idx}, "GL_UNIFORM_MATRIX_STRIDE")[1]
 			tbl.is_row_major = self:GetActiveUniforms({idx}, "GL_UNIFORM_IS_ROW_MAJOR")[1]
 			tbl.atomic_counter_buffer_index = self:GetActiveUniforms({idx}, "GL_UNIFORM_ATOMIC_COUNTER_BUFFER_INDEX")[1]
-			table.insert(out.variables, tbl)
+			list.insert(out.variables, tbl)
 		end
 
 		return out

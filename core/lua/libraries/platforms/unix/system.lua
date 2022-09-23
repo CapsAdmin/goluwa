@@ -20,7 +20,7 @@ do
 			if os.execute(cmd .. " " .. url) then return end
 		end
 
-		wlog("don't know how to open an url (tried: %s)", table.concat(attempts, ", "), 2)
+		wlog("don't know how to open an url (tried: %s)", list.concat(attempts, ", "), 2)
 	end
 end
 

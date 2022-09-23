@@ -87,7 +87,7 @@ do
 		end
 
 		gine.env.ents.created = gine.env.ents.created or {}
-		table.insert(gine.env.ents.created, self)
+		list.insert(gine.env.ents.created, self)
 		return self
 	end
 
@@ -113,7 +113,7 @@ do
 		local i = 1
 
 		for obj, ent in pairs(gine.objects.Entity) do
-			table.insert(out, ent)
+			list.insert(out, ent)
 		end
 
 		return out

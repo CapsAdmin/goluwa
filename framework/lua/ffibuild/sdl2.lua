@@ -87,12 +87,12 @@ ss
 
 			local out = {}
 			for i = 0, count[0] - 1 do
-				table.insert(out, ffi.string(array[i]))
+				list.insert(out, ffi.string(array[i]))
 			end
 
 			if extra then
 				for i,v in ipairs(extra) do
-					table.insert(out, v)
+					list.insert(out, v)
 				end
 			end
 

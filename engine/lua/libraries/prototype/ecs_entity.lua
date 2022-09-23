@@ -40,7 +40,7 @@ function META:AddComponent(name, ...)
 	end
 
 	self.components_hash[name] = component
-	table.insert(self.Components, component)
+	list.insert(self.Components, component)
 	self[name] = component
 
 	if not DEFER_COMPONENT_CHECKS_AND_EVENTS then
@@ -74,7 +74,7 @@ function META:RemoveComponent(name)
 
 		for i, v in ipairs(self.Components) do
 			if v.Name == name then
-				table.remove(self.Components, i)
+				list.remove(self.Components, i)
 
 				break
 			end
@@ -151,7 +151,7 @@ do -- serializing
 
 		for _, v in ipairs(self:GetChildren()) do
 			if force or not v:GetHideFromEditor() then
-				table.insert(data.children, v:GetStorableTable(force))
+				list.insert(data.children, v:GetStorableTable(force))
 			end
 		end
 
@@ -196,7 +196,7 @@ function prototype.CreateEntity(config, info)
 						if prototype.GetRegistered("component", name) then
 							for k, v in pairs(prototype.GetRegistered("component", name)) do
 								if type(v) == "function" then
-									table.insert(
+									list.insert(
 										data.functions,
 										{
 											func = function(ent, a, b, c, d)

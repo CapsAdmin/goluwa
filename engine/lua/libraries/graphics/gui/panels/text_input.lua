@@ -119,7 +119,7 @@ function META:OnPreKeyInput(key, press)
 
 			if #str > 0 then
 				if self.history[1] ~= str then
-					table.insert(self.history, 1, str)
+					list.insert(self.history, 1, str)
 					serializer.WriteFile("luadata", self.HistoryPath, self.history)
 				end
 			end

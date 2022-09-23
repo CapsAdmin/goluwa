@@ -42,12 +42,12 @@ while true do
 		format_info.channels = channels[0]
 	end
 
-	table.insert(tbl, ffi.string(out, size[0]))
+	list.insert(tbl, ffi.string(out, size[0]))
 	output_byte_count = output_byte_count + size[0]
 
 	while ret ~= mpg123.e.ERR and ret ~= mpg123.e.NEED_MORE do
 		ret = mpg123.Decode(feed, nil, 0, out, OUTPUT_BUFFER_SIZE, size)
-		table.insert(tbl, ffi.string(out, size[0]))
+		list.insert(tbl, ffi.string(out, size[0]))
 		output_byte_count = output_byte_count + size[0]
 	end
 
@@ -65,7 +65,7 @@ logf(
 )
 mpg123.Delete(feed)
 mpg123.Exit()
-local str = table.concat(tbl)
+local str = list.concat(tbl)
 local buf = ffi.new("uint8_t[?]", #str)
 ffi.copy(buf, str)
 local buffer = audio.CreateBuffer()

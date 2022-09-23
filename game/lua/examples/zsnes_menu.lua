@@ -221,7 +221,7 @@ function menu.CreateTopBar()
 	end
 
 	local command_history = serializer.ReadFile("luadata", "data/cmd_history.txt") or {}
-	local list = {}
+	local lst = {}
 
 	for i = 1, 10 do
 		local name = i .. "."
@@ -232,8 +232,8 @@ function menu.CreateTopBar()
 
 		if cmd then name = name .. cmd:trim() end
 
-		table.insert(
-			list,
+		list.insert(
+			lst,
 			{
 				name,
 				function()
@@ -243,10 +243,10 @@ function menu.CreateTopBar()
 		)
 	end
 
-	table.insert(list, {})
-	table.insert(list, {L("freeze data: off")})
-	table.insert(list, {L("clear all data")})
-	create_button("↓", list, 1)
+	list.insert(lst, {})
+	list.insert(lst, {L("freeze data: off")})
+	list.insert(lst, {L("clear all data")})
+	create_button("↓", lst, 1)
 	create_button(
 		L("game"),
 		{

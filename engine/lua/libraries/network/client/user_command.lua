@@ -55,7 +55,7 @@ event.AddListener("NetworkStarted", function()
 
 			if i == 32 then wlog("command too big: ", client, 2) end
 		end
-	--table.sort(client.current_command.queue, function(a, b) return a.time > b.time end)
+	--list.sort(client.current_command.queue, function(a, b) return a.time > b.time end)
 	end
 
 	local function process_usercommand(client)
@@ -70,7 +70,7 @@ event.AddListener("NetworkStarted", function()
 			local pos, vel = event.Call("Move", client, cmd)
 			cmd.net_position = pos
 			cmd.net_velocity = vel
-			table.remove(cmd.queue, 1)
+			list.remove(cmd.queue, 1)
 		end
 	end
 

@@ -8,10 +8,10 @@ local function sort_events()
 		local new = {}
 
 		for _, v in pairs(tbl) do
-			table.insert(new, v)
+			list.insert(new, v)
 		end
 
-		table.sort(new, function(a, b)
+		list.sort(new, function(a, b)
 			return a.priority > b.priority
 		end)
 
@@ -42,7 +42,7 @@ function event.AddListener(event_type, id, callback, config)
 	config.print_str = config.event_type .. "->" .. tostring(config.id)
 	event.RemoveListener(config.event_type, config.id)
 	event.active[config.event_type] = event.active[config.event_type] or {}
-	table.insert(event.active[config.event_type], config)
+	list.insert(event.active[config.event_type], config)
 	sort_events()
 
 	if event_type ~= "EventAdded" then event.Call("EventAdded", config) end

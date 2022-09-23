@@ -6,7 +6,7 @@ if not _G.mdl_paths then
 	_G.mdl_paths = paths
 
 	vfs.Search("models", {"mdl"}, function(path)
-		table.insert(paths, path)
+		list.insert(paths, path)
 	end)
 end
 

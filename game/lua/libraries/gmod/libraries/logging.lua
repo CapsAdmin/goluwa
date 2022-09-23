@@ -25,6 +25,6 @@ end
 
 function gine.env.ErrorNoHalt(...)
 	local args = {...}
-	table.insert(args, 2)
+	list.insert(args, 2)
 	wlog(unpack(args))
 end

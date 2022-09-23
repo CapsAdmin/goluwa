@@ -11,7 +11,7 @@ local function calc_job(id, job, play_next_now)
 			if job.current_sound then job.current_sound:Stop() end
 
 			-- remove and get the first sound from the queue
-			local data = table.remove(job.sound_queue, 1)
+			local data = list.remove(job.sound_queue, 1)
 
 			if data.snd and data.pitch then
 				data.snd:SetGain(data.volume)
@@ -53,12 +53,12 @@ local function add_sound_to_job(id, job, path, pitch, volume, soundlevel, cutoff
 	local sound_queue = job.sound_queue or {}
 
 	if pause_symbols[path] then
-		table.insert(sound_queue, {
+		list.insert(sound_queue, {
 			duration = 0.5,
 		})
 	else
 		local snd = audio.CreateSource(path)
-		table.insert(
+		list.insert(
 			sound_queue,
 			{
 				snd = snd,
@@ -143,7 +143,7 @@ local function add_voices(path, name)
 			and
 			not v:lower():find("death")
 		then
-			table.insert(tbl, path .. v)
+			list.insert(tbl, path .. v)
 		end
 	end
 
@@ -250,7 +250,7 @@ voices.servo = {}
 
 for i = 1, 12 do
 	if i ~= 4 and i ~= 9 and i ~= 11 then
-		table.insert(voices.servo, "npc/dog/dog_servo" .. i .. ".wav")
+		list.insert(voices.servo, "npc/dog/dog_servo" .. i .. ".wav")
 	end
 end
 

@@ -179,7 +179,7 @@ function META:Send(data)
 	if not ok then
 		if err == "timeout" then
 			self.buffered_send = self.buffered_send or {}
-			table.insert(self.buffered_send, data)
+			list.insert(self.buffered_send, data)
 			return true
 		end
 
@@ -224,7 +224,7 @@ function META:Update()
 				local ok, err = self:Send(data)
 
 				if ok then
-					table.remove(self.buffered_send)
+					list.remove(self.buffered_send)
 				elseif err ~= "timeout" then
 					self:Error("error while processing buffered queue: " .. err)
 				end

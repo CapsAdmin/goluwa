@@ -85,8 +85,8 @@ do
 		end
 
 		terminal.EnableCaret(false)
-		local str = table.concat(buf)
-		table.clear(buf)
+		local str = list.concat(buf)
+		list.clear(buf)
 		repl.SetCaretPositionReal(0, repl.caret_y)
 		repl.WriteNow((" "):rep(repl.buffer:ulen() + 1))
 		repl.SetCaretPositionReal(0, repl.caret_y - 1)
@@ -109,8 +109,8 @@ do
 				repl.Write("\27[u")
 			end
 
-			local str = table.concat(buf)
-			table.clear(buf)
+			local str = list.concat(buf)
+			list.clear(buf)
 			repl.WriteNow(str)
 		end
 
@@ -119,7 +119,7 @@ do
 
 	function terminal.OnWrite(str)
 		if not repl.write_now then
-			table.insert(buf, str)
+			list.insert(buf, str)
 			return false
 		end
 
@@ -143,7 +143,7 @@ do
 	end
 
 	function repl.GetTailPosition()
-		local tbl = table.concat(buf):split("\n")
+		local tbl = list.concat(buf):split("\n")
 		local y = #tbl + repl.caret_y - 1
 		local x = tbl[#tbl]:ulen()
 		return x, y
@@ -360,10 +360,10 @@ function repl.KeyPressed(key)
 
 		-- write the buffer
 		for i, str in ipairs(repl.command_history) do
-			if str == buffer then table.remove(repl.command_history, i) end
+			if str == buffer then list.remove(repl.command_history, i) end
 		end
 
-		table.insert(repl.command_history, str)
+		list.insert(repl.command_history, str)
 		serializer.WriteFile("luadata", "data/cmd_history.txt", repl.command_history)
 		repl.scroll_command_history = 0
 	elseif key == "delete" then
@@ -519,7 +519,7 @@ function repl.Update()
 	local events = terminal.ReadEvents()
 
 	while events[1] do
-		local what, arg = unpack(table.remove(events, 1))
+		local what, arg = unpack(list.remove(events, 1))
 
 		if what == "string" and arg:ends_with("__ENTERHACK__") then
 			repl.CharInput(arg:sub(0, -#"__ENTERHACK__" - 1))

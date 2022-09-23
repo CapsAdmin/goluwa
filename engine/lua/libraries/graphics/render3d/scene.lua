@@ -15,7 +15,7 @@ function render3d.AddModel(model)
 	end
 
 	if not scene_keyval[model] then
-		table.insert(render3d.scene, model)
+		list.insert(render3d.scene, model)
 		needs_sorting = true
 		scene_keyval[model] = model
 	end
@@ -30,7 +30,7 @@ function render3d.RemoveModel(model)
 end
 
 function render3d.SortScene()
-	table.sort(render3d.scene, function(a, b)
+	list.sort(render3d.scene, function(a, b)
 		return tostring(a.sub_models[1].sub_meshes[1].data) > tostring(b.sub_models[1].sub_meshes[1].data)
 	end)
 end
@@ -42,7 +42,7 @@ do
 
 	function render3d.SortDistanceScene(what)
 		local i2 = 0
-		--table.clear(render3d.scene_dist)
+		--list.clear(render3d.scene_dist)
 		local count = #render3d.scene
 
 		for i = 1, count do
@@ -59,7 +59,7 @@ do
 			render3d.scene_dist[i] = nil
 		end
 
-		table.sort(render3d.scene_dist, sort)
+		list.sort(render3d.scene_dist, sort)
 		return i2
 	end
 end
@@ -238,10 +238,10 @@ commands.Add("scene_info", function()
 	local temp = {}
 
 	for id, count in pairs(vis) do
-		table.insert(temp, {id = id, count = count})
+		list.insert(temp, {id = id, count = count})
 	end
 
-	table.sort(temp, function(a, b)
+	list.sort(temp, function(a, b)
 		return a.id < b.id
 	end)
 

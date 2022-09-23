@@ -24,7 +24,7 @@ local function insert_rect(node, w, h)
 	end
 end
 
-local list = {}
+local lst = {}
 local tree = {x = 0, y = 0, w = render.GetWidth(), h = render.GetHeight()}
 
 for _, v in pairs(prototype.GetCreated()) do
@@ -36,7 +36,7 @@ for _, v in pairs(prototype.GetCreated()) do
 			h = 64 * (v:GetSize().y / v:GetSize().x)
 		end
 
-		table.insert(list, {tex = v, node = insert_rect(tree, w + 4, h + 4)})
+		list.insert(lst, {tex = v, node = insert_rect(tree, w + 4, h + 4)})
 	end
 end
 

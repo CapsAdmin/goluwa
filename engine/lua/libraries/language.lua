@@ -4,7 +4,7 @@ language.current_translation = {}
 
 do
 	local available = vfs.Find("languages/")
-	table.insert(available, "english")
+	list.insert(available, "english")
 	local tbl = {}
 
 	for i, v in ipairs(available) do

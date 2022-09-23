@@ -137,7 +137,7 @@ function gine.env.RunString(code, chunkname, handle_error)
 end
 
 function gine.env.ProtectedCall(...)
-	local ret = table.pack(pcall(...))
+	local ret = list.pack(pcall(...))
 
 	if not ret[1] then gine.env.ErrorNoHalt(ret[2]) end
 

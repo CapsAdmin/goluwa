@@ -36,7 +36,7 @@ local function parse_scene(scene, path, callback)
 				data.uv = Vec2(val.x, -val.y)
 			end
 
-			table.insert(sub_model.vertices, data)
+			list.insert(sub_model.vertices, data)
 
 			if callback then tasks.Wait() end
 		end
@@ -46,7 +46,7 @@ local function parse_scene(scene, path, callback)
 
 			for i = 0, face.mNumIndices - 1 do
 				local i = face.mIndices[i]
-				table.insert(sub_model.indices, i)
+				list.insert(sub_model.indices, i)
 			end
 		end
 

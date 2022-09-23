@@ -26,7 +26,7 @@ local function cmd(str)
 end
 
 function gine.env.RunConsoleCommand(...)
-	cmd(table.concat({...}, " "))
+	cmd(list.concat({...}, " "))
 end
 
 local META = gine.GetMetaTable("Player")

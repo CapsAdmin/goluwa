@@ -174,7 +174,7 @@ do
 
 							for k, v in pairs(info.get_list()) do
 								booleans[v.friendly] = table.has_value(state, k) ~= false
-								table.insert(fields, v.friendly)
+								list.insert(fields, v.friendly)
 								lookup[v.friendly] = k
 							end
 
@@ -186,7 +186,7 @@ do
 									local selected = {}
 
 									for k, v in pairs(val) do
-										if v then table.insert(selected, lookup[k]) end
+										if v then list.insert(selected, lookup[k]) end
 									end
 
 									pvars.Set(info.key, selected)

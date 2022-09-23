@@ -5,7 +5,7 @@ render.global_shader_variables2 = render.global_shader_variables2 or {}
 
 function render.SetGlobalShaderVariable(key, val, type)
 	if _G.type(val) == "string" then
-		table.insert(render.global_glsl_variables, {key = key, val = val, type = type})
+		list.insert(render.global_glsl_variables, {key = key, val = val, type = type})
 	else
 		render.global_shader_variables[key] = {type = type, key = key, val = val}
 	end
@@ -150,13 +150,13 @@ function render.AddGlobalShaderCode(glsl_code, function_name)
 				if type and name then
 					if type == "color" then type = "vec3" end
 
-					table.insert(arg_line, type .. " " .. name)
+					list.insert(arg_line, type .. " " .. name)
 				end
 			end
 
 			code = code:replace(
 				"vec3 BRDF( vec3 L, vec3 V, vec3 N, vec3 X, vec3 Y )",
-				"vec3 " .. shader_name .. "_brdf( vec3 L, vec3 V, vec3 N, vec3 X, vec3 Y, " .. table.concat(arg_line, ", ") .. " )"
+				"vec3 " .. shader_name .. "_brdf( vec3 L, vec3 V, vec3 N, vec3 X, vec3 Y, " .. list.concat(arg_line, ", ") .. " )"
 			)
 			glsl_code = code
 			function_name = shader_name
@@ -179,7 +179,7 @@ function render.GetGlobalShaderCode(code, glsl_variables)
 			if code:find(info.function_name, nil, true) then
 				if not done[info.function_name] then
 					local new_node = {value = info.code, dependencies = {}}
-					table.insert(node.dependencies, new_node)
+					list.insert(node.dependencies, new_node)
 					done[info.function_name] = true
 					-- check if this other code also has dependencies
 					add_code(info.code, new_node)
@@ -202,12 +202,12 @@ function render.GetGlobalShaderCode(code, glsl_variables)
 
 		--Now add x to l
 		s[x] = true
-		table.insert(l, x.value)
+		list.insert(l, x.value)
 	end
 
 	local out = {}
 	ts(out, {}, node)
-	return table.concat(out, "\n\n")
+	return list.concat(out, "\n\n")
 end
 
 function render.GetGlobalShaderVariables(code, const)
@@ -236,7 +236,7 @@ function render.GetGlobalShaderVariables(code, const)
 
 					if not done[info.key] then
 						local new_node = {value = new_code, dependencies = {}}
-						table.insert(node.dependencies, new_node)
+						list.insert(node.dependencies, new_node)
 						found_variables[info.key] = info
 						done[info.key] = true
 						-- check if this other code also has dependencies
@@ -261,12 +261,12 @@ function render.GetGlobalShaderVariables(code, const)
 
 		--Now add x to l
 		s[x] = true
-		table.insert(l, x.value)
+		list.insert(l, x.value)
 	end
 
 	local out = {}
 	ts(out, {}, node)
-	return table.concat(out, "\n"), found_variables
+	return list.concat(out, "\n"), found_variables
 end
 
 render.AddGlobalShaderCode([[

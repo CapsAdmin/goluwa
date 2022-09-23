@@ -17,7 +17,7 @@ local function read_list(base_url, sounds, list_id, skip_list)
 			tree[realm] = tree[realm] or {}
 			list[realm] = list[realm] or {}
 			tree[realm][trigger] = tree[realm][trigger] or {}
-			table.insert(tree[realm][trigger], {
+			list.insert(tree[realm][trigger], {
 				path = path,
 				base_path = base_url,
 			})

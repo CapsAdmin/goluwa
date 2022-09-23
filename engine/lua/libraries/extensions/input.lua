@@ -3,7 +3,7 @@ input.binds = {}
 function input.Bind(key, cmd, callback, important)
 	serializer.StoreInFile("luadata", "data/input.txt", key, cmd)
 	local modifiers = key:split("+")
-	table.remove(modifiers, 1)
+	list.remove(modifiers, 1)
 	input.binds[key .. cmd] = {
 		key = key:sub(1, 1) == "+" and key:sub(2) or key,
 		trigger = key:match("^%-(.-)%+") or key:match("^(.-)%+") or key,

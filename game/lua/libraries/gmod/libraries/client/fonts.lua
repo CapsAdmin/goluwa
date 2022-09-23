@@ -68,14 +68,14 @@ function gine.LoadFonts()
 		for i, info in pairs(sub_fonts) do
 			if info.yres then
 				local x, y = unpack(info.yres:split(" "))
-				table.insert(
+				list.insert(
 					candidates,
 					{info = info, dist = Vec2(tonumber(x), tonumber(y)):Distance(screen_res)}
 				)
 			end
 		end
 
-		table.sort(candidates, function(a, b)
+		list.sort(candidates, function(a, b)
 			return a.dist < b.dist
 		end)
 

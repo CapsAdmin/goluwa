@@ -1,6 +1,6 @@
 local tostringx = _G.tostringx
 local tostring_args = _G.tostring_args
-local table_concat = table.concat
+local list_concat = list.concat
 local select = select
 local logfile = _G.logfile or {}
 logfile.files = {}
@@ -65,23 +65,23 @@ do
 end
 
 function logfile.Log(...)
-	logfile.RawLog(table_concat(tostring_args(...)))
+	logfile.RawLog(list_concat(tostring_args(...)))
 	return ...
 end
 
 function logfile.LogNewline(...)
-	logfile.RawLog(table_concat(tostring_args(...)) .. "\n")
+	logfile.RawLog(list_concat(tostring_args(...)) .. "\n")
 	return ...
 end
 
 function logfile.Print(...)
-	logfile.RawLog(table_concat(tostring_args(...), ",\t") .. "\n")
+	logfile.RawLog(list_concat(tostring_args(...), ",\t") .. "\n")
 	return ...
 end
 
 do
 	local function format(str, ...)
-		local args = table.pack(...)
+		local args = list.pack(...)
 
 		for i, chunk in ipairs(str:split("%")) do
 			if i > 1 then

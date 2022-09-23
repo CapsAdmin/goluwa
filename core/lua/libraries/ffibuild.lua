@@ -149,12 +149,12 @@ function ffibuild.GetSharedLibrariesInDirectory(dir)
 		if UNIX then
 			if ext:starts_with(find) or ext:ends_with(find) then
 				if #ext == #find or ext:sub(#find + 1, #find + 1) == "." then
-					table.insert(out, path)
+					list.insert(out, path)
 				end
 			end
 		end
 
-		if WINDOWS then if ext:ends_with(find) then table.insert(out, path) end end
+		if WINDOWS then if ext:ends_with(find) then list.insert(out, path) end end
 	end
 
 	return out
@@ -318,10 +318,10 @@ function ffibuild.SplitHeader(header, ...)
 
 		if stop_pos then stop_pos = stop_pos - #what end
 
-		table.insert(found, stop_pos)
+		list.insert(found, stop_pos)
 	end
 
-	table.sort(found, function(a, b)
+	list.sort(found, function(a, b)
 		return a < b
 	end)
 
@@ -442,7 +442,7 @@ function ffibuild.GetMetaData(header)
 				local names = {}
 				s = s .. ", "
 				s = s:gsub(" ([%a%d_]+) ,", function(name)
-					table.insert(names, name)
+					list.insert(names, name)
 					return ""
 				end)
 				local new_str = ""
@@ -532,7 +532,7 @@ function ffibuild.GetMetaData(header)
 				else
 					content = line:match("enum ({.+})")
 					-- no type name = global enum
-					table.insert(meta_data.global_enums, create_type("enums", content, meta_data))
+					list.insert(meta_data.global_enums, create_type("enums", content, meta_data))
 				end
 			elseif line:find("^struct") or line:find("^union") then
 				local keyword = line:match("^([%a%d_]+)")
@@ -566,7 +566,7 @@ function ffibuild.GetMetaData(header)
 			local name = type_name:match(pattern)
 
 			if name and type:GetSubType() == "struct" then
-				table.insert(out, {
+				list.insert(out, {
 					name = name,
 					type = type,
 				})
@@ -574,7 +574,7 @@ function ffibuild.GetMetaData(header)
 		end
 
 		-- sort them by length to avoid functions like purple_>>conversation<<_foo_bar() to conflict with purple_>>conversation_im<<_foo_bar()
-		table.sort(out, function(a, b)
+		list.sort(out, function(a, b)
 			return #a.name > #b.name
 		end)
 
@@ -634,14 +634,14 @@ function ffibuild.GetMetaData(header)
 				local line = {}
 
 				for _, v in ipairs(enums:FetchEnums(check_enum)) do
-					table.insert(line, v)
+					list.insert(line, v)
 				end
 
-				if #line > 0 then table.insert(str, table.concat(line, ",") .. ",") end
+				if #line > 0 then list.insert(str, list.concat(line, ",") .. ",") end
 			end
 
 			if #str > 0 then
-				top = top .. "enum {" .. table.concat(str, "\n") .. "};"
+				top = top .. "enum {" .. list.concat(str, "\n") .. "};"
 			end
 		end
 
@@ -670,16 +670,16 @@ function ffibuild.GetMetaData(header)
 
 			if type:GetSubType() == "struct" then
 				if self.structs[basic_type] then
-					table.insert(temp, {type = type, i = self.structs[basic_type].i})
+					list.insert(temp, {type = type, i = self.structs[basic_type].i})
 				end
 			elseif type:GetSubType() == "union" then
 				if self.unions[basic_type] then
-					table.insert(temp, {type = type, i = self.unions[basic_type].i})
+					list.insert(temp, {type = type, i = self.unions[basic_type].i})
 				end
 			end
 		end
 
-		table.sort(temp, function(a, b)
+		list.sort(temp, function(a, b)
 			return a.i < b.i
 		end)
 
@@ -918,7 +918,7 @@ do -- type metatables
 
 		function META:FetchRequired(meta_data, out, temp)
 			temp = temp or {}
-			table.insert(out, 1, self)
+			list.insert(out, 1, self)
 		end
 
 		metatables[name] = META
@@ -1083,7 +1083,7 @@ do -- type metatables
 					key = line
 				end
 
-				table.insert(enums, {key = key, val = num})
+				list.insert(enums, {key = key, val = num})
 				num = num + 1
 			end
 
@@ -1099,13 +1099,13 @@ do -- type metatables
 
 			for i, info in ipairs(self.enums) do
 				if not check_enums or check_enums(info.key, info) then
-					table.insert(str, info.key .. " = " .. info.val)
+					list.insert(str, info.key .. " = " .. info.val)
 				end
 			end
 
 			if check_enums and #str == 0 then return end
 
-			str = table.concat(str, ", ")
+			str = list.concat(str, ", ")
 
 			if self.name then
 				return "typedef " .. self.name .. " { " .. str .. " };"
@@ -1119,7 +1119,7 @@ do -- type metatables
 
 			for i, info in ipairs(self.enums) do
 				if check_enums(info.key, info) then
-					table.insert(out, info.key .. " = " .. info.val)
+					list.insert(out, info.key .. " = " .. info.val)
 				end
 			end
 
@@ -1195,15 +1195,15 @@ do -- type metatables
 
 			while true do
 				if node.type then
-					table.insert(declaration, (type_replace or node.type):reverse())
+					list.insert(declaration, (type_replace or node.type):reverse())
 				end
 
 				for _, flag in ipairs({"signed", "unsigned", "const", "volatile"}) do
-					if node[flag] then table.insert(declaration, flag:reverse()) end
+					if node[flag] then list.insert(declaration, flag:reverse()) end
 				end
 
 				if node.pointer then
-					table.insert(declaration, "*")
+					list.insert(declaration, "*")
 					node = node.to
 				else
 					break
@@ -1211,10 +1211,10 @@ do -- type metatables
 			end
 
 			if self.array_size then
-				table.insert(declaration, 1, self.array_size:reverse())
+				list.insert(declaration, 1, self.array_size:reverse())
 			end
 
-			return table.concat(declaration, " "):reverse()
+			return list.concat(declaration, " "):reverse()
 		end
 
 		function TYPE:GetBasicType(meta_data)
@@ -1348,7 +1348,7 @@ do -- type metatables
 		local function explode(str, split)
 			local temp = {}
 			str = str:gsub("(%b())", function(str)
-				table.insert(temp, str)
+				list.insert(temp, str)
 				return "___TEMP___"
 			end)
 			local out = {}
@@ -1356,11 +1356,11 @@ do -- type metatables
 			for val in (str .. split):gmatch("(.-)" .. split) do
 				if val:find("___TEMP___", nil, true) then
 					val = val:gsub("___TEMP___", function()
-						return table.remove(temp, 1)
+						return list.remove(temp, 1)
 					end)
 				end
 
-				table.insert(out, val)
+				list.insert(out, val)
 			end
 
 			return out
@@ -1479,7 +1479,7 @@ do -- type metatables
 				end
 			end
 
-			arg_line = "( " .. table.concat(arg_line, " , ") .. " )"
+			arg_line = "( " .. list.concat(arg_line, " , ") .. " )"
 			local return_type = self.return_type
 			return_type = return_type:GetPrimitive(meta_data)
 
@@ -1526,13 +1526,13 @@ do -- type metatables
 					done[name] = (done[name] or 0) + 1
 				end
 
-				table.insert(parameters, name)
+				list.insert(parameters, name)
 				local res = check and check(arg, name) or name
-				table.insert(call, res)
-				table.insert(types, arg)
+				list.insert(call, res)
+				list.insert(types, arg)
 			end
 
-			return table.concat(parameters, ", "), table.concat(call, ", "), types
+			return list.concat(parameters, ", "), list.concat(call, ", "), types
 		end
 
 		function FUNCTION:FetchRequired(meta_data, out)
@@ -1552,7 +1552,7 @@ do -- type metatables
 		local function explode(str, split)
 			local temp = {}
 			str = str:gsub("(%b{})", function(str)
-				table.insert(temp, str)
+				list.insert(temp, str)
 				return "___TEMP___"
 			end)
 			local out = {}
@@ -1560,11 +1560,11 @@ do -- type metatables
 			for val in str:gmatch("(.-)" .. split) do
 				if val:find("___TEMP___", nil, true) then
 					val = val:gsub("___TEMP___", function()
-						return table.remove(temp, 1)
+						return list.remove(temp, 1)
 					end)
 				end
 
-				table.insert(out, val)
+				list.insert(out, val)
 			end
 
 			return out
@@ -1594,7 +1594,7 @@ do -- type metatables
 						local type = ffibuild.CreateType("struct", content, keyword == "union")
 						type.name = name
 						type.tag = tag
-						table.insert(out, type)
+						list.insert(out, type)
 
 						if meta_data and tag then
 							(keyword == "struct" and meta_data.structs or meta_data.unions)[tag] = type
@@ -1605,17 +1605,17 @@ do -- type metatables
 						for name in (names .. " , "):gmatch("(.-) , ") do
 							local type = ffibuild.CreateType("type", declaration)
 							type.name = name
-							table.insert(out, type)
+							list.insert(out, type)
 						end
 					else
 						local declaration, name, array_size = match_type_declaration(line:match("^" .. keyword .. " (.+)"))
 						declaration = keyword .. " " .. declaration
 						local type = ffibuild.CreateType("type", declaration, array_size)
 						type.name = name
-						table.insert(out, type)
+						list.insert(out, type)
 					end
 				elseif line:find("%b() %b()") then
-					table.insert(
+					list.insert(
 						out,
 						ffibuild.CreateType("function", (line:gsub("%( %(", "("):gsub("%) %)", ")")))
 					)
@@ -1625,7 +1625,7 @@ do -- type metatables
 					for name in (names .. " , "):gmatch("(%S-) , ") do
 						local type = ffibuild.CreateType("type", declaration)
 						type.name = name
-						table.insert(out, type)
+						list.insert(out, type)
 					end
 				elseif line:find(":") then
 					local declaration, name = line:match("^([%a%d%s_%*]-) ([%a%d_:]-)$")
@@ -1642,7 +1642,7 @@ do -- type metatables
 
 					type.array_size = type.array_size or array_size
 					type.name = name
-					table.insert(out, type)
+					list.insert(out, type)
 				end
 			end
 

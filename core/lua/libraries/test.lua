@@ -28,17 +28,17 @@ function test.stop()
 end
 
 function test.test(func, ...)
-	local ret = table.pack(pcall(func, ...))
+	local ret = list.pack(pcall(func, ...))
 
 	if not ret[1] then
 		test.fail(debug.get_name(func), ret[2])
 		return
 	end
 
-	ret = table.pack(unpack(ret, 2))
+	ret = list.pack(unpack(ret, 2))
 	return {
 		expect = function(...)
-			local exp = table.pack(...)
+			local exp = list.pack(...)
 			local msg = ""
 
 			for i = 1, exp.n do
@@ -50,7 +50,7 @@ function test.test(func, ...)
 			if msg ~= "" then test.fail(debug.get_name(func), msg) end
 		end,
 		expect_compare = function(...)
-			local exp = table.pack(...)
+			local exp = list.pack(...)
 			local msg = ""
 
 			for i = 1, exp.n do

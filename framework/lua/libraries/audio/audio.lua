@@ -87,21 +87,21 @@ function audio.Panic()
 end
 
 function audio.GetAllOutputDevices()
-	local list = ffi.cast("unsigned char *", alc.GetString(nil, alc.e.ALL_DEVICES_SPECIFIER))
+	local lst = ffi.cast("unsigned char *", alc.GetString(nil, alc.e.ALL_DEVICES_SPECIFIER))
 	local devices = {}
 	local temp = {}
 
 	for i = 0, 1000 do
-		local byte = list[i]
+		local byte = lst[i]
 
 		if byte == 0 then
-			table.insert(devices, table.concat(temp))
+			list.insert(devices, list.concat(temp))
 			temp = {}
 		else
-			table.insert(temp, string.char(byte))
+			list.insert(temp, string.char(byte))
 		end
 
-		if byte == 0 and list[i + 1] == 0 then break end
+		if byte == 0 and lst[i + 1] == 0 then break end
 	end
 
 	return devices
@@ -142,21 +142,21 @@ function audio.GetAvailableFilters()
 end
 
 function audio.GetAllInputDevices()
-	local list = alc.GetString(nil, alc.e.CAPTURE_DEVICE_SPECIFIER)
+	local lst = alc.GetString(nil, alc.e.CAPTURE_DEVICE_SPECIFIER)
 	local devices = {}
 	local temp = {}
 
 	for i = 0, 1000 do
-		local byte = list[i]
+		local byte = lst[i]
 
 		if byte == 0 then
-			table.insert(devices, table.concat(temp))
+			list.insert(devices, list.concat(temp))
 			temp = {}
 		else
-			table.insert(temp, string.char(byte))
+			list.insert(temp, string.char(byte))
 		end
 
-		if byte == 0 and list[i + 1] == 0 then break end
+		if byte == 0 and lst[i + 1] == 0 then break end
 	end
 
 	return devices
@@ -648,7 +648,7 @@ do -- source
 		local slot = audio.CreateAuxiliaryEffectSlot()
 		slot:SetEffect(effect)
 		effect.slots[id] = slot
-		table.insert(self.effects, {id = id, slot = slot, effect = effect})
+		list.insert(self.effects, {id = id, slot = slot, effect = effect})
 		self:SetAuxiliaryEffectSlot(slot, #self.effects)
 	end
 
@@ -658,7 +658,7 @@ do -- source
 				v.effect.slots[id] = nil
 				v.slot:Remove()
 				self:SetAuxiliaryEffectSlot(nil, i)
-				table.remove(self.effects, i)
+				list.remove(self.effects, i)
 
 				break
 			end

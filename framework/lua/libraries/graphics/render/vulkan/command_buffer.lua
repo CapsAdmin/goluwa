@@ -26,32 +26,32 @@ function META:SetImageLayout(image, aspect_mask, old_layout, new_layout)
 
 	--[[
 	if old_layout == "color_attachment_optimal" then
-		table.insert(src_mask, "color_attachment_write")
+		list.insert(src_mask, "color_attachment_write")
 	end
 
 	if new_layout == "transfer_dst_optimal" then
-		table.insert(dst_mask, "memory_read")
-		table.insert(dst_mask, "transfer_write")
+		list.insert(dst_mask, "memory_read")
+		list.insert(dst_mask, "transfer_write")
 	end
 
 	if new_layout == "transfer_src_optimal" then
-		table.insert(dst_mask, "transfer_read")
+		list.insert(dst_mask, "transfer_read")
 	end
 
 	if new_layout == "shader_read_only_optimal" then
-		table.insert(src_mask, "host_write")
-		table.insert(src_mask, "transfer_write")
+		list.insert(src_mask, "host_write")
+		list.insert(src_mask, "transfer_write")
 
-		table.insert(dst_mask, "shader_read")
+		list.insert(dst_mask, "shader_read")
 	end
 
 	if new_layout == "color_attachment_optimal" then
-		table.insert(dst_mask, "color_attachment_read")
+		list.insert(dst_mask, "color_attachment_read")
 	end
 
 	if new_layout == "depth_stencil_attachment_optimal" then
-		table.insert(dst_mask, "depth_stencil_attachment_read")
-		table.insert(dst_mask, "depth_stencil_attachment_write")
+		list.insert(dst_mask, "depth_stencil_attachment_read")
+		list.insert(dst_mask, "depth_stencil_attachment_write")
 	end
 ]] self.cmd:PipelineBarrier(
 		"top_of_pipe",

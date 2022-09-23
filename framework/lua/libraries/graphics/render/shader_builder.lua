@@ -108,7 +108,7 @@ local function translate_fields(data)
 			precision = "highp"
 		end
 
-		table.insert(
+		list.insert(
 			out,
 			{
 				name = k,
@@ -174,12 +174,12 @@ local function variables_to_string(type, variables, prepend, macro, array)
 
 		line = line .. ";"
 
-		if macro then table.insert(out, "#define " .. data.name .. " " .. name) end
+		if macro then list.insert(out, "#define " .. data.name .. " " .. name) end
 
-		table.insert(out, line)
+		list.insert(out, line)
 	end
 
-	return table.concat(out, "\n")
+	return list.concat(out, "\n")
 end
 
 local function replace_field(str, key, val)
@@ -301,7 +301,7 @@ function render.CreateShader(data, vars)
 
 			if info.include_directories then
 				for _, dir in ipairs(info.include_directories) do
-					table.insert(include_dirs, root .. dir)
+					list.insert(include_dirs, root .. dir)
 				end
 			end
 
@@ -361,10 +361,10 @@ function render.CreateShader(data, vars)
 
 		for _, v in pairs(build_output.vertex.out) do
 			local name = next(v)
-			table.insert(vars, ("\t%s = %s;"):format(reserve_prepend .. name, name))
+			list.insert(vars, ("\t%s = %s;"):format(reserve_prepend .. name, name))
 		end
 
-		source = replace_field(source, "OUT2", table.concat(vars, "\n"))
+		source = replace_field(source, "OUT2", list.concat(vars, "\n"))
 		build_output.vertex.source = source
 	end
 
@@ -558,29 +558,29 @@ function render.CreateShader(data, vars)
 			local extensions = {}
 
 			if render.IsExtensionSupported("ARB_shading_language_420pack") then
-				table.insert(extensions, "#extension GL_ARB_shading_language_420pack : enable")
+				list.insert(extensions, "#extension GL_ARB_shading_language_420pack : enable")
 			end
 
 			if render.IsExtensionSupported("ARB_bindless_texture") then
-				table.insert(extensions, "#extension GL_ARB_bindless_texture : enable")
+				list.insert(extensions, "#extension GL_ARB_bindless_texture : enable")
 			end
 
 			if render.IsExtensionSupported("ARB_explicit_attrib_location") then
-				table.insert(extensions, "#extension GL_ARB_explicit_attrib_location : enable")
+				list.insert(extensions, "#extension GL_ARB_explicit_attrib_location : enable")
 			end
 
 			if render.IsExtensionSupported("ARB_gpu_shader5") then
-				table.insert(extensions, "#extension GL_ARB_gpu_shader5 : enable")
+				list.insert(extensions, "#extension GL_ARB_gpu_shader5 : enable")
 			end
 
 			template = template:gsub("(#extension%s-[%w_]+%s-:%s-%w+)", function(extension)
-				table.insert(extensions, extension)
+				list.insert(extensions, extension)
 				return ""
 			end)
 
 			if #extensions > 0 then
 				template = template:gsub("(#version.-\n)", function(str)
-					return str .. table.concat(extensions, "\n")
+					return str .. list.concat(extensions, "\n")
 				end)
 			end
 
@@ -619,18 +619,18 @@ function render.CreateShader(data, vars)
 			local extensions = {}
 
 			message:gsub("#extension ([%w_]+)", function(extension)
-				table.insert(extensions, "#extension " .. extension .. ": enable")
+				list.insert(extensions, "#extension " .. extension .. ": enable")
 			end)
 
 			if #extensions > 0 then
 				local source = data.source:gsub("(#version.-\n)", function(str)
-					return str .. table.concat(extensions, "\n")
+					return str .. list.concat(extensions, "\n")
 				end)
 				local ok2, message2 = pcall(prog.CompileShader, prog, shader_type, source)
 
 				if not ok2 then
 					data.source = source
-					message = message .. "\nshader_builder.lua attempted to add " .. table.concat(extensions, ", ") .. " but failed: \n" .. message2
+					message = message .. "\nshader_builder.lua attempted to add " .. list.concat(extensions, ", ") .. " but failed: \n" .. message2
 				end
 			end
 		end
@@ -713,7 +713,7 @@ function render.CreateShader(data, vars)
 
 					variables[val.name] = val
 					all_variables[val.name] = val
-					table.insert(uniform_block_variables, {id = id, key = val.name, val = val})
+					list.insert(uniform_block_variables, {id = id, key = val.name, val = val})
 				end
 			end
 
@@ -730,7 +730,7 @@ function render.CreateShader(data, vars)
 						if val.get then self[val.name] = val.get end
 
 						variables[val.name] = val
-						table.insert(uniform_variables, {id = id, key = val.name, val = val})
+						list.insert(uniform_variables, {id = id, key = val.name, val = val})
 					elseif render.debug and not val.is_texture then
 						logf(
 							"%s: variables in %s %s %s is not being used (variables location < 0)\n",
@@ -769,7 +769,7 @@ function render.CreateShader(data, vars)
 							type = info.type.name,
 							name = info.name,
 						}
-						table.insert(uniform_variables, {id = info.location, key = info.name, val = val})
+						list.insert(uniform_variables, {id = info.location, key = info.name, val = val})
 						variables[info.name] = val
 						all_variables[info.name] = val
 					end
@@ -780,7 +780,7 @@ function render.CreateShader(data, vars)
 		self.variables = variables
 		self.all_variables = all_variables
 
-		table.sort(uniform_variables, function(a, b)
+		list.sort(uniform_variables, function(a, b)
 			return a.id < b.id
 		end) -- sort the data by variables id
 		local texture_channel = 0

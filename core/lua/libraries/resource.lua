@@ -12,13 +12,13 @@ vfs.Mount("os:" .. e.DOWNLOAD_FOLDER, "os:downloads")
 function resource.AddProvider(provider, no_autodownload)
 	for i, v in ipairs(resource.providers) do
 		if v == provider then
-			table.remove(resource.providers, i)
+			list.remove(resource.providers, i)
 
 			break
 		end
 	end
 
-	table.insert(resource.providers, provider)
+	list.insert(resource.providers, provider)
 
 	if no_autodownload then return end
 
@@ -363,7 +363,7 @@ function resource.ClearDownloads()
 		nil,
 		function(path)
 			if vfs.IsDirectory(path) then
-				table.insert(dirs, path)
+				list.insert(dirs, path)
 			else
 				vfs.Delete(path)
 			end
@@ -372,7 +372,7 @@ function resource.ClearDownloads()
 		true
 	)
 
-	table.sort(dirs, function(a, b)
+	list.sort(dirs, function(a, b)
 		return #a > #b
 	end)
 

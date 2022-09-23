@@ -94,7 +94,7 @@ luadata.SetModifier("table", function(tbl, context)
 	end
 
 	context.tab = context.tab - 1
-	return table.concat(str, "")
+	return list.concat(str, "")
 end)
 
 local idx = function(var)
@@ -190,7 +190,7 @@ do -- vfs extension
 
 	function luadata.AppendToFile(path, value)
 		local tbl = luadata.ReadFile(path)
-		table.insert(tbl, value)
+		list.insert(tbl, value)
 		luadata.WriteFile(path, tbl)
 	end
 end

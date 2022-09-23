@@ -29,9 +29,9 @@ function META:AddChild(obj, pos)
 		self.Children2[obj] = obj
 
 		if pos then
-			table.insert(self.Children, pos, obj)
+			list.insert(self.Children, pos, obj)
 		else
-			table.insert(self.Children, obj)
+			list.insert(self.Children, obj)
 		end
 	end
 
@@ -89,7 +89,7 @@ function META:UnparentChild(var)
 
 		for i, v in ipairs(self.Children) do
 			if v == var then
-				table.remove(self.Children, i)
+				list.remove(self.Children, i)
 
 				break
 			end
@@ -127,10 +127,10 @@ function META:UnParent()
 	end
 end
 
-local function add_children_to_list(parent, list)
+local function add_children_to_list(parent, lst)
 	for _, child in ipairs(parent:GetChildren()) do
-		table.insert(list, child)
-		add_children_to_list(child, list)
+		list.insert(lst, child)
+		add_children_to_list(child, lst)
 	end
 end
 
@@ -147,7 +147,7 @@ function META:BuildParentList()
 	local parent = self:GetParent()
 
 	while parent:IsValid() do
-		table.insert(self.parent_list, parent)
+		list.insert(self.parent_list, parent)
 		parent = parent:GetParent()
 	end
 

@@ -19,7 +19,7 @@ vfs.Search("lua/", {"lua"}, function(path)
 			end
 		end
 
-		vfs.Write(path, table.concat(str))
+		vfs.Write(path, list.concat(str))
 	end
 end)
 

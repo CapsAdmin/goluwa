@@ -161,6 +161,8 @@ end
 _G.runfile = function(path, ...)
 	return assert(loadfile(e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/" .. path))(...)
 end
+runfile("lua/libraries/extensions/globals.lua")
+_G.list = runfile("lua/libraries/list.lua")
 
 do
 	local fs
@@ -187,7 +189,6 @@ end
 
 -- standard library extensions
 runfile("lua/libraries/extensions/gc_proxy_hack.lua")
-runfile("lua/libraries/extensions/globals.lua")
 
 do
 	local logfile = runfile("lua/libraries/logging.lua")
@@ -207,7 +208,6 @@ end
 runfile("lua/libraries/extensions/debug.lua")
 runfile("lua/libraries/extensions/string.lua")
 runfile("lua/libraries/extensions/table.lua")
-_G.list = runfile("lua/libraries/list.lua")
 runfile("lua/libraries/extensions/os.lua")
 runfile("lua/libraries/extensions/ffi.lua")
 runfile("lua/libraries/extensions/math.lua")
@@ -233,12 +233,12 @@ if desire("ffi") then _G.require("ffi").load = vfs.FFILoadLibrary end
 
 _G.require = vfs.Require
 _G.runfile = function(...)
-	local ret = table.pack(vfs.RunFile(...))
+	local ret = list.pack(vfs.RunFile(...))
 
 	-- not very ideal
 	if ret[1] == false and type(ret[2]) == "string" then error(ret[2], 2) end
 
-	return table.unpack(ret)
+	return list.unpack(ret)
 end
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
 package.loaded.bit32 = bit
@@ -356,13 +356,13 @@ vfs.FetchBniariesForAddon("core")
 
 if TEST then
 	debug.sethook()
-	local list = {}
+	local lst = {}
 
 	for func, count in pairs(FUNC_CALLS) do
-		table.insert(list, {func = func, count = count})
+		list.insert(lst, {func = func, count = count})
 	end
 
-	table.sort(list, function(a, b)
+	list.sort(lst, function(a, b)
 		return a.count > b.count
 	end)
 
@@ -370,7 +370,7 @@ if TEST then
 	logn("========= TOP " .. max .. " CALLED FUNCTIONS =========")
 
 	for i = 1, max do
-		logn(debug.get_pretty_source(list[i].func, true), " = ", list[i].count)
+		logn(debug.get_pretty_source(lst[i].func, true), " = ", lst[i].count)
 	end
 
 	logn("===========================================")

@@ -4,12 +4,12 @@ local boxes = {}
 
 for i, word in ipairs(text:split(" ")) do
 	local w, h = font:GetTextSize(word)
-	table.insert(boxes, {
+	list.insert(boxes, {
 		width = w,
 		height = h,
 		word = word,
 	})
-	table.insert(
+	list.insert(
 		boxes,
 		{
 			space = true,

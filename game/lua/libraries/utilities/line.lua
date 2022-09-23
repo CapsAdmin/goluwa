@@ -11,7 +11,7 @@ function utility.DownloadLineStickers(id, cb)
 		out.stickers = {}
 
 		for url in content:gmatch("(https://stickershop%S-sticker/%d-/ANDROID%S-%.png)") do
-			table.insert(out.stickers, url)
+			list.insert(out.stickers, url)
 		end
 
 		if out.stickers[1] then
@@ -23,7 +23,7 @@ function utility.DownloadLineStickers(id, cb)
 				local tbl = serializer.Decode("json", content)
 
 				for i, v in ipairs(tbl.stickers) do
-					table.insert(
+					list.insert(
 						out.stickers,
 						"http://stickershop.line-cdn.net/products/0/0/1/" .. tbl.packageId .. "/PC/stickers/" .. v.id .. ".png"
 					)
@@ -60,7 +60,7 @@ do
 				out.title = data:match([=["en":"(.-)"]=])
 
 				for id in data:match([=["stickers":%b[]]=], 0):gmatch([=["id":(%d+)]=]) do
-					table.insert(
+					list.insert(
 						out.stickers,
 						"http://stickershop.line-cdn.net/products/" .. package_id .. "/PC/stickers/" .. id .. ".png"
 					)

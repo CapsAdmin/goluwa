@@ -88,7 +88,7 @@ do
 		return self
 	end
 
-	table.insert(
+	list.insert(
 		sounds,
 		Sound(
 			"https://raw.githubusercontent.com/PAC3-Server/chatsounds-valve-games/master/hl2/robert_guillaume/-now%20lets%20see%20the%20last%20time%20i%20s-206290379.ogg"

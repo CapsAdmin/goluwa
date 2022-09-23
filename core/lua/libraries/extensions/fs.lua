@@ -37,17 +37,17 @@ function fs.RemoveRecursively(path)
 	if files then
 		local errors = {}
 
-		table.sort(files, function(a, b)
+		list.sort(files, function(a, b)
 			return #a > #b
 		end)
 
 		for _, path in ipairs(files) do
 			local ok, err = fs.Remove(path)
 
-			if not ok then table.insert(errors, err) end
+			if not ok then list.insert(errors, err) end
 		end
 
-		if errors[1] then return nil, table.concat(errors, "\n") end
+		if errors[1] then return nil, list.concat(errors, "\n") end
 
 		return true
 	end
@@ -66,7 +66,7 @@ function fs.CopyRecursively(from, to, verbose)
 
 	local errors = {}
 
-	table.sort(files, function(a, b)
+	list.sort(files, function(a, b)
 		return a:ends_with("/") and not b:ends_with("/")
 	end)
 
@@ -82,7 +82,7 @@ function fs.CopyRecursively(from, to, verbose)
 			ok, err = fs.copy(path, new_path)
 		end
 
-		if not ok and err ~= "File exists" then table.insert(errors, err) end
+		if not ok and err ~= "File exists" then list.insert(errors, err) end
 
 		if verbose then
 			if ok then
@@ -94,7 +94,7 @@ function fs.CopyRecursively(from, to, verbose)
 		end
 	end
 
-	if errors[1] then return nil, table.concat(errors, "\n") end
+	if errors[1] then return nil, list.concat(errors, "\n") end
 
 	return true
 end

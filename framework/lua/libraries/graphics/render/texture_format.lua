@@ -123,7 +123,7 @@ for _, info in pairs(texture_formats) do
 		line = line .. type .. " " .. ({"r", "g", "b", "a"})[i] .. "; "
 	end
 
-	local ending = table.concat(info.bits, "_")
+	local ending = list.concat(info.bits, "_")
 	info.combined_number_types = {}
 
 	for friendly2, info2 in pairs(number_types) do
@@ -131,7 +131,7 @@ for _, info in pairs(texture_formats) do
 
 		if info2.combined then
 			if friendly2:match(".-_.-_(.+)"):gsub("_rev", "") == ending then
-				table.insert(info.combined_number_types, info2)
+				list.insert(info.combined_number_types, info2)
 			end
 		else
 			if info2.type == type then info.number_type = info2 end

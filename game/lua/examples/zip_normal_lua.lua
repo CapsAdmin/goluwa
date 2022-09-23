@@ -77,11 +77,11 @@ do
 			local firstval, nbits, nextval = init[i], init[i + 1], init[i + 2]
 
 			for val = firstval, nextval - 1 do
-				table.insert(t, {val = val, nbits = nbits})
+				list.insert(t, {val = val, nbits = nbits})
 			end
 		end
 
-		table.sort(t, sort_huffman)
+		list.sort(t, sort_huffman)
 		return t
 	end
 
@@ -158,7 +158,7 @@ do
 			if val >= ncodes then break end
 		end
 
-		table.sort(init, sort_huffman)
+		list.sort(init, sort_huffman)
 		return HuffmanTable(init)
 	end
 
@@ -211,7 +211,7 @@ do
 						end
 					end
 
-					table.sort(codelen_init, sort_huffman)
+					list.sort(codelen_init, sort_huffman)
 					local codelentable = HuffmanTable(codelen_init)
 					littable = decode(bs, hlit + 257, codelentable)
 					disttable = decode(bs, hdist + 1, codelentable)
@@ -342,11 +342,11 @@ while true do
 		else
 			local out = {}
 			deflate(BitReader(zip), out)
-			data.file_content = table.concat(out)
+			data.file_content = list.concat(out)
 		end
 	end
 
-	table.insert(archive.files, data)
+	list.insert(archive.files, data)
 end
 
 for _, data in ipairs(archive.files) do

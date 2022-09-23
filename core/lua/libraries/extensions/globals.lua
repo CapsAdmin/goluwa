@@ -16,10 +16,10 @@ do
 		local tmp = {}
 
 		for k, v in pairs(sources) do
-			table.insert(tmp, {k = k, v = v})
+			list.insert(tmp, {k = k, v = v})
 		end
 
-		table.sort(tmp, function(a, b)
+		list.sort(tmp, function(a, b)
 			return a.v > b.v
 		end)
 
@@ -34,7 +34,7 @@ do
 			):format(
 				self,
 				debug.get_pretty_source(self, true),
-				table.concat(debug.get_params(self), ", ")
+				list.concat(debug.get_params(self), ", ")
 			)
 		end
 
@@ -51,7 +51,7 @@ do
 end
 
 function tostring_args(...)
-	local copy = table.pack(...)
+	local copy = list.pack(...)
 
 	for i = 1, copy.n do
 		copy[i] = tostringx(copy[i])

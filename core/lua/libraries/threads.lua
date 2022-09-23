@@ -212,7 +212,7 @@ function META:Run(...)
 	self.receive_queue = self.queues.main
 	self.send_queue:Push(msg.encode({type = "init", func_str = string.dump(self.RunFunction), args = {...}}))
 	self.thread = sdl.CreateThread(thread_func, "luajit_thread", ffi.cast("void *", self.queues))
-	table.insert(threads.active, self)
+	list.insert(threads.active, self)
 	event.AddListener("Update", "threads", threads.Update)
 end
 
@@ -222,7 +222,7 @@ function threads.Update()
 	for i = #threads.active, 1, -1 do
 		local thread = threads.active[i]
 
-		if not thread:IsValid() then table.remove(threads.active, i) end
+		if not thread:IsValid() then list.remove(threads.active, i) end
 	end
 
 	for i, thread in ipairs(threads.active) do

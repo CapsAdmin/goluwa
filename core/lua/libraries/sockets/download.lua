@@ -30,7 +30,7 @@ local function find_best_name(client)
 
 		if file_name then
 			file_name = file_name:sub(2, -2)
-			table.insert(contestants, {score = math.huge, name = file_name})
+			list.insert(contestants, {score = math.huge, name = file_name})
 		end
 	end
 
@@ -45,10 +45,10 @@ local function find_best_name(client)
 		if #ext > 0 then score = score + 10 end
 
 		score = score - (select(2, name:gsub("%p", "")) or 0)
-		table.insert(contestants, {score = score, name = name})
+		list.insert(contestants, {score = score, name = name})
 	end
 
-	table.sort(contestants, function(a, b)
+	list.sort(contestants, function(a, b)
 		return a.score > b.score
 	end)
 
@@ -73,7 +73,7 @@ sockets.active_downloads = sockets.active_downloads or {}
 function sockets.Download(url, on_finish, on_error, on_chunks, on_header, on_code)
 	local client = sockets.HTTPClient()
 	local lookup = {url = url, client = client}
-	table.insert(sockets.active_downloads, lookup)
+	list.insert(sockets.active_downloads, lookup)
 	local buffer = {}
 	local written_size = 0
 	local total_size = math.huge
@@ -88,7 +88,7 @@ function sockets.Download(url, on_finish, on_error, on_chunks, on_header, on_cod
 	end
 
 	function client:WriteBody(chunk)
-		table.insert(buffer, chunk)
+		list.insert(buffer, chunk)
 		written_size = written_size + #chunk
 
 		if on_chunks then
@@ -101,7 +101,7 @@ function sockets.Download(url, on_finish, on_error, on_chunks, on_header, on_cod
 	end
 
 	function client:GetWrittenBodyString()
-		return table.concat(buffer)
+		return list.concat(buffer)
 	end
 
 	function client:OnReceiveHeader(header, raw)
@@ -173,7 +173,7 @@ function sockets.DownloadToPath(url, path, on_finish, on_error, on_progress, on_
 	local http = sockets.HTTPClient()
 	http.url = url
 	local lookup = {url = url, client = http}
-	table.insert(sockets.active_downloads, lookup)
+	list.insert(sockets.active_downloads, lookup)
 	event.Call("DownloadStart", http, url)
 	http:Request("GET", url, header)
 
@@ -254,7 +254,7 @@ function sockets.StopDownload(url)
 
 		if v.url == url then
 			v.client:Close()
-			table.remove(sockets.active_downloads, i)
+			list.remove(sockets.active_downloads, i)
 		end
 	end
 end

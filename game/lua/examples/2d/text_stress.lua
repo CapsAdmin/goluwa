@@ -13,5 +13,5 @@ function goluwa.PreDrawGUI()
 	gfx.SetFont(font)
 	gfx.SetTextPosition(0, 0)
 	render2d.SetColor(1, 1, 1, 1)
-	gfx.DrawText(table.concat(str))
+	gfx.DrawText(list.concat(str))
 end

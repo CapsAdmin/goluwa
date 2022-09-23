@@ -75,7 +75,7 @@ do -- mixer
 		if type(stages) == "string" then stages = {{source = stages}} end
 
 		if stages[#stages].buffer then
-			table.insert(
+			list.insert(
 				stages,
 				{
 					source = [[
@@ -174,15 +174,15 @@ do -- mixer
 
 			for i, pass in ipairs(render3d.gbuffer_shaders_sorted) do
 				if pass.Name == PASS.Name then
-					table.remove(render3d.gbuffer_shaders_sorted, i)
+					list.remove(render3d.gbuffer_shaders_sorted, i)
 
 					break
 				end
 			end
 
-			table.insert(render3d.gbuffer_shaders_sorted, PASS)
+			list.insert(render3d.gbuffer_shaders_sorted, PASS)
 
-			table.sort(render3d.gbuffer_shaders_sorted, function(a, b)
+			list.sort(render3d.gbuffer_shaders_sorted, function(a, b)
 				return a.gbuffer_position < b.gbuffer_position
 			end)
 
@@ -217,7 +217,7 @@ do -- mixer
 
 		for k, v in ipairs(render3d.gbuffer_shaders_sorted) do
 			if v.Name == name then
-				table.remove(render3d.gbuffer_shaders_sorted, k)
+				list.remove(render3d.gbuffer_shaders_sorted, k)
 
 				break
 			end
@@ -286,7 +286,7 @@ function render3d.InitializeGBuffer()
 		local framebuffer_buffers = {}
 
 		if data_pass.DepthFormat then
-			table.insert(
+			list.insert(
 				framebuffer_buffers,
 				{
 					name = "depth",
@@ -313,7 +313,7 @@ function render3d.InitializeGBuffer()
 			for i, val in ipairs(pass_info.layout) do
 				local format, info = next(val)
 				local name = "data" .. buffer_i
-				table.insert(
+				list.insert(
 					framebuffer_buffers,
 					{
 						name = name,

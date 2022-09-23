@@ -12,7 +12,7 @@ local known = {
 for i, v in pairs(known) do
 	v = v .. ".png"
 
-	if not table.has_value(skins, v) then table.insert(skins, v) end
+	if not table.has_value(skins, v) then list.insert(skins, v) end
 end
 
 for i, sub_skin in ipairs(skins) do

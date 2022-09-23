@@ -100,7 +100,7 @@ end
 
 function META:TieCheckbox(button)
 	self.tied_buttons = self.tied_buttons or {}
-	table.insert(self.tied_buttons, button)
+	list.insert(self.tied_buttons, button)
 
 	for _, button in ipairs(self.tied_buttons) do
 		button:SetActiveStyle("rad_check")

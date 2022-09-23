@@ -3,11 +3,11 @@ local chatsounds = ... or chatsounds
 function chatsounds.BuildFromSoundDirectory(where)
 	where = where or "sounds/chatsounds/"
 	local tree = {}
-	local list = {}
+	local lst = {}
 
 	for realm in vfs.Iterate(where) do
 		tree[realm] = {}
-		list[realm] = {}
+		lst[realm] = {}
 
 		for trigger in vfs.Iterate(where .. realm .. "/") do
 			local path = where .. realm .. "/" .. trigger
@@ -15,57 +15,57 @@ function chatsounds.BuildFromSoundDirectory(where)
 
 			if vfs.IsFile(path) then
 				tree[realm][trigger] = {{path = path}}
-				list[realm][trigger] = path
+				lst[realm][trigger] = path
 			else
 				tree[realm][trigger] = {}
 
 				for file_name in vfs.Iterate(path .. "/") do
-					table.insert(tree[realm][trigger], path .. "/" .. file_name)
-					list[realm][trigger] = path .. "/" .. file_name
+					list.insert(tree[realm][trigger], path .. "/" .. file_name)
+					lst[realm][trigger] = path .. "/" .. file_name
 				end
 			end
 		end
 	end
 
 	chatsounds.list = chatsounds.list or {}
-	table.merge(chatsounds.list, list, true)
+	table.merge(chatsounds.list, lst, true)
 	tree = chatsounds.TableToTree(tree)
 	chatsounds.tree = chatsounds.tree or {}
 	table.merge(chatsounds.tree, tree)
-	local list = {}
+	local lst = {}
 
 	for _, val in pairs(chatsounds.list) do
 		for key in pairs(val) do
-			table.insert(list, key)
+			list.insert(lst, key)
 		end
 	end
 
-	table.sort(list, function(a, b)
+	list.sort(lst, function(a, b)
 		return #a < #b
 	end)
 
-	autocomplete.AddList("chatsounds", list)
+	autocomplete.AddList("chatsounds", lst)
 end
 
 function chatsounds.GenerateAutocomplete()
 	local function build(root_list, id)
-		local list = {}
+		local lst = {}
 		local done = {}
 
 		for _, val in pairs(root_list) do
 			for key in pairs(val) do
 				if not done[key] then
-					table.insert(list, key)
+					list.insert(lst, key)
 					done[key] = true
 				end
 			end
 		end
 
-		table.sort(list, function(a, b)
+		list.sort(lst, function(a, b)
 			return #a < #b
 		end)
 
-		autocomplete.AddList(id, list)
+		autocomplete.AddList(id, lst)
 	end
 
 	if chatsounds.list then build(chatsounds.list, "chatsounds") end
@@ -78,22 +78,22 @@ function chatsounds.GenerateAutocomplete()
 end
 
 function chatsounds.ListToTable(data)
-	local list = {}
+	local lst = {}
 	local realm = "misc"
 
 	for path, trigger in data:gmatch("(.-)=(.-)\n") do
 		if path == "realm" then
 			realm = trigger
 		else
-			if not list[realm] then list[realm] = {} end
+			if not lst[realm] then lst[realm] = {} end
 
-			if not list[realm][trigger] then list[realm][trigger] = {} end
+			if not lst[realm][trigger] then lst[realm][trigger] = {} end
 
-			table.insert(list[realm][trigger], {path = path})
+			list.insert(lst[realm][trigger], {path = path})
 		end
 	end
 
-	return list
+	return lst
 end
 
 local sort = function(a, b)
@@ -122,7 +122,7 @@ function chatsounds.TableToList(tbl)
 		end
 	end
 
-	return table.concat(str, "\n")
+	return list.concat(str, "\n")
 end
 
 function chatsounds.TableToTree(tbl)
@@ -133,7 +133,7 @@ function chatsounds.TableToTree(tbl)
 			local words = {}
 
 			for word in (trigger .. " "):gmatch("(.-)%s+") do
-				table.insert(words, word)
+				list.insert(words, word)
 			end
 
 			local next = tree

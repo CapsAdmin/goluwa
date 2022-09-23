@@ -83,14 +83,14 @@ do
 						prototype.MakeNULL(obj)
 					end
 
-					table.clear(prototype.remove_these)
+					list.clear(prototype.remove_these)
 				end
 			end)
 
 			event_added = true
 		end
 
-		table.insert(prototype.remove_these, self)
+		list.insert(prototype.remove_these, self)
 		self.__removed = true
 	end
 end
@@ -173,7 +173,7 @@ do -- serializing
 			callback(obj)
 		else
 			callbacks[guid] = callbacks[guid] or {}
-			table.insert(callbacks[guid], callback)
+			list.insert(callbacks[guid], callback)
 			print("added callback for ", guid)
 		end
 	end
@@ -207,7 +207,7 @@ do -- events
 
 		local func_name = "On" .. event_type
 		events[event_type] = events[event_type] or {}
-		table.insert(events[event_type], self)
+		list.insert(events[event_type], self)
 
 		event.AddListener(
 			event_type,

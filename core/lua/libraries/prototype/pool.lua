@@ -1,5 +1,5 @@
 local prototype = ... or _G.prototype
-local table_remove = table.remove
+local list_remove = list.remove
 
 function prototype.CreateObjectPool(name)
 	return {
@@ -13,7 +13,7 @@ function prototype.CreateObjectPool(name)
 
 			for i = 1, self.i do
 				if obj == self.list[i] then
-					table_remove(self.list, i)
+					list_remove(self.list, i)
 					self.map[obj] = nil
 					self.i = self.i - 1
 

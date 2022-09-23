@@ -11,7 +11,7 @@ end
 local models = {}
 
 for _, mdl in ipairs(vfs.Find("models/props_fallout/.+%.mdl", true)) do
-	table.insert(models, mdl)
+	list.insert(models, mdl)
 end
 
 local function generate_material()
@@ -59,7 +59,7 @@ do
 		light:SetHideFromEditor(true)
 		light.seed = math.random() * math.pi
 		light:SetSize(light.seed * 100 + 10)
-		table.insert(lights, light)
+		list.insert(lights, light)
 	end
 
 	event.AddListener("Update", "test", function()

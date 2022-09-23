@@ -194,7 +194,7 @@ function steam.InitializeWebAPI(force)
 					--[[if type(data) ~= "table" and type(callback) ~= "function" and (select("#", ...) == 0 or type(select(select("#", ...), ...)) == "function") then
 						local args = {data, callback, ...}
 						if type(args[#args]) == "function" then
-							callback = table.remove(args)
+							callback = list.remove(args)
 						end
 						data = {}
 						for name, info in pairs(parameters) do

@@ -28,11 +28,11 @@ function vfs.GetFiles(info)
 
 		if not info.no_sort then
 			if info.reverse_sort then
-				table.sort(out, function(a, b)
+				list.sort(out, function(a, b)
 					return a.full_path:lower() > b.full_path:lower()
 				end)
 			else
-				table.sort(out, function(a, b)
+				list.sort(out, function(a, b)
 					return a.full_path:lower() < b.full_path:lower()
 				end)
 			end
@@ -64,11 +64,11 @@ function vfs.GetFiles(info)
 
 		if not info.no_sort then
 			if info.reverse_sort then
-				table.sort(out, function(a, b)
+				list.sort(out, function(a, b)
 					return a:lower() > b:lower()
 				end)
 			else
-				table.sort(out, function(a, b)
+				list.sort(out, function(a, b)
 					return a:lower() < b:lower()
 				end)
 			end
@@ -123,7 +123,7 @@ do
 						return
 					end
 				else
-					table.insert(out, v.full_path)
+					list.insert(out, v.full_path)
 				end
 			end
 

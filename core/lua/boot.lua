@@ -122,7 +122,7 @@ do
 			local out = {}
 
 			for dir in os.readexecute("for dir in " .. path .. "*; do printf \"%s\n\" \"${dir}\"; done"):gmatch("(.-)\n") do
-				table.insert(out, dir:sub(#path + 1))
+				list.insert(out, dir:sub(#path + 1))
 			end
 
 			return out
@@ -135,7 +135,7 @@ do
 			local out = {}
 
 			for name in os.readexecute("dir \"" .. winpath(path) .. "\" /B"):gmatch("(.-)\n") do
-				table.insert(out, name)
+				list.insert(out, name)
 			end
 
 			return out
@@ -396,10 +396,10 @@ if ARG_LINE:sub(0, #"nattlua") == "nattlua" then
 	local args = {}
 
 	for str in (ARG_LINE .. " "):gmatch("[^%s]+") do
-		table.insert(args, str)
+		list.insert(args, str)
 	end
 
-	table.remove(args, 1)
+	list.remove(args, 1)
 	assert(loadfile("core/lua/modules/nattlua/build_output.lua"))(unpack(args))
 	return
 end

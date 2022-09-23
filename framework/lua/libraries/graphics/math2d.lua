@@ -4,7 +4,7 @@ function math2d.IsCoordinatesConvex(points)
 	local polygons = {}
 
 	for i = 1, #points, 2 do
-		table.insert(polygons, Vec2(points[i + 0], points[i + 1]))
+		list.insert(polygons, Vec2(points[i + 0], points[i + 1]))
 	end
 
 	if #polygons < 3 then return false end
@@ -66,7 +66,7 @@ do
 		local polygons = {}
 
 		for i = 1, #points, 2 do
-			table.insert(polygons, Vec2(points[i + 0], points[i + 1]))
+			list.insert(polygons, Vec2(points[i + 0], points[i + 1]))
 		end
 
 		if #polygons < 3 then
@@ -106,7 +106,7 @@ do
 			if
 				not is_oriented_ccw(polygons[prev_idx[i] + 1], polygons[i + 1], polygons[next_idx[i] + 1])
 			then
-				table.insert(concave, polygons[i + 1])
+				list.insert(concave, polygons[i + 1])
 			end
 		end
 
@@ -125,7 +125,7 @@ do
 			local c = polygons[next + 1]
 
 			if is_ear(a, b, c, concave) then
-				table.insert(triangles, {a.x, a.y, b.x, b.y, c.x, c.y})
+				list.insert(triangles, {a.x, a.y, b.x, b.y, c.x, c.y})
 				next_idx[prev] = next
 				prev_idx[next] = prev
 				list.remove_value(concave, b)
@@ -145,7 +145,7 @@ do
 		local a = polygons[prev + 1]
 		local b = polygons[current + 1]
 		local c = polygons[next + 1]
-		table.insert(triangles, {a.x, a.y, b.x, b.y, c.x, c.y})
+		list.insert(triangles, {a.x, a.y, b.x, b.y, c.x, c.y})
 		return triangles
 	end
 end
@@ -288,34 +288,34 @@ end
 do
 	local function edge(anchors, normals, s, len_s, ns, q, r, half_width, mode)
 		if mode == "none" then
-			table.insert(anchors, q)
-			table.insert(anchors, q)
-			table.insert(normals, ns)
-			table.insert(normals, -ns)
+			list.insert(anchors, q)
+			list.insert(anchors, q)
+			list.insert(normals, ns)
+			list.insert(normals, -ns)
 			s = (r - q)
 			len_s = s:GetLength()
 			ns = s:GetNormal(half_width / len_s)
-			table.insert(anchors, q)
-			table.insert(anchors, q)
-			table.insert(normals, -ns)
-			table.insert(normals, ns)
+			list.insert(anchors, q)
+			list.insert(anchors, q)
+			list.insert(normals, -ns)
+			list.insert(normals, ns)
 		elseif mode == "miter" then
 			local t = r - q
 			local len_t = t:GetLength()
 			local nt = t:GetNormal(half_width / len_t)
-			table.insert(anchors, q)
-			table.insert(anchors, q)
+			list.insert(anchors, q)
+			list.insert(anchors, q)
 			local det = s:GetCrossed(t)
 
 			if math.abs(det) / (len_s * len_t) < 0.05 and s:GetDot(t) > 0 then
-				table.insert(normals, ns)
-				table.insert(normals, -ns)
+				list.insert(normals, ns)
+				list.insert(normals, -ns)
 			else
 				local lambda = (nt - ns):GetCrossed(t) / det
 				local d = ns + s * lambda
 				--logf("normal = %i\nlambda = %f\nnt= Vec2(%f, %f)\nns= Vec2(%f, %f)\nt = Vec2(%f, %f)\ndet = %f\ns = Vec2(%f, %f)\n", #normals, lambda, nt.x,nt.y, ns.x,ns.y, t.x,t.y, det, s.x, s.y);
-				table.insert(normals, d)
-				table.insert(normals, -d)
+				list.insert(normals, d)
+				list.insert(normals, -d)
 			end
 
 			s = t
@@ -328,10 +328,10 @@ do
 
 			if math.abs(det) / (len_s * len_t) < 0.05 and s:GetDot(t) > 0 then
 				local n = t:GetNormal(half_width / len_t)
-				table.insert(anchors, q)
-				table.insert(anchors, q)
-				table.insert(normals, n)
-				table.insert(normals, -n)
+				list.insert(anchors, q)
+				list.insert(anchors, q)
+				list.insert(normals, n)
+				list.insert(normals, -n)
 				s = t
 				len_s = len_t
 				return s, len_s, ns
@@ -342,21 +342,21 @@ do
 
 			if not math.isvalid(lambda) then lambda = 0 end -- not really sure why this is needed
 			local d = ns + s * lambda
-			table.insert(anchors, q)
-			table.insert(anchors, q)
-			table.insert(anchors, q)
-			table.insert(anchors, q)
+			list.insert(anchors, q)
+			list.insert(anchors, q)
+			list.insert(anchors, q)
+			list.insert(anchors, q)
 
 			if det > 0 then
-				table.insert(normals, d)
-				table.insert(normals, -ns)
-				table.insert(normals, d)
-				table.insert(normals, -nt)
+				list.insert(normals, d)
+				list.insert(normals, -ns)
+				list.insert(normals, d)
+				list.insert(normals, -nt)
 			else
-				table.insert(normals, ns)
-				table.insert(normals, -d)
-				table.insert(normals, nt)
-				table.insert(normals, -d)
+				list.insert(normals, ns)
+				list.insert(normals, -d)
+				list.insert(normals, nt)
+				list.insert(normals, -d)
 			end
 
 			s = t
@@ -386,8 +386,8 @@ do
 		if draw_overdraw then half_width = half_width - pixel_size * 0.3 end
 
 		if join then
-			table.insert(coords, coords[1])
-			table.insert(coords, coords[2])
+			list.insert(coords, coords[1])
+			list.insert(coords, coords[2])
 			count = count + 2
 		end
 
@@ -420,8 +420,8 @@ do
 		end
 
 		if join then
-			table.remove(coords)
-			table.remove(coords)
+			list.remove(coords)
+			list.remove(coords)
 		end
 
 		local vertex_count = #normals
@@ -558,7 +558,7 @@ do
 				vertices[i + 1] = vertices[i + 2 + 1]
 			end
 
-			table.remove(vertices, #vertices)
+			list.remove(vertices, #vertices)
 			local total_vertex_count = #vertices
 
 			if draw_overdraw then total_vertex_count = overdraw_count end
@@ -627,11 +627,11 @@ do
 	end
 
 	function META:InsertControlPoint(idx, point)
-		table.insert(self.polygons, idx, point)
+		list.insert(self.polygons, idx, point)
 	end
 
 	function META:RemoveControlPoint(idx)
-		table.remove(self.polygons, idx)
+		list.remove(self.polygons, idx)
 	end
 
 	function META:GetControlPointCount()
@@ -679,25 +679,25 @@ do
 		local right = {}
 
 		for step = 2, #points do
-			table.insert(left, points[i])
+			list.insert(left, points[i])
 
 			for i = 1, #self.polygons - step do
 				points[i] = points[i] + (points[i + 1] - points[i]) * stop
 			end
 		end
 
-		table.insert(left, points[1])
+		list.insert(left, points[1])
 		local s = start / stop
 
 		for step = 2, #left do
-			table.insert(right, left[#left - step])
+			list.insert(right, left[#left - step])
 
 			for i = 1, #self.polygons - step do
 				left[i] = left[i] + (left[i + 1] - left[i]) * stop
 			end
 		end
 
-		table.insert(right, left[1])
+		list.insert(right, left[1])
 		local rev = {}
 		local i2 = #right
 
@@ -716,8 +716,8 @@ do
 		local right = {}
 
 		for step = 1, #polygons - 1 do
-			table.insert(left, polygons[1])
-			table.insert(right, polygons[#polygons - step + 1])
+			list.insert(left, polygons[1])
+			list.insert(right, polygons[#polygons - step + 1])
 
 			for i = 0, #polygons - step - 1 do
 				i = i + 1
@@ -725,8 +725,8 @@ do
 			end
 		end
 
-		table.insert(left, polygons[1])
-		table.insert(right, polygons[1])
+		list.insert(left, polygons[1])
+		list.insert(right, polygons[1])
 		subdivide(left, k - 1)
 		subdivide(right, k - 1)
 
@@ -750,8 +750,8 @@ do
 			local out = {}
 
 			for i, p in ipairs(vertices) do
-				table.insert(out, p.x)
-				table.insert(out, p.y)
+				list.insert(out, p.x)
+				list.insert(out, p.y)
 			end
 
 			return out
@@ -777,8 +777,8 @@ do
 		local out = {}
 
 		for i = start_idx, stop_idx do
-			table.insert(out, vertices[i].x)
-			table.insert(out, vertices[i].y)
+			list.insert(out, vertices[i].x)
+			list.insert(out, vertices[i].y)
 		end
 
 		return out

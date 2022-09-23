@@ -5,7 +5,7 @@ do
 		local out = {}
 
 		for _, cl in ipairs(clients.GetAll()) do
-			table.insert(out, gine.WrapObject(cl, "Player"))
+			list.insert(out, gine.WrapObject(cl, "Player"))
 		end
 
 		return out
@@ -19,9 +19,7 @@ do
 		local out = {}
 
 		for _, cl in ipairs(clients.GetAll()) do
-			if not cl:IsBot() then
-				table.insert(out, gine.WrapObject(cl, "Player"))
-			end
+			if not cl:IsBot() then list.insert(out, gine.WrapObject(cl, "Player")) end
 		end
 
 		return out
@@ -31,7 +29,7 @@ do
 		local out = {}
 
 		for _, cl in ipairs(clients.GetAll()) do
-			if cl:IsBot() then table.insert(out, gine.WrapObject(cl, "Player")) end
+			if cl:IsBot() then list.insert(out, gine.WrapObject(cl, "Player")) end
 		end
 
 		return out

@@ -127,13 +127,13 @@ function gine.PreprocessLua(code, add_newlines)
 
 		if not in_string and not in_comment and not in_multiline then
 			if chars[i] == "!" and chars[i + 1] == "=" then
-				table.remove(chars, i)
+				list.remove(chars, i)
 				chars[i] = "~="
 			elseif chars[i] == "&" and chars[i + 1] == "&" then
-				table.remove(chars, i)
+				list.remove(chars, i)
 				insert(chars, i, "and")
 			elseif chars[i] == "|" and chars[i + 1] == "|" then
-				table.remove(chars, i)
+				list.remove(chars, i)
 				insert(chars, i, "or")
 			elseif chars[i] == "!" then
 				insert(chars, i, "not")
@@ -141,7 +141,7 @@ function gine.PreprocessLua(code, add_newlines)
 		end
 	end
 
-	local code = table.concat(chars):sub(4, -4)
+	local code = list.concat(chars):sub(4, -4)
 
 	if code:whole_word("continue") and not loadstring(code) then
 		local tokens = {}
@@ -287,7 +287,7 @@ function gine.PreprocessLua(code, add_newlines)
 
 		if not found_continue then error("unable to find continue keyword") end
 
-		code = table.concat(lines, "\n")
+		code = list.concat(lines, "\n")
 	end
 
 	code = code:gsub("DEFINE_BASECLASS", "local BaseClass = baseclass.Get")

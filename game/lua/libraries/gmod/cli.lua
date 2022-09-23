@@ -22,14 +22,14 @@ local function get_luacheck_envrionment()
 		for _, env in pairs({cl_env, sv_env}) do
 			for name in pairs(env.enums) do
 				if not done[name] then
-					table.insert(globals, name)
+					list.insert(globals, name)
 					done[name] = true
 				end
 			end
 
 			for name in pairs(env.globals) do
 				if not done[name] then
-					table.insert(globals, name)
+					list.insert(globals, name)
 					done[name] = true
 				end
 			end

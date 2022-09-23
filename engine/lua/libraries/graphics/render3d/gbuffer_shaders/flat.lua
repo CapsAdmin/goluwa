@@ -33,7 +33,7 @@ vec3 gbuffer_compute_specular(vec3 l, vec3 v, vec3 n, float attenuation, vec3 li
 local PASS = {}
 PASS.Name = "flat"
 PASS.Source = {}
-table.insert(
+list.insert(
 	PASS.Source,
 	{
 		source = [[

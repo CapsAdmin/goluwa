@@ -303,14 +303,14 @@ function thread:OnStart()
 														for i, path in ipairs(info.wave) do
 															if path:find("$", nil, true) then
 																for k, v in pairs(preprocess) do
-																	table.insert(temp, path:replace("$" .. v, k))
+																	list.insert(temp, path:replace("$" .. v, k))
 																end
 
 																if temp[#temp] == path then
 																	logn("unknown variables in ", path)
 																end
 															else
-																table.insert(temp, path)
+																list.insert(temp, path)
 															end
 														end
 													end
@@ -453,7 +453,7 @@ function thread:OnStart()
 					end
 				end
 
-				str = table.concat(tbl, "")
+				str = list.concat(tbl, "")
 				str = str:gsub("//.-\n", "")
 				local tbl = assert(utility.VDFToTable(str, true))
 
@@ -478,7 +478,7 @@ function thread:OnStart()
 					if temp_data[appid].soundscripts[k] then
 						if type(v) == "table" then
 							-- i don't understand this but lets' just select the longest word
-							table.sort(v, function(a, b)
+							list.sort(v, function(a, b)
 								return #a > #b
 							end)
 
@@ -530,7 +530,7 @@ function thread:OnStart()
 			for i, v in ipairs(info.wave) do
 				if not v.not_found then
 					data.full_paths[v.relative] = nil
-					table.insert(paths, v.path)
+					list.insert(paths, v.path)
 				end
 			end
 
@@ -545,11 +545,11 @@ function thread:OnStart()
 							local plaintext = get_sound_data(file, true)
 
 							if plaintext then
-								table.remove(paths, i)
+								list.remove(paths, i)
 								local key = clean_sentence(plaintext)
 
 								if out[appid][key] then
-									table.insert(out[appid][key], path)
+									list.insert(out[appid][key], path)
 								else
 									out[appid][key] = {path}
 								end
@@ -579,7 +579,7 @@ function thread:OnStart()
 			local key = clean_sentence(vfs.RemoveExtensionFromPath(vfs.GetFileNameFromPath(full_path)))
 
 			if out[appid][key] then
-				table.insert(out[appid][key], full_path)
+				list.insert(out[appid][key], full_path)
 			else
 				out[appid][key] = {full_path}
 			end
@@ -614,21 +614,21 @@ function thread:OnStart()
 			end
 		end
 
-		local list = {}
+		local lst = {}
 
 		for realm, paths in pairs(temp) do
-			table.insert(list, "realm=" .. realm)
+			list.insert(lst, "realm=" .. realm)
 
 			for path, key in pairs(paths) do
 				local relative = path:match(".-/(sound.+)")
-				table.insert(list, relative .. "=" .. key)
+				list.insert(lst, relative .. "=" .. key)
 			end
 		end
 
-		list = table.concat(list, "\n")
-		vfs.Write("data/chatsounds/lists/" .. appid .. ".txt", list)
-		list = chatsounds.ListToTable(list)
-		local tree = chatsounds.TableToTree(list)
+		lst = list.concat(lst, "\n")
+		vfs.Write("data/chatsounds/lists/" .. appid .. ".txt", lst)
+		lst = chatsounds.ListToTable(lst)
+		local tree = chatsounds.TableToTree(lst)
 		serializer.WriteFile("msgpack", "data/chatsounds/trees/" .. appid .. ".dat", tree)
 	end
 

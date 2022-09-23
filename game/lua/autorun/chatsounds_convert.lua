@@ -27,10 +27,10 @@ local function get_sound_data(file, plaintext)
 
 			if words then
 				for word, start, stop, phonemes in words:gmatch("WORD%s-(%S-)%s-(%S-)%s-(%S-)%s-{(.-)}") do
-					table.insert(out, word)
+					list.insert(out, word)
 				end
 
-				if out[1] then return table.concat(out, " ") end
+				if out[1] then return list.concat(out, " ") end
 			end
 
 			return content:match("PLAINTEXT%s-{%s+(.-)%s-}")
@@ -49,7 +49,7 @@ local function get_sound_data(file, plaintext)
 					local d = (line .. " "):split(" ")
 
 					if #d > 2 then
-						table.insert(
+						list.insert(
 							tbl,
 							{
 								str = d[2],
@@ -62,7 +62,7 @@ local function get_sound_data(file, plaintext)
 					end
 				end
 
-				table.insert(
+				list.insert(
 					out.words,
 					{word = word, start = tonumber(start), stop = tonumber(stop), phonemes = tbl}
 				)
@@ -94,11 +94,11 @@ end
 function chatsounds.TableToList(tbl)
 	local str = {}
 
-	for realm, list in table.sorted_pairs(tbl, sort) do
+	for realm, lst in table.sorted_pairs(tbl, sort) do
 		str[#str + 1] = "realm=" .. realm
 		local done = {}
 
-		for trigger, sounds in pairs(list) do
+		for trigger, sounds in pairs(lst) do
 			for _, data in table.sorted_pairs(sounds, sort2) do
 				local val = data.path .. "=" .. trigger
 
@@ -110,26 +110,26 @@ function chatsounds.TableToList(tbl)
 		end
 	end
 
-	return table.concat(str, "\n")
+	return list.concat(str, "\n")
 end
 
 function chatsounds.ListToTable(data)
-	local list = {}
+	local lst = {}
 	local realm = "misc"
 
 	for path, trigger in data:gmatch("(.-)=(.-)\n") do
 		if path == "realm" then
 			realm = trigger
 		else
-			if not list[realm] then list[realm] = {} end
+			if not lst[realm] then lst[realm] = {} end
 
-			if not list[realm][trigger] then list[realm][trigger] = {} end
+			if not lst[realm][trigger] then lst[realm][trigger] = {} end
 
-			table.insert(list[realm][trigger], {path = path})
+			list.insert(lst[realm][trigger], {path = path})
 		end
 	end
 
-	return list
+	return lst
 end
 
 function chatsounds.BuildSoundLists()
@@ -311,7 +311,7 @@ function chatsounds.BuildSoundLists()
 				path = path:match(".+common.+(sound/.+)")
 				found[game] = found[game] or {}
 				found[game][realm] = found[game][realm] or {}
-				table.insert(found[game][realm], path:lower() .. "=" .. sentence)
+				list.insert(found[game][realm], path:lower() .. "=" .. sentence)
 				--logn(path)
 				--logn("\t", realm)
 				--logn("\t", sentence)
@@ -331,16 +331,16 @@ function chatsounds.BuildSoundLists()
 			for realm, sentences in table.sorted_pairs(found, function(a, b)
 				return a.key < b.key
 			end) do
-				table.insert(game, "realm=" .. realm .. "\n")
+				list.insert(game, "realm=" .. realm .. "\n")
 
-				table.sort(sentences, function(a, b)
+				list.sort(sentences, function(a, b)
 					return a:split("=")[1] < b:split("=")[1]
 				end)
 
-				table.insert(game, table.concat(sentences, "\n") .. "\n")
+				list.insert(game, list.concat(sentences, "\n") .. "\n")
 			end
 
-			local game_list = table.concat(game, "")
+			local game_list = list.concat(game, "")
 			log("saving ")
 			local count = 0
 
@@ -514,7 +514,7 @@ function chatsounds.BuildSoundInfoTranslations()
 							end
 						end
 
-						str = table.concat(tbl, "")
+						str = list.concat(tbl, "")
 						str = str:gsub("//.-\n", "")
 						-- stupid hack
 						local tbl = utility.VDFToTable(str, true)
@@ -559,7 +559,7 @@ function chatsounds.BuildSoundInfoTranslations()
 						local data = {}
 						text = text:gsub("(<.->)", function(tag)
 							data.tags = data.tags or {}
-							table.insert(data.tags, tag)
+							list.insert(data.tags, tag)
 							return ""
 						end)
 
@@ -704,7 +704,7 @@ function chatsounds.TranslateSoundLists()
 			if not id or mounted[id] then
 				if vfs.IsFile("data/chatsounds/sound_info/" .. path) then
 					local sound_info = serializer.ReadFile("msgpack", "data/chatsounds/sound_info/" .. path)
-					local list = chatsounds.ListToTable(vfs.Read("data/chatsounds/lists/" .. path))
+					local lst = chatsounds.ListToTable(vfs.Read("data/chatsounds/lists/" .. path))
 					local phonemes = vfs.Read("scripts/game_sounds_vo_phonemes.txt")
 
 					if phonemes then
@@ -724,7 +724,7 @@ function chatsounds.TranslateSoundLists()
 					local found = 0
 					local max = 0
 
-					for k, v in pairs(list) do
+					for k, v in pairs(lst) do
 						for k, v in pairs(v) do
 							for k, v in pairs(v) do
 								max = max + 1
@@ -732,10 +732,10 @@ function chatsounds.TranslateSoundLists()
 						end
 					end
 
-					for realm, list in pairs(list) do
+					for realm, lst in pairs(lst) do
 						newlist[realm] = newlist[realm] or {}
 
-						for trigger, sounds in pairs(list) do
+						for trigger, sounds in pairs(lst) do
 							newlist[realm][trigger] = newlist[realm][trigger] or {}
 
 							for i, data in ipairs(sounds) do
@@ -812,7 +812,7 @@ function chatsounds.TranslateSoundLists()
 
 								new_trigger = new_trigger or trigger
 								newlist[realm][new_trigger] = newlist[realm][new_trigger] or {}
-								table.insert(newlist[realm][new_trigger], data)
+								list.insert(newlist[realm][new_trigger], data)
 								found = found + 1
 								logn(data.path:sub(7), " - ", translation_type)
 								logn("\t", new_trigger)
@@ -825,7 +825,7 @@ function chatsounds.TranslateSoundLists()
 					local game_list = chatsounds.TableToList(newlist)
 					path = vfs.ReplaceIllegalPathSymbols(path)
 					vfs.Write("data/chatsounds/translated_lists/" .. path, game_list)
-				--serializer.WriteFile("msgpack", "data/chatsounds/" .. path, chatsounds.TableToTree(list))
+				--serializer.WriteFile("msgpack", "data/chatsounds/" .. path, chatsounds.TableToTree(lst))
 				else
 					logn("sound data not found for ", path)
 				end
@@ -874,7 +874,7 @@ function chatsounds.BuildListForGithub(appid)
 					realm = realm:gsub("[^a-z0-9 _]", "")
 
 					if #data == 1 then
-						table.insert(
+						list.insert(
 							sounds,
 							{
 								realm,
@@ -884,7 +884,7 @@ function chatsounds.BuildListForGithub(appid)
 						)
 					else
 						for i, data in ipairs(data) do
-							table.insert(
+							list.insert(
 								sounds,
 								{
 									realm,

@@ -48,7 +48,7 @@ if NETWORK then
 				skip_default = skip_default,
 				smooth = smooth,
 			}
-			table.insert(self.server_synced_vars, info)
+			list.insert(self.server_synced_vars, info)
 			self.server_synced_vars_stringtable[component_name .. key] = info
 
 			if SERVER then
@@ -100,7 +100,7 @@ if NETWORK then
 			end
 
 			if i then
-				table.remove(self.server_synced_vars, i)
+				list.remove(self.server_synced_vars, i)
 				self.server_synced_vars_stringtable[info.component .. key] = nil
 
 				if info.old_set_func then
@@ -225,12 +225,12 @@ if NETWORK then
 						if self.debug then logf("%s - %s: received %s\n", self, info.component, var) end
 					--elseif info.flags == "reliable" then
 					--buffer:SetPosition(1)
-					--table.insert(self.queued_packets, buffer)
+					--list.insert(self.queued_packets, buffer)
 					end
 				end
 			else
 				buffer:SetPosition(1)
-				table.insert(queued_packets, buffer)
+				list.insert(queued_packets, buffer)
 			--logf("received sync packet %s but entity[%s] is NULL\n", typ, id)
 			end
 		end
@@ -300,13 +300,13 @@ if NETWORK then
 
 			if CLIENT then
 				if self.queued_packets[1] then
-					local buffer = table.remove(self.queued_packets)
+					local buffer = list.remove(self.queued_packets)
 
 					if buffer then handle_packet(buffer) end
 				end
 
 				if queued_packets[1] then
-					local buffer = table.remove(queued_packets)
+					local buffer = list.remove(queued_packets)
 
 					if buffer then handle_packet(buffer) end
 				end
@@ -314,7 +314,7 @@ if NETWORK then
 		end
 
 		if SERVER then
-			table.insert(META.Events, "ClientEntered")
+			list.insert(META.Events, "ClientEntered")
 
 			function META:OnClientEntered(client)
 				self:SpawnEntityOnClient(client, self.NetworkId, self:GetEntity().config)
@@ -432,7 +432,7 @@ if NETWORK then
 			end
 
 			function META:CallOnClientsPersist(component, name, ...)
-				table.insert(self.call_on_client_persist, {component, name, ...})
+				list.insert(self.call_on_client_persist, {component, name, ...})
 				return self:CallOnClients(component, name, ...)
 			end
 		end

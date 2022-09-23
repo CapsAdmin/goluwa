@@ -67,14 +67,14 @@ do -- console title
 				if title then
 					if not titles[id] then
 						titles[id] = {title = title}
-						table.insert(titlesi, titles[id])
+						list.insert(titlesi, titles[id])
 					end
 
 					titles[id].title = title
 				else
 					for _, v in ipairs(titlesi) do
 						if v == titles[id] then
-							table.remove(titlesi, i)
+							list.remove(titlesi, i)
 
 							break
 						end
@@ -207,7 +207,7 @@ do -- arg is made from luajit.exe
 	_G.arg = nil
 	arg[0] = nil
 	arg[-1] = nil
-	table.remove(arg, 1)
+	list.remove(arg, 1)
 
 	function system.GetStartupArguments()
 		return arg
@@ -266,12 +266,12 @@ do
 							if val and #val > 200 then val = val:sub(0, 200) .. "...." end
 						end
 
-						table.insert(args, ("%s = %s"):format(key, val))
+						list.insert(args, ("%s = %s"):format(key, val))
 					end
 
-					info.arg_line = table.concat(args, ", ")
+					info.arg_line = list.concat(args, ", ")
 					info.name = info.name or "unknown"
-					table.insert(data, info)
+					list.insert(data, info)
 				else
 					break
 				end
@@ -301,7 +301,7 @@ do
 				end
 			end
 
-			table.insert(data, {source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
+			list.insert(data, {source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
 			resize_field(data, "source")
 			resize_field(data, "name")
 
@@ -309,7 +309,7 @@ do
 				logf("  %s   %s  (%s)\n", info.source, info.name, info.arg_line)
 			end
 
-			table.clear(data)
+			list.clear(data)
 			logn("}")
 			logn("LOCALS: ")
 			logn("{")
@@ -330,11 +330,11 @@ do
 					val = serializer.GetLibrary("luadata").ToString(param.val)
 				end
 
-				table.insert(data, {key = param.key, value = val})
+				list.insert(data, {key = param.key, value = val})
 			--end
 			end
 
-			table.insert(data, {key = "KEY:", value = "VALUE:"})
+			list.insert(data, {key = "KEY:", value = "VALUE:"})
 			resize_field(data, "key")
 			resize_field(data, "value")
 
@@ -384,7 +384,7 @@ function system.GetCLICommand(cmd)
 				return function(...)
 					local str = cmd .. " " .. key
 
-					if ... then str = str .. " " .. table.concat({...}, " ") end
+					if ... then str = str .. " " .. list.concat({...}, " ") end
 
 					local f = io.popen(str)
 					local res = f:read("*all")

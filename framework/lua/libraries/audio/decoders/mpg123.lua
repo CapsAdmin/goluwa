@@ -31,7 +31,7 @@ audio.AddDecoder("mpg123", function(vfs_file, path_hint)
 
 	if not ok then
 		return false,
-		"not a valid file (file does not start with " .. table.concat(hex_allowed, " or ") .. ")"
+		"not a valid file (file does not start with " .. list.concat(hex_allowed, " or ") .. ")"
 	end
 
 	local ret = ffi.new("int[1]")
@@ -64,7 +64,7 @@ audio.AddDecoder("mpg123", function(vfs_file, path_hint)
 			format_info.channels = channels[0]
 		end
 
-		table.insert(chunks, ffi.string(out, size[0]))
+		list.insert(chunks, ffi.string(out, size[0]))
 
 		while ret ~= mpg123.e.NEED_MORE do
 			ret = mpg123.Decode(feed, nil, 0, out, OUTPUT_BUFFER_SIZE, size)
@@ -73,7 +73,7 @@ audio.AddDecoder("mpg123", function(vfs_file, path_hint)
 				return nil, ffi.string(mpg123.Strerror(feed))
 			end
 
-			table.insert(chunks, ffi.string(out, size[0]))
+			list.insert(chunks, ffi.string(out, size[0]))
 		end
 
 		if ret == mpg123.e.ERR then
@@ -82,7 +82,7 @@ audio.AddDecoder("mpg123", function(vfs_file, path_hint)
 	end
 
 	mpg123.Delete(feed)
-	local str = table.concat(chunks)
+	local str = list.concat(chunks)
 	local buf = ffi.new("uint8_t[?]", #str)
 	ffi.copy(buf, str, #str)
 	return buf, #str, format_info

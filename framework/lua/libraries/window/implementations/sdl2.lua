@@ -429,7 +429,7 @@ end
 
 if VULKAN then
 	function META:PreWindowSetup(flags)
-		table.insert(flags, "vulkan")
+		list.insert(flags, "vulkan")
 	end
 
 	function META:PostWindowSetup() end
@@ -451,7 +451,7 @@ if OPENGL and not NULL_OPENGL then
 	local gl = require("opengl")
 
 	function META:PreWindowSetup(flags)
-		table.insert(flags, "opengl")
+		list.insert(flags, "opengl")
 		sdl.GL_SetAttribute(sdl.e.GL_DEPTH_SIZE, 16)
 		sdl.GL_SetAttribute(sdl.e.GL_STENCIL_SIZE, 8)
 		-- workaround for srgb on intel mesa driver
@@ -517,12 +517,12 @@ if OPENGL and not NULL_OPENGL then
 					": ",
 					err
 				)
-				table.insert(errors, err)
+				list.insert(errors, err)
 			end
 		end
 
 		if context == nil then
-			error("sdl.GL_CreateContext failed: " .. table.concat(errors, "\n"), 2)
+			error("sdl.GL_CreateContext failed: " .. list.concat(errors, "\n"), 2)
 		end
 
 		gl.GetProcAddress = sdl.GL_GetProcAddress

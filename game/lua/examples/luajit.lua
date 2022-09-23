@@ -237,7 +237,7 @@ function Threads:__call(N, ...)
 		C.lua_getfield(L, LUA_GLOBALSINDEX, "__workerinitres_sz")
 		local workerinitres_sz = C.lua_tointeger(L, -1)
 		C.lua_settop(L, -3)
-		table.insert(
+		list.insert(
 			initres,
 			serialize.load(ffi.cast("const char*", workerinitres_p), workerinitres_sz)
 		)
@@ -286,7 +286,7 @@ function Threads:__call(N, ...)
 			workers
 		)
 		assert(thread ~= nil, string.format("%d-th thread creation failed", i))
-		table.insert(self.threads, {thread = thread, L = L})
+		list.insert(self.threads, {thread = thread, L = L})
 	end
 
 	return self, initres
@@ -300,10 +300,10 @@ function Threads:dojob()
 		local endcallstatus, msg = pcall(endcallbacks[endcallbackid], unpack(args))
 
 		if not endcallstatus then
-			table.insert(self.errors, string.format("[thread %d endcallback] %s", threadid, msg))
+			list.insert(self.errors, string.format("[thread %d endcallback] %s", threadid, msg))
 		end
 	else
-		table.insert(self.errors, string.format("[thread %d callback] %s", threadid, args[1]))
+		list.insert(self.errors, string.format("[thread %d callback] %s", threadid, args[1]))
 	end
 
 	endcallbacks[endcallbackid] = nil
@@ -325,7 +325,7 @@ function Threads:addjob(callback, endcallback, ...) -- endcallback is passed wit
 	endcallbacks.n = endcallbacks.n + 1
 	local func = function(...)
 		local res = {pcall(callback, ...)}
-		local status = table.remove(res, 1)
+		local status = list.remove(res, 1)
 		return status, res, endcallbackid
 	end
 	self.threadworker:addjob(func, ...)
@@ -341,7 +341,7 @@ function Threads:synchronize()
 	end
 
 	if #self.errors > 0 then
-		local msg = string.format("\n%s", table.concat(self.errors, "\n"))
+		local msg = string.format("\n%s", list.concat(self.errors, "\n"))
 		self.errors = {}
 		error(msg)
 	end

@@ -147,7 +147,7 @@ function prototype.RebuildMetatables(what)
 				local base_list = {}
 
 				if meta.Base then
-					table.insert(base_list, meta.Base)
+					list.insert(base_list, meta.Base)
 					local base = meta
 
 					for _ = 1, 50 do
@@ -155,7 +155,7 @@ function prototype.RebuildMetatables(what)
 
 						if not base or not base.Base then break end
 
-						table.insert(base_list, 1, base.Base)
+						list.insert(base_list, 1, base.Base)
 					end
 
 					for _, v in ipairs(base_list) do
@@ -192,7 +192,7 @@ function prototype.RebuildMetatables(what)
 					local tbl = {}
 
 					for _, info in pairs(prototype_variables) do
-						if info.copy then table.insert(tbl, info) end
+						if info.copy then list.insert(tbl, info) end
 					end
 
 					copy.copy_variables = tbl[1] and tbl
@@ -236,7 +236,7 @@ function prototype.GetAllRegistered()
 
 	for _, sub_types in pairs(prototype.registered) do
 		for _, meta in pairs(sub_types) do
-			table.insert(out, meta)
+			list.insert(out, meta)
 		end
 	end
 
@@ -355,7 +355,7 @@ do
 							wlog("unable to find property info for %s (%s)", field_b, obj_b)
 						end
 					else
-						table.remove(prototype.linked_objects, i)
+						list.remove(prototype.linked_objects, i)
 
 						break
 					end
@@ -376,7 +376,7 @@ do
 			end
 		end)
 
-		table.insert(prototype.linked_objects, {store = table.weak(), args = {...}})
+		list.insert(prototype.linked_objects, {store = table.weak(), args = {...}})
 	end
 
 	function prototype.RemovePropertyLink(obj_a, obj_b, field_a, field_b, key_a, key_b)
@@ -391,7 +391,7 @@ do
 				key_a == key_a_ and
 				key_b == key_b_
 			then
-				table.remove(prototype.linked_objects, i)
+				list.remove(prototype.linked_objects, i)
 
 				break
 			end
@@ -410,7 +410,7 @@ do
 		local out = {}
 
 		for _, v in ipairs(prototype.linked_objects) do
-			if v[1] == obj then table.insert(out, {unpack(v)}) end
+			if v[1] == obj then list.insert(out, {unpack(v)}) end
 		end
 
 		return out
@@ -450,11 +450,11 @@ function prototype.GetCreated(sorted, super_type, sub_type)
 					v.ClassName == sub_type
 				)
 			then
-				table.insert(out, v)
+				list.insert(out, v)
 			end
 		end
 
-		table.sort(out, function(a, b)
+		list.sort(out, function(a, b)
 			return a:GetCreationTime() < b:GetCreationTime()
 		end)
 
@@ -590,10 +590,10 @@ function prototype.DumpObjectCount()
 	local sorted = {}
 
 	for k, v in pairs(found) do
-		table.insert(sorted, {k = k, v = v})
+		list.insert(sorted, {k = k, v = v})
 	end
 
-	table.sort(sorted, function(a, b)
+	list.sort(sorted, function(a, b)
 		return a.v > b.v
 	end)
 

@@ -15,7 +15,7 @@ local function dump_script(out)
 
 				if data.modifiers then
 					for k, v in ipairs(data.modifiers) do
-						str = str .. v.mod .. "(" .. table.concat(v.args, ", ") .. ")"
+						str = str .. v.mod .. "(" .. list.concat(v.args, ", ") .. ")"
 
 						if k ~= #data.modifiers then str = str .. ", " end
 					end
@@ -24,7 +24,7 @@ local function dump_script(out)
 				logf("[%i] %s: %q modifiers: %s\n", i, data.type, data.val.trigger, str)
 			end
 		elseif data.type == "modifier" then
-			logf("[%i] %s: %s(%s)\n", i, data.type, data.mod, table.concat(data.args, ", "))
+			logf("[%i] %s: %s(%s)\n", i, data.type, data.mod, list.concat(data.args, ", "))
 		else
 			logf("[%i] %s: %s\n", i, data.type, data.val)
 		end
@@ -225,10 +225,10 @@ local modifiers = {}
 
 for k, v in pairs(chatsounds.LegacyModifiers) do
 	k = k:gsub("%p", "%%%1")
-	table.insert(modifiers, {mod = k, func = v})
+	list.insert(modifiers, {mod = k, func = v})
 end
 
-table.sort(modifiers, function(a, b)
+list.sort(modifiers, function(a, b)
 	return #a.mod > #b.mod
 end)
 
@@ -241,7 +241,7 @@ do
 		for _, val in ipairs(modifiers) do
 			local protect = {}
 			str = str:gsub("%b[]", function(val)
-				table.insert(protect, val)
+				list.insert(protect, val)
 				return "____PROTECT_" .. #protect
 			end)
 			str = str:gsub(val.mod .. "([%d%.]+)", function(str)
@@ -323,7 +323,7 @@ do
 						exp = false
 						exp_level = exp_level - 1
 						capture_exp = true
-						table.insert(temp, char)
+						list.insert(temp, char)
 						char = ""
 					end
 				end
@@ -346,17 +346,17 @@ do
 					or
 					capture_exp
 				then
-					local word = table.concat(temp, "")
+					local word = list.concat(temp, "")
 
 					if #word > 0 then
-						table.insert(words, table.concat(temp, ""))
-						table.clear(temp)
+						list.insert(words, list.concat(temp, ""))
+						list.clear(temp)
 					end
 
 					capture_exp = nil
 				end
 
-				table.insert(temp, char)
+				list.insert(temp, char)
 			end
 
 			last = type
@@ -395,18 +395,18 @@ do
 							local ok, func = expression.Compile(word:sub(2, -2))
 
 							if ok then
-								table.insert(args, func)
+								list.insert(args, func)
 							else
 								wlog("failed to compile expression: ", func)
 							end
 						elseif word ~= "," then
-							table.insert(args, word)
+							list.insert(args, word)
 						end
 					end
 				end
 
 				list.fix_indices(words)
-				table.insert(words, i, {type = "modifier", mod = mod, args = args})
+				list.insert(words, i, {type = "modifier", mod = mod, args = args})
 				i = 1
 			end
 
@@ -431,16 +431,16 @@ do
 			if type(word) == "string" then
 				if node[word] then
 					node = node[word]
-					table.insert(matched, {node = node, word = word})
+					list.insert(matched, {node = node, word = word})
 				else
 					if #matched == 0 then
-						table.insert(out, {type = "unmatched", val = word})
+						list.insert(out, {type = "unmatched", val = word})
 
 						if word == ")" then
 							for i = i + 1, word_count do
 								if type(words[i]) ~= "table" then break end
 
-								table.insert(out, words[i])
+								list.insert(out, words[i])
 							end
 						end
 					else
@@ -480,23 +480,23 @@ do
 						SOUND_DATA = temp
 					end
 
-					table.insert(out, {type = "matched", val = SOUND_DATA})
+					list.insert(out, {type = "matched", val = SOUND_DATA})
 
 					for i2 = i + 1, word_count do
 						local mod = words[i2]
 
 						if type(mod) ~= "table" then break end
 
-						table.insert(out, mod)
+						list.insert(out, mod)
 					end
 				else
 					for _, info in ipairs(matched) do
-						table.insert(out, {type = "unmatched", val = info.word})
+						list.insert(out, {type = "unmatched", val = info.word})
 					end
 				end
 
 				node = root
-				table.clear(matched)
+				list.clear(matched)
 			end
 
 			i = i + 1
@@ -523,7 +523,7 @@ do
 
 					if not mod or mod.type ~= "modifier" then break end
 
-					if mod.mod ~= "repeat" then table.insert(chunk.modifiers, mod) end
+					if mod.mod ~= "repeat" then list.insert(chunk.modifiers, mod) end
 				end
 			elseif chunk.val == "(" then
 				local start = i + 1
@@ -551,7 +551,7 @@ do
 							script[i].modifiers = script[i].modifiers or {}
 
 							if mod.mod ~= "repeat" then
-								table.insert(script[i].modifiers, mod)
+								list.insert(script[i].modifiers, mod)
 							end
 						end
 					end
@@ -579,7 +579,7 @@ do
 			local chunk = script[i]
 
 			if chunk and chunk.type == "modifier" and chunk.mod == "repeat" then
-				table.remove(script, i)
+				list.remove(script, i)
 				local repetitions = math.clamp(tonumber(chunk.args[1]) - 1, 1, 100)
 
 				if script[i - 1] then
@@ -587,7 +587,7 @@ do
 						for _ = 1, repetitions do
 							if limit <= 0 then break end
 
-							table.insert(script, i, table.copy(script[i - 1]))
+							list.insert(script, i, table.copy(script[i - 1]))
 							limit = limit - 1
 						end
 					elseif script[i - 1].val == ")" then
@@ -598,14 +598,14 @@ do
 
 							if not chunk or chunk.val == "(" then break end
 
-							table.insert(temp, chunk)
+							list.insert(temp, chunk)
 						end
 
 						for _ = 1, repetitions do
 							for _, chunk in ipairs(temp) do
 								if limit <= 0 then break end
 
-								table.insert(script, i - 1, table.copy(chunk))
+								list.insert(script, i - 1, table.copy(chunk))
 								limit = limit - 1
 							end
 						end
@@ -631,12 +631,12 @@ do
 		if custom_id and chatsounds.custom then
 			for _, id in ipairs(custom_id) do
 				if chatsounds.custom[id] then
-					table.insert(trees, chatsounds.custom[id].tree)
+					list.insert(trees, chatsounds.custom[id].tree)
 				end
 			end
 		end
 
-		if chatsounds.tree then table.insert(trees, chatsounds.tree) end
+		if chatsounds.tree then list.insert(trees, chatsounds.tree) end
 
 		local root = table.virtual_merge({}, trees)
 		local script = find_sounds(words, root)
@@ -729,12 +729,12 @@ function chatsounds.PlayScript(script)
 
 								for realm, data in pairs(chunk.val.realms) do
 									for _, sound in ipairs(data.sounds) do
-										table.insert(temp, {sound = sound, realm = realm})
+										list.insert(temp, {sound = sound, realm = realm})
 									end
 								end
 
 								-- needs to be sorted in some way so it will be equal for all clients
-								table.sort(temp, function(a, b)
+								list.sort(temp, function(a, b)
 									return a.sound.path > b.sound.path
 								end)
 
@@ -754,13 +754,13 @@ function chatsounds.PlayScript(script)
 					for realm, data in pairs(chunk.val.realms) do
 						if not chatsounds.last_realm or chatsounds.last_realm == realm then
 							for _, sound in ipairs(data.sounds) do
-								table.insert(temp, {sound = sound, realm = realm})
+								list.insert(temp, {sound = sound, realm = realm})
 							end
 						end
 					end
 
 					-- needs to be sorted in some way so it will be equal for all clients
-					table.sort(temp, function(a, b)
+					list.sort(temp, function(a, b)
 						return a.sound.path > b.sound.path
 					end)
 
@@ -812,7 +812,7 @@ function chatsounds.PlayScript(script)
 						end
 					end
 
-					table.insert(sounds, sound)
+					list.insert(sounds, sound)
 					chatsounds.last_trigger = chunk.val.trigger
 				-- else
 				-- 	print("huh")
@@ -838,7 +838,7 @@ function chatsounds.PlayScript(script)
 
 			for i, v in ipairs(chatsounds.queue_calc) do
 				if v == cb then
-					table.remove(chatsounds.queue_calc, i)
+					list.remove(chatsounds.queue_calc, i)
 
 					break
 				end
@@ -862,14 +862,14 @@ function chatsounds.PlayScript(script)
 			sound.start_time = time + duration
 			duration = duration + sound.duration
 			sound.stop_time = time + duration
-			table.insert(track, sound)
+			list.insert(track, sound)
 		end
 
-		table.insert(chatsounds.active_tracks, track)
+		list.insert(chatsounds.active_tracks, track)
 		return true
 	end
 
-	table.insert(chatsounds.queue_calc, cb)
+	list.insert(chatsounds.queue_calc, cb)
 	chatsounds.last_realm = nil
 end
 
@@ -892,7 +892,7 @@ function chatsounds.Update()
 	if chatsounds.queue_calc[1] then
 		for i, v in ipairs(chatsounds.queue_calc) do
 			if v() == true then
-				table.remove(chatsounds.queue_calc, i)
+				list.remove(chatsounds.queue_calc, i)
 
 				break
 			end
@@ -915,12 +915,12 @@ function chatsounds.Update()
 
 				if sound.stop_time < time then
 					sound:remove()
-					table.remove(track, i)
+					list.remove(track, i)
 				end
 			end
 		end
 
-		if #track == 0 then table.remove(chatsounds.active_tracks, i) end
+		if #track == 0 then list.remove(chatsounds.active_tracks, i) end
 	end
 end
 
@@ -983,7 +983,7 @@ function chatsounds.GetLists()
 	local out = {}
 
 	for _, v in ipairs(vfs.Find("data/chatsounds/lists/")) do
-		table.insert(out, v:sub(0, -5))
+		list.insert(out, v:sub(0, -5))
 	end
 
 	return out

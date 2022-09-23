@@ -39,7 +39,7 @@ local function parse_scene(id)
 					file:SetPosition(info.Offset)
 
 					for i = 1, info.Size do
-						table.insert(indices, file:ReadUnsignedInt())
+						list.insert(indices, file:ReadUnsignedInt())
 					end
 
 					local type_size = require("ffi").sizeof(info.Encoding == "varint" and "uint8_t" or t:lower():gsub("Array", "_t"))

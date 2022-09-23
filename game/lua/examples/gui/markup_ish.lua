@@ -39,7 +39,7 @@ local function g(class_name, ...)
 		if not stack[1] then
 			setfenv(2, _G)
 		else
-			table.remove(stack, pnl)
+			list.remove(stack, pnl)
 			set_panel_env(stack[#stack])
 		end
 
@@ -53,7 +53,7 @@ local function g(class_name, ...)
 		pnl:SetSkin(stack[#stack]:GetSkin())
 	end
 
-	table.insert(stack, pnl)
+	list.insert(stack, pnl)
 	return set_panel_env(pnl)
 end
 

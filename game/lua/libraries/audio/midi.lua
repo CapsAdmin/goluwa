@@ -179,7 +179,7 @@ do
 						error("Unrecognised MIDI event type: " .. event_type)
 					end
 
-					table.insert(track.events, event)
+					list.insert(track.events, event)
 				end
 
 				if file:GetPosition() >= info.track_size then break end
@@ -196,7 +196,7 @@ do
 		if not midi.tracks[1].events[1] then
 			midi.tracks[1].events = nil
 			table.merge(midi, midi.tracks[1])
-			table.remove(midi.tracks, 1)
+			list.remove(midi.tracks, 1)
 		end
 
 		return midi
@@ -258,7 +258,7 @@ do
 					chunk.data = ffi.cast("uint8_t *", sf2:ReadBytes(size))
 					chunk.size = size
 				elseif id == "phdr" then
-					local list = {}
+					local lst = {}
 
 					repeat
 						local info = {}
@@ -269,21 +269,21 @@ do
 						info.library = sf2:ReadLong()
 						info.genre = sf2:ReadLong()
 						info.morphology_genre = sf2:ReadLong()
-						table.insert(list, info)					
+						list.insert(lst, info)					
 					until sf2:GetPosition() >= the_end
 
-					chunk.phdr = list
+					chunk.phdr = lst
 				elseif id == "pbag" then
-					local list = {}
+					local lst = {}
 
 					repeat
 						local info = {}
 						info.gen_index = sf2:ReadShort()
 						info.mod_index = sf2:ReadShort()
-						table.insert(list, info)					
+						list.insert(lst, info)					
 					until sf2:GetPosition() >= the_end
 
-					chunk.pbag = list
+					chunk.pbag = lst
 				elseif id == "pmod" then
 					sf2:Advance(size)
 				elseif id == "iver" then
@@ -295,7 +295,7 @@ do
 				elseif id == "irom" then
 					sf2:Advance(size)
 				elseif id == "imod" then
-					local list = {}
+					local lst = {}
 
 					repeat
 						local info = {}
@@ -304,14 +304,14 @@ do
 						info.mod_amount = sf2:ReadShort()
 						info.mod_amt_src_oper = mod_bits_to_table(sf2:ReadShort())
 						info.mod_trans_oper = sf2:ReadShort()
-						table.insert(list, info)					
+						list.insert(lst, info)					
 					until sf2:GetPosition() >= the_end
 
-					chunk.imod = list
+					chunk.imod = lst
 				elseif id == "pgen" then
 					sf2:Advance(size)
 				elseif id == "igen" then
-					local list = {}
+					local lst = {}
 
 					repeat
 						local gen = {}
@@ -325,34 +325,34 @@ do
 							gen.amount = sf2:ReadShort()
 						end
 
-						table.insert(list, gen)					
+						list.insert(lst, gen)					
 					until sf2:GetPosition() >= the_end
 
-					chunk.igen = list
+					chunk.igen = lst
 				elseif id == "inst" then
-					local list = {}
+					local lst = {}
 
 					repeat
 						local info = {}
 						info.instrument_name = sf2:ReadString(20, true)
 						info.instrument_bag_index = sf2:ReadShort()
-						table.insert(list, info)					
+						list.insert(lst, info)					
 					until sf2:GetPosition() >= the_end
 
-					chunk.inst = list
+					chunk.inst = lst
 				elseif id == "ibag" then
-					local list = {}
+					local lst = {}
 
 					repeat
 						local info = {}
 						info.GenNdx = sf2:ReadShort()
 						info.ModNdx = sf2:ReadShort()
-						table.insert(list, info)					
+						list.insert(lst, info)					
 					until sf2:GetPosition() >= the_end
 
-					chunk.ibag = list
+					chunk.ibag = lst
 				elseif id == "shdr" then
-					local list = {}
+					local lst = {}
 
 					repeat
 						local info = {}
@@ -366,10 +366,10 @@ do
 						info.pitch_correction = sf2:ReadByte()
 						info.sample_link = sf2:ReadShort()
 						info.sample_type = sf2:ReadShort()
-						table.insert(list, info)					
+						list.insert(lst, info)					
 					until sf2:GetPosition() >= the_end
 
-					chunk.shdr = list
+					chunk.shdr = lst
 				else
 					break
 				end

@@ -1326,7 +1326,7 @@ do
 			local out = {}
 
 			for i, info in ipairs(self.vertex_buffer.mesh_layout.attributes) do
-				table.insert(out, {tr[info.name] or info.name, info.type_info.type, info.type_info.arg_count})
+				list.insert(out, {tr[info.name] or info.name, info.type_info.type, info.type_info.arg_count})
 			end
 
 			return out

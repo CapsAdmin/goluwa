@@ -16,14 +16,14 @@ function utility.QuickBMSGetFiles(archive_path, script)
 	end
 
 	fs.PushWorkingDirectory(quickbms_location)
-	local list = io.popen(("quickbms -R -l temp_script.bms %q"):format(archive_path), "r")
+	local lst = io.popen(("quickbms -R -l temp_script.bms %q"):format(archive_path), "r")
 	fs.PopWorkingDirectory()
 	local files = {}
 
-	for size, path in list:read("*all"):gmatch("%S+%s+(%S+)%s+(%S+)") do
+	for size, path in lst:read("*all"):gmatch("%S+%s+(%S+)%s+(%S+)") do
 		--offset = tonumber("0x" .. offset)
 		size = tonumber(size)
-		table.insert(files, {size = size, path = path})
+		list.insert(files, {size = size, path = path})
 	end
 
 	return files

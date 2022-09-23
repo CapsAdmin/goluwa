@@ -306,7 +306,7 @@ function META:CompileString(data)
 					local texture = self.texture_atlas:GetPageTexture(char)
 
 					if texture ~= last_tex then
-						table.insert(out, {poly = poly, texture = texture})
+						list.insert(out, {poly = poly, texture = texture})
 						last_tex = texture
 					end
 
@@ -438,7 +438,7 @@ function META:WrapString(str, max_width, max_word_length)
 
 	tbl[tbl_i] = str:usub(start_pos, end_pos)
 	tbl_i = tbl_i + 1
-	return table.concat(tbl, "\n")
+	return list.concat(tbl, "\n")
 end
 
 function META:OnLoad() end

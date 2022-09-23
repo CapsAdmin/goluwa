@@ -23,7 +23,7 @@ for x = -max / 2, max / 2 do
 		ent.seed2 = math.random() * 100
 		ent.seed3 = math.random() * 100
 		ent.seed4 = math.random() * 100
-		table.insert(spheres, ent)
+		list.insert(spheres, ent)
 	end
 end
 

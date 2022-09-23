@@ -55,7 +55,7 @@ local function header_to_table(str)
 
 		if type == "char" and not length then type = "byte" end
 
-		table.insert(
+		list.insert(
 			out,
 			{
 				type,
@@ -521,7 +521,7 @@ do -- basic data types
 			out[i] = string.char(self:ReadByte())
 		end
 
-		return table.concat(out)
+		return list.concat(out)
 	end
 
 	-- null terminated string
@@ -544,12 +544,12 @@ do -- basic data types
 
 			if not byte or byte == terminator then break end
 
-			table.insert(str, string.char(byte))
+			list.insert(str, string.char(byte))
 		end
 
 		if advance then self:SetPosition(pos + length) end
 
-		return table.concat(str)
+		return list.concat(str)
 	end
 
 	function META:ReadFixedLengthString(length)
@@ -574,10 +574,10 @@ do -- basic data types
 
 			if not byte then break end
 
-			table.insert(str, string.char(byte))
+			list.insert(str, string.char(byte))
 		end
 
-		return table.concat(str)
+		return list.concat(str)
 	end
 end
 
@@ -1019,7 +1019,7 @@ do -- structures
 				local key = data[2]
 
 				if ordered then
-					table.insert(out, {key = key, val = val})
+					list.insert(out, {key = key, val = val})
 				else
 					if out[key] then key = key .. i end
 
@@ -1031,20 +1031,20 @@ do -- structures
 				local tbl = {}
 
 				if ordered then
-					table.insert(out, {key = data[2], val = tbl})
+					list.insert(out, {key = data[2], val = tbl})
 				else
 					out[data[2]] = tbl
 				end
 
 				for _ = 1, val do
-					table.insert(tbl, self:ReadStructure(data[3], ordered))
+					list.insert(tbl, self:ReadStructure(data[3], ordered))
 				end
 			end
 
 			if data.switch then
 				for k, v in pairs(self:ReadStructure(data.switch[val], ordered)) do
 					if ordered then
-						table.insert(out, {key = k, val = v})
+						list.insert(out, {key = k, val = v})
 					else
 						out[k] = v
 					end
@@ -1118,10 +1118,10 @@ do -- automatic
 		local ids = {}
 
 		for k in pairs(read_functions) do
-			table.insert(ids, k)
+			list.insert(ids, k)
 		end
 
-		table.sort(ids, function(a, b)
+		list.sort(ids, function(a, b)
 			return a > b
 		end)
 
@@ -1172,13 +1172,13 @@ do -- push pop position
 		end
 
 		self.push_pop_pos_stack = self.push_pop_pos_stack or {}
-		table.insert(self.push_pop_pos_stack, self:GetPosition())
+		list.insert(self.push_pop_pos_stack, self:GetPosition())
 		self:SetPosition(pos)
 	end
 
 	function META:PopPosition()
 		if self.push_pop_pos_stack[1] then
-			self:SetPosition(table.remove(self.push_pop_pos_stack))
+			self:SetPosition(list.remove(self.push_pop_pos_stack))
 		end
 	end
 end

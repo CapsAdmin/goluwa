@@ -6,7 +6,7 @@ function META:OnClientConnected(client)
 	if self:OnClientConnected2(client) == false then return false end
 
 	sockets.ConnectedTCP2HTTP(client)
-	table.insert(self.Clients, client)
+	list.insert(self.Clients, client)
 	client.OnReceiveResponse = function(client, method, path)
 		return self:OnReceiveResponse(client, method, path)
 	end

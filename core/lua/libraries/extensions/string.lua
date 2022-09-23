@@ -27,7 +27,7 @@ function string.indent(str, count)
 		tbl[i] = ("\t"):rep(count) .. line
 	end
 
-	return table.concat(tbl, "\n")
+	return list.concat(tbl, "\n")
 end
 
 function string.buildclass(...)
@@ -35,7 +35,7 @@ function string.buildclass(...)
 	local check
 
 	if type(classes[#classes]) == "function" then
-		check = table.remove(classes, #classes)
+		check = list.remove(classes, #classes)
 	end
 
 	local out = ""
@@ -182,7 +182,7 @@ do
 			text[i] = text[i] .. " "
 		end
 
-		return table.concat(text)
+		return list.concat(text)
 	end
 end
 
@@ -196,7 +196,7 @@ function string.random(length, min, max)
 		tbl[i] = string.char(math.random(min, max))
 	end
 
-	return table.concat(tbl)
+	return list.concat(tbl)
 end
 
 -- gsub doesn't seem to remove \0
@@ -207,10 +207,10 @@ function string.remove_padding(str, padding)
 	for i = 1, #str do
 		local char = str:sub(i, i)
 
-		if char ~= padding then table.insert(new, char) end
+		if char ~= padding then list.insert(new, char) end
 	end
 
-	return table.concat(new)
+	return list.concat(new)
 end
 
 function string.hex(str)
@@ -220,7 +220,7 @@ function string.hex(str)
 		copy[i] = ("%x"):format(str:byte(i, i))
 	end
 
-	return table.concat(copy)
+	return list.concat(copy)
 end
 
 function string.readable_hex(str)
@@ -321,17 +321,17 @@ function string.hex_format(str, chunk_width, row_width, space_separator)
 	local row_i = 1
 
 	for _, char in pairs(str) do
-		table.insert(out, char)
-		table.insert(out, " ")
+		list.insert(out, char)
+		list.insert(out, " ")
 
 		if row_i >= (row_width * chunk_width) then
-			table.insert(out, "\n")
+			list.insert(out, "\n")
 			chunk_i = 0
 			row_i = 0
 		end
 
 		if chunk_i >= chunk_width then
-			table.insert(out, space_separator)
+			list.insert(out, space_separator)
 			chunk_i = 0
 		end
 
@@ -339,7 +339,7 @@ function string.hex_format(str, chunk_width, row_width, space_separator)
 		chunk_i = chunk_i + 1
 	end
 
-	return table.concat(out):trim()
+	return list.concat(out):trim()
 end
 
 function string.bin_format(str, row_width, space_separator, with_hex, format)
@@ -353,7 +353,7 @@ function string.bin_format(str, row_width, space_separator, with_hex, format)
 	for _, char in pairs(str) do
 		local bin = utility.NumberToBinary(char:byte(), 8)
 
-		if with_hex then table.insert(out, ("%02X/"):format(char:byte())) end
+		if with_hex then list.insert(out, ("%02X/"):format(char:byte())) end
 
 		if format then
 			local str = ""
@@ -362,26 +362,26 @@ function string.bin_format(str, row_width, space_separator, with_hex, format)
 
 			for _, num in ipairs(format:to_list()) do
 				num = tonumber(num)
-				table.insert(bin, num + offset, "-")
+				list.insert(bin, num + offset, "-")
 				offset = offset + 1
 			end
 
-			table.insert(out, table.concat(bin))
+			list.insert(out, list.concat(bin))
 		else
-			table.insert(out, bin)
+			list.insert(out, bin)
 		end
 
-		table.insert(out, space_separator)
+		list.insert(out, space_separator)
 
 		if row_i >= row_width then
-			table.insert(out, "\n")
+			list.insert(out, "\n")
 			row_i = 0
 		end
 
 		row_i = row_i + 1
 	end
 
-	return table.concat(out):trim()
+	return list.concat(out):trim()
 end
 
 function string.oct_format(str, row_width, space_separator, with_hex)
@@ -395,20 +395,20 @@ function string.oct_format(str, row_width, space_separator, with_hex)
 	for _, char in pairs(str) do
 		local bin = string.format("%03o", char:byte())
 
-		if with_hex then table.insert(out, ("%02X/"):format(char:byte())) end
+		if with_hex then list.insert(out, ("%02X/"):format(char:byte())) end
 
-		table.insert(out, bin) --:sub(0, 4) .. "-" .. bin:sub(5, 8))
-		table.insert(out, space_separator)
+		list.insert(out, bin) --:sub(0, 4) .. "-" .. bin:sub(5, 8))
+		list.insert(out, space_separator)
 
 		if row_i >= row_width then
-			table.insert(out, "\n")
+			list.insert(out, "\n")
 			row_i = 0
 		end
 
 		row_i = row_i + 1
 	end
 
-	return table.concat(out):trim()
+	return list.concat(out):trim()
 end
 
 function string.ends_with(a, b)
@@ -463,7 +463,7 @@ function string.length_split(str, len)
 			local right = (i * len) + len
 			local res = str:sub(left, right)
 
-			if res ~= "" then table.insert(tbl, res) end
+			if res ~= "" then list.insert(tbl, res) end
 		end
 
 		return tbl
@@ -512,19 +512,19 @@ function string.safe_format(str, ...)
 		local temp = {}
 
 		for i = count, select("#", ...) do
-			table.insert(temp, tostringx(select(i, ...)))
+			list.insert(temp, tostringx(select(i, ...)))
 		end
 
-		str = str:replace("%...", table.concat(temp, ", "))
+		str = str:replace("%...", list.concat(temp, ", "))
 		count = count - 1
 	end
 
-	if count == 0 then return table.concat({str, ...}, "") end
+	if count == 0 then return list.concat({str, ...}, "") end
 
 	local copy = {}
 
 	for i = 1, count do
-		table.insert(copy, tostringx(select(i, ...)))
+		list.insert(copy, tostringx(select(i, ...)))
 	end
 
 	return string.format(str, unpack(copy))
@@ -649,7 +649,7 @@ function string.replace(self, what, with)
 
 	if current_pos > 1 and last_i then
 		tbl[last_i] = self:sub(current_pos)
-		return table.concat(tbl, with)
+		return list.concat(tbl, with)
 	end
 
 	return self
@@ -682,7 +682,7 @@ do
 	local lshift = bit.lshift
 	local math_floor = math.floor
 	local string_char = string.char
-	local table_concat = table.concat
+	local list_concat = list.concat
 	local UTF8_ACCEPT = 0
 	local UTF8_REJECT = 12
 	local utf8d = {

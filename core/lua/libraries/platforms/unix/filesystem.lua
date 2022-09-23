@@ -262,7 +262,7 @@ if jit.os ~= "OSX" then
 
 			if len >= length then
 				local res = ffi.cast("struct inotify_event*", buffer)
-				table.insert(
+				list.insert(
 					queue[res.wd],
 					{
 						cookie = res.cookie,
@@ -272,7 +272,7 @@ if jit.os ~= "OSX" then
 				)
 			end
 
-			if queue[wd][1] then return table.remove(queue[wd]) end
+			if queue[wd][1] then return list.remove(queue[wd]) end
 		end
 
 		function self:Remove()
@@ -330,7 +330,7 @@ do
 			local ptr = opendir(path or "")
 
 			if ptr == nil then
-				table.insert(errors, {path = path, error = last_error()})
+				list.insert(errors, {path = path, error = last_error()})
 				return
 			end
 

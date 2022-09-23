@@ -141,7 +141,7 @@ function prototype.SetupProperty(info)
 	if __store then
 		info.type = typex(default)
 		meta.storable_variables = meta.storable_variables or {}
-		table.insert(meta.storable_variables, info)
+		list.insert(meta.storable_variables, info)
 	end
 
 	do

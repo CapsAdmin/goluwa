@@ -182,10 +182,10 @@ do
 
 		for name, hex in pairs(names) do
 			local c = ColorHex(hex)
-			table.insert(found, {distance = Vec3(c.r, c.g, c.b):Distance(vec3color), name = name})
+			list.insert(found, {distance = Vec3(c.r, c.g, c.b):Distance(vec3color), name = name})
 		end
 
-		table.sort(found, function(a, b)
+		list.sort(found, function(a, b)
 			return a.distance < b.distance
 		end)
 
@@ -313,7 +313,7 @@ function META:GetTints(count)
 		local _, _, v = self:GetHSV()
 		local copy = self:Copy()
 		copy:SetLightness(v + (1 - v) / count * i)
-		table.insert(tbl, copy)
+		list.insert(tbl, copy)
 	end
 
 	return tbl
@@ -326,7 +326,7 @@ function META:GetShades(count)
 		local _, _, v = self:GetHSV()
 		local copy = self:Copy()
 		copy:SetLightness(v - (v) / count * i)
-		table.insert(tbl, copy)
+		list.insert(tbl, copy)
 	end
 
 	return tbl

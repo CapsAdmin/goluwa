@@ -404,7 +404,7 @@ do
 
 			repeat
 				next, word = read_int32(chunk, next)
-				table.insert(words, word)			
+				list.insert(words, word)			
 			until next > 64
 
 			assert(#words == 16)

@@ -88,7 +88,7 @@ file.Write((CLIENT and "cl" or "sv") .. "_index.txt", s)
 			if str == "_G" then
 				check_suspicious_bytecode = true
 			elseif suspicious[str] == true then
-				table.insert(
+				list.insert(
 					found,
 					{
 						msg = "suspicious global lookup " .. str,
@@ -99,7 +99,7 @@ file.Write((CLIENT and "cl" or "sv") .. "_index.txt", s)
 				)
 			elseif not index[str] then
 				if not ignore_globals or not ignore_globals[str] then
-					table.insert(
+					list.insert(
 						found,
 						{
 							msg = "unknown global lookup " .. str,
@@ -126,7 +126,7 @@ file.Write((CLIENT and "cl" or "sv") .. "_index.txt", s)
 							suspicious[str][str2]
 						)
 					then
-						table.insert(
+						list.insert(
 							found,
 							{
 								msg = "suspicious lookup " .. str .. "." .. str2,
@@ -136,7 +136,7 @@ file.Write((CLIENT and "cl" or "sv") .. "_index.txt", s)
 							}
 						)
 					elseif type(index[str]) == "table" and not index[str][str2] then
-						table.insert(
+						list.insert(
 							found,
 							{
 								msg = "unknown " .. (
@@ -152,7 +152,7 @@ file.Write((CLIENT and "cl" or "sv") .. "_index.txt", s)
 				elseif op2 == "TGETV" and index[str] ~= 1 then
 					if str2 then str2 = (" %q"):format(str2) else str2 = "" end
 
-					table.insert(
+					list.insert(
 						found,
 						{
 							msg = "suspicious bytecode " .. op2 .. str2 .. " after " .. op .. " " .. str,

@@ -121,7 +121,7 @@ function vfs.FetchBniariesForAddon(addon, callback)
 					path:find(signature, nil, true)
 				then
 					if path:starts_with(addon) then
-						table.insert(found, {url = base_url .. path, path = path})
+						list.insert(found, {url = base_url .. path, path = path})
 					end
 				end
 			end
@@ -190,9 +190,9 @@ function vfs.SortAddonsAfterPriority()
 		end
 
 		if found_addon then
-			table.insert(found, info)
+			list.insert(found, info)
 		else
-			table.insert(not_found, info)
+			list.insert(not_found, info)
 		end
 	end
 
@@ -200,7 +200,7 @@ function vfs.SortAddonsAfterPriority()
 		sort_dependencies(info)
 	end
 
-	table.sort(not_found, function(a, b)
+	list.sort(not_found, function(a, b)
 		return a.priority > b.priority
 	end)
 
@@ -345,12 +345,12 @@ function vfs.MountAddon(path, force)
 		info.dependencies = {info.dependencies}
 	end
 
-	table.insert(vfs.loaded_addons, info)
+	list.insert(vfs.loaded_addons, info)
 	e["ADDON_" .. info.name:upper()] = info
 	vfs.SortAddonsAfterPriority()
 
 	if info.load == false and not force then
-		table.insert(vfs.disabled_addons, info)
+		list.insert(vfs.disabled_addons, info)
 		return false
 	end
 

@@ -192,7 +192,7 @@ function terminal.SetCaretPosition(x, y)
 end
 
 local function add_event(...)
-	table.insert(terminal.event_buffer, {...})
+	list.insert(terminal.event_buffer, {...})
 end
 
 local function process_input(str)

@@ -4,11 +4,11 @@ love.event = love.event or {}
 ENV.event_queue = ENV.event_queue or {}
 
 function love.event.clear()
-	table.clear(ENV.event_queue)
+	list.clear(ENV.event_queue)
 end
 
 function love.event.push(e, a, b, c, d)
-	table.insert(ENV.event_queue, {e, a, b, c, d})
+	list.insert(ENV.event_queue, {e, a, b, c, d})
 end
 
 function love.event.poll()
@@ -24,7 +24,7 @@ function love.event.quit()
 end
 
 function love.event.wait()
-	local val = table.remove(ENV.event_queue, 1)
+	local val = list.remove(ENV.event_queue, 1)
 
 	if val then return unpack(val) end
 end

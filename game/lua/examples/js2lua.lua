@@ -218,7 +218,7 @@ for i, char in ipairs(chars) do
 	if in_string == char then in_string = false end
 end
 
-local out = table.concat(chars, "")
+local out = list.concat(chars, "")
 out = out:gsub("end%s*else", "else")
 out = out:gsub("end%s*else%s*if", "elseif")
 out = out:gsub("else%s*if", "elseif")

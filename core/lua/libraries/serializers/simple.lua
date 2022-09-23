@@ -5,13 +5,13 @@ function simple.Encode(tbl)
 	local str = {}
 
 	for k, v in pairs(tbl) do
-		table.insert(str, tostring(k))
-		table.insert(str, "=")
-		table.insert(str, tostring(v))
-		table.insert(str, "\n")
+		list.insert(str, tostring(k))
+		list.insert(str, "=")
+		list.insert(str, tostring(v))
+		list.insert(str, "\n")
 	end
 
-	return table.concat(str)
+	return list.concat(str)
 end
 
 function simple.Decode(str)

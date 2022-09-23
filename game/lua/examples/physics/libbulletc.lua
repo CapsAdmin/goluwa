@@ -20,7 +20,7 @@ for i = 1, 1 do
 				ffi.new("float[3]", 0, 0, 0)
 			).ptr)
 		dynamics_world:AddRigidBody(body.ptr)
-		table.insert(bodies, body)
+		list.insert(bodies, body)
 	end
 end
 
@@ -38,7 +38,7 @@ do -- ground
 			intertia
 		).ptr)
 	dynamics_world:AddRigidBody(body.ptr)
-	table.insert(bodies, body)
+	list.insert(bodies, body)
 end
 
 event.AddListener("Update", "bullet", function()

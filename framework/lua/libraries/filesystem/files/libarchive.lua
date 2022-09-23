@@ -220,12 +220,12 @@ function CONTEXT:GetFiles(path_info)
 				if not done[dir] then
 					done[dir] = true
 
-					if dir ~= "" then table.insert(files, dir) end
+					if dir ~= "" then list.insert(files, dir) end
 				end
 			end
 		end
 
-		table.insert(files, path)
+		list.insert(files, path)
 	end
 
 	-- really ugly logic: TODO
@@ -234,14 +234,14 @@ function CONTEXT:GetFiles(path_info)
 		if not dir then
 			local path2 = path:match("^([^/]-)/$") or path:match("^([^/]-)$")
 
-			if path2 then table.insert(out, path2) end
+			if path2 then list.insert(out, path2) end
 		else
 			local dir2, name = path:match("^(.+/)(.+)")
 
 			if dir == dir2 and name then
 				if name:ends_with("/") then name = name:sub(0, -2) end
 
-				table.insert(out, name)
+				list.insert(out, name)
 			end
 		end
 	end
@@ -318,7 +318,7 @@ function CONTEXT:ReadBytes(bytes)
 			str[i] = string.char(byte)
 		end
 
-		local out = table.concat(str, "")
+		local out = list.concat(str, "")
 
 		if out ~= "" then return out end
 	else

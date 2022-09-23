@@ -94,7 +94,7 @@ local function generate_draw_buffers(self)
 		end
 	end
 
-	--table.sort(draw_buffers, function(a, b) return a < b end)
+	--list.sort(draw_buffers, function(a, b) return a < b end)
 	self.draw_buffers = ffi.new("GLenum[?]", i, draw_buffers)
 	self.draw_buffers_size = i - 1
 end
@@ -157,7 +157,7 @@ function META:SetTexture(pos, tex, mode, uid, face)
 
 			for i, v in ipairs(self.textures_sorted) do
 				if v.uid == uid then
-					table.remove(self.textures_sorted, i)
+					list.remove(self.textures_sorted, i)
 
 					break
 				end
@@ -179,10 +179,10 @@ function META:SetTexture(pos, tex, mode, uid, face)
 						if v == tex then ok = false end
 					end
 
-					if ok then table.insert(self.gen_mip_map_textures, tex) end
+					if ok then list.insert(self.gen_mip_map_textures, tex) end
 				end
 
-				table.insert(self.textures_sorted, self.textures[uid])
+				list.insert(self.textures_sorted, self.textures[uid])
 				self:SetSize(tex:GetSize():Copy())
 			end
 		else

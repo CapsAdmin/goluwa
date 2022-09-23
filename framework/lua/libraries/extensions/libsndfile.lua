@@ -69,7 +69,7 @@ local function on_remove(file)
 end
 
 function soundfile.OpenVFS(file, mode, info)
-	table.insert(files, file)
+	list.insert(files, file)
 	file.sndfile_udata = ffi.new("uint32_t[1]", #files)
 	file:CallOnRemove(on_remove)
 	return soundfile.OpenVirtual(file_io_data, mode, info, ffi.cast("void *", file.sndfile_udata))

@@ -217,7 +217,7 @@ do
 		if width and height then self:SetSize(Vec2(width, height)) end
 
 		self:SetFlags(flags)
-		table.insert(window.active, self)
+		list.insert(window.active, self)
 		return self
 	end
 

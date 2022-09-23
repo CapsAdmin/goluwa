@@ -118,7 +118,7 @@ function META:SetupSorted(...)
 			name, func = next(v)
 		elseif type(v) == "string" then
 			name = v
-			func = table.sort
+			func = list.sort
 		end
 
 		local column = self:CreatePanel("text_button")
@@ -144,13 +144,13 @@ function META:SetupSorted(...)
 			if column.sorted then
 				icon:SetStyle("list_down_arrow")
 
-				table.sort(self.entries, function(a, b)
+				list.sort(self.entries, function(a, b)
 					return a.labels[i].text < b.labels[i].text
 				end)
 			else
 				icon:SetStyle("list_up_arrow")
 
-				table.sort(self.entries, function(a, b)
+				list.sort(self.entries, function(a, b)
 					return a.labels[i].text > b.labels[i].text
 				end)
 			end
@@ -217,9 +217,9 @@ function META:AddEntry(...)
 	entry:SetInactiveStyle("nodraw")
 	entry.SetIcon = function(_, path)
 		local label = entry.labels[1]
-		table.remove(label:GetChildren())
+		list.remove(label:GetChildren())
 		local icon = label:CreatePanel("base", "icon")
-		table.insert(label:GetChildren(), label.label)
+		list.insert(label:GetChildren(), label.label)
 		local image = render.CreateTextureFromPath(path or "textures/silkicons/folder.png")
 		icon:SetTexture(image)
 		icon:SetSize(image:GetSize())
@@ -239,7 +239,7 @@ function META:AddEntry(...)
 		end
 	end
 	entry.i = #self.entries + 1
-	table.insert(self.entries, entry)
+	list.insert(self.entries, entry)
 	--timer.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
 	self:SizeColumnsToFit()
 	return entry

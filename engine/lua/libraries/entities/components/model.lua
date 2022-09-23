@@ -86,7 +86,7 @@ if GRAPHICS then
 
 	do
 		function META:AddSubModel(model)
-			table.insert(self.sub_models, model)
+			list.insert(self.sub_models, model)
 
 			model:CallOnRemove(
 				function()
@@ -101,7 +101,7 @@ if GRAPHICS then
 				sub_mesh.i = i
 				sub_mesh.model = model
 				sub_mesh.data = sub_mesh.data or render3d.default_material
-				table.insert(self.sub_meshes, sub_mesh)
+				list.insert(self.sub_meshes, sub_mesh)
 			end
 
 			self.sub_meshes_length = #self.sub_meshes
@@ -110,7 +110,7 @@ if GRAPHICS then
 		function META:RemoveSubModel(model)
 			for i, v in ipairs(self.sub_models) do
 				if v == model then
-					table.remove(self.sub_models, i)
+					list.remove(self.sub_models, i)
 
 					break
 				end
@@ -120,7 +120,7 @@ if GRAPHICS then
 
 			for i, v in ipairs(model:GetSubMeshes()) do
 				if table.has_value(self.sub_meshes, v) then
-					table.remove(self.sub_meshes, i)
+					list.remove(self.sub_meshes, i)
 				end
 			end
 
@@ -313,7 +313,7 @@ if GRAPHICS then
 							Count - 2,
 							Count - 2
 						)
-					table.insert(out, Vertex)
+					list.insert(out, Vertex)
 				end
 			end
 		end
@@ -333,7 +333,7 @@ if GRAPHICS then
 					if not UsedMaterials[MaterialName] then
 						SubmeshCount = SubmeshCount + 1
 						UsedMaterials[MaterialName] = true
-						table.insert(out, "g " .. MaterialName .. "\n")
+						list.insert(out, "g " .. MaterialName .. "\n")
 
 						for _, model in ipairs(self:GetSubModels()) do
 							for _, data in ipairs(model:GetSubMeshes()) do
@@ -347,13 +347,13 @@ if GRAPHICS then
 					end
 				else
 					SubmeshCount = SubmeshCount + 1
-					table.insert(out, "g error\n")
+					list.insert(out, "g error\n")
 					export(model)
 				end
 			end
 		end
 
-		return table.concat(out)
+		return list.concat(out)
 	end
 end
 

@@ -118,5 +118,5 @@ function math.tostring(num)
 		t[len - i] = math.digit10(num, i)
 	end
 
-	return table.concat(t)
+	return list.concat(t)
 end

@@ -56,11 +56,11 @@ function CONTEXT:Lines()
 			local char = self:ReadChar()
 
 			if char == "\n" then
-				local str = table.concat(temp)
-				table.clear(temp)
+				local str = list.concat(temp)
+				list.clear(temp)
 				return str
 			else
-				table.insert(temp, char)
+				list.insert(temp, char)
 			end
 		end
 	end

@@ -42,7 +42,7 @@ do
 		local META = registered[name]
 		local self = setmetatable({}, META)
 		created[META.__line_type] = created[META.__line_type] or {}
-		table.insert(created[META.__line_type], self)
+		list.insert(created[META.__line_type], self)
 		return self
 	end
 
@@ -76,7 +76,7 @@ function line.CreateLoveEnv(version)
 	love._line_env = {}
 	love.package_loaders = {}
 	runfile("lua/libraries/love/libraries/*", love)
-	table.insert(line.love_envs, love)
+	list.insert(line.love_envs, love)
 	setmetatable(
 		love,
 		{

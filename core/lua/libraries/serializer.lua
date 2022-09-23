@@ -75,7 +75,7 @@ do -- vfs extension
 
 	function serializer.AppendToFile(lib, path, value)
 		local tbl = serializer.ReadFile(lib, path) or {}
-		table.insert(tbl, value)
+		list.insert(tbl, value)
 		serializer.WriteFile(lib, path, tbl)
 	end
 end

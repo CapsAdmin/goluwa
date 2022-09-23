@@ -1,13 +1,13 @@
 entities.Panic()
 render3d.Initialize()
 steam.MountSourceGame("hl2")
-local list = {}
+local lst = {}
 
 local function add_dir(dir)
 	dir = "models/" .. dir
 
 	for _, name in ipairs(vfs.Find(dir .. "/.+%.mdl")) do
-		table.insert(list, dir .. "/" .. name)
+		list.insert(lst, dir .. "/" .. name)
 	end
 end
 
@@ -24,7 +24,7 @@ local spacing = 50 * steam.source2meters
 local count = 20
 
 for i = 1, 7500 do
-	local path = list[1 + i % #list]
+	local path = lst[1 + i % #lst]
 	local ent = entities.CreateEntity("visual")
 	ent:SetModelPath(path)
 	x = x + spacing

@@ -127,7 +127,7 @@ local function balanced_match(chunks, i, max, match)
 			balance = balance - 1
 		end
 
-		table.insert(out, chunk)
+		list.insert(out, chunk)
 
 		if balance == 0 then return out, i2 end
 	end
@@ -154,13 +154,13 @@ do
 	end
 
 	local function flush(state)
-		local res = table.concat(state.chunk)
+		local res = list.concat(state.chunk)
 		local type = state.last_type
 
 		if keywords[res] then type = "keyword" end
 
 		if type ~= "space" then
-			table.insert(
+			list.insert(
 				state.chunks,
 				{
 					char_pos = state.char_pos,
@@ -173,7 +173,7 @@ do
 			)
 		end
 
-		table.clear(state.chunk)
+		list.clear(state.chunk)
 	end
 
 	local function advance(state, char)
@@ -286,7 +286,7 @@ do
 					return compile_error(state, "cannot find the end of double quote")
 				end
 
-				table.insert(state.chunks, {
+				list.insert(state.chunks, {
 					type = "string",
 					chunk = code:sub(i, stop),
 				})
@@ -329,7 +329,7 @@ do
 					return compile_error(state, "cannot find the end of multiline quote")
 				end
 
-				table.insert(state.chunks, {
+				list.insert(state.chunks, {
 					type = "string",
 					chunk = code:sub(i, stop),
 				})
@@ -432,7 +432,7 @@ do
 					if state.chunk[1] then flush(state) end
 				end
 
-				if t ~= "space" then table.insert(state.chunk, char) end
+				if t ~= "space" then list.insert(state.chunk, char) end
 			end
 
 			advance(state, char)
@@ -487,13 +487,13 @@ do
 				local res, stop_i = balanced_match(chunks, i, max, {["("] = true, [")"] = false})
 
 				if res then
-					table.remove(res, 1) -- )
-					table.remove(res, #res) -- (
-					table.insert(out, kua.ParseExpression(res))
+					list.remove(res, 1) -- )
+					list.remove(res, #res) -- (
+					list.insert(out, kua.ParseExpression(res))
 					i = stop_i
 				end
 			else
-				table.insert(out, chunk)
+				list.insert(out, chunk)
 			end
 
 			i = i + 1
@@ -538,14 +538,14 @@ function kua.ParseAssignments(chunks)
 					if last.type == "letter" then
 						if chunk2.chunk == "." or chunk2.chunk == "[" then
 							chunk2.assignment = true
-							table.insert(left, 1, chunk2)
+							list.insert(left, 1, chunk2)
 						else
 							break
 						end
 					elseif last.chunk == "." or last.chunk == "[" then
 						if chunk2.type == "letter" then
 							chunk2.assignment = true
-							table.insert(left, 1, chunk2)
+							list.insert(left, 1, chunk2)
 						else
 							print("unexpected symbol " .. last.chunk)
 
@@ -556,7 +556,7 @@ function kua.ParseAssignments(chunks)
 					end
 				else
 					chunk2.assignment = true
-					table.insert(left, 1, chunk2)
+					list.insert(left, 1, chunk2)
 				end
 			end
 
@@ -564,9 +564,9 @@ function kua.ParseAssignments(chunks)
 				type = "=",
 				left = left,
 			}
-			table.insert(state.out, assignment)
+			list.insert(state.out, assignment)
 		else
-			table.insert(state.out, chunk)
+			list.insert(state.out, chunk)
 		end
 
 		i = i + 1
@@ -578,7 +578,7 @@ function kua.ParseAssignments(chunks)
 	for i = #state.out, 1, -1 do
 		local chunk = state.out[i]
 
-		if chunk.assignment then table.remove(state.out, i) end
+		if chunk.assignment then list.remove(state.out, i) end
 	end
 
 	for i, v in ipairs(state.out) do
@@ -600,7 +600,7 @@ function kua.ParseAssignments(chunks)
 				end
 
 				chunk.assignment = true
-				table.insert(v.right, chunk)
+				list.insert(v.right, chunk)
 			end
 		end
 	end
@@ -608,7 +608,7 @@ function kua.ParseAssignments(chunks)
 	for i = #state.out, 1, -1 do
 		local chunk = state.out[i]
 
-		if chunk.assignment then table.remove(state.out, i) end
+		if chunk.assignment then list.remove(state.out, i) end
 	end
 
 	return state.out
@@ -627,9 +627,9 @@ function kua.ParseStatements(chunks)
 
 		if chunk.chunk == "return" then
 			local return_statement, stop_i = balanced_match(chunks, i, max, {["return"] = true, ["do"] = true, ["end"] = false})
-			table.remove(return_statement, 1)
-			table.remove(return_statement, #return_statement)
-			table.insert(state.out, {
+			list.remove(return_statement, 1)
+			list.remove(return_statement, #return_statement)
+			list.insert(state.out, {
 				type = "return",
 				children = return_statement,
 			})
@@ -647,9 +647,9 @@ function kua.ParseStatements(chunks)
 					["do"] = false,
 				}
 			)
-			table.remove(if_statement, 1)
-			table.remove(if_statement, #if_statement)
-			table.insert(state.out, {
+			list.remove(if_statement, 1)
+			list.remove(if_statement, #if_statement)
+			list.insert(state.out, {
 				type = "if",
 				children = if_statement,
 			})
@@ -667,9 +667,9 @@ function kua.ParseStatements(chunks)
 					["do"] = false,
 				}
 			)
-			table.remove(for_loop, 1)
-			table.remove(for_loop, #for_loop)
-			table.insert(state.out, {
+			list.remove(for_loop, 1)
+			list.remove(for_loop, #for_loop)
+			list.insert(state.out, {
 				type = "for",
 				children = for_loop,
 			})
@@ -687,15 +687,15 @@ function kua.ParseStatements(chunks)
 					["do"] = false,
 				}
 			)
-			table.remove(while_loop, 1)
-			table.remove(while_loop, #while_loop)
-			table.insert(state.out, {
+			list.remove(while_loop, 1)
+			list.remove(while_loop, #while_loop)
+			list.insert(state.out, {
 				type = "while",
 				children = while_loop,
 			})
 			i = stop_i
 		else
-			table.insert(state.out, chunk)
+			list.insert(state.out, chunk)
 		end
 
 		i = i + 1
@@ -722,25 +722,25 @@ function kua.ParseScopes(chunks)
 
 			if body[2].chunk == "letters" then
 				arg_offset = 3
-				name = table.remove(body, 2)
+				name = list.remove(body, 2)
 			end
 
 			local arguments = balanced_match(body, arg_offset, max, {["("] = true, [")"] = false})
 
 			for i = 1, #arguments + 1 do
-				table.remove(body, 1)
+				list.remove(body, 1)
 			end
 
-			table.remove(body, #body) -- end
-			table.remove(arguments, 1) -- (
-			table.remove(arguments, #arguments) -- )
+			list.remove(body, #body) -- end
+			list.remove(arguments, 1) -- (
+			list.remove(arguments, #arguments) -- )
 			local temp = {}
 
 			for k, v in ipairs(arguments) do
-				if v.chunk ~= "," then table.insert(temp, v) end
+				if v.chunk ~= "," then list.insert(temp, v) end
 			end
 
-			table.insert(
+			list.insert(
 				out,
 				{
 					type = "function",
@@ -750,7 +750,7 @@ function kua.ParseScopes(chunks)
 				}
 			)
 		else
-			table.insert(out, chunk)
+			list.insert(out, chunk)
 		end
 
 		i = i + 1
@@ -849,9 +849,9 @@ function kua.ParseCalls(chunks)
 		if chunks[i + 1] and chunks[i + 1].chunk == "(" then
 			if chunk.type == "letter" then
 				local inside, stop_i = balanced_match(chunks, i + 1, max, {["("] = true, [")"] = false})
-				table.remove(inside, 1)
-				table.remove(inside, #inside)
-				table.insert(out, {
+				list.remove(inside, 1)
+				list.remove(inside, #inside)
+				list.insert(out, {
 					type = "call",
 					lookup = chunk,
 					arguments = inside,
@@ -869,31 +869,31 @@ function kua.ParseCalls(chunks)
 					elseif chunk2.chunk == "(" then
 						balance = balance - 1
 					else
-						table.insert(found, 1, chunk2)
+						list.insert(found, 1, chunk2)
 					end
 
-					table.remove(out, i2)
+					list.remove(out, i2)
 
 					if balance == 0 then break end
 				end
 
-				table.remove(out, i)
+				list.remove(out, i)
 				local inside, stop_i = balanced_match(chunks, i + 1, max, {["("] = true, [")"] = false})
-				table.remove(inside, 1)
-				table.remove(inside, #inside)
-				table.remove(found, 1)
-				table.remove(found, #inside)
-				table.insert(out, {
+				list.remove(inside, 1)
+				list.remove(inside, #inside)
+				list.remove(found, 1)
+				list.remove(found, #inside)
+				list.insert(out, {
 					type = "call",
 					lookup = found,
 					arguments = inside,
 				})
 				i = stop_i
 			else
-				table.insert(out, chunk)
+				list.insert(out, chunk)
 			end
 		else
-			table.insert(out, chunk)
+			list.insert(out, chunk)
 		end
 
 		i = i + 1
@@ -914,13 +914,13 @@ function kua.ParseTables(chunks)
 
 		if chunk.chunk == "{" then
 			local table_construct, stop_i = balanced_match(chunks, i, max, {["{"] = true, ["}"] = false})
-			table.insert(out, {
+			list.insert(out, {
 				type = "table",
 				children = table_construct,
 			})
 			i = stop_i
 		else
-			table.insert(out, chunk)
+			list.insert(out, chunk)
 		end
 
 		i = i + 1
@@ -974,12 +974,12 @@ for i, chunk in ipairs(statements) do
 
 			if balance > 0 then
 				if v.chunk ~= "]" then
-					table.insert(expression, 1, v)
-					table.remove(chunk.left, i)
+					list.insert(expression, 1, v)
+					list.remove(chunk.left, i)
 				end
 			else
 				if expression[1] then
-					table.insert(
+					list.insert(
 						left,
 						1,
 						{
@@ -989,7 +989,7 @@ for i, chunk in ipairs(statements) do
 					)
 					expression = {}
 				else
-					table.insert(left, 1, v)
+					list.insert(left, 1, v)
 				end
 			end
 		end
@@ -1018,7 +1018,7 @@ local function balanced_match(chunks, i, max, match)
 			balance = balance - 1
 		end
 
-		table.insert(out, chunk)
+		list.insert(out, chunk)
 
 		if balance == 0 then return out, i2 end
 	end
@@ -1038,7 +1038,7 @@ local function parse_calls_and_assignments(chunks)
 
 		if state.statement then
 			if chunk.chunk == "do" then
-				table.insert(
+				list.insert(
 					state.out,
 					{
 						type = "statement",
@@ -1049,7 +1049,7 @@ local function parse_calls_and_assignments(chunks)
 				state.statement = nil
 				state.scope = state.scope + 1
 			else
-				table.insert(state.statement, chunk)
+				list.insert(state.statement, chunk)
 			end
 		else
 			if chunk.chunk == "do" then
@@ -1077,30 +1077,30 @@ local function parse_calls_and_assignments(chunks)
 						break
 					end
 
-					table.insert(left, chunk2)
+					list.insert(left, chunk2)
 				end
 
 				if type == "call" then
 					local call_line = balanced_match(chunks, i, max, {["("] = true, [")"] = false})
-					table.remove(call_line, 1)
-					table.remove(call_line, #call_line)
+					list.remove(call_line, 1)
+					list.remove(call_line, #call_line)
 					local arguments = {}
 					local argument = {}
 
 					for _, chunk in ipairs(call_line) do
 						if chunk.chunk == "," then
-							table.insert(arguments, parse_operator_scopes(argument))
+							list.insert(arguments, parse_operator_scopes(argument))
 							argument = {}
 						else
-							table.insert(argument, chunk)
+							list.insert(argument, chunk)
 						end
 					end
 
 					if argument[1] then
-						table.insert(arguments, parse_operator_scopes(argument))
+						list.insert(arguments, parse_operator_scopes(argument))
 					end
 
-					table.insert(
+					list.insert(
 						state.out,
 						{
 							type = "call",
@@ -1109,7 +1109,7 @@ local function parse_calls_and_assignments(chunks)
 						}
 					)
 				elseif type == "assignment" then
-					table.insert(
+					list.insert(
 						state.out,
 						{
 							type = "assignment",

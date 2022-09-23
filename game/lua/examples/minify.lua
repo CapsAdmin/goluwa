@@ -24,7 +24,7 @@ local function preprocess(lua, path, parent_path)
 	return lua:gsub("%srunfile(%b())", function(args)
 		local original = args
 		args = args:sub(2, -2):split(",")
-		local path = table.remove(args, 1)
+		local path = list.remove(args, 1)
 
 		if not path:starts_with("\"") then return end
 
@@ -61,7 +61,7 @@ local function preprocess(lua, path, parent_path)
 
 					--print("including ", path)
 					s = s .. check(
-							"\n (function(...)\n " .. preprocess(assert(vfs.Read(path)), path, path or parent_path) .. "\n end)(" .. table.concat(args, ",") .. ");\n",
+							"\n (function(...)\n " .. preprocess(assert(vfs.Read(path)), path, path or parent_path) .. "\n end)(" .. list.concat(args, ",") .. ");\n",
 							path
 						)
 				end
@@ -76,7 +76,7 @@ local function preprocess(lua, path, parent_path)
 
 		print("including ", path)
 		return check(
-			"\n (function(...) " .. preprocess(assert(vfs.Read(path)), path, path or parent_path) .. " end)(" .. table.concat(args, ",") .. ");\n",
+			"\n (function(...) " .. preprocess(assert(vfs.Read(path)), path, path or parent_path) .. " end)(" .. list.concat(args, ",") .. ");\n",
 			path
 		)
 	end)

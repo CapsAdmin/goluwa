@@ -84,9 +84,9 @@ function chathud.AddText(...)
 		local t = typex(v)
 
 		if t == "client" then
-			table.insert(args, v:GetUniqueColor())
-			table.insert(args, v:GetNick())
-			table.insert(args, ColorBytes(255, 255, 255, 255))
+			list.insert(args, v:GetUniqueColor())
+			list.insert(args, v:GetNick())
+			list.insert(args, ColorBytes(255, 255, 255, 255))
 		elseif t == "string" then
 			if v == ": sh" or v == "sh" or v:find("%ssh%s") then
 				chathud.markup:TagPanic()
@@ -106,12 +106,12 @@ function chathud.AddText(...)
 			v = v:gsub("\\t", "\t")
 
 			for pattern, font in pairs(chathud.font_modifiers) do
-				if v:find(pattern, nil, true) then table.insert(args, #args - 1, font) end
+				if v:find(pattern, nil, true) then list.insert(args, #args - 1, font) end
 			end
 
-			table.insert(args, v)
+			list.insert(args, v)
 		else
-			table.insert(args, v)
+			list.insert(args, v)
 		end
 	end
 
@@ -150,12 +150,12 @@ end
 event.AddListener("Chat", "chathud", function(name, str, client)
 	local tbl = chat.AddTimeStamp()
 
-	if client:IsValid() then table.insert(tbl, client:GetUniqueColor()) end
+	if client:IsValid() then list.insert(tbl, client:GetUniqueColor()) end
 
-	table.insert(tbl, name)
-	table.insert(tbl, Color(1, 1, 1, 1))
-	table.insert(tbl, ": ")
-	table.insert(tbl, str)
+	list.insert(tbl, name)
+	list.insert(tbl, Color(1, 1, 1, 1))
+	list.insert(tbl, ": ")
+	list.insert(tbl, str)
 	chathud.AddText(unpack(tbl))
 end)
 

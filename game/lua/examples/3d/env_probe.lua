@@ -1,7 +1,7 @@
 local size = 8
 local max = 16
 local active_probes = {}
-local list = {}
+local lst = {}
 
 function goluwa.Update()
 	local x, y, z = render3d.camera:GetPosition():Unpack()
@@ -16,8 +16,8 @@ function goluwa.Update()
 	if not data.probe then
 		local probe
 
-		if #list > max then
-			local data = table.remove(list)
+		if #lst > max then
+			local data = list.remove(lst)
 			active_probes[data.key[1]][data.key[2]][data.key[3]] = nil
 			probe = data.probe
 		else
@@ -28,7 +28,7 @@ function goluwa.Update()
 		probe:Capture()
 		probe:SetPreview(true)
 		data.probe = probe
-		table.insert(list, {probe = probe, key = {x, y, z}})
+		list.insert(lst, {probe = probe, key = {x, y, z}})
 	end
 
 	data.probe.tex.probe = data.probe

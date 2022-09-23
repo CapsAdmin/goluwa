@@ -42,7 +42,7 @@ function CONTEXT:OnParseArchive(file, archive_path)
 		entry.file_number = file_number
 		offset = offset + entry.size
 		file_number = file_number + 1
-		table.insert(info.entries, entry)
+		list.insert(info.entries, entry)
 		self:AddEntry(entry)
 	end
 

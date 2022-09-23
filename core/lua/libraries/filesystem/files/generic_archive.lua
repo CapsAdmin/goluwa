@@ -144,7 +144,7 @@ function CONTEXT:GetFiles(path_info)
 
 	for _, v in pairs(children) do
 		if type(v) == "table" and v.v then -- fix me!!
-			table.insert(out, v.v.file_name)
+			list.insert(out, v.v.file_name)
 		end
 	end
 
@@ -221,12 +221,12 @@ function CONTEXT:ReadBytes(bytes)
 		for i = 1, bytes do
 			local byte = self:ReadByte()
 
-			if not byte then return table.concat(str, "") end
+			if not byte then return list.concat(str, "") end
 
 			str[i] = string.char(byte)
 		end
 
-		return table.concat(str, "")
+		return list.concat(str, "")
 	else
 		bytes = math.min(bytes, self.file_info.size - self.position)
 		self.file:SetPosition(self.file_info.offset + self.position)

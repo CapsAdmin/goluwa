@@ -70,7 +70,7 @@ function META:SetColumn(i, ]==] .. (
 					str[i] = "_" .. i
 				end
 
-				return table.concat(str, ", ")
+				return list.concat(str, ", ")
 			end
 		)() .. [==[)
 	]==] .. (
@@ -98,7 +98,7 @@ function META:GetColumn(i)
 					str[i] = "self:GetField(" .. i .. ", i)"
 				end
 
-				return table.concat(str, ",\n")
+				return list.concat(str, ",\n")
 			end
 		)() .. [==[
 end
@@ -113,7 +113,7 @@ function META:GetRow(i)
 					str[i] = "self:GetField(i, " .. i .. ")"
 				end
 
-				return table.concat(str, ",\n")
+				return list.concat(str, ",\n")
 			end
 		)() .. [==[
 end
@@ -126,7 +126,7 @@ function META:SetRow(i, ]==] .. (
 					str[i] = "_" .. i
 				end
 
-				return table.concat(str, ", ")
+				return list.concat(str, ", ")
 			end
 		)() .. [==[)
 	]==] .. (
@@ -254,7 +254,7 @@ function META:Lerp(alpha, other)
 end
 
 function META.GetMultiplied(a, b, o)
-	o = o or META.Constructor(]==] .. table.concat(identity, ", ") .. [==[)
+	o = o or META.Constructor(]==] .. list.concat(identity, ", ") .. [==[)
 
 	]==] .. (
 			function()
@@ -288,7 +288,7 @@ function META:Multiply(b, out)
 end
 
 function META.GetTransposed(m, o)
-	o = o or META.Constructor(]==] .. table.concat(identity, ", ") .. [==[)
+	o = o or META.Constructor(]==] .. list.concat(identity, ", ") .. [==[)
 
 	]==] .. (
 			function()
@@ -323,7 +323,7 @@ function META:Register()
 				return "f"
 			end
 		)() .. [==[()
-		return META.Constructor(]==] .. table.concat(identity, ", ") .. [==[)
+		return META.Constructor(]==] .. list.concat(identity, ", ") .. [==[)
 	end
 
 	old(META)

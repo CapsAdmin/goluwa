@@ -40,7 +40,7 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 		name = name:match(".+%.(.+)") or name
 		name = name:match("(.+)%[") or name
 		variables[name] = {}
-		table.insert(variables2, name)
+		list.insert(variables2, name)
 		local temp
 		local set
 		local get

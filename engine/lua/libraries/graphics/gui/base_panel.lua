@@ -139,7 +139,7 @@ function META:GetVisibleChildren()
 	local tbl = {}
 
 	for _, v in ipairs(self:GetChildren()) do
-		if v.Visible then table.insert(tbl, v) end
+		if v.Visible then list.insert(tbl, v) end
 	end
 
 	return tbl
@@ -201,7 +201,7 @@ do -- focus
 			self.ChildOrder = pos
 
 			if self:HasParent() then
-				table.sort(self.Parent.Children, function(a, b)
+				list.sort(self.Parent.Children, function(a, b)
 					return a.ChildOrder > b.ChildOrder
 				end)
 			end
@@ -691,7 +691,7 @@ do -- orientation
 		local parent = self:GetParent()
 
 		if parent:IsValid() then
-			table.sort(parent:GetChildren(), sorter)
+			list.sort(parent:GetChildren(), sorter)
 		--gui.unrolled_draw = nil
 		end
 	end
@@ -1178,7 +1178,7 @@ do -- magnet snap
 
 		local wpos = self:GetWorldPosition()
 
-		table.sort(tbl, function(a, b)
+		list.sort(tbl, function(a, b)
 			return a:GetWorldPosition():Distance(wpos) < b:GetWorldPosition():Distance(wpos)
 		end)
 
@@ -1231,7 +1231,7 @@ do -- animations
 					if v.check() then
 						pause = true
 					else
-						table.remove(animation.pausers, i)
+						list.remove(animation.pausers, i)
 
 						break
 					end
@@ -1268,7 +1268,7 @@ do -- animations
 						animation.func(self, from)
 					end
 
-					table.remove(self.animations, i)
+					list.remove(self.animations, i)
 
 					break
 				else
@@ -1289,7 +1289,7 @@ do -- animations
 			end
 		end
 
-		table.clear(self.animations)
+		list.clear(self.animations)
 		self:UpdateAnimations()
 	end
 
@@ -1314,7 +1314,7 @@ do -- animations
 		for i, v in pairs(to) do
 			if type(v) == "function" then
 				to[i] = nil
-				table.insert(pausers, {check = v, alpha = (i - 1) / (table.count(to) + #pausers)})
+				list.insert(pausers, {check = v, alpha = (i - 1) / (table.count(to) + #pausers)})
 			end
 		end
 
@@ -1344,9 +1344,9 @@ do -- animations
 			end
 		end
 
-		if not set then table.insert(to, 1, from) end
+		if not set then list.insert(to, 1, from) end
 
-		table.insert(
+		list.insert(
 			self.animations,
 			{
 				operator = operator,
@@ -1908,7 +1908,7 @@ do -- layout
 			origin = a_lft
 		end
 
-		table.sort(found, sort)
+		list.sort(found, sort)
 		local hit_pos = stop_pos
 
 		if found and found[1] then
@@ -2061,10 +2061,10 @@ do -- layout
 		local tbl = {}
 
 		for trace, count in pairs(gui.layout_traces) do
-			table.insert(tbl, {count = count, trace = trace})
+			list.insert(tbl, {count = count, trace = trace})
 		end
 
-		table.sort(tbl, function(a, b)
+		list.sort(tbl, function(a, b)
 			return a.count > b.count
 		end)
 

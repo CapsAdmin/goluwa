@@ -66,7 +66,7 @@ function META:FindFreePage(w, h)
 		page.texture:SetMinFilter(self.filtering)
 		page.texture:SetMagFilter(self.filtering)
 		page.texture:SetMipMapLevels(1)
-		table.insert(self.pages, page)
+		list.insert(self.pages, page)
 		return page, node
 	end
 end
@@ -76,7 +76,7 @@ local function sort(a, b)
 end
 
 function META:Build()
-	table.sort(self.dirty_textures, sort)
+	list.sort(self.dirty_textures, sort)
 
 	for _, data in ipairs(self.dirty_textures) do
 		local page, node = self:FindFreePage(data.w, data.h)
@@ -137,7 +137,7 @@ function META:GetTextures()
 	local out = {}
 
 	for _, v in ipairs(self.pages) do
-		table.insert(out, v.texture)
+		list.insert(out, v.texture)
 	end
 
 	return out
@@ -163,7 +163,7 @@ end
 function META:Insert(id, data)
 	if id then self.textures[id] = data end
 
-	table.insert(self.dirty_textures, data)
+	list.insert(self.dirty_textures, data)
 end
 
 function META:Draw(id, x, y, w, h)

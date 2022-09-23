@@ -37,7 +37,7 @@ function clients.Create(uniqueid, is_bot, clientside, filter, local_client, exis
 	self = prototype.CreateObject("client")
 	self:SetUniqueID(uniqueid)
 	clients.active_clients_uid[self.UniqueID] = self
-	table.insert(clients.active_clients, self)
+	list.insert(clients.active_clients, self)
 	-- add a networked table to the client
 	self.nv = nvars.CreateObject(uniqueid)
 
@@ -131,7 +131,7 @@ do -- filter
 		local out = {}
 
 		for _, client in pairs(self.clients) do
-			if client:IsValid() then table.insert(out, client) end
+			if client:IsValid() then list.insert(out, client) end
 		end
 
 		return out

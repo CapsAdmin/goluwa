@@ -32,7 +32,7 @@ do
 		local fails = {}
 
 		local function fail(url, reason)
-			table.insert(fails, "failed to download " .. url .. ": " .. reason .. "\n")
+			list.insert(fails, "failed to download " .. url .. ": " .. reason .. "\n")
 
 			if #fails == #urls then
 				local reason = ""
@@ -72,7 +72,7 @@ do
 	end)
 
 	function http.DownloadFirstFound(urls)
-		return start(table.concat(urls), urls)
+		return start(list.concat(urls), urls)
 	end
 end
 

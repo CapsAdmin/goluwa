@@ -95,7 +95,7 @@ function render.StopRecordCalls()
 		local args = {}
 
 		for k, v in pairs(v.args) do
-			table.insert(args, tostringx(v))
+			list.insert(args, tostringx(v))
 		end
 
 		logn(
@@ -103,7 +103,7 @@ function render.StopRecordCalls()
 			"gl",
 			v.func_name,
 			"(",
-			table.concat(args, ", "),
+			list.concat(args, ", "),
 			")"
 		)
 	end

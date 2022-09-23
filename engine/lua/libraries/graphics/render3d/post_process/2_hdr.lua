@@ -2,7 +2,7 @@ local PASS = {}
 PASS.Position, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 PASS.Default = false
 PASS.Source = {}
-table.insert(
+list.insert(
 	PASS.Source,
 	{
 		buffer = {
@@ -70,7 +70,7 @@ out_color = texture(tex_stage_]] .. #PASS.Source .. [[, uv).rgb*0.159576912161;
 			end
 
 			str = str .. "}"
-			table.insert(
+			list.insert(
 				PASS.Source,
 				{
 					buffer = {
@@ -86,7 +86,7 @@ out_color = texture(tex_stage_]] .. #PASS.Source .. [[, uv).rgb*0.159576912161;
 	end
 end
 
-table.insert(
+list.insert(
 	PASS.Source,
 	{
 		source = [[

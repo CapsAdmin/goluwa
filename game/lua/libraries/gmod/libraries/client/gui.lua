@@ -518,7 +518,7 @@ do
 		local children = {}
 
 		for k, v in pairs(self.__obj:GetChildren()) do
-			table.insert(children, gine.WrapObject(v, "Panel"))
+			list.insert(children, gine.WrapObject(v, "Panel"))
 		end
 
 		return children

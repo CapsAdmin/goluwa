@@ -40,20 +40,20 @@ pvars.Setup2(
 		key = "steam_mount",
 		default = {},
 		get_list = function()
-			local list = {}
+			local lst = {}
 
 			for _, info in pairs(steam.GetSourceGames()) do
-				list[info.filesystem.steamappid] = {friendly = info.name}
+				lst[info.filesystem.steamappid] = {friendly = info.name}
 			end
 
-			return list
+			return lst
 		end,
-		callback = function(list)
+		callback = function(lst)
 			for appid, v in pairs(steam.GetMountedSourceGames()) do
 				steam.UnmountSourceGame(appid)
 			end
 
-			for i, v in ipairs(list) do
+			for i, v in ipairs(lst) do
 				steam.MountSourceGame(v)
 			end
 		end,
@@ -129,7 +129,7 @@ function steam.GetLibraryFolders()
 
 	for key, path in pairs(config.installconfigstore.software.valve.steam) do
 		if key:find("baseinstallfolder_") then
-			table.insert(tbl, vfs.FixPathSlashes(path) .. "/steamapps/")
+			list.insert(tbl, vfs.FixPathSlashes(path) .. "/steamapps/")
 		end
 	end
 
@@ -151,12 +151,12 @@ function steam.GetGameFolders(skip_mods)
 
 	for _, library in ipairs(steam.GetLibraryFolders()) do
 		for _, game in ipairs(vfs.Find(library .. "common/", true)) do
-			table.insert(games, game .. "/")
+			list.insert(games, game .. "/")
 		end
 
 		if not skip_mods then
 			for _, mod in ipairs(vfs.Find(library .. "sourcemods/", true)) do
-				table.insert(games, mod .. "/")
+				list.insert(games, mod .. "/")
 			end
 		end
 	end
@@ -206,7 +206,7 @@ function steam.GetSourceGames()
 								tbl.gameinfo_path = path
 								tbl.game_dir = game_dir
 								tbl.vdf_directory = dir
-								table.insert(gameinfos, tbl)
+								list.insert(gameinfos, tbl)
 							end
 						end
 					end
@@ -234,7 +234,7 @@ function steam.GetSourceGames()
 						tbl.gameinfo_path = path
 						tbl.game_dir = game_dir
 						tbl.vdf_directory = dir
-						table.insert(gameinfos, tbl)
+						list.insert(gameinfos, tbl)
 					end
 				end
 			end
@@ -282,7 +282,7 @@ function steam.GetSourceGames()
 
 						if path:ends_with("*") then
 							if not done[path] then
-								table.insert(fixed, path)
+								list.insert(fixed, path)
 								done[path] = true
 							end
 						else
@@ -293,7 +293,7 @@ function steam.GetSourceGames()
 
 								if vfs.IsDirectory(test) then
 									if not done[test] then
-										table.insert(fixed, test)
+										list.insert(fixed, test)
 										done[test] = true
 									end
 								end
@@ -302,7 +302,7 @@ function steam.GetSourceGames()
 
 								if vfs.IsDirectory(test) then
 									if not done[test] then
-										table.insert(fixed, test)
+										list.insert(fixed, test)
 										done[test] = true
 									end
 								end
@@ -311,7 +311,7 @@ function steam.GetSourceGames()
 
 								if vfs.IsDirectory(test) then
 									if not done[test] then
-										table.insert(fixed, test)
+										list.insert(fixed, test)
 										done[test] = true
 									end
 								end
@@ -320,7 +320,7 @@ function steam.GetSourceGames()
 
 								if not vfs.IsDirectory(path) and vfs.IsDirectory(test) then
 									if not done[test] then
-										table.insert(fixed, test)
+										list.insert(fixed, test)
 										done[test] = true
 									end
 								end
@@ -329,7 +329,7 @@ function steam.GetSourceGames()
 									local path = test:gsub("(.+/.+)%.vpk", "%1_dir.vpk") .. "/"
 
 									if not done[path] then
-										table.insert(fixed, path)
+										list.insert(fixed, path)
 										done[path] = true
 									end
 								end
@@ -339,7 +339,7 @@ function steam.GetSourceGames()
 								local path = path:gsub("(.+/.+)%.vpk", "%1_dir.vpk") .. "/"
 
 								if not done[path] then
-									table.insert(fixed, path)
+									list.insert(fixed, path)
 									done[path] = true
 								end
 							end
@@ -352,15 +352,15 @@ function steam.GetSourceGames()
 				local sorted = {}
 
 				for _, v in ipairs(fixed) do
-					if v:ends_with(".vpk/") then table.insert(sorted, v) end
+					if v:ends_with(".vpk/") then list.insert(sorted, v) end
 				end
 
 				for _, v in ipairs(fixed) do
-					if not v:ends_with(".vpk/") then table.insert(sorted, v) end
+					if not v:ends_with(".vpk/") then list.insert(sorted, v) end
 				end
 
 				tbl.filesystem.searchpaths = sorted
-				table.insert(found, tbl)
+				list.insert(found, tbl)
 			end
 		end
 	end
@@ -470,7 +470,7 @@ do
 		for k, v in pairs(vfs.GetMounts()) do
 			if v.userdata and v.userdata.filesystem and v.userdata.filesystem.steamappid then
 				if not done[v.userdata] then
-					table.insert(out, v.userdata)
+					list.insert(out, v.userdata)
 					done[v.userdata] = true
 				end
 			end

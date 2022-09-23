@@ -584,10 +584,10 @@ function steam.GetAppIdFromName(search)
 	local sorted = {}
 
 	for appid, name in pairs(steam.appids) do
-		table.insert(sorted, {name = name, appid = appid})
+		list.insert(sorted, {name = name, appid = appid})
 	end
 
-	table.sort(sorted, function(a, b)
+	list.sort(sorted, function(a, b)
 		return #a.name < #b.name
 	end)
 

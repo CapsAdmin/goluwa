@@ -23,19 +23,19 @@ local supported = {
 }
 
 local function try_find(files, name)
-	table.sort(files, function(a, b)
+	list.sort(files, function(a, b)
 		return #a < #b
 	end) -- choose shortest name
 	local family, rest = name:match("(.-) (.+)")
 	local tries = {}
 
 	if not family then
-		table.insert(tries, name .. "[%s%p]" .. "regular")
-		table.insert(tries, name .. "[%s%p]" .. "medium")
+		list.insert(tries, name .. "[%s%p]" .. "regular")
+		list.insert(tries, name .. "[%s%p]" .. "medium")
 	end
 
-	table.insert(tries, name)
-	table.insert(tries, (name:gsub("[%s%p]+", "")))
+	list.insert(tries, name)
+	list.insert(tries, (name:gsub("[%s%p]+", "")))
 
 	for _, try in ipairs(tries) do
 		for _, full_path in ipairs(files) do
@@ -165,7 +165,7 @@ local function find_font(name, callback, on_error)
 
 	for i, info in ipairs(providers) do
 		local url = info.url .. info.translate(name)
-		table.insert(urls, url)
+		list.insert(urls, url)
 		lookup[url] = info
 	end
 

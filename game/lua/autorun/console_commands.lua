@@ -45,11 +45,11 @@ do
 	local sigh = {}
 
 	commands.Add("luacheck=arg_line", function(what)
-		table.clear(sigh)
-		table.insert(sigh, "--no-color")
+		list.clear(sigh)
+		list.insert(sigh, "--no-color")
 
 		for path in pairs(vfs.GetLoadedLuaFiles()) do
-			if path:find(what) then table.insert(sigh, path) end
+			if path:find(what) then list.insert(sigh, path) end
 		end
 
 		_G.arg = sigh
@@ -244,7 +244,7 @@ commands.Add("source=string,number|nil", function(path, line_number, ...)
 
 	if func then
 		logn("--> ", name)
-		table.remove(data, 1)
+		list.remove(data, 1)
 
 		if not debug.openfunction(func) then
 			logn(debug.get_pretty_source(func, true))
@@ -290,10 +290,10 @@ commands.Add(
 				return
 			end
 
-			table.insert(tried, "\t" .. path)
+			list.insert(tried, "\t" .. path)
 		end
 
-		return false, "no such file:\n" .. table.concat(tried, "\n")
+		return false, "no such file:\n" .. list.concat(tried, "\n")
 	end,
 	"opens a lua file with some helpers (ie trying to append .lua or prepend lua/)"
 )

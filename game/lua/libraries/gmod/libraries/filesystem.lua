@@ -36,26 +36,26 @@ do
 			for k, v in ipairs(vfs.Find("lua/" .. path, true)) do
 				if gine.IsGLuaPath(v) then
 					if vfs.IsDirectory(v) then
-						table.insert(folders, v:match(".+/(.+)"))
+						list.insert(folders, v:match(".+/(.+)"))
 					else
-						table.insert(files, v:match(".+/(.+)"))
+						list.insert(files, v:match(".+/(.+)"))
 					end
 				end
 			end
 		elseif where == "DATA" then
 			for k, v in ipairs(vfs.Find("data/" .. path, true)) do
 				if vfs.IsDirectory(v) then
-					table.insert(folders, v:match(".+/(.+)"))
+					list.insert(folders, v:match(".+/(.+)"))
 				else
-					table.insert(files, v:match(".+/(.+)"))
+					list.insert(files, v:match(".+/(.+)"))
 				end
 			end
 		else
 			for k, v in ipairs(vfs.Find(path, true)) do
 				if vfs.IsDirectory(v) then
-					table.insert(folders, v:match(".+/(.+)"))
+					list.insert(folders, v:match(".+/(.+)"))
 				else
-					table.insert(files, v:match(".+/(.+)"))
+					list.insert(files, v:match(".+/(.+)"))
 				end
 			end
 		end

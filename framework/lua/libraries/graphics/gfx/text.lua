@@ -101,7 +101,7 @@ do -- text wrap
 
 		if lines[1] then
 			lines[i] = str:usub(last_pos + 1)
-			return table.concat(lines, "\n")
+			return list.concat(lines, "\n")
 		end
 
 		return str
@@ -124,8 +124,8 @@ do -- text wrap
 			local new_width = width + char_width
 
 			if c == "\n" then
-				table.insert(lines, table.concat(chars))
-				table.clear(chars)
+				list.insert(lines, list.concat(chars))
+				list.clear(chars)
 				width = 0
 				width_before_last_space = 0
 				width_of_trailing_space = 0
@@ -139,7 +139,7 @@ do -- text wrap
 					for i = #chars, 1, -1 do
 						if chars[i] == " " then break end
 
-						table.remove(chars, i)
+						list.remove(chars, i)
 					end
 
 					width = width_before_last_space
@@ -147,8 +147,8 @@ do -- text wrap
 					i = i + 1
 				end
 
-				table.insert(lines, table.concat(chars))
-				table.clear(chars)
+				list.insert(lines, list.concat(chars))
+				list.clear(chars)
 				prev_char = nil
 				width = char_width
 				width_before_last_space = 0
@@ -161,7 +161,7 @@ do -- text wrap
 
 				width = new_width
 				prev_char = c
-				table.insert(chars, c)
+				list.insert(chars, c)
 
 				if c == " " then
 					last_space_index = i
@@ -173,9 +173,9 @@ do -- text wrap
 			end
 		end
 
-		if #chars ~= 0 then table.insert(lines, table.concat(chars)) end
+		if #chars ~= 0 then list.insert(lines, list.concat(chars)) end
 
-		return table.concat(lines, "\n")
+		return list.concat(lines, "\n")
 	end
 
 	local cache = table.weak()
@@ -188,7 +188,7 @@ do -- text wrap
 		end
 
 		if max_width < gfx.GetTextSize(nil, font) then
-			return table.concat(str:split(""), "\n")
+			return list.concat(str:split(""), "\n")
 		end
 
 		if max_width > gfx.GetTextSize(str, font) then return str end

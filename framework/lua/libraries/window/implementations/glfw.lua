@@ -391,7 +391,7 @@ end
 
 if VULKAN then
 	function META:PreWindowSetup(flags)
-		table.insert(flags, "vulkan")
+		list.insert(flags, "vulkan")
 		glfw.WindowHint(glfw.e.CLIENT_API, glfw.e.NO_API)
 	end
 
@@ -418,7 +418,7 @@ if OPENGL and not NULL_OPENGL then
 	end
 
 	function META:PreWindowSetup(flags)
-		table.insert(flags, "opengl")
+		list.insert(flags, "opengl")
 		glfw.WindowHint(glfw.e.DEPTH_BITS, 16)
 		glfw.WindowHint(glfw.e.STENCIL_BITS, 8)
 		-- workaround for srgb on intel mesa driver

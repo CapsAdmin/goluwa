@@ -21,7 +21,7 @@ end
 
 -- byte
 function META:WriteByte(byte)
-	table.insert(self.buffer, byte)
+	list.insert(self.buffer, byte)
 	return self
 end
 
@@ -48,7 +48,7 @@ do -- generic
 	end
 
 	function META:Clear()
-		table.clear(self.buffer)
+		list.clear(self.buffer)
 		self.position = 0
 	end
 
@@ -59,7 +59,7 @@ do -- generic
 			temp[#temp + 1] = string.char(v)
 		end
 
-		return table.concat(temp)
+		return list.concat(temp)
 	end
 
 	function META:SetPosition(pos)
@@ -74,12 +74,12 @@ do -- generic
 	do -- push pop position
 		function META:PushPosition(pos)
 			self.stack = self.stack or {}
-			table.insert(self.stack, self:GetPosition())
+			list.insert(self.stack, self:GetPosition())
 			self:SetPosition(pos)
 		end
 
 		function META:PopPosition()
-			self:SetPosition(table.remove(self.stack))
+			self:SetPosition(list.remove(self.stack))
 		end
 	end
 
@@ -96,7 +96,7 @@ do -- generic
 
 	function META:AddHeader(buffer)
 		for i, b in ipairs(buffer.buffer) do
-			table.insert(self.buffer, i, b)
+			list.insert(self.buffer, i, b)
 		end
 
 		return self

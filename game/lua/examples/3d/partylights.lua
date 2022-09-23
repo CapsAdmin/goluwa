@@ -18,7 +18,7 @@ for y = -5, 5 do
 		light:SetColor(Color(math.randomf(0, 1), math.randomf(0, 1), math.randomf(0, 1)))
 		light:SetSize(math.randomf(2, 10))
 		light:SetIntensity(1)
-		table.insert(party_lights, light)
+		list.insert(party_lights, light)
 	end
 end
 

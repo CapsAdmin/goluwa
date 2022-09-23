@@ -12,7 +12,7 @@ for i = 1, 300000 do
 	str[i] = tostring(i)
 end
 
-str = table.concat(str, " ") .. "THE END"
+str = list.concat(str, " ") .. "THE END"
 print("sending " .. utility.FormatFileSize(#str), #str, str:sub(-100))
 socket:Send(str)
 

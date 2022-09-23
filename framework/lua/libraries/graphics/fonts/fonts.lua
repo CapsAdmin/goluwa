@@ -25,7 +25,7 @@ end
 
 function fonts.CreateFont(options, callback)
 	if not ready then
-		table.insert(queue, {options, callback})
+		list.insert(queue, {options, callback})
 		return
 	end
 
@@ -73,7 +73,7 @@ function fonts.CreateFont(options, callback)
 	for name, callback in pairs(fonts.effects) do
 		if options[name] then
 			options[name].order = options[name].order or 0
-			table.insert(sorted, {info = options[name], callback = callback})
+			list.insert(sorted, {info = options[name], callback = callback})
 		end
 	end
 
@@ -83,7 +83,7 @@ function fonts.CreateFont(options, callback)
 
 			if callback then
 				tbl.order = tbl.order or 0
-				table.insert(sorted, {info = tbl, callback = callback})
+				list.insert(sorted, {info = tbl, callback = callback})
 			end
 		end
 	end
@@ -91,7 +91,7 @@ function fonts.CreateFont(options, callback)
 	if sorted[1] then
 		shading_info = shading_info or {}
 
-		table.sort(sorted, function(a, b)
+		list.sort(sorted, function(a, b)
 			return a.info.order > b.info.order
 		end)
 
@@ -101,7 +101,7 @@ function fonts.CreateFont(options, callback)
 			if stages.source then stages = {stages} end
 
 			for _, stage in ipairs(stages) do
-				table.insert(shading_info, stage)
+				list.insert(shading_info, stage)
 			end
 		end
 	end
@@ -189,7 +189,7 @@ do
 	end
 
 	local function add_blur_stage(stages, blur_radius, blur_dir)
-		table.insert(
+		list.insert(
 			stages,
 			{
 				source = [[
@@ -245,12 +245,12 @@ do
 
 		local stages = {}
 		-- copy the old texture
-		table.insert(stages, {copy = true})
+		list.insert(stages, {copy = true})
 		local passes = info.dir_passes or 1
 
 		for i = 1, passes do
 			local m = (i / passes)
-			table.insert(
+			list.insert(
 				stages,
 				{
 					source = "return vec4(color.r, color.g, color.b, texture(copy, uv + (dir / size)).a * color.a);",
@@ -276,7 +276,7 @@ do
 		end
 
 		if info.alpha_pow then
-			table.insert(
+			list.insert(
 				stages,
 				{
 					source = "return vec4(texture(self, uv).rgb, pow(texture(self, uv).a, alpha_pow));",
@@ -288,7 +288,7 @@ do
 			)
 		end
 
-		table.insert(
+		list.insert(
 			stages,
 			{
 				source = "return texture(self, uv) * vec4(1,1,1,color.a);",
@@ -300,7 +300,7 @@ do
 			}
 		)
 		-- render the old texture above the shadow texture with normal alpha blending
-		table.insert(
+		list.insert(
 			stages,
 			{
 				source = "return texture(copy, uv);",

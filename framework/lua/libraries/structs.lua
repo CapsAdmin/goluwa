@@ -112,7 +112,7 @@ function structs.Register(META)
 				assert(loadstring(lua))(META)
 			end
 
-			table.insert(arg_lines, "\t" .. number_type .. " ptr[" .. #META.Args .. "];")
+			list.insert(arg_lines, "\t" .. number_type .. " ptr[" .. #META.Args .. "];")
 
 			if META.StructOverride then
 				ctor = META.StructOverride()

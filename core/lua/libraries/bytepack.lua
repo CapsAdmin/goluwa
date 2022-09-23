@@ -94,7 +94,7 @@ bytepack.varint = {
 		end
 
 		str[output_size] = string.char(tonumber(bit.band(value, 127)))
-		return table.concat(str)
+		return list.concat(str)
 	end,
 	decode = function(str, byte_size)
 		local ret = 0
@@ -260,7 +260,7 @@ do
 			k = k:sub(0, -4)
 		end
 
-		table.insert(
+		list.insert(
 			temp,
 			{
 				name = k,
@@ -271,7 +271,7 @@ do
 		)
 	end
 
-	table.sort(temp, function(a, b)
+	list.sort(temp, function(a, b)
 		return #a.name > #b.name
 	end)
 
@@ -362,7 +362,7 @@ local function compile(str, decode)
 	if decode then
 		lua = lua .. "return out"
 	else
-		lua = lua .. "return table.concat(out)"
+		lua = lua .. "return list.concat(out)"
 	end
 
 	return assert(loadstring(lua, fmt))
@@ -371,7 +371,7 @@ end
 --local digest = spack("<I4I4I4I4", state[1], state[2], state[3], state[4])
 function string.pack(fmt, ...)
 	local func = compile(fmt, false)
-	return func(bytepack, table.pack(...))
+	return func(bytepack, list.pack(...))
 end
 
 function string.unpack(fmt, str, pos)

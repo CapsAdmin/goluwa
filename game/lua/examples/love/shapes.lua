@@ -70,25 +70,25 @@ outline[7] = {}
 local curve = love.math.newBezierCurve(0, 0.9, 0.4, 0.5, 1.08, -0.07, 0.85, -0.65)
 
 for k, v in ipairs(curve:render()) do
-	if k > 2 then table.insert(outline[7], v) end
+	if k > 2 then list.insert(outline[7], v) end
 end
 
 curve = love.math.newBezierCurve(0.85, -0.65, 0.62, -1, 0.13, -.8, 0., -0.6)
 
 for k, v in ipairs(curve:render()) do
-	if k > 2 then table.insert(outline[7], v) end
+	if k > 2 then list.insert(outline[7], v) end
 end
 
 curve = love.math.newBezierCurve(0, -0.6, -.13, -0.8, -0.62, -1, -0.85, -0.65)
 
 for k, v in ipairs(curve:render()) do
-	if k > 2 then table.insert(outline[7], v) end
+	if k > 2 then list.insert(outline[7], v) end
 end
 
 curve = love.math.newBezierCurve(-0.85, -0.65, -1.08, -0.07, -0.4, 0.5, -0, 0.9)
 
 for k, v in ipairs(curve:render()) do
-	if k > 2 then table.insert(outline[7], v) end
+	if k > 2 then list.insert(outline[7], v) end
 end
 
 -- half-moon
@@ -98,8 +98,8 @@ local r = 0.9
 
 for i = 1, 2 * nSeg do
 	local angle = i / nSeg * 4 * math.pi / 3 / 2 + math.pi / 6
-	table.insert(outline[8], r * math.cos(angle))
-	table.insert(outline[8], r * math.sin(angle))
+	list.insert(outline[8], r * math.cos(angle))
+	list.insert(outline[8], r * math.sin(angle))
 end
 
 local cx = r * math.cos(-math.pi / 6)
@@ -107,8 +107,8 @@ local cy = r * math.sin(-math.pi / 6)
 
 for i = 1, nSeg do
 	local angle = i * 2 * math.pi / 3 / nSeg + math.pi * 5 / 6
-	table.insert(outline[8], cx + r * math.cos(angle))
-	table.insert(outline[8], cy - r * math.sin(angle))
+	list.insert(outline[8], cx + r * math.cos(angle))
+	list.insert(outline[8], cy - r * math.sin(angle))
 end
 
 local insides = {}

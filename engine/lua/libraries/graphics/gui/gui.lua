@@ -26,8 +26,8 @@ function gui.CreatePanel(name, parent, store_in_parent)
 		parent:AddChild(self)
 
 		if child_i then
-			table.remove(parent:GetChildren())
-			table.insert(parent:GetChildren(), child_i, self)
+			list.remove(parent:GetChildren())
+			list.insert(parent:GetChildren(), child_i, self)
 		end
 	end
 
@@ -120,13 +120,13 @@ function gui.GetHoveringPanel(panel, filter)
 	local ordered = {}
 
 	for i, pnl in ipairs(children) do
-		if pnl.MouseZPos then table.insert(ordered, pnl) end
+		if pnl.MouseZPos then list.insert(ordered, pnl) end
 	end
 
 	local found
 
 	if ordered[1] then
-		table.sort(ordered, sort)
+		list.sort(ordered, sort)
 		found = try(ordered, filter)
 	end
 
@@ -266,13 +266,13 @@ do -- events
 				local str = {"local panels = gui.panels_unroll"}
 
 				local function add_children_to_list(parent, str, level)
-					table.insert(
+					list.insert(
 						str,
 						(
 							"%sif panels[%i] and panels[%i].Visible then"
 						):format(("\t"):rep(level), parent.unroll_i, parent.unroll_i)
 					)
-					table.insert(str, ("%spanels[%i]:PreDraw()"):format(("\t"):rep(level + 1), parent.unroll_i))
+					list.insert(str, ("%spanels[%i]:PreDraw()"):format(("\t"):rep(level + 1), parent.unroll_i))
 
 					for i, child in ipairs(parent:GetChildren()) do
 						level = level + 1
@@ -280,12 +280,12 @@ do -- events
 						level = level - 1
 					end
 
-					table.insert(str, ("%spanels[%i]:PostDraw()"):format(("\t"):rep(level + 1), parent.unroll_i))
-					table.insert(str, ("%send"):format(("\t"):rep(level)))
+					list.insert(str, ("%spanels[%i]:PostDraw()"):format(("\t"):rep(level + 1), parent.unroll_i))
+					list.insert(str, ("%send"):format(("\t"):rep(level)))
 				end
 
 				add_children_to_list(gui.world, str, 0)
-				str = table.concat(str, "\n")
+				str = list.concat(str, "\n")
 				vfs.Write("data/gui2_draw.lua", str)
 				gui.unrolled_draw = loadstring(str, "gui2_unrolled_draw")
 			end
@@ -346,7 +346,7 @@ do -- skin
 		local out = {}
 
 		for k, v in pairs(gui.registered_skins) do
-			table.insert(out, k)
+			list.insert(out, k)
 		end
 
 		return out

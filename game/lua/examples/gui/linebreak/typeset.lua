@@ -77,7 +77,7 @@ function hyphenate_word(language, word)
 			and
 			points[i] % 2 ~= 0
 		then
-			table.insert(result, originalCharacters[i])
+			list.insert(result, originalCharacters[i])
 		else
 			result[#result] = result[#result] .. originalCharacters[i]
 		end
@@ -164,8 +164,8 @@ function linebreak.linebreak(text, type, line_lengths, options)
 	if type == "center" then
 		-- Although not specified in the Knuth and Plass whitepaper, this box is necessary
 		-- to keep the bond from disappearing.
-		table.insert(nodes, box(0, ""))
-		table.insert(nodes, bond(0, 12, 0))
+		list.insert(nodes, box(0, ""))
+		list.insert(nodes, bond(0, 12, 0))
 	end
 
 	for index, word in ipairs(words) do
@@ -173,44 +173,44 @@ function linebreak.linebreak(text, type, line_lengths, options)
 
 		if hyphenated[2] and #word > 4 then
 			for partIndex, part in ipairs(hyphenated) do
-				table.insert(nodes, box(gfx.GetTextSize(part), part))
+				list.insert(nodes, box(gfx.GetTextSize(part), part))
 
 				if partIndex ~= #hyphenated then
 					local width = gfx.GetTextSize("-")
-					table.insert(nodes, damage(width * 2, options.damage.hyphen, 1))
+					list.insert(nodes, damage(width * 2, options.damage.hyphen, 1))
 				end
 			end
 		else
-			table.insert(nodes, box(gfx.GetTextSize(word), word))
+			list.insert(nodes, box(gfx.GetTextSize(word), word))
 		end
 
 		if type == "center" then
 			if index == #words then
-				table.insert(nodes, bond(0, 12, 0))
-				table.insert(nodes, damage(0, -infinity, 0))
+				list.insert(nodes, bond(0, 12, 0))
+				list.insert(nodes, damage(0, -infinity, 0))
 			else
-				table.insert(nodes, bond(0, 12, 0))
-				table.insert(nodes, damage(0, 0, 0))
-				table.insert(nodes, bond(space_width, -24, 0))
-				table.insert(nodes, box(0, ""))
-				table.insert(nodes, damage(0, infinity, 0))
-				table.insert(nodes, bond(0, 12, 0))
+				list.insert(nodes, bond(0, 12, 0))
+				list.insert(nodes, damage(0, 0, 0))
+				list.insert(nodes, bond(space_width, -24, 0))
+				list.insert(nodes, box(0, ""))
+				list.insert(nodes, damage(0, infinity, 0))
+				list.insert(nodes, bond(0, 12, 0))
 			end
 		elseif type == "justify" then
 			if index == #words then
-				table.insert(nodes, bond(0, infinity, 0))
-				table.insert(nodes, damage(0, -infinity, 1))
+				list.insert(nodes, bond(0, infinity, 0))
+				list.insert(nodes, damage(0, -infinity, 1))
 			else
-				table.insert(nodes, bond(space_width, space_stretch, space_shrink))
+				list.insert(nodes, bond(space_width, space_stretch, space_shrink))
 			end
 		elseif type == "left" then
 			if index == #words then
-				table.insert(nodes, bond(0, infinity, 0))
-				table.insert(nodes, damage(0, -infinity, 1))
+				list.insert(nodes, bond(0, infinity, 0))
+				list.insert(nodes, damage(0, -infinity, 1))
 			else
-				table.insert(nodes, bond(0, 12, 0))
-				table.insert(nodes, damage(0, 0, 0))
-				table.insert(nodes, bond(space_width, -12, 0))
+				list.insert(nodes, bond(0, 12, 0))
+				list.insert(nodes, damage(0, 0, 0))
+				list.insert(nodes, bond(space_width, -12, 0))
 			end
 		end
 	end
@@ -227,7 +227,7 @@ function linebreak.linebreak(text, type, line_lengths, options)
 		shrink = 0,
 	}
 	-- insert the first node
-	table.insert(
+	list.insert(
 		active_nodes,
 		{
 			node_index = 1,
@@ -340,7 +340,7 @@ function linebreak.linebreak(text, type, line_lengths, options)
 						for i, v in ipairs(active_nodes) do
 							if v == active then
 								v.removed_index = i
-								table.remove(active_nodes, i)
+								list.remove(active_nodes, i)
 
 								break
 							end
@@ -482,13 +482,13 @@ function linebreak.linebreak(text, type, line_lengths, options)
 						if active then
 							for i, v in ipairs(active_nodes) do
 								if v == active then
-									table.insert(active_nodes, i, new_node)
+									list.insert(active_nodes, i, new_node)
 
 									break
 								end
 							end
 						else
-							table.insert(active_nodes, new_node)
+							list.insert(active_nodes, new_node)
 						end
 					end
 				end
@@ -507,7 +507,7 @@ function linebreak.linebreak(text, type, line_lengths, options)
 		end
 
 		while temp do
-			table.insert(breaks, {
+			list.insert(breaks, {
 				node_index = temp.node_index,
 				ratio = temp.ratio,
 			})
@@ -557,7 +557,7 @@ function linebreak.linebreak(text, type, line_lengths, options)
 			end
 		end
 
-		table.insert(lines, {ratio = break_.ratio, nodes = list.slice(nodes, line_start, node_index)})
+		list.insert(lines, {ratio = break_.ratio, nodes = list.slice(nodes, line_start, node_index)})
 		line_start = node_index
 	end
 
@@ -593,7 +593,7 @@ local radius = 200
 for j = 0, (radius * 2) - 1, 5 do
 	local v = math.round(math.sqrt((radius - j / 2) * (2 * j)))
 
-	if v > 30 then table.insert(r, v) end
+	if v > 30 then list.insert(r, v) end
 end
 
 local text = "In olden times when wishing still helped one, there lived a king whose daughters were all beautiful; and the youngest was so beautiful that the sun itself, which has seen so much, was astonished whenever it shone in her face. Close by the king's castle lay a great dark forest, and under an old limetree in the forest was a well, and when the day was very warm, the king's child went out to the forest and sat down by the fountain; and when she was bored she took a golden ball, and threw it up on high and caught it; and this ball was her favorite plaything."

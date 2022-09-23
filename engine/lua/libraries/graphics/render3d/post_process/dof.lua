@@ -4,7 +4,7 @@ PASS.Default = false
 PASS.Position = 3
 PASS.Source = {}
 local FAST_BLUR = false
-table.insert(
+list.insert(
 	PASS.Source,
 	{
 		buffer = {
@@ -59,7 +59,7 @@ table.insert(
 ]],
 	}
 )
-table.insert(
+list.insert(
 	PASS.Source,
 	{
 		source = [[

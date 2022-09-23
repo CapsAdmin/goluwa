@@ -23,8 +23,8 @@ function gfx.CreateParticleEmitter(max)
 	return self
 end
 
-local table_insert = table.insert
-local table_remove = table.remove
+local list_insert = list.insert
+local list_remove = list.remove
 local math_deg = math.deg
 local math_lerp = math.lerp
 local math_ceil = math.ceil
@@ -49,7 +49,7 @@ function META:Update(dt)
 
 	for i, p in ipairs(self.particles) do
 		if p.life_end < time or (not p.Jitter and p.life_mult < 0.001) then
-			table_insert(remove_these, i)
+			list_insert(remove_these, i)
 		else
 			if self.CenterAttractionForce ~= 0 and self.attraction_center then
 				p.Velocity.x = p.Velocity.x + (
@@ -87,7 +87,7 @@ function META:Update(dt)
 					p.Position.x < self.ScreenRect.x or
 					p.Position.y < self.ScreenRect.y
 				then
-					table_insert(remove_these, i)
+					list_insert(remove_these, i)
 				end
 			end
 		end
@@ -190,9 +190,9 @@ function META:AddParticle()
 	p.life_mult = 1
 	p:SetLifeTime(1)
 
-	if #self.particles >= self.max then table_remove(self.particles, 1) end
+	if #self.particles >= self.max then list_remove(self.particles, 1) end
 
-	table_insert(self.particles, p)
+	list_insert(self.particles, p)
 	return p
 end
 

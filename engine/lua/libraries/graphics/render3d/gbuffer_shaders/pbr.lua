@@ -165,7 +165,7 @@ do
 	PASS.Position = 1
 	PASS.Name = "importance_sampling"
 	PASS.Source = {}
-	table.insert(
+	list.insert(
 		PASS.Source,
 		{
 			buffer = {
@@ -320,7 +320,7 @@ do
 	]],
 		}
 	)
-	table.insert(
+	list.insert(
 		PASS.Source,
 		{
 			source = [[

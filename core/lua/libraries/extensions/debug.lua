@@ -71,10 +71,10 @@ function debug.get_source(func)
 		local str = {}
 
 		for i = info.linedefined, info.lastlinedefined do
-			table.insert(str, lines[i])
+			list.insert(str, lines[i])
 		end
 
-		return table.concat(str, "\n")
+		return list.concat(str, "\n")
 	end
 
 	return "source unavailble for: " .. info.source
@@ -169,11 +169,11 @@ do
 						local ret = {}
 
 						for i = 1, select("#", ...) do
-							table.insert(ret, serializer.GetLibrary("luadata").ToString((select(i, ...))):sub(0, 20))
+							list.insert(ret, serializer.GetLibrary("luadata").ToString((select(i, ...))):sub(0, 20))
 						end
 
 						if #ret ~= 0 then
-							logf("%s = %s\n", table.concat(ret, ", "), arg_line)
+							logf("%s = %s\n", list.concat(ret, ", "), arg_line)
 						else
 							logn(arg_line)
 						end
@@ -195,10 +195,10 @@ do
 							local args = {}
 
 							for i = 1, select("#", ...) do
-								table.insert(args, serializer.GetLibrary("luadata").ToString((select(i, ...))))
+								list.insert(args, serializer.GetLibrary("luadata").ToString((select(i, ...))))
 							end
 
-							arg_line = ("%s.%s(%s) "):format(lib_name, name, table.concat(args, ", "):sub(0, 100))
+							arg_line = ("%s.%s(%s) "):format(lib_name, name, list.concat(args, ", "):sub(0, 100))
 						end
 
 						return log_return(func(...))
@@ -237,13 +237,13 @@ function debug.trace(skip_print)
 		end
 
 		for i = 2, stop do
-			table.insert(str, lines[i])
+			list.insert(str, lines[i])
 		end
 	else
 		str = lines
 	end
 
-	str = table.concat(str, "\n")
+	str = list.concat(str, "\n")
 
 	if not skip_print then logn(str) end
 
@@ -256,7 +256,7 @@ function debug.get_params(func)
 	for i = 1, math.huge do
 		local key = debug.getlocal(func, i)
 
-		if key then table.insert(params, key) else break end
+		if key then list.insert(params, key) else break end
 	end
 
 	return params
@@ -268,7 +268,7 @@ function debug.get_paramsx(func)
 	for i = 1, math.huge do
 		local key, val = debug.getlocal(func, i)
 
-		if key then table.insert(params, {key = key, val = val}) else break end
+		if key then list.insert(params, {key = key, val = val}) else break end
 	end
 
 	return params
@@ -280,7 +280,7 @@ function debug.get_upvalues(func)
 	for i = 1, math.huge do
 		local key, val = debug.getupvalue(func, i)
 
-		if key then table.insert(params, {key = key, val = val}) else break end
+		if key then list.insert(params, {key = key, val = val}) else break end
 	end
 
 	return params

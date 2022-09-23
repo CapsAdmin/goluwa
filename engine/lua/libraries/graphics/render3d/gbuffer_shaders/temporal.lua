@@ -91,7 +91,7 @@ PASS.Position = -1
 PASS.Name = "temporal"
 PASS.Default = true
 PASS.Source = {}
-table.insert(
+list.insert(
 	PASS.Source,
 	{
 		buffer = {
@@ -129,7 +129,7 @@ table.insert(
 ]],
 	}
 )
-table.insert(
+list.insert(
 	PASS.Source,
 	{
 		buffer = {
@@ -146,7 +146,7 @@ table.insert(
 	]],
 	}
 )
-table.insert(
+list.insert(
 	PASS.Source,
 	{
 		buffer = {

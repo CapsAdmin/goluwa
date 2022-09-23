@@ -18,19 +18,19 @@ render2d.effects = {}
 
 function render2d.AddEffect(name, pos, ...)
 	render2d.RemoveEffect(name)
-	table.insert(render2d.effects, {name = name, pos = pos, args = {...}})
+	list.insert(render2d.effects, {name = name, pos = pos, args = {...}})
 
-	table.sort(render2d.effects, function(a, b)
+	list.sort(render2d.effects, function(a, b)
 		return a.pos > b.pos
 	end)
 end
 
 function render2d.RemoveEffect(name)
 	for i, info in ipairs(render2d.effects) do
-		if info.name == name then table.remove(render2d.effects, i) end
+		if info.name == name then list.remove(render2d.effects, i) end
 	end
 
-	table.sort(render2d.effects, function(a, b)
+	list.sort(render2d.effects, function(a, b)
 		return a.pos > b.pos
 	end)
 end

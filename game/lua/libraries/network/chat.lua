@@ -11,10 +11,10 @@ function chat.AddTimeStamp(tbl)
 
 	tbl = tbl or {}
 	local time = os.date("*t")
-	table.insert(tbl, 1, " - ")
-	table.insert(tbl, 1, Color(1, 1, 1))
-	table.insert(tbl, 1, ("%.2d:%.2d"):format(time.hour, time.min))
-	table.insert(tbl, 1, ColorBytes(118, 170, 217))
+	list.insert(tbl, 1, " - ")
+	list.insert(tbl, 1, Color(1, 1, 1))
+	list.insert(tbl, 1, ("%.2d:%.2d"):format(time.hour, time.min))
+	list.insert(tbl, 1, ColorBytes(118, 170, 217))
 	return tbl
 end
 

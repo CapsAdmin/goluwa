@@ -334,7 +334,7 @@ function steam.LoadMap(path)
 
 					lump.model = paths[lump.prop_type + 1] or paths[1]
 					lump.classname = "static_entity"
-					table.insert(header.entities, lump)
+					list.insert(header.entities, lump)
 					tasks.Wait()
 					tasks.ReportProgress("reading static props", count)
 				end
@@ -595,7 +595,7 @@ function steam.LoadMap(path)
 
 			if GRAPHICS then model:AddVertex(vertex) end
 
-			if SERVER then table.insert(model, vertex) end
+			if SERVER then list.insert(model, vertex) end
 		end
 
 		local function lerp_corners(dims, corners, start_corner, dispinfo, x, y)
@@ -638,7 +638,7 @@ function steam.LoadMap(path)
 						mesh.material:LoadVMT("materials/" .. texname .. ".vmt")
 					end
 
-					table.insert(models, meshes[texname])
+					list.insert(models, meshes[texname])
 				end
 
 				do
@@ -809,7 +809,7 @@ function steam.LoadMap(path)
 	local render_meshes = {}
 
 	for _, v in ipairs(models) do
-		if v.vertex_buffer then table.insert(render_meshes, v) end
+		if v.vertex_buffer then list.insert(render_meshes, v) end
 	end
 
 	steam.loaded_bsp[path] = {

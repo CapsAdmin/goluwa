@@ -24,8 +24,8 @@ end
 local function read_header(buffer)
 	local id = buffer:ReadShort()
 	id = network.IDToString(id)
-	table.remove(buffer.buffer, 1)
-	table.remove(buffer.buffer, 1)
+	list.remove(buffer.buffer, 1)
+	list.remove(buffer.buffer, 1)
 	buffer:SetPosition(0)
 	return id
 end

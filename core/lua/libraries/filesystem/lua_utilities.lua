@@ -3,7 +3,7 @@ vfs.files_ran_ = vfs.files_ran_ or {}
 
 local function store_run_file_path(path)
 	vfs.files_ran = nil
-	table.insert(vfs.files_ran_, path)
+	list.insert(vfs.files_ran_, path)
 end
 
 function loadfile(path, ...)
@@ -94,11 +94,11 @@ do -- runfile
 	vfs.filerun_stack = filerun_stack
 
 	function vfs.PushToFileRunStack(path)
-		table.insert(filerun_stack, path)
+		list.insert(filerun_stack, path)
 	end
 
 	function vfs.PopFromFileRunStack()
-		table.remove(filerun_stack)
+		list.remove(filerun_stack)
 	end
 
 	function vfs.GetFileRunStack()
@@ -125,7 +125,7 @@ do -- runfile
 				ok, err = vfs.RunFile(path)
 
 				if ok == false then
-					table.insert(errors, err .. ": " .. path)
+					list.insert(errors, err .. ": " .. path)
 				else
 					return ok
 				end
@@ -134,7 +134,7 @@ do -- runfile
 			system_pcall = true
 
 			if ok == false then
-				err = table.concat(errors, "\n")
+				err = list.concat(errors, "\n")
 			else
 				ok = true
 				err = nil
@@ -317,9 +317,9 @@ function vfs.Require(name, ...)
 			if ret[1] then
 				return unpack(ret, 2)
 			else
-				--table.insert(errors, "no file in: " .. data.path_info.full_path)
+				--list.insert(errors, "no file in: " .. data.path_info.full_path)
 				if not done[ret[2]] then
-					table.insert(errors, ret[2])
+					list.insert(errors, ret[2])
 					done[ret[2]] = true
 				end
 			end
@@ -340,9 +340,9 @@ function vfs.Require(name, ...)
 			if ret[1] then
 				return unpack(ret, 2)
 			else
-				--table.insert(errors, "no file in: " .. dir)
+				--list.insert(errors, "no file in: " .. dir)
 				if not done[ret[2]] then
-					table.insert(errors, ret[2])
+					list.insert(errors, ret[2])
 					done[ret[2]] = true
 				end
 			end
@@ -356,7 +356,7 @@ function vfs.Require(name, ...)
 					errors[i]:find("module '" .. name .. "' not found:\n", nil, true) or
 					errors[i]:find("loop or previous", nil, true)
 				then
-					table.remove(errors, i)
+					list.remove(errors, i)
 				end
 			end
 
@@ -364,11 +364,11 @@ function vfs.Require(name, ...)
 		end
 	end
 
-	error(table.concat(errors, "\n") .. "\n", 2)
+	error(list.concat(errors, "\n") .. "\n", 2)
 end
 
 function vfs.AddModuleDirectory(dir)
-	table.insert(vfs.module_directories, dir)
+	list.insert(vfs.module_directories, dir)
 end
 
 local ffi = desire("ffi")
@@ -472,7 +472,7 @@ if ffi then
 
 					if clib then return clib end
 
-					table.insert(errors, err)
+					list.insert(errors, err)
 				end
 
 				do
@@ -480,7 +480,7 @@ if ffi then
 
 					if clib then return clib end
 
-					table.insert(errors, err)
+					list.insert(errors, err)
 				end
 			end
 		end
@@ -489,7 +489,7 @@ if ffi then
 
 		if ok then return handle_windows_symbols(path, clib) end
 
-		table.insert(errors, clib)
-		return nil, table.concat(errors, "\n")
+		list.insert(errors, clib)
+		return nil, list.concat(errors, "\n")
 	end
 end

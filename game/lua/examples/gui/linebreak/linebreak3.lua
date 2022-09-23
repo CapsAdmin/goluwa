@@ -4,11 +4,11 @@ local boxes = {}
 
 for i, word in ipairs(text:split(" ")) do
 	local w, h = font:GetTextSize(word)
-	table.insert(boxes, {
+	list.insert(boxes, {
 		width = w,
 		word = word,
 	})
-	table.insert(boxes, {
+	list.insert(boxes, {
 		space = true,
 		width = font:GetTextSize(" "),
 		word = " ",
@@ -23,7 +23,7 @@ local function additional_split(word, max_width, out)
 	if left_width >= max_width and left_word:ulength() > 1 then
 		additional_split(left_word, max_width, out)
 	else
-		table.insert(out, 1, {
+		list.insert(out, 1, {
 			width = left_width,
 			word = left_word,
 		})
@@ -34,7 +34,7 @@ local function additional_split(word, max_width, out)
 	if right_width >= max_width and right_word:ulength() > 1 then
 		additional_split(right_word, max_width, out)
 	else
-		table.insert(out, 1, {
+		list.insert(out, 1, {
 			width = right_width,
 			word = right_word,
 		})
@@ -47,10 +47,10 @@ local function layout(boxes, max_width)
 	for i, box in ipairs(boxes) do
 		if box.word:ulength() > 1 then
 			if box.width > max_width then
-				table.remove(boxes, i)
+				list.remove(boxes, i)
 
 				for _, box in ipairs(additional_split(box.word, max_width)) do
-					table.insert(boxes, i, box)
+					list.insert(boxes, i, box)
 				end
 			end
 		end

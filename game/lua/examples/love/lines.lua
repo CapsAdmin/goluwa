@@ -4,35 +4,35 @@ end
 
 local function render_edge(mode, anchors, normals, s, len_s, ns, q, r, half_width)
 	if mode == "none" then
-		table.insert(anchors, q)
-		table.insert(anchors, q)
-		table.insert(normals, ns)
-		table.insert(normals, -ns)
+		list.insert(anchors, q)
+		list.insert(anchors, q)
+		list.insert(normals, ns)
+		list.insert(normals, -ns)
 		s = (r - q)
 		len_s = s:GetLength()
 		ns = s:GetNormal(half_width / len_s)
-		table.insert(anchors, q)
-		table.insert(anchors, q)
-		table.insert(normals, -ns)
-		table.insert(normals, ns)
+		list.insert(anchors, q)
+		list.insert(anchors, q)
+		list.insert(normals, -ns)
+		list.insert(normals, ns)
 	elseif mode == "miter" then
 		local t = r - q
 		local len_t = t:GetLength()
 		local nt = t:GetNormal(half_width / len_t)
-		table.insert(anchors, q)
-		table.insert(anchors, q)
+		list.insert(anchors, q)
+		list.insert(anchors, q)
 		local det = huh(s, t)
 
 		if math.abs(det) / (len_s * len_t) < 0.05 and (s * t):GetLength() > 0 then
-			table.insert(normals, ns)
-			table.insert(normals, -ns)
+			list.insert(normals, ns)
+			list.insert(normals, -ns)
 		else
 			local lambda = huh(nt - ns, t) / det
 
 			if not math.isvalid(lambda) then lambda = 0 end -- not really sure why this is needed
 			local d = ns + s * lambda
-			table.insert(normals, d)
-			table.insert(normals, -d)
+			list.insert(normals, d)
+			list.insert(normals, -d)
 		end
 
 		s = t
@@ -45,10 +45,10 @@ local function render_edge(mode, anchors, normals, s, len_s, ns, q, r, half_widt
 
 		if math.abs(det) / (len_s * len_t) < 0.05 and (s * t):GetLength() > 0 then
 			local n = t:GetNormal(half_width / len_t)
-			table.insert(anchors, q)
-			table.insert(anchors, q)
-			table.insert(normals, n)
-			table.insert(normals, -n)
+			list.insert(anchors, q)
+			list.insert(anchors, q)
+			list.insert(normals, n)
+			list.insert(normals, -n)
 			s = t
 			len_s = len_t
 			return s, len_s, ns
@@ -59,21 +59,21 @@ local function render_edge(mode, anchors, normals, s, len_s, ns, q, r, half_widt
 
 		if not math.isvalid(lambda) then lambda = 0 end -- not really sure why this is needed
 		local d = ns + s * lambda
-		table.insert(anchors, q)
-		table.insert(anchors, q)
-		table.insert(anchors, q)
-		table.insert(anchors, q)
+		list.insert(anchors, q)
+		list.insert(anchors, q)
+		list.insert(anchors, q)
+		list.insert(anchors, q)
 
 		if det > 0 then
-			table.insert(normals, d)
-			table.insert(normals, -ns)
-			table.insert(normals, d)
-			table.insert(normals, -nt)
+			list.insert(normals, d)
+			list.insert(normals, -ns)
+			list.insert(normals, d)
+			list.insert(normals, -nt)
 		else
-			table.insert(normals, ns)
-			table.insert(normals, -d)
-			table.insert(normals, nt)
-			table.insert(normals, -d)
+			list.insert(normals, ns)
+			list.insert(normals, -d)
+			list.insert(normals, nt)
+			list.insert(normals, -d)
 		end
 
 		s = t
@@ -229,7 +229,7 @@ local function draw_line(mode, coords, width, pixel_size, draw_overdraw)
 			vertices[i + 1] = vertices[i + 2 + 1]
 		end
 
-		table.remove(vertices, #vertices)
+		list.remove(vertices, #vertices)
 		local total_vertex_count = #vertices
 
 		if draw_overdraw then total_vertex_count = overdraw_count end

@@ -20,7 +20,7 @@ function timer.Thinker(callback, run_now, frequency, iterations, id)
 		info.iterations = iterations or 1
 	end
 
-	table.insert(timer.timers, info)
+	list.insert(timer.timers, info)
 end
 
 function timer.Delay(time, callback, id, obj, ...)
@@ -47,7 +47,7 @@ function timer.Delay(time, callback, id, obj, ...)
 		end
 	end
 
-	table.insert(
+	list.insert(
 		timer.timers,
 		{
 			key = id or callback,
@@ -91,7 +91,7 @@ function timer.Repeat(id, time, repeats, callback, run_now, error_callback)
 	data.error_callback = error_callback or function(id, msg)
 		logn(id, msg)
 	end
-	table.insert(timer.timers, data)
+	list.insert(timer.timers, data)
 
 	if run_now then
 		callback(repeats - 1)
@@ -102,7 +102,7 @@ end
 function timer.RemoveTimer(id)
 	for k, v in ipairs(timer.timers) do
 		if v.key == id then
-			table.remove(timer.timers, k)
+			list.remove(timer.timers, k)
 			--profiler.RemoveSection(v.id)
 			return true
 		end
@@ -152,7 +152,7 @@ function timer.UpdateTimers(a_, b_, c_, d_, e_)
 					if system.GetFrameTime() >= data.fps then break end
 
 					if not ok or res ~= nil then
-						table.insert(remove_these, i)
+						list.insert(remove_these, i)
 
 						break
 					end
@@ -178,7 +178,7 @@ function timer.UpdateTimers(a_, b_, c_, d_, e_)
 						end
 					end
 
-					if errored then table.insert(remove_these, i) end
+					if errored then list.insert(remove_these, i) end
 
 					data.realtime = cur + data.frequency
 				end
@@ -191,27 +191,27 @@ function timer.UpdateTimers(a_, b_, c_, d_, e_)
 					system.pcall(data.callback, unpack(data.args))
 				end
 
-				table.insert(remove_these, i)
+				list.insert(remove_these, i)
 			end
 		elseif data.type == "timer" then
 			if not data.paused and data.realtime < cur then
 				local ran, msg = system.pcall(data.callback, data.times_ran - 1, a_, b_, c_, d_, e_)
 
 				if ran then
-					if msg == "stop" then table.insert(remove_these, i) end
+					if msg == "stop" then list.insert(remove_these, i) end
 
 					if msg == "restart" then data.times_ran = 1 end
 
 					if type(msg) == "number" then data.realtime = cur + msg end
 				else
 					if data.error_callback(data.id, msg) == nil then
-						table.insert(remove_these, i)
+						list.insert(remove_these, i)
 					--profiler.RemoveSection(data.id)
 					end
 				end
 
 				if data.times_ran == data.repeats then
-					table.insert(remove_these, i)
+					list.insert(remove_these, i)
 				--profiler.RemoveSection(data.id)
 				else
 					data.times_ran = data.times_ran + 1
@@ -228,7 +228,7 @@ function timer.UpdateTimers(a_, b_, c_, d_, e_)
 		end
 
 		list.fix_indices(timer.timers)
-		table.clear(remove_these)
+		list.clear(remove_these)
 	end
 end
 

@@ -53,7 +53,7 @@ local function show_image(url)
 
 		if t > totalDuration then
 			event.RemoveListener("PreDrawGUI", "chathud_image_url")
-			table.remove(queue, 1)
+			list.remove(queue, 1)
 			busy = false
 			return
 		end
@@ -117,6 +117,6 @@ event.AddListener("ClientChat", "chathud_image_url", function(client, str)
 		end
 
 		url = url:trim()
-		table.insert(queue, url)
+		list.insert(queue, url)
 	end
 end)

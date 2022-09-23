@@ -224,7 +224,7 @@ ffibuild.Build(
 
 				ffi.gc(bitmap, library.Unload)
 
-				table.insert(out, {w = width, h = height, x = x, y = y, ms = ms, data = data})
+				list.insert(out, {w = width, h = height, x = x, y = y, ms = ms, data = data})
 			end
 
 			library.CloseMultiBitmap(temp, 0)

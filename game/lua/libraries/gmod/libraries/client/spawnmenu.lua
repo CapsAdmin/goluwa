@@ -13,7 +13,7 @@ do -- presets
 				out[folder_name] = {}
 
 				for file_name in vfs.Iterate("settings/presets/" .. folder_name .. "/") do
-					table.insert(
+					list.insert(
 						out[folder_name],
 						utility.VDFToTable(vfs.Read("settings/presets/" .. folder_name .. "/" .. file_name))
 					)

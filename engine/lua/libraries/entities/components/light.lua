@@ -48,8 +48,8 @@ if GRAPHICS then
 				shadow_map:Remove()
 			end
 
-			table.clear(self.shadow_maps)
-			table.clear(self.cameras)
+			list.clear(self.shadow_maps)
+			list.clear(self.cameras)
 		end
 
 		self:BuildProjection()

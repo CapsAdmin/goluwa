@@ -44,7 +44,7 @@ function render.WaitForLockedRange(lock_begin_bytes, lock_length)
 			wait(buffer_lock.sync_obj)
 			gl.DeleteSync(buffer_lock.sync_obj)
 		else
-			table.insert(swap_locks, it)
+			list.insert(swap_locks, it)
 		end
 	end
 
@@ -59,5 +59,5 @@ function render.LockRange(lock_begin_bytes, lock_length)
 		},
 		sync_obj = gl.FenceSync("GL_SYNC_GPU_COMMANDS_COMPLETE", 0),
 	}
-	table.insert(buffer_locks, buffer_lock)
+	list.insert(buffer_locks, buffer_lock)
 end

@@ -22,7 +22,7 @@ end
 
 function META:Clear()
 	self.i = 1
-	table.clear(self.Vertices)
+	list.clear(self.Vertices)
 end
 
 function META:UnreferenceVertices()
@@ -44,7 +44,7 @@ function META:AddSubMesh(val, data)
 	local index_buffer = render.CreateIndexBuffer()
 	index_buffer:SetDrawHint("static")
 	local indices = index_buffer:LoadIndices(val)
-	table.insert(self.sub_meshes, {index_buffer = index_buffer, data = data, indices = indices})
+	list.insert(self.sub_meshes, {index_buffer = index_buffer, data = data, indices = indices})
 end
 
 function META:GetSubMeshes()
@@ -202,7 +202,7 @@ do -- helpers
 
 		for line in data:gmatch("(.-)\n") do
 			local parts = line:gsub("%s+", " "):trim():split(" ")
-			table.insert(lines, parts)
+			list.insert(lines, parts)
 			tasks.ReportProgress("inserting lines", math.huge)
 			tasks.Wait()
 			i = i + 1
@@ -212,11 +212,11 @@ do -- helpers
 
 		for _, parts in pairs(lines) do
 			if parts[1] == "v" and #parts >= 4 then
-				table.insert(positions, Vec3(tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])))
+				list.insert(positions, Vec3(tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])))
 			elseif parts[1] == "vt" and #parts >= 3 then
-				table.insert(texcoords, Vec2(tonumber(parts[2]), tonumber(parts[3])))
+				list.insert(texcoords, Vec2(tonumber(parts[2]), tonumber(parts[3])))
 			elseif not generate_normals and parts[1] == "vn" and #parts >= 4 then
-				table.insert(
+				list.insert(
 					normals,
 					Vec3(tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])):GetNormalized()
 				)
@@ -256,9 +256,9 @@ do -- helpers
 							v3.normal = normals[tonumber(previous[3])]
 						end
 
-						table.insert(output, v1)
-						table.insert(output, v2)
-						table.insert(output, v3)
+						list.insert(output, v1)
+						list.insert(output, v2)
+						list.insert(output, v3)
 					end
 
 					previous = current

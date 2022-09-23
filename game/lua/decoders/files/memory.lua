@@ -22,7 +22,7 @@ local function get_folder(path_info, remove_last)
 
 	-- when creating a folder the folder doesn't exist
 	-- so remove it
-	if remove_last then table.remove(folders) end
+	if remove_last then list.remove(folders) end
 
 	for _, folder in ipairs(folders) do
 		if not next[folder] then error("folder not found", 2) end
@@ -65,7 +65,7 @@ function CONTEXT:GetFiles(path_info)
 	local out = {}
 
 	for file_name, var in pairs(get_folder(path_info)) do
-		if type(var) == "table" then table.insert(out, file_name) end
+		if type(var) == "table" then list.insert(out, file_name) end
 	end
 
 	return out

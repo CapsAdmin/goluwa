@@ -147,16 +147,16 @@ function goluwa.CharInput(char)
 
 	if not line then
 		line = {}
-		table.insert(grid, caret_pos.y, line)
+		list.insert(grid, caret_pos.y, line)
 	end
 
 	if not line[caret_pos.x] then
 		for _ = #line, caret_pos.x do
-			table.insert(line, {char = " "})
+			list.insert(line, {char = " "})
 		end
 	end
 
-	table.insert(line, caret_pos.x, {char = char})
+	list.insert(line, caret_pos.x, {char = char})
 	move(1, 0)
 	invalidate()
 end
@@ -180,7 +180,7 @@ function goluwa.KeyInputRepeat(key, press)
 		local line = grid[caret_pos.y]
 
 		if line and line[caret_pos.x] then
-			table.remove(line, caret_pos.x - 1)
+			list.remove(line, caret_pos.x - 1)
 			invalidate()
 			move(-1, 0)
 		end
@@ -188,7 +188,7 @@ function goluwa.KeyInputRepeat(key, press)
 		local line = grid[caret_pos.y]
 
 		if line and line[caret_pos.x] then
-			table.remove(line, caret_pos.x)
+			list.remove(line, caret_pos.x)
 			invalidate()
 		--move(-1, 0)
 		end

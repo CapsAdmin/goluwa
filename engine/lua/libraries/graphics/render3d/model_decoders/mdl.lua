@@ -794,7 +794,7 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 					mesh:BuildTangents()
 					mesh:Upload()
 					mesh_callback(mesh)
-					table.insert(models, mesh)
+					list.insert(models, mesh)
 				end
 
 				break -- only first lod_model for now

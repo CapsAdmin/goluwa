@@ -128,8 +128,8 @@ do -- structs
 	-- CGame Fix
 	for i, v in ipairs(json.structs) do
 		if v.struct == "CGameID::(anonymous)" then
-			table.remove(json.structs, i)
-			table.insert(json.structs, i - 1, v)
+			list.remove(json.structs, i)
+			list.insert(json.structs, i - 1, v)
 			v.struct = "CGameID"
 			v.fields[2].fieldtype = "struct GameID_t"
 		end
@@ -241,7 +241,7 @@ end
 
 a("bool SteamAPI_RestartAppIfNecessary(uint32_t);")
 a("bool SteamAPI_Init();")
-header = table.concat(header, "\n")
+header = list.concat(header, "\n")
 header = header:gsub("_Bool", "bool")
 header = header:gsub("&", "*")
 header = header:gsub(
@@ -263,7 +263,7 @@ for i = 1, 500 do
 		lines[line] = lines[line]:gsub(t, function()
 			return prepend .. t
 		end)
-		header = table.concat(lines, "\n")
+		header = list.concat(lines, "\n")
 	end
 end
 
@@ -282,10 +282,10 @@ if not ok then
 end
 
 local lua = {}
-table.insert(lua, "--this file has been auto generated")
-table.insert(lua, "local ffi = require('ffi')")
-table.insert(lua, "ffi.cdef[[" .. header .. "]]")
-table.insert(
+list.insert(lua, "--this file has been auto generated")
+list.insert(lua, "local ffi = require('ffi')")
+list.insert(lua, "ffi.cdef[[" .. header .. "]]")
+list.insert(
 	lua,
 	[[
 local lib
@@ -373,26 +373,26 @@ local versions = {
 
 for interface in pairs(interfaces) do
 	local friendly = interface:sub(2):sub(6):lower()
-	table.insert(lua, "steamworks." .. friendly .. " = {}")
+	list.insert(lua, "steamworks." .. friendly .. " = {}")
 
 	if interface == "ISteamClient" then
-		table.insert(lua, "do")
+		list.insert(lua, "do")
 	else
 		local version = versions[interface:sub(2):upper() .. "_INTERFACE_VERSION"] or ""
 
 		if interface == "ISteamUtils" then
-			table.insert(
+			list.insert(
 				lua,
 				"steamworks." .. friendly .. "_ptr = lib.SteamAPI_ISteamClient_Get" .. interface .. "(steamworks.client_ptr, steamworks.pipe_ptr, '" .. version .. "')"
 			)
 		else
-			table.insert(
+			list.insert(
 				lua,
 				"steamworks." .. friendly .. "_ptr = lib.SteamAPI_ISteamClient_Get" .. interface .. "(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, '" .. version .. "')"
 			)
 		end
 
-		table.insert(
+		list.insert(
 			lua,
 			"if steamworks." .. friendly .. "_ptr == nil then\n\t print('steamworks.lua: failed to load " .. friendly .. " " .. version .. "')\nelse"
 		)
@@ -424,18 +424,18 @@ for interface in pairs(interfaces) do
 			if info.params and info.params[1].paramtype == prepend .. "CSteamID" then
 				info.friendly_interface = friendly
 				info.arg_line = arg_line:match(".-, (.+)") or ""
-				table.insert(steam_id_meta, info)
+				list.insert(steam_id_meta, info)
 			end
 
-			table.insert(lua, func)
+			list.insert(lua, func)
 		end
 	end
 
-	table.insert(lua, "end")
+	list.insert(lua, "end")
 end
 
-table.insert(lua, "local META = {}")
-table.insert(lua, "META.__index = META")
+list.insert(lua, "local META = {}")
+list.insert(lua, "META.__index = META")
 
 for i, info in ipairs(steam_id_meta) do
 	local name = info.methodname
@@ -446,20 +446,20 @@ for i, info in ipairs(steam_id_meta) do
 	if #arg_line > 0 then arg_line = ", " .. arg_line end
 
 	local func = "function META:" .. name .. "(" .. info.arg_line .. ") return steamworks." .. info.friendly_interface .. "." .. info.methodname .. "(self.id" .. arg_line .. ") end"
-	table.insert(lua, func)
+	list.insert(lua, func)
 end
 
-table.insert(
+list.insert(
 	lua,
 	"META.__tostring = function(self) return ('[%s]%s'):format(self.id, self:GetPersonaName()) end"
 )
-table.insert(
+list.insert(
 	lua,
 	"function steamworks.GetFriendObjectFromSteamID(id) return setmetatable({id = id}, META) end"
 )
-table.insert(lua, "steamworks.steamid_meta = META")
-table.insert(lua, "return steamworks")
-lua = table.concat(lua, "\n")
+list.insert(lua, "steamworks.steamid_meta = META")
+list.insert(lua, "return steamworks")
+lua = list.concat(lua, "\n")
 local path = "os:" .. e.ROOT_FOLDER .. "data/ffibuild/steamworks/steamworks.lua"
 vfs.Write(path, lua)
 runfile(path)

@@ -112,7 +112,7 @@ commands.Add("extract_pac3_vfs_json=arg_line", function(line)
 				bin[i] = string.char(tonumber(v))
 			end
 
-			bin = table.concat(bin)
+			bin = list.concat(bin)
 
 			if compression then
 				logn("\tdecompressing ", path)

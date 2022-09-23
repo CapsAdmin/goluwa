@@ -221,7 +221,7 @@ do
 			local handle = FindFirstFileA(path .. "*", data)
 
 			if handle == nil then
-				table.insert(errors, {path = path, error = error_string()})
+				list.insert(errors, {path = path, error = error_string()})
 				return
 			end
 

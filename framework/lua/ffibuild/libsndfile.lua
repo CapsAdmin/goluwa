@@ -27,11 +27,11 @@ ffibuild.Build(
 
 				for name, struct in pairs(meta_data.structs) do
 					if name:find("^struct SF_") and not header:find(name) then
-						table.insert(extra, {str = name .. struct:GetDeclaration(meta_data) .. ";\n", pos = struct.i})
+						list.insert(extra, {str = name .. struct:GetDeclaration(meta_data) .. ";\n", pos = struct.i})
 					end
 				end
 
-				table.sort(extra, function(a, b)
+				list.sort(extra, function(a, b)
 					return a.pos < b.pos
 				end)
 

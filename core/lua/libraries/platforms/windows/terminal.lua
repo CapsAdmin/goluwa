@@ -555,41 +555,41 @@ function terminal.ReadEvents()
 					end
 
 					if SHIFT and evt.Event.KeyEvent.uChar.UnicodeChar ~= 0 then
-						table.insert(terminal.event_buffer, {"string", str})
+						list.insert(terminal.event_buffer, {"string", str})
 					else
 						if str == "\3" then
-							table.insert(terminal.event_buffer, {"ctrl_c"})
+							list.insert(terminal.event_buffer, {"ctrl_c"})
 						elseif CTRL then
 							if key == keys.VK_RIGHT then
-								table.insert(terminal.event_buffer, {"ctrl_right"})
+								list.insert(terminal.event_buffer, {"ctrl_right"})
 							elseif key == keys.VK_LEFT then
-								table.insert(terminal.event_buffer, {"ctrl_left"})
+								list.insert(terminal.event_buffer, {"ctrl_left"})
 							elseif key == keys.VK_BACK or evt.Event.KeyEvent.uChar.UnicodeChar == 23 then
-								table.insert(terminal.event_buffer, {"ctrl_backspace"})
+								list.insert(terminal.event_buffer, {"ctrl_backspace"})
 							elseif key == keys.VK_DELETE or evt.Event.KeyEvent.uChar.UnicodeChar == 68 then
-								table.insert(terminal.event_buffer, {"ctrl_delete"})
+								list.insert(terminal.event_buffer, {"ctrl_delete"})
 							end
 						else
 							if key == keys.VK_RETURN then
-								table.insert(terminal.event_buffer, {"enter"})
+								list.insert(terminal.event_buffer, {"enter"})
 							elseif key == keys.VK_DELETE then
-								table.insert(terminal.event_buffer, {"delete"})
+								list.insert(terminal.event_buffer, {"delete"})
 							elseif key == keys.VK_LEFT then
-								table.insert(terminal.event_buffer, {"left"})
+								list.insert(terminal.event_buffer, {"left"})
 							elseif key == keys.VK_RIGHT then
-								table.insert(terminal.event_buffer, {"right"})
+								list.insert(terminal.event_buffer, {"right"})
 							elseif key == keys.VK_UP then
-								table.insert(terminal.event_buffer, {"up"})
+								list.insert(terminal.event_buffer, {"up"})
 							elseif key == keys.VK_DOWN then
-								table.insert(terminal.event_buffer, {"down"})
+								list.insert(terminal.event_buffer, {"down"})
 							elseif key == keys.VK_HOME then
-								table.insert(terminal.event_buffer, {"home"})
+								list.insert(terminal.event_buffer, {"home"})
 							elseif key == keys.VK_END then
-								table.insert(terminal.event_buffer, {"end"})
+								list.insert(terminal.event_buffer, {"end"})
 							elseif key == keys.VK_BACK then
-								table.insert(terminal.event_buffer, {"backspace"})
+								list.insert(terminal.event_buffer, {"backspace"})
 							elseif evt.Event.KeyEvent.uChar.UnicodeChar > 31 then
-								table.insert(terminal.event_buffer, {"string", str})
+								list.insert(terminal.event_buffer, {"string", str})
 							end
 						end
 					end

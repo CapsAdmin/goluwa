@@ -109,19 +109,19 @@ do -- commands
 
 		for _, char in ipairs(utf8.totable(arg_line)) do
 			if escape then
-				table.insert(capture, char)
+				list.insert(capture, char)
 				escape = false
 			else
 				if in_capture then
 					if char == in_capture then in_capture = false end
 
-					table.insert(capture, char)
+					list.insert(capture, char)
 				else
 					if char == "," then
-						table.insert(args, table.concat(capture, ""))
-						table.clear(capture)
+						list.insert(args, list.concat(capture, ""))
+						list.clear(capture)
 					else
-						table.insert(capture, char)
+						list.insert(capture, char)
 
 						if capture_symbols[char] then in_capture = capture_symbols[char] end
 
@@ -131,7 +131,7 @@ do -- commands
 			end
 		end
 
-		table.insert(args, table.concat(capture, ""))
+		list.insert(args, list.concat(capture, ""))
 		return args
 	end
 
@@ -234,7 +234,7 @@ do -- commands
 		-- sub commands
 		if #aliases == 1 and aliases[1]:find(" ", nil, true) then
 			if not table.has_value(commands.sub_commands, aliases[1]) then
-				table.insert(commands.sub_commands, aliases[1])
+				list.insert(commands.sub_commands, aliases[1])
 			end
 		end
 	end
@@ -266,14 +266,14 @@ do -- commands
 			for _, alias in ipairs(command.aliases) do
 				if str:lower() == alias:lower() then return command end
 
-				table.insert(
+				list.insert(
 					found,
 					{distance = string.levenshtein(str, alias), alias = alias, command = command}
 				)
 			end
 		end
 
-		table.sort(found, function(a, b)
+		list.sort(found, function(a, b)
 			return a.distance < b.distance
 		end)
 
@@ -325,7 +325,7 @@ do -- commands
 		for i = 1, math.huge do
 			local key = debug.getlocal(command.callback, i)
 
-			if key then table.insert(params, key) else break end
+			if key then list.insert(params, key) else break end
 		end
 
 		str = alias .. " "
@@ -427,7 +427,7 @@ do -- commands
 						if arg_type == "arg_line" then
 							val = arg_line
 						elseif arg_type == "string_rest" then
-							val = table.concat({select(i, unpack(args))}, ","):trim()
+							val = list.concat({select(i, unpack(args))}, ","):trim()
 						else
 							local test = commands.ArgumentTypes[arg_type](args[i] or "")
 
@@ -447,7 +447,7 @@ do -- commands
 							) .. " >>|" .. (
 								args[i] or
 								""
-							) .. "|<< to one of these types: " .. table.concat(command.argtypes[i], ", ") .. "\n"
+							) .. "|<< to one of these types: " .. list.concat(command.argtypes[i], ", ") .. "\n"
 						err = err .. "defaulting to " .. tostring(command.defaults[i])
 						logn(err)
 					end
@@ -459,7 +459,7 @@ do -- commands
 							) .. " >>|" .. (
 								args[i] or
 								""
-							) .. "|<< to one of these types: " .. table.concat(command.argtypes[i], ", ") .. "\n"
+							) .. "|<< to one of these types: " .. list.concat(command.argtypes[i], ", ") .. "\n"
 						err = err .. commands.GetHelpText(alias) .. "\n"
 						error(err)
 					end
@@ -530,7 +530,7 @@ do -- commands
 
 		function commands.ExecuteLuaString(line, log_error, env_name)
 			local ret = {pcall(commands.RunLuaString, line, env_name)}
-			local ok = table.remove(ret, 1)
+			local ok = list.remove(ret, 1)
 
 			if not ok then
 				if log_error then logn(ret[1]:match(".+:%d+:%s+(.+)")) end

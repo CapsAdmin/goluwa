@@ -103,29 +103,29 @@ function utility.GetLikelyLibraryDependencies(path)
 		if ext == "so" then
 			for name in content:gmatch("([%.%w_-]+%.so[%w%.]*)\0") do
 				if not done[name] then
-					table.insert(found, {name = name, status = "MISSING"})
+					list.insert(found, {name = name, status = "MISSING"})
 					done[name] = true
 				end
 			end
 
-			original = table.remove(found, #found).name
+			original = list.remove(found, #found).name
 		elseif ext == "dll" then
 			for name in content:gmatch("([%.%w_-]+%.dll)\0") do
 				if not done[name] then
-					table.insert(found, {name = name, status = "MISSING"})
+					list.insert(found, {name = name, status = "MISSING"})
 					done[name] = true
 				end
 			end
-		--original = table.remove(found, 1).name
+		--original = list.remove(found, 1).name
 		elseif ext == "dylib" then
 			for name in content:gmatch("([%.%w_-]+%.dylib)\0") do
 				if not done[name] then
-					table.insert(found, {name = name, status = "MISSING"})
+					list.insert(found, {name = name, status = "MISSING"})
 					done[name] = true
 				end
 			end
 
-			original = table.remove(found, 1).name
+			original = list.remove(found, 1).name
 		end
 
 		for i, info in ipairs(found) do
@@ -205,13 +205,13 @@ function utility.AddPackageLoader(func, loaders)
 
 	for i, v in ipairs(loaders) do
 		if v == func then
-			table.remove(loaders, i)
+			list.remove(loaders, i)
 
 			break
 		end
 	end
 
-	table.insert(loaders, func)
+	list.insert(loaders, func)
 end
 
 do
@@ -251,10 +251,10 @@ do
 			local args = {}
 
 			for k, v in pairs(v.args) do
-				table.insert(args, tostringx(v))
+				list.insert(args, tostringx(v))
 			end
 
-			logn(name or "", ".", v.func_name, "(", table.concat(args, ", "), ")")
+			logn(name or "", ".", v.func_name, "(", list.concat(args, ", "), ")")
 		end
 	end
 end
@@ -292,12 +292,12 @@ do
 
 		if handle_path(str):ends_with("/**") then
 			vfs.GetFilesRecursive(handle_path(str:sub(0, -3)), extensions, function(path)
-				table.insert(paths, R(path))
+				list.insert(paths, R(path))
 			end)
 		elseif handle_path(str):ends_with("/*") then
 			for _, path in ipairs(vfs.Find(handle_path(str:sub(0, -2)), true)) do
 				if not extensions or vfs.GetExtensionFromPath(path):ends_with_these(extensions) then
-					table.insert(paths, path)
+					list.insert(paths, path)
 				end
 			end
 		elseif str:find(",", nil, true) then
@@ -311,7 +311,7 @@ do
 						vfs.GetExtensionFromPath(path):ends_with_these(extensions)
 					)
 				then
-					table.insert(paths, R(path))
+					list.insert(paths, R(path))
 				end
 			end
 		elseif LINUX and str:find("%s") then
@@ -325,7 +325,7 @@ do
 						vfs.GetExtensionFromPath(path):ends_with_these(extensions)
 					)
 				then
-					table.insert(paths, R(path))
+					list.insert(paths, R(path))
 				end
 			end
 		elseif
@@ -335,9 +335,9 @@ do
 				vfs.GetExtensionFromPath(str):ends_with_these(extensions)
 			)
 		then
-			table.insert(paths, R(handle_path(str)))
+			list.insert(paths, R(handle_path(str)))
 		else
-			table.insert(paths, handle_path(str))
+			list.insert(paths, handle_path(str))
 		end
 
 		return paths
@@ -393,12 +393,12 @@ do
 	local stack = {}
 
 	function utility.PushTimeWarning()
-		table.insert(stack, os.clock())
+		list.insert(stack, os.clock())
 	end
 
 	function utility.PopTimeWarning(what, threshold, category)
 		threshold = threshold or 0.1
-		local start_time = table.remove(stack)
+		local start_time = list.remove(stack)
 
 		if not start_time then return end
 
@@ -438,7 +438,7 @@ function utility.CreateDeferredLibrary(name)
 		{
 			__index = function(self, key)
 				return function(...)
-					table.insert(self.queue, {key = key, args = {...}})
+					list.insert(self.queue, {key = key, args = {...}})
 				end
 			end,
 		}
@@ -456,23 +456,23 @@ do
 		local single_quote_strings = {}
 		local multiline_strings = {}
 		code = code:gsub("(%-%-%[(=*)%[.-%]%2%])", function(str)
-			table.insert(multiline_comments, str)
+			list.insert(multiline_comments, str)
 			return "____COMMENT_MULTILINE_" .. #multiline_comments .. "____" .. " "
 		end)
 		code = code:gsub("(%[(=*)%[.-%]%2%])", function(str)
-			table.insert(multiline_strings, str)
+			list.insert(multiline_strings, str)
 			return "____STRING_MULTILINE_" .. #multiline_strings .. "____" .. " "
 		end)
 		code = code:gsub("%b\"\"", function(str)
-			table.insert(double_quote_strings, str)
+			list.insert(double_quote_strings, str)
 			return "____STRING_DOUBLE_QUOTE_" .. #double_quote_strings .. "____" .. " "
 		end)
 		code = code:gsub("(%-%-.-)\n", function(str)
-			table.insert(singleline_comments, str)
+			list.insert(singleline_comments, str)
 			return "____COMMENT_SINGLELINE_" .. #singleline_comments .. "____" .. " "
 		end)
 		code = code:gsub("%b''", function(str)
-			table.insert(single_quote_strings, str)
+			list.insert(single_quote_strings, str)
 			return "____STRING_SINGLE_QUOTE_" .. #single_quote_strings .. "____" .. " "
 		end)
 		local res = {
@@ -657,7 +657,7 @@ function utility.FindReferences(reference)
 			local res = str .. " = " .. tostring(reference)
 
 			if not found2[res] then
-				table.insert(found, res)
+				list.insert(found, res)
 				found2[res] = true
 			end
 		end
@@ -681,7 +681,7 @@ function utility.FindReferences(reference)
 	end
 
 	search(_G, "_G")
-	return table.concat(found, "\n")
+	return list.concat(found, "\n")
 end
 
 function utility.TableToColumns(title, tbl, columns, check, sort_key)
@@ -721,15 +721,15 @@ function utility.TableToColumns(title, tbl, columns, check, sort_key)
 	local top = {}
 
 	for k, v in pairs(tbl) do
-		if not check or check(v) then table.insert(top, {key = k, val = v}) end
+		if not check or check(v) then list.insert(top, {key = k, val = v}) end
 	end
 
 	if type(sort_key) == "function" then
-		table.sort(top, function(a, b)
+		list.sort(top, function(a, b)
 			return sort_key(a.val, b.val)
 		end)
 	else
-		table.sort(top, function(a, b)
+		list.sort(top, function(a, b)
 			return a.val[sort_key] > b.val[sort_key]
 		end)
 	end
@@ -916,18 +916,18 @@ do -- find value
 						local params = debug.get_params(val)
 
 						if dot == ":" and params[1] == "self" then
-							table.remove(params, 1)
+							list.remove(params, 1)
 						end
 
-						nice_name = ("%s%s%s(%s)"):format(name, dot, key, table.concat(params, ", "))
+						nice_name = ("%s%s%s(%s)"):format(name, dot, key, list.concat(params, ", "))
 					else
 						nice_name = ("%s.%s = %s"):format(name, key, val)
 					end
 
 					if name == "_G" or name == "_M" then
-						table.insert(found, {key = key, val = val, name = name, nice_name = nice_name})
+						list.insert(found, {key = key, val = val, name = name, nice_name = nice_name})
 					else
-						table.insert(
+						list.insert(
 							found,
 							{
 								key = ("%s%s%s"):format(name, dot, key),
@@ -946,12 +946,12 @@ do -- find value
 		found = {}
 		_find(...)
 
-		table.sort(found, function(a, b)
+		list.sort(found, function(a, b)
 			return #a.key < #b.key
 		end)
 
 		for _, v in ipairs(found) do
-			table.insert(tbl, v)
+			list.insert(tbl, v)
 		end
 	end
 
@@ -991,7 +991,7 @@ do -- find in files
 
 						if start then
 							out[path] = out[path] or {}
-							table.insert(out[path], {str = line, line = i, start = start, stop = stop})
+							list.insert(out[path], {str = line, line = i, start = start, stop = stop})
 						end
 					end
 				end
@@ -1118,14 +1118,14 @@ function utility.NumberToBinary(num, bits)
 	for i = 1, bits do
 		if num > 0 then
 			rest = math.fmod(num, 2)
-			table.insert(bin, rest)
+			list.insert(bin, rest)
 			num = (num - rest) / 2
 		else
-			table.insert(bin, 0)
+			list.insert(bin, 0)
 		end
 	end
 
-	return table.concat(bin):reverse()
+	return list.concat(bin):reverse()
 end
 
 function utility.BinaryToNumber(bin)

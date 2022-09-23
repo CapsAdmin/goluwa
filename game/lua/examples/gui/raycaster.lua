@@ -225,7 +225,7 @@ function gui.RayCast(world, start_pos, stop_pos, ray_rect)
 		)
 	end
 
-	table.sort(found, sort)
+	list.sort(found, sort)
 	return found
 end
 

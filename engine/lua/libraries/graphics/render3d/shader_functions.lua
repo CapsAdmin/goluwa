@@ -228,7 +228,7 @@ function render3d.AddBilateralBlurPass(PASS, amount, discard_threshold, format, 
 				}
 			end
 
-			table.insert(
+			list.insert(
 				PASS.Source,
 				{
 					buffer = {
@@ -289,7 +289,7 @@ end
 
 --https://www.shadertoy.com/view/MdyXRt
 function render3d.AddDenoisePass(PASS)
-	table.insert(
+	list.insert(
 		PASS.Source,
 		{
 			buffer = {
@@ -350,7 +350,7 @@ function render3d.AddDenoisePass(PASS)
 		]],
 		}
 	)
-	table.insert(
+	list.insert(
 		PASS.Source,
 		{
 			buffer = {

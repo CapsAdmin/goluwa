@@ -17,27 +17,27 @@ function gcc(data)
 			for k, v in pairs(data[name]) do
 				if name == "defines" then
 					if v == true then
-						table.insert(cmd, option .. k)
+						list.insert(cmd, option .. k)
 					elseif v == false then
-						table.insert(cmd, "-U" .. k)
+						list.insert(cmd, "-U" .. k)
 					else
-						table.insert(cmd, option .. "'" .. k .. "=" .. v .. "'")
+						list.insert(cmd, option .. "'" .. k .. "=" .. v .. "'")
 					end
 				else
-					table.insert(cmd, option .. v)
+					list.insert(cmd, option .. v)
 				end
 			end
 		end
 	end
 
-	local gcc = table.concat(cmd, " ")
+	local gcc = list.concat(cmd, " ")
 	local cmds = {}
 	local output_files = {}
 
 	for _, path in ipairs(data.files) do
 		local output_path = vfs.RemoveExtensionFromPath(path) .. ".o"
-		table.insert(output_files, output_path)
-		table.insert(cmds, gcc .. " -c -o " .. output_path .. " " .. path)
+		list.insert(output_files, output_path)
+		list.insert(cmds, gcc .. " -c -o " .. output_path .. " " .. path)
 	end
 
 	fs.PushWorkingDirectory(R(data.directory))
@@ -47,7 +47,7 @@ function gcc(data)
 	end
 
 	os.execute(
-		"gcc " .. table.concat(output_files, " ") .. " -O -shared -fpic -o " .. data.output_library
+		"gcc " .. list.concat(output_files, " ") .. " -O -shared -fpic -o " .. data.output_library
 	)
 	fs.PopWorkingDirectory()
 	local path = data.directory .. "/" .. data.output_library

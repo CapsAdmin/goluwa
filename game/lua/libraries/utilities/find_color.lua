@@ -473,13 +473,13 @@ function utility.FindColor(color)
 	local found = {}
 
 	for k, v in pairs(colors) do
-		table.insert(
+		list.insert(
 			found,
 			{name = k, dist = Vec3(color.r, color.g, color.b):Distance(Vec3(v.r, v.g, v.b))}
 		)
 	end
 
-	table.sort(found, function(a, b)
+	list.sort(found, function(a, b)
 		return a.dist < b.dist
 	end)
 

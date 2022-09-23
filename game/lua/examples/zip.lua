@@ -77,11 +77,11 @@ do
 			local firstval, nbits, nextval = init[i], init[i + 1], init[i + 2]
 
 			for val = firstval, nextval - 1 do
-				table.insert(t, {val = val, nbits = nbits})
+				list.insert(t, {val = val, nbits = nbits})
 			end
 		end
 
-		table.sort(t, sort_huffman)
+		list.sort(t, sort_huffman)
 		return t
 	end
 
@@ -158,7 +158,7 @@ do
 			if val >= ncodes then break end
 		end
 
-		table.sort(init, sort_huffman)
+		list.sort(init, sort_huffman)
 		return HuffmanTable(init)
 	end
 
@@ -211,7 +211,7 @@ do
 						end
 					end
 
-					table.sort(codelen_init, sort_huffman)
+					list.sort(codelen_init, sort_huffman)
 					local codelentable = HuffmanTable(codelen_init)
 					littable = decode(bs, hlit + 257, codelentable)
 					disttable = decode(bs, hdist + 1, codelentable)
@@ -294,7 +294,7 @@ while true do
 			end
 		end
 
-		table.insert(archive.files, data)
+		list.insert(archive.files, data)
 	else
 		do
 			break
@@ -321,7 +321,7 @@ while true do
 			data.file_name = zip:ReadString(data.filename_length)
 			data.extra_field_data = zip:ReadString(data.extra_field_length)
 			data.file_comment = zip:ReadString(data.file_comment_length)
-			table.insert(archive.files2, data)
+			list.insert(archive.files2, data)
 		elseif sig == "\x50\x4b\x05\x06" then -- end of central directory (not needed)
 			local data = zip:ReadStructure([[
 				uint16_t version;

@@ -55,7 +55,7 @@ function META:ConvertToPoints(quality)
 		local current_control = current.control or current.point:GetLerped(0.5, next.point)
 
 		for step = 0, 1, precision do
-			table.insert(points, quadratic_bezier(current.point, next.point, current_control, step))
+			list.insert(points, quadratic_bezier(current.point, next.point, current_control, step))
 		end
 	end
 

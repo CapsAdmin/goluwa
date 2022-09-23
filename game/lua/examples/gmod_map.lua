@@ -6,7 +6,7 @@ local glua = [[
 		local mdl = ent:GetModel()
 
 		if mdl and (mdl:find(".mdl", nil, true) or mdl:find(".bsp", nil, true)) and not ent:GetParent():IsPlayer() and not ent:IsPlayer() and ent:GetColor().a > 0 and ent:GetModelScale() and ent:GetModelScale() > 0 then
-			table.insert(data, {
+			list.insert(data, {
 				pos = ent:GetPos(),
 				ang = ent:GetAngles(),
 				mdl = mdl,

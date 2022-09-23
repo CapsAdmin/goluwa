@@ -9,25 +9,25 @@ do -- lists
 
 		for _, v in ipairs(autocomplete.lists) do
 			if v.id == id then
-				table.remove(autocomplete.lists, 1)
+				list.remove(autocomplete.lists, 1)
 				return true
 			end
 		end
 	end
 
-	function autocomplete.AddList(id, list)
+	function autocomplete.AddList(id, lst)
 		autocomplete.RemoveList(id)
-		table.insert(autocomplete.lists, {id = id, list = list})
+		list.insert(autocomplete.lists, {id = id, list = lst})
 	end
 
 	function autocomplete.GetList(id)
 		for _, v in ipairs(autocomplete.lists) do
 			if v.id == id then
-				local list = v.list
+				local lst = v.list
 
-				if type(list) == "function" then list = list() end
+				if type(lst) == "function" then lst = lst() end
 
-				return list
+				return lst
 			end
 		end
 	end

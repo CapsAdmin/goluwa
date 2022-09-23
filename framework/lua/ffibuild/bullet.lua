@@ -38,10 +38,10 @@ do
 
 	for k, v in pairs(objects) do
 		v.name = k
-		table.insert(temp, v)
+		list.insert(temp, v)
 	end
 
-	table.sort(temp, function(a, b)
+	list.sort(temp, function(a, b)
 		return #a.name > #b.name
 	end)
 
@@ -54,14 +54,14 @@ for _, info in ipairs(objects) do
 	for key, tbl in pairs(meta_data.functions) do
 		if not done[key] and key:sub(1, #info.name) == info.name then
 			if key:find("_new", nil, true) then
-				table.insert(info.ctors, key)
+				list.insert(info.ctors, key)
 				done[key] = true
 			else
 				local friendly = key:sub(#info.name + 2)
 
 				if friendly == "" then friendly = key end
 
-				table.insert(
+				list.insert(
 					info.functions,
 					{func = key, friendly = ffibuild.ChangeCase(friendly, "fooBar", "FooBar")}
 				)

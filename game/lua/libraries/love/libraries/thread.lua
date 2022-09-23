@@ -96,7 +96,7 @@ ENV.channels = {}
 local Channel = line.TypeTemplate("Channel")
 
 function Channel:clear()
-	table.clear(self.queue)
+	list.clear(self.queue)
 end
 
 function Channel:demand()
@@ -115,11 +115,11 @@ function Channel:peek()
 end
 
 function Channel:pop()
-	return table.remove(self.queue, 1)
+	return list.remove(self.queue, 1)
 end
 
 function Channel:push(value)
-	return table.insert(self.queue, value)
+	return list.insert(self.queue, value)
 end
 
 function Channel:supply(value)

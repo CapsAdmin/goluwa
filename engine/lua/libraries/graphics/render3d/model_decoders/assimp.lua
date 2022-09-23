@@ -31,7 +31,7 @@ render3d.AddModelDecoder(
 
 						-- ue4
 						if model_data.material.name:starts_with("/") then
-							table.insert(
+							list.insert(
 								tries,
 								1,
 								full_path:match("(.+)/") .. model_data.material.name:match("(.+/)") .. path

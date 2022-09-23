@@ -30,7 +30,7 @@ for i = 1, max do
 	light:SetHideFromEditor(true)
 	light.seed = math.random() * math.pi
 	light:SetSize(light.seed * 40 + 10)
-	table.insert(lights, light)
+	list.insert(lights, light)
 end
 
 function goluwa.Update()

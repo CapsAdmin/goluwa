@@ -6,9 +6,9 @@ function render3d.AddModelDecoder(id, callback, ext)
 
 	if ext == false then ext = "" else ext = "." .. id end
 
-	table.insert(render3d.model_decoders, {id = id, ext = ext, callback = callback})
+	list.insert(render3d.model_decoders, {id = id, ext = ext, callback = callback})
 
-	table.sort(render3d.model_decoders, function(a, b)
+	list.sort(render3d.model_decoders, function(a, b)
 		return #a.ext > #b.ext
 	end)
 end
@@ -16,9 +16,9 @@ end
 function render3d.RemoveModelDecoder(id)
 	for i, v in ipairs(render3d.model_decoders) do
 		if v.id == id then
-			table.remove(render3d.model_decoders, i)
+			list.remove(render3d.model_decoders, i)
 
-			table.sort(render3d.model_decoders, function(a, b)
+			list.sort(render3d.model_decoders, function(a, b)
 				return #a.ext > #b.ext
 			end)
 
@@ -72,7 +72,7 @@ function render3d.LoadModel(path, callback, callback2, on_fail)
 
 		local function mesh_callback(mesh)
 			cb:callextra(path, "mesh", mesh)
-			table.insert(out, mesh)
+			list.insert(out, mesh)
 		end
 
 		local decode_callback = render3d.FindModelDecoder(path)
