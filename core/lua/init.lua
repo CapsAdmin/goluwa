@@ -186,7 +186,9 @@ do
 end
 
 -- standard library extensions
+runfile("lua/libraries/extensions/gc_proxy_hack.lua")
 runfile("lua/libraries/extensions/globals.lua")
+runfile("lua/libraries/logging.lua")
 runfile("lua/libraries/extensions/debug.lua")
 runfile("lua/libraries/extensions/string.lua")
 runfile("lua/libraries/extensions/table.lua")
