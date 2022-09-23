@@ -188,27 +188,45 @@ end
 -- standard library extensions
 runfile("lua/libraries/extensions/gc_proxy_hack.lua")
 runfile("lua/libraries/extensions/globals.lua")
-runfile("lua/libraries/logging.lua")
+
+do
+	local logfile = runfile("lua/libraries/logging.lua")
+	_G.logf_nospam = logfile.LogFormatNoSpam
+	_G.logn_nospam = logfile.LogNewlineNoSpam
+	_G.vprint = logfile.VariablePrint
+	_G.wlog = logfile.WarningLog
+	_G.llog = logfile.LibraryLog
+	_G.log = logfile.Log
+	_G.logn = logfile.LogNewline
+	_G.print = logfile.Print
+	_G.errorf = logfile.ErrorFormat
+	_G.logf = logfile.LogFormat
+	_G.logfile = logfile
+end
+
 runfile("lua/libraries/extensions/debug.lua")
 runfile("lua/libraries/extensions/string.lua")
 runfile("lua/libraries/extensions/table.lua")
 runfile("lua/libraries/extensions/os.lua")
 runfile("lua/libraries/extensions/ffi.lua")
 runfile("lua/libraries/extensions/math.lua")
-utility = runfile("lua/libraries/utility.lua")
+_G.utility = runfile("lua/libraries/utility.lua")
 runfile("lua/libraries/extensions/fs.lua")
-prototype = runfile("lua/libraries/prototype/prototype.lua")
-vfs = runfile("lua/libraries/filesystem/vfs.lua")
-vfs.Mount("os:" .. e.STORAGE_FOLDER) -- mount the storage folder to allow requiring files from bin/*
-vfs.Mount("os:" .. e.USERDATA_FOLDER, "os:data") -- mount "ROOT/data/users/*username*/" to "/data/"
-vfs.Mount("os:" .. e.CACHE_FOLDER, "os:cache")
-vfs.Mount("os:" .. e.SHARED_FOLDER, "os:shared")
-vfs.MountAddon("os:" .. e.CORE_FOLDER) -- mount "ROOT/"..e.INTERNAL_ADDON_NAME to "/"
-vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).dependencies = {e.INTERNAL_ADDON_NAME} -- prevent init.lua from running later on again
-vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).startup = nil -- prevent init.lua from running later on again
-vfs.AddModuleDirectory("lua/modules/")
-vfs.AddModuleDirectory("bin/shared/")
-vfs.AddModuleDirectory(e.BIN_PATH .. "lua")
+_G.prototype = runfile("lua/libraries/prototype/prototype.lua")
+
+do
+	vfs = runfile("lua/libraries/filesystem/vfs.lua")
+	vfs.Mount("os:" .. e.STORAGE_FOLDER) -- mount the storage folder to allow requiring files from bin/*
+	vfs.Mount("os:" .. e.USERDATA_FOLDER, "os:data") -- mount "ROOT/data/users/*username*/" to "/data/"
+	vfs.Mount("os:" .. e.CACHE_FOLDER, "os:cache")
+	vfs.Mount("os:" .. e.SHARED_FOLDER, "os:shared")
+	vfs.MountAddon("os:" .. e.CORE_FOLDER) -- mount "ROOT/"..e.INTERNAL_ADDON_NAME to "/"
+	vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).dependencies = {e.INTERNAL_ADDON_NAME} -- prevent init.lua from running later on again
+	vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).startup = nil -- prevent init.lua from running later on again
+	vfs.AddModuleDirectory("lua/modules/")
+	vfs.AddModuleDirectory("bin/shared/")
+	vfs.AddModuleDirectory(e.BIN_PATH .. "lua")
+end
 
 if desire("ffi") then _G.require("ffi").load = vfs.FFILoadLibrary end
 
@@ -226,16 +244,16 @@ package.loaded.bit32 = bit
 -- libraries
 runfile("lua/libraries/datatypes/buffer.lua")
 runfile("lua/libraries/datatypes/tree.lua")
-bytepack = runfile("lua/libraries/bytepack.lua") -- string.pack lua implementation
-crypto = runfile("lua/libraries/crypto.lua") -- base64 and other hash functions
-serializer = runfile("lua/libraries/serializer.lua") -- for serializing lua data in different formats
-system = runfile("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
-event = runfile("lua/libraries/event.lua") -- event handler
-timer = runfile("lua/libraries/timer.lua") -- timer
-utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
-profiler = runfile("lua/libraries/profiler.lua")
-tasks = runfile("!lua/libraries/tasks.lua") -- high level coroutine library
-threads = runfile("!lua/libraries/threads.lua")
+_G.bytepack = runfile("lua/libraries/bytepack.lua") -- string.pack lua implementation
+_G.crypto = runfile("lua/libraries/crypto.lua") -- base64 and other hash functions
+_G.serializer = runfile("lua/libraries/serializer.lua") -- for serializing lua data in different formats
+_G.system = runfile("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
+_G.event = runfile("lua/libraries/event.lua") -- event handler
+_G.timer = runfile("lua/libraries/timer.lua") -- timer
+_G.utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
+_G.profiler = runfile("lua/libraries/profiler.lua")
+_G.tasks = runfile("!lua/libraries/tasks.lua") -- high level coroutine library
+_G.threads = runfile("!lua/libraries/threads.lua")
 
 if profiler then
 	_G.P = profiler.ToggleTimer
@@ -255,13 +273,13 @@ do -- nattlua
 	fs.PopWorkingDirectory()
 end
 
-repl = runfile("lua/libraries/repl.lua")
-ffibuild = runfile("lua/libraries/ffibuild.lua") -- used to build binaries
-callback = runfile("lua/libraries/callback.lua") -- promise-like library
-resource = runfile("lua/libraries/resource.lua") -- used for downloading resources with resource.Download("http://..."):Then(function(path) end)
-sockets = runfile("lua/libraries/sockets/sockets.lua")
-http = runfile("lua/libraries/http.lua")
-test = runfile("lua/libraries/test.lua")
+_G.repl = runfile("lua/libraries/repl.lua")
+_G.ffibuild = runfile("lua/libraries/ffibuild.lua") -- used to build binaries
+_G.callback = runfile("lua/libraries/callback.lua") -- promise-like library
+_G.resource = runfile("lua/libraries/resource.lua") -- used for downloading resources with resource.Download("http://..."):Then(function(path) end)
+_G.sockets = runfile("lua/libraries/sockets/sockets.lua")
+_G.http = runfile("lua/libraries/http.lua")
+_G.test = runfile("lua/libraries/test.lua")
 
 if not TEST and not os.getenv("GOLUWA_ARG_LINE"):startswith("build") then
 	local ok, err = pcall(repl.Start)

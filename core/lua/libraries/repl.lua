@@ -599,7 +599,9 @@ end)
 
 if os.getenv("GOLUWA_TMUX") then
 	os.remove(R("shared/") .. "tmux_log.txt")
-	os.execute("ln -s " .. get_log_path() .. " " .. R("shared/") .. "tmux_log.txt")
+	os.execute(
+		"ln -s " .. logfile.GetOutputPath("console") .. " " .. R("shared/") .. "tmux_log.txt"
+	)
 end
 
 return repl

@@ -219,7 +219,7 @@ do
 	local suppress = false
 
 	function system.OnError(msg, ...)
-		logsection("lua error", true)
+		logfile.LogSection("lua error", true)
 
 		if msg then logn(msg) end
 
@@ -363,7 +363,7 @@ do
 			logn("")
 		end
 
-		logsection("lua error", false)
+		logfile.LogSection("lua error", false)
 		suppress = false
 	end
 

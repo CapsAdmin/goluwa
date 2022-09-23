@@ -2,114 +2,114 @@ local tostringx = _G.tostringx
 local tostring_args = _G.tostring_args
 local table_concat = table.concat
 local select = select
+local logfile = _G.logfile or {}
+logfile.files = {}
 
-local function formatx(str, ...)
-	local args = table.pack(...)
+do
+	local base_log_dir = e.USERDATA_FOLDER .. "logs/"
+	fs.create_directory(base_log_dir)
 
-	for i, chunk in ipairs(str:split("%")) do
-		if i > 1 then
-			if chunk:startswith("s") then args[i] = tostringx(args[i]) end
-		end
+	function logfile.GetOutputPath(name)
+		return base_log_dir .. name .. "_" .. jit.os:lower() .. ".txt"
 	end
-
-	return str:format(unpack(args))
 end
 
-local base_log_dir = e.USERDATA_FOLDER .. "logs/"
-local log_files = {}
-local log_file
-
-function get_log_path(name)
-	name = name or "console"
-	return base_log_dir .. name .. "_" .. jit.os:lower() .. ".txt"
-end
-
-function set_log_file(name)
-	name = name or "console"
-
-	if not log_files[name] then
-		local file = assert(io.open(get_log_path(name), "w"))
+function logfile.SetOutputName(name)
+	if not logfile.files[name] then
+		local file = assert(io.open(logfile.GetOutputPath(name), "w"))
 		file:setvbuf("no")
-		log_files[name] = file
+		logfile.files[name] = file
 	end
 
-	log_file = log_files[name]
+	logfile.current = logfile.files[name]
 end
 
-function get_log_file(name)
-	name = name or "console"
-	return log_files[name]
+function logfile.GetOutputFile()
+	return logfile.current
 end
 
-local count = 0
-local last_count_length = 0
-fs.create_directory(base_log_dir)
-local suppress_print = false
+logfile.SetOutputName("console")
 
-local function can_print(str)
-	if suppress_print then return end
+do
+	local suppress_print = false
 
-	if event then
-		suppress_print = true
+	local function can_print(str)
+		if suppress_print then return end
 
-		if event.Call("ReplPrint", str) == false then
+		if event then
+			suppress_print = true
+
+			if event.Call("ReplPrint", str) == false then
+				suppress_print = false
+				return false
+			end
+
 			suppress_print = false
-			return false
 		end
 
-		suppress_print = false
+		return true
 	end
 
-	return true
-end
+	function logfile.RawLog(str)
+		logfile.GetOutputFile():write(str)
 
-local function raw_log(str)
-	if not log_file then set_log_file() end
-
-	log_file:write(str)
-
-	if log_files.console == log_file and can_print(str) then
-		if repl and repl.started and repl.StyledWrite then
-			repl.StyledWrite(str)
-		else
-			io.write(str)
-			io.flush()
+		if logfile.files.console == logfile.GetOutputFile() and can_print(str) then
+			if repl and repl.started and repl.StyledWrite then
+				repl.StyledWrite(str)
+			else
+				io.write(str)
+				io.flush()
+			end
 		end
 	end
 end
 
-function log(...)
-	raw_log(table_concat(tostring_args(...)))
+function logfile.Log(...)
+	logfile.RawLog(table_concat(tostring_args(...)))
 	return ...
 end
 
-function logn(...)
-	raw_log(table_concat(tostring_args(...)) .. "\n")
+function logfile.LogNewline(...)
+	logfile.RawLog(table_concat(tostring_args(...)) .. "\n")
 	return ...
 end
 
-function print(...)
-	raw_log(table_concat(tostring_args(...), ",\t") .. "\n")
+function logfile.Print(...)
+	logfile.RawLog(table_concat(tostring_args(...), ",\t") .. "\n")
 	return ...
 end
 
-function logf(str, ...)
-	raw_log(formatx(str, ...))
-	return ...
+do
+	local function format(str, ...)
+		local args = table.pack(...)
+
+		for i, chunk in ipairs(str:split("%")) do
+			if i > 1 then
+				if chunk:startswith("s") then args[i] = tostringx(args[i]) end
+			end
+		end
+
+		return str:format(unpack(args))
+	end
+
+	function logfile.LogFormat(str, ...)
+		logfile.RawLog(format(str, ...))
+		return ...
+	end
+
+	function logfile.ErrorFormat(str, level, ...)
+		error(format(str, ...), level)
+	end
 end
 
-function errorf(str, level, ...)
-	error(formatx(str, ...), level)
-end
-
-function logsection(type, b)
+function logfile.LogSection(type, b)
 	event.Call("LogSection", type, b)
 end
 
 do
 	local level = 1
 
-	function logsourcelevel(n)
+	function logfile.SourceLevel(n)
 		if n then level = n end
 
 		return level
@@ -117,7 +117,7 @@ do
 end
 
 -- library log
-function llog(fmt, ...)
+function logfile.LibraryLog(fmt, ...)
 	fmt = tostringx(fmt)
 	local level = tonumber(select(fmt:count("%") + 1, ...) or 1) or 1
 	local source = debug.get_pretty_source(level + 1, false, true)
@@ -142,7 +142,7 @@ function llog(fmt, ...)
 end
 
 -- warning log
-function wlog(fmt, ...)
+function logfile.WarningLog(fmt, ...)
 	fmt = tostringx(fmt)
 	local level = tonumber(select(fmt:count("%") + 1, ...) or 1) or 1
 	local str = fmt:safeformat(...)
@@ -151,11 +151,11 @@ function wlog(fmt, ...)
 	return fmt, ...
 end
 
-function vprint(...)
-	logf("%s:\n", debug.getinfo(logsourcelevel() + 1, "n").name or "unknown")
+function logfile.VariablePrint(...)
+	logf("%s:\n", debug.getinfo(logfile.SourceLevel() + 1, "n").name or "unknown")
 
 	for i = 1, select("#", ...) do
-		local name = debug.getlocal(logsourcelevel() + 1, i)
+		local name = debug.getlocal(logfile.SourceLevel() + 1, i)
 		local arg = select(i, ...)
 		logf(
 			"\t%s:\n\t\ttype: %s\n\t\tprty: %s\n",
@@ -174,7 +174,7 @@ end
 do -- nospam
 	local last = {}
 
-	function logf_nospam(str, ...)
+	function logfile.LogFormatNoSpam(str, ...)
 		local str = string.format(str, ...)
 		local t = system.GetElapsedTime()
 
@@ -184,7 +184,9 @@ do -- nospam
 		end
 	end
 
-	function logn_nospam(...)
-		logf_nospam(("%s "):rep(select("#", ...)), ...)
+	function logfile.LogNewlineNoSpam(...)
+		logfile.LogFormatNoSpam(("%s "):rep(select("#", ...)), ...)
 	end
 end
+
+return logfile
