@@ -140,7 +140,7 @@ do -- structs
 		if v.struct:find("vr::") then json.structs[i] = nil end
 	end
 
-	table.fixindices(json.structs)
+	list.fix_indices(json.structs)
 
 	local function add_fields(info, level)
 		for _, field in pairs(info.fields) do

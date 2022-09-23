@@ -18,7 +18,7 @@ function META:OnClientConnected(client)
 	end
 
 	client:CallOnRemove(function(client, reason)
-		if self:IsValid() then table.removevalue(self.Clients, client) end
+		if self:IsValid() then list.remove_value(self.Clients, client) end
 	end)
 end
 

@@ -207,6 +207,7 @@ end
 runfile("lua/libraries/extensions/debug.lua")
 runfile("lua/libraries/extensions/string.lua")
 runfile("lua/libraries/extensions/table.lua")
+_G.list = runfile("lua/libraries/list.lua")
 runfile("lua/libraries/extensions/os.lua")
 runfile("lua/libraries/extensions/ffi.lua")
 runfile("lua/libraries/extensions/math.lua")

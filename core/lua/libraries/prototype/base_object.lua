@@ -251,7 +251,7 @@ do -- events
 			end
 		end
 
-		table.fixindices(events[event_type])
+		list.fix_indices(events[event_type])
 		self.added_events[event_type] = nil
 
 		if #events[event_type] <= 0 then

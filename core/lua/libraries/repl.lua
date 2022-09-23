@@ -212,7 +212,7 @@ do
 		repl.no_color = b
 	end
 
-	local table_concatrange = table.concatrange
+	local table_concatrange = list.concat_range
 	local oh = oh
 
 	function repl.StyledWrite(str, dont_move)

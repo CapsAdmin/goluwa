@@ -128,7 +128,7 @@ do
 				table.insert(triangles, {a.x, a.y, b.x, b.y, c.x, c.y})
 				next_idx[prev] = next
 				prev_idx[next] = prev
-				table.removevalue(concave, b)
+				list.remove_value(concave, b)
 				n_vertices = n_vertices - 1
 				skipped = 0
 			else

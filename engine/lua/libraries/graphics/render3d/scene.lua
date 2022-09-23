@@ -23,7 +23,7 @@ end
 
 function render3d.RemoveModel(model)
 	if scene_keyval[model] then
-		table.removevalue(render3d.scene, model)
+		list.remove_value(render3d.scene, model)
 		scene_keyval[model] = nil
 		needs_sorting = true
 	end

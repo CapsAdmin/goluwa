@@ -1773,7 +1773,7 @@ do -- lua helper functions
 	function ffibuild.StartLibrary(ffi_header, ...)
 		local helpers = {...}
 		local lua = "local ffi = require(\"ffi\");" .. (
-				table.hasvalue(helpers, "ffi.C") and
+				table.has_value(helpers, "ffi.C") and
 				"local CLIB = ffi.C;" or
 				"local CLIB = assert(ffi.load(\"" .. (
 					ffibuild.shared_library_name or

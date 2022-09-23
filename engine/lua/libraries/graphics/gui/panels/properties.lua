@@ -259,7 +259,7 @@ do -- choice
 					end,
 				})
 			end
-		elseif not table.isarray(tbl) then
+		elseif not list.is_list(tbl) then
 			for k, v in pairs(tbl) do
 				table.insert(
 					menu_options,

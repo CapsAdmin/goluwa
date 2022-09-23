@@ -1318,7 +1318,7 @@ do -- animations
 			end
 		end
 
-		table.fixindices(to)
+		list.fix_indices(to)
 
 		for i, v in ipairs(to) do
 			if v == "from" then

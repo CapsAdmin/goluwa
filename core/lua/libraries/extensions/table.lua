@@ -1,27 +1,4 @@
-do -- negative pairs
-	local v
-
-	local function iter(a, i)
-		i = i - 1
-		v = a[i]
-
-		if v then return i, v end
-	end
-
-	function table.npairs(a)
-		return iter, a, #a + 1
-	end
-end
-
-function table.map(tbl, cb)
-	for i, v in ipairs(tbl) do
-		tbl[i] = cb(v)
-	end
-
-	return tbl
-end
-
-function table.rpairs(tbl)
+function table.random_pairs(tbl)
 	local sorted = {}
 
 	for key, val in pairs(tbl) do
@@ -31,32 +8,6 @@ function table.rpairs(tbl)
 	table.sort(sorted, function(a, b)
 		return a.rand > b.rand
 	end)
-
-	local i = 0
-	return function()
-		i = i + 1
-
-		if sorted[i] then return sorted[i].key, sorted[i].val --, sorted[i].rand
-		end
-	end
-end
-
-function table.spairs(tbl, desc)
-	local sorted = {}
-
-	for key, val in pairs(tbl) do
-		table.insert(sorted, {key = key, val = val})
-	end
-
-	if desc then
-		table.sort(sorted, function(a, b)
-			return a.key > b.key
-		end)
-	else
-		table.sort(sorted, function(a, b)
-			return a.key < b.key
-		end)
-	end
 
 	local i = 0
 	return function()
@@ -78,7 +29,7 @@ table.clear = table.clear or
 		end
 	end
 
-function table.lowercasedlookup(tbl, key)
+function table.lowecase_lookup(tbl, key)
 	for k, v in pairs(tbl) do
 		if k:lower() == key:lower() then return v end
 	end
@@ -98,24 +49,7 @@ if not table.unpack then
 	end
 end
 
-do
-	local table_concat = table.concat
-
-	function table.concatrange(tbl, start, stop)
-		local length = stop - start
-		local str = {}
-		local str_i = 1
-
-		for i = start, stop do
-			str[str_i] = tbl[i] or ""
-			str_i = str_i + 1
-		end
-
-		return table_concat(str)
-	end
-end
-
-function table.tolist(tbl, sort)
+function table.to_list(tbl, sort)
 	local list = {}
 
 	for key, val in pairs(tbl) do
@@ -127,8 +61,8 @@ function table.tolist(tbl, sort)
 	return list
 end
 
-function table.sortedpairs(tbl, sort)
-	local list = table.tolist(tbl, sort)
+function table.sorted_pairs(tbl, sort)
+	local list = table.to_list(tbl, sort)
 	local i = 0
 	return function()
 		i = i + 1
@@ -137,117 +71,7 @@ function table.sortedpairs(tbl, sort)
 	end
 end
 
-function table.slice(tbl, first, last, step)
-	local sliced = {}
-
-	for i = first or 1, last or #tbl, step or 1 do
-		sliced[#sliced + 1] = tbl[i]
-	end
-
-	return sliced
-end
-
-function table.shuffle(a, times)
-	times = times or 1
-	local c = #a
-
-	for _ = 1, c * times do
-		local ndx0 = math.random(1, c)
-		local ndx1 = math.random(1, c)
-		local temp = a[ndx0]
-		a[ndx0] = a[ndx1]
-		a[ndx1] = temp
-	end
-
-	return a
-end
-
-function table.scroll(tbl, offset)
-	if offset == 0 then return end
-
-	if offset > 0 then
-		for _ = 1, offset do
-			local val = table.remove(tbl, 1)
-			table.insert(tbl, val)
-		end
-	else
-		for _ = 1, math.abs(offset) do
-			local val = table.remove(tbl)
-			table.insert(tbl, 1, val)
-		end
-	end
-end
-
--- http://stackoverflow.com/questions/6077006/how-can-i-check-if-a-lua-table-contains-only-sequential-numeric-indices
-function table.isarray(t)
-	local i = 0
-
-	for _ in pairs(t) do
-		i = i + 1
-
-		if t[i] == nil then return false end
-	end
-
-	return true
-end
-
-function table.reverse(tbl)
-	for i = 1, math.floor(#tbl / 2) do
-		tbl[i], tbl[#tbl - i + 1] = tbl[#tbl - i + 1], tbl[i]
-	end
-
-	return tbl
-end
-
--- 12:34 - <mniip> http://codepad.org/cLaX7lVn
-function table.multiremove(tbl, locations)
-	if locations[1] then
-		local off = 0
-		local idx = 1
-
-		for i = 1, #tbl do
-			while i + off == locations[idx] do
-				off = off + 1
-				idx = idx + 1
-			end
-
-			tbl[i] = tbl[i + off]
-		end
-	end
-
-	return tbl
-end
-
-function table.removevalue(tbl, val)
-	for i, v in ipairs(tbl) do
-		if v == val then
-			table.remove(tbl, i)
-
-			break
-		end
-	end
-end
-
-function table.fixindices(tbl)
-	local temp = {}
-
-	for k, v in pairs(tbl) do
-		table.insert(temp, {v = v, k = tonumber(k) or 0})
-		tbl[k] = nil
-	end
-
-	table.sort(temp, function(a, b)
-		return a.k < b.k
-	end)
-
-	for k, v in ipairs(temp) do
-		tbl[k] = v.v
-	end
-
-	return temp
-end
-
-function table.hasvalue(tbl, val)
+function table.has_value(tbl, val)
 	for k, v in pairs(tbl) do
 		if v == val then return k end
 	end
@@ -255,37 +79,12 @@ function table.hasvalue(tbl, val)
 	return false
 end
 
-function table.hasvaluei(tbl, val)
-	for k, v in ipairs(tbl) do
-		if v == val then return k end
-	end
-
-	return false
-end
-
-function table.getkey(tbl, val)
+function table.get_key(tbl, val)
 	for k in pairs(tbl) do
 		if k == val then return k end
 	end
 
 	return nil
-end
-
-function table.getindex(tbl, val)
-	for i, v in ipairs(tbl) do
-		if i == v then return i end
-	end
-
-	return nil
-end
-
-function table.removevalues(tbl, val)
-	local index = table.getindex(tbl, val)
-
-	while index ~= nil do
-		table.removevalues(tbl, index)
-		index = table.getindex(tbl, val)
-	end
 end
 
 function table.count(tbl)
@@ -301,7 +100,7 @@ end
 function table.merge(a, b, merge_aray)
 	for k, v in pairs(b) do
 		if type(v) == "table" and type(a[k]) == "table" then
-			if merge_aray and table.isarray(a[k]) and table.isarray(v) then
+			if merge_aray and list.is_list(a[k]) and list.is_list(v) then
 				local offset = #a[k]
 
 				for i = 1, #v do
@@ -318,7 +117,7 @@ function table.merge(a, b, merge_aray)
 	return a
 end
 
-function table.virtualmerge(tbl, nodes)
+function table.virtual_merge(tbl, nodes)
 	return setmetatable(
 		tbl,
 		{
@@ -339,7 +138,7 @@ function table.virtualmerge(tbl, nodes)
 
 				if #found == 0 then return nil end
 
-				return table.virtualmerge(found, found)
+				return table.virtual_merge(found, found)
 			end,
 		}
 	)
@@ -459,36 +258,6 @@ do -- table copy
 	function table.copy(obj, skip_meta)
 		table.clear(lookup_table)
 		return copy(obj, skip_meta)
-	end
-end
-
-function table.concatmember(tbl, key, sep)
-	local temp = {}
-
-	for i, v in ipairs(tbl) do
-		temp[i] = tostring(v[key])
-	end
-
-	return table.concat(tbl, sep)
-end
-
-do
-	local setmetatable = setmetatable
-	local ipairs = ipairs
-	local META = {}
-	META.__index = META
-	META.concat = table.concat
-	META.insert = table.insert
-	META.remove = table.remove
-	META.unpack = table.unpack
-	META.sort = table.sort
-
-	function META:pairs()
-		return ipairs(self)
-	end
-
-	function table.list(count)
-		return setmetatable(table.new(count or 1, 0), META)
 	end
 end
 

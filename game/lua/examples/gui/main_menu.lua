@@ -158,12 +158,12 @@ do
 					end
 				end
 
-				for group, vars in table.sortedpairs(grouped, function(a, b)
+				for group, vars in table.sorted_pairs(grouped, function(a, b)
 					return a.key < b.key
 				end) do
 					props:AddGroup(group)
 
-					for key, info in table.sortedpairs(vars, function(a, b)
+					for key, info in table.sorted_pairs(vars, function(a, b)
 						return a.val.friendly < b.val.friendly
 					end) do
 						if info.get_list then
@@ -173,7 +173,7 @@ do
 							local lookup = {}
 
 							for k, v in pairs(info.get_list()) do
-								booleans[v.friendly] = table.hasvalue(state, k) ~= false
+								booleans[v.friendly] = table.has_value(state, k) ~= false
 								table.insert(fields, v.friendly)
 								lookup[v.friendly] = k
 							end
@@ -196,7 +196,7 @@ do
 									local booleans = {}
 
 									for k, v in pairs(info.get_list()) do
-										booleans[v.friendly] = table.hasvalue(state, k) ~= false
+										booleans[v.friendly] = table.has_value(state, k) ~= false
 									end
 
 									return booleans

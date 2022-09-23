@@ -113,7 +113,7 @@ function sockets.Download(url, on_finish, on_error, on_chunks, on_header, on_cod
 
 	function client:OnReceiveBody(body)
 		on_finish(body)
-		table.removevalue(sockets.active_downloads, lookup)
+		list.remove_value(sockets.active_downloads, lookup)
 	end
 
 	function client:OnError(reason)
@@ -124,7 +124,7 @@ function sockets.Download(url, on_finish, on_error, on_chunks, on_header, on_cod
 		end
 
 		self:Close()
-		table.removevalue(sockets.active_downloads, lookup)
+		list.remove_value(sockets.active_downloads, lookup)
 	end
 
 	client:Request("GET", url, header)
@@ -235,14 +235,14 @@ function sockets.DownloadToPath(url, path, on_finish, on_error, on_progress, on_
 		file:Flush()
 		file:Close()
 		move_and_finish(path, on_finish)
-		table.removevalue(sockets.active_downloads, lookup)
+		list.remove_value(sockets.active_downloads, lookup)
 		event.Call("DownloadStop", self, url, body)
 	end
 
 	function http:OnError(reason)
 		on_error(reason)
 		self:Close()
-		table.removevalue(sockets.active_downloads, lookup)
+		list.remove_value(sockets.active_downloads, lookup)
 	end
 
 	return http

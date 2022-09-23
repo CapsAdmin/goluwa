@@ -49,7 +49,7 @@ end
 function META:OnRemove()
 	self.nv:Remove()
 	clients.active_clients_uid[self:GetUniqueID()] = nil
-	table.removevalue(clients.active_clients, self)
+	list.remove_value(clients.active_clients, self)
 
 	if SERVER then self:Disconnect("removed") end
 end

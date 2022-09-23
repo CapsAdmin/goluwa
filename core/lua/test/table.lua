@@ -32,7 +32,7 @@ do -- virtual merge
 			},
 		},
 	}
-	local virt = table.virtualmerge({}, {root, foo, bar})
+	local virt = table.virtual_merge({}, {root, foo, bar})
 	assert(#virt.merged == 3)
 
 	for i, v in ipairs(virt.merged) do

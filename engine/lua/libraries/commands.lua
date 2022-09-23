@@ -233,7 +233,7 @@ do -- commands
 
 		-- sub commands
 		if #aliases == 1 and aliases[1]:find(" ", nil, true) then
-			if not table.hasvalue(commands.sub_commands, aliases[1]) then
+			if not table.has_value(commands.sub_commands, aliases[1]) then
 				table.insert(commands.sub_commands, aliases[1])
 			end
 		end
@@ -420,7 +420,7 @@ do -- commands
 					end
 				end
 
-				if args[i] ~= nil or not table.hasvalue(arg_types, "nil") then
+				if args[i] ~= nil or not table.has_value(arg_types, "nil") then
 					local val
 
 					for _, arg_type in ipairs(arg_types) do
@@ -590,7 +590,7 @@ do -- commands
 
 	commands.Add("help|usage=string|nil", function(cmd)
 		if not cmd then
-			for k, v in table.spairs(commands.GetCommands()) do
+			for k, v in table.sorted_pairs(commands.GetCommands()) do
 				logn(assert(commands.GetHelpText(k)))
 			end
 		else

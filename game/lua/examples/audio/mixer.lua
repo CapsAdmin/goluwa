@@ -112,7 +112,7 @@ local function render(buf, len, i)
 
 				if sound.SamplePosition >= sound.SampleLength then
 					sound.SamplePosition = 0
-					table.removevalue(sounds, sound)
+					list.remove_value(sounds, sound)
 				end
 			end
 		end

@@ -405,7 +405,7 @@ do
 					end
 				end
 
-				table.fixindices(words)
+				list.fix_indices(words)
 				table.insert(words, i, {type = "modifier", mod = mod, args = args})
 				i = 1
 			end
@@ -569,7 +569,7 @@ do
 			end
 		end
 
-		table.fixindices(script)
+		list.fix_indices(script)
 		local limit = chatsounds.max_iterations
 		local i = 1
 
@@ -638,7 +638,7 @@ do
 
 		if chatsounds.tree then table.insert(trees, chatsounds.tree) end
 
-		local root = table.virtualmerge({}, trees)
+		local root = table.virtual_merge({}, trees)
 		local script = find_sounds(words, root)
 		script = apply_modifiers(script)
 		return script

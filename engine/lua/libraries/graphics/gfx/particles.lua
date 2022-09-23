@@ -94,7 +94,7 @@ function META:Update(dt)
 	end
 
 	self.attraction_center = center / #self.particles
-	table.multiremove(self.particles, remove_these)
+	list.multi_remove(self.particles, remove_these)
 end
 
 function META:Draw()

@@ -227,7 +227,7 @@ function timer.UpdateTimers(a_, b_, c_, d_, e_)
 			timer.timers[v] = nil
 		end
 
-		table.fixindices(timer.timers)
+		list.fix_indices(timer.timers)
 		table.clear(remove_these)
 	end
 end

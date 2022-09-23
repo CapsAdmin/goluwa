@@ -1,10 +1,10 @@
 local files = assert(fs.get_files("."))
 
-test(table.hasvalue, files, "core").expect_compare(function(a, b)
+test(table.has_value, files, "core").expect_compare(function(a, b)
 	return type(a) == "number"
 end)
 
-test(table.hasvalue, files, "goluwa").expect_compare(function(a, b)
+test(table.has_value, files, "goluwa").expect_compare(function(a, b)
 	return type(a) == "number"
 end)
 

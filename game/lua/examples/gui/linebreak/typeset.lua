@@ -514,7 +514,7 @@ function linebreak.linebreak(text, type, line_lengths, options)
 			temp = temp.previous_candidate
 		end
 
-		breaks = table.reverse(breaks)
+		breaks = list.reverse(breaks)
 	end
 
 	local max_length = math.max(0, unpack(line_lengths))
@@ -557,7 +557,7 @@ function linebreak.linebreak(text, type, line_lengths, options)
 			end
 		end
 
-		table.insert(lines, {ratio = break_.ratio, nodes = table.slice(nodes, line_start, node_index)})
+		table.insert(lines, {ratio = break_.ratio, nodes = list.slice(nodes, line_start, node_index)})
 		line_start = node_index
 	end
 

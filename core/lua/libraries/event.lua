@@ -120,7 +120,7 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 	end
 
 	if event.fix_indices[event_type] then
-		table.fixindices(event.active[event_type])
+		list.fix_indices(event.active[event_type])
 		event.fix_indices[event_type] = nil
 		sort_events()
 	end

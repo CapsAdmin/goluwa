@@ -192,7 +192,7 @@ do
 			if translate[char] then
 				local test = b:usub(i, i)
 
-				if table.hasvalue(translate[char], test) then score = score + 1 end
+				if table.has_value(translate[char], test) then score = score + 1 end
 			end
 		end
 

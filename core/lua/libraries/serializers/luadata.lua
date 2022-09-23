@@ -49,7 +49,7 @@ luadata.SetModifier("table", function(tbl, context)
 
 	if context.tab == 0 then str = {} else str = {"{\n"} end
 
-	if table.isarray(tbl) then
+	if list.is_list(tbl) then
 		if #tbl == 0 then
 			str = {"{"}
 		else

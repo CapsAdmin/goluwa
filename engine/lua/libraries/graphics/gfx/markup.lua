@@ -2540,7 +2540,7 @@ do -- selection
 					end
 				end
 
-				if need_fix then table.fixindices(self.chunks) end
+				if need_fix then list.fix_indices(self.chunks) end
 
 				self:Invalidate()
 			end
@@ -2965,7 +2965,7 @@ do -- drawing
 			end
 
 			table.clear(self.remove_these)
-			table.fixindices(self.chunks)
+			list.fix_indices(self.chunks)
 			self:Invalidate()
 		end
 

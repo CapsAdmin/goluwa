@@ -177,9 +177,9 @@ function render._Initialize()
 		local present_mode
 		local present_modes = render.physical_device:GetSurfacePresentModes(surface)
 
-		if table.hasvalue(present_modes, vk.e.present_mode.mailbox) then
+		if table.has_value(present_modes, vk.e.present_mode.mailbox) then
 			present_mode = "mailbox"
-		elseif table.hasvalue(present_modes, vk.e.present_mode.fifo) then
+		elseif table.has_value(present_modes, vk.e.present_mode.fifo) then
 			present_mode = "fifo"
 		else
 			present_mode = "immediate"

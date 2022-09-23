@@ -119,7 +119,7 @@ if GRAPHICS then
 			if not self.sub_models[1] then render3d.RemoveModel(self) end
 
 			for i, v in ipairs(model:GetSubMeshes()) do
-				if table.hasvalue(self.sub_meshes, v) then
+				if table.has_value(self.sub_meshes, v) then
 					table.remove(self.sub_meshes, i)
 				end
 			end

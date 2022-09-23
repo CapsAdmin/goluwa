@@ -106,12 +106,12 @@ end
 function chatsounds.TableToList(tbl)
 	local str = {}
 
-	for realm, list in table.sortedpairs(tbl, sort) do
+	for realm, list in table.sorted_pairs(tbl, sort) do
 		str[#str + 1] = "realm=" .. realm
 		local done = {}
 
 		for trigger, sounds in pairs(list) do
-			for _, data in table.sortedpairs(sounds, sort2) do
+			for _, data in table.sorted_pairs(sounds, sort2) do
 				local val = data.path .. "=" .. trigger
 
 				if not done[val] then

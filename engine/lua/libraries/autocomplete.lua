@@ -139,7 +139,7 @@ function autocomplete.DrawFound(id, x, y, found, max, offset)
 end
 
 function autocomplete.ScrollFound(found, offset)
-	table.scroll(found, offset)
+	list.scroll(found, offset)
 end
 
 function autocomplete.Query(id, str, scroll, list)

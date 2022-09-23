@@ -65,7 +65,7 @@ local file_io_data = ffi.new(
 )
 
 local function on_remove(file)
-	table.removevalue(files, file)
+	list.remove_value(files, file)
 end
 
 function soundfile.OpenVFS(file, mode, info)

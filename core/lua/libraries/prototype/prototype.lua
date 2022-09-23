@@ -403,7 +403,7 @@ do
 			if v[1] == obj then prototype.linked_objects[i] = nil end
 		end
 
-		table.fixindices(prototype.linked_objects)
+		list.fix_indices(prototype.linked_objects)
 	end
 
 	function prototype.GetPropertyLinks(obj)
@@ -548,7 +548,7 @@ function prototype.UpdateObjects(meta)
 								tbl.Type,
 								tbl.ClassName,
 								k,
-								table.concatmember(debug.get_upvalues(v), "key", ", ")
+								list.concat_member(debug.get_upvalues(v), "key", ", ")
 							)
 						else
 							obj[k] = v

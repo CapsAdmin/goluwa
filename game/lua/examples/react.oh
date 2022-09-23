@@ -80,7 +80,7 @@ local async function run()
     local html = <div>
         <h1 style="text-align:center;">Example</h1>
         <div class="list">
-            { table.map(results, do v Result(v)) }
+            { list.map(results, do v Result(v)) }
         </div>
     </div>
 

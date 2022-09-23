@@ -174,8 +174,8 @@ do
 		if data then
 			if
 				data.headers and
-				table.lowercasedlookup(data.headers, "content-type") and
-				table.lowercasedlookup(data.headers, "content-type"):starts_with("application/json")
+				table.lowecase_lookup(data.headers, "content-type") and
+				table.lowecase_lookup(data.headers, "content-type"):starts_with("application/json")
 			then
 				post_data = serializer.Encode("json", data.body)
 			else
@@ -192,7 +192,7 @@ do
 				on_chunks = self.callbacks.chunks,
 				callback = function(data)
 					if
-						table.lowercasedlookup(data.header, "content-type"):starts_with("application/json")
+						table.lowecase_lookup(data.header, "content-type"):starts_with("application/json")
 					then
 						resolve(serializer.Decode("json", data.body))
 					else

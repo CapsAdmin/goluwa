@@ -150,7 +150,7 @@ do
 				if i == 1 then
 					word = word .. first_letters[math.floor((math.random() ^ 3) * #first_letters) + 1]
 
-					if table.hasvalue(vowels, word[i]) then consonant_start = 0 end
+					if table.has_value(vowels, word[i]) then consonant_start = 0 end
 				elseif i % 2 == consonant_start then
 					word = word .. consonants[math.floor((math.random() ^ 4) * #consonants) + 1]
 				else

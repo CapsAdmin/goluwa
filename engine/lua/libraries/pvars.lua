@@ -11,7 +11,7 @@ local function set(key, val)
 		if val == nil then val = info.default end
 
 		if info.list then
-			if not table.hasvalue(info.list, val) then val = info.default end
+			if not table.has_value(info.list, val) then val = info.default end
 		elseif info.table then
 			if not info.table[val] then val = info.default end
 		end
