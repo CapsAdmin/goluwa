@@ -207,11 +207,21 @@ end
 
 runfile("lua/libraries/extensions/debug.lua")
 runfile("lua/libraries/extensions/string.lua")
+runfile("lua/libraries/extensions/string_format.lua")
 runfile("lua/libraries/extensions/table.lua")
 runfile("lua/libraries/extensions/os.lua")
 runfile("lua/libraries/extensions/ffi.lua")
 runfile("lua/libraries/extensions/math.lua")
-_G.utility = runfile("lua/libraries/utility.lua")
+
+do
+	_G.utility = runfile("lua/libraries/utility/utility.lua")
+	runfile("lua/libraries/utility/convert.lua")
+	runfile("lua/libraries/utility/formating.lua")
+	runfile("lua/libraries/utility/lz4_compress.lua")
+	runfile("lua/libraries/utility/random.lua")
+	runfile("lua/libraries/utility/runtime_debug.lua")
+end
+
 runfile("lua/libraries/extensions/fs.lua")
 _G.prototype = runfile("lua/libraries/prototype/prototype.lua")
 
