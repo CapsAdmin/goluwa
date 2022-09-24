@@ -148,7 +148,7 @@ event.AddListener("DownloadStop", "downprog", function(client, data, msg)
 end)
 
 if RELOAD then
-	local url = "https://www.download.com/" .. string.random() .. ".zip"
+	local url = "https://www.download.com/" .. utility.BuildRandomString() .. ".zip"
 	local total = math.random(1000000, 3000000)
 	local speed = math.random(20000, 50000)
 	local current = 0

@@ -1,5 +1,5 @@
 local font = fonts.CreateFont({path = "fonts/vera.ttf", size = 50})
-local text = string.randomwords(10)
+local text = utility.BuildRandomWords(10)
 local boxes = {}
 
 for i, word in ipairs(text:split(" ")) do

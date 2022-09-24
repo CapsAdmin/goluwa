@@ -598,7 +598,7 @@ end
 
 local text = "In olden times when wishing still helped one, there lived a king whose daughters were all beautiful; and the youngest was so beautiful that the sun itself, which has seen so much, was astonished whenever it shone in her face. Close by the king's castle lay a great dark forest, and under an old limetree in the forest was a well, and when the day was very warm, the king's child went out to the forest and sat down by the fountain; and when she was bored she took a golden ball, and threw it up on high and caught it; and this ball was her favorite plaything."
 --text = text:rep(4) .. "!!!!"
---text = string.randomwords(4) .. " somehow"
+--text = utility.BuildRandomWords(4) .. " somehow"
 local font = fonts.CreateFont({path = "fonts/vera.ttf", size = 20})
 gfx.SetFont(font)
 

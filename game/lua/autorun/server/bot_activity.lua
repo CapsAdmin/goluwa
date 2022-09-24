@@ -8,7 +8,7 @@ commands.Add("bot_activity", function()
 				local bot = table.random(clients.GetAll())
 
 				if bot and bot:IsBot() then
-					bot:Kick(string.randomwords(2, math.random()))
+					bot:Kick(utility.BuildRandomWords(2, math.random()))
 				end
 			end
 
@@ -26,7 +26,7 @@ commands.Add("bot_activity", function()
 				if bot:IsBot() then
 					if not bot.do_soemthing or bot.do_soemthing < os.clock() then
 						if math.random() > 0.5 then
-							local sentence = string.randomwords(math.random(20), math.random())
+							local sentence = utility.BuildRandomWords(math.random(20), math.random())
 							chat.ClientSay(bot, sentence)
 						end
 
@@ -53,7 +53,7 @@ function BABE:OnClientChat(client, str)
 		timer.Delay(math.random() * 3, function()
 			chat.ClientSay(
 				self,
-				client:GetNick() .. ", " .. string.randomwords(math.random(20), math.random())
+				client:GetNick() .. ", " .. utility.BuildRandomWords(math.random(20), math.random())
 			)
 		end)
 	end

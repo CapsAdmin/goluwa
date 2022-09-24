@@ -1,5 +1,5 @@
 math.randomseed(20)
-local str = string.random(10000000) -- 10000000 characters between 32 and 126
+local str = utility.BuildRandomString(10000000) -- 10000000 characters between 32 and 126
 profiler.MeasureFunction(function()
 	assert(str:reverse():find("/", 0, true) == 60)
 end, 1000, "reverse")

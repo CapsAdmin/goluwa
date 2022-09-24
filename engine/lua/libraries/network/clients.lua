@@ -60,7 +60,7 @@ end
 
 function clients.CreateBot(nick, group, uid)
 	local bot = clients.Create(uid or crypto.CRC32(tostring(math.random())), true)
-	bot:SetNick(nick or string.randomwords(1, math.random()):trim())
+	bot:SetNick(nick or utility.BuildRandomWords(1, math.random()):trim())
 	bot:SetGroup(group or math.random() < 0.5 and "bot team a" or "bot team b")
 	return bot
 end

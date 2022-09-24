@@ -175,4 +175,4 @@ function chathud.Hide()
 	event.RemoveListener("MouseInput", "chathud")
 end
 
-if RELOAD then chathud.AddText(string.randomwords(40)) end
+if RELOAD then chathud.AddText(utility.BuildRandomWords(40)) end
