@@ -127,7 +127,7 @@ end
 local function utf8replace(str, mapping)
 	local out = {}
 
-	for i, char in ipairs(utf8.totable(str)) do
+	for i, char in ipairs(utf8.to_list(str)) do
 		list.insert(out, mapping[char] or char)
 	end
 
@@ -188,7 +188,7 @@ do
 		b = b:upper()
 		local score = 0
 
-		for i, char in ipairs(utf8.totable(a)) do
+		for i, char in ipairs(utf8.to_list(a)) do
 			if translate[char] then
 				local test = b:usub(i, i)
 
@@ -214,7 +214,7 @@ end
 
 utf8.len = utf8.length
 
-function utf8.totable(str)
+function utf8.to_list(str)
 	local tbl = {}
 	local i = 1
 

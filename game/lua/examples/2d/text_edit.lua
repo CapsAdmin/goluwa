@@ -200,7 +200,7 @@ do
 	font:DrawString(lua)
 	local x, y = 1, 1
 
-	for i, char in ipairs(utf8.totable(lua)) do
+	for i, char in ipairs(utf8.to_list(lua)) do
 		if char == "\n" then
 			y = y + 1
 			x = 1

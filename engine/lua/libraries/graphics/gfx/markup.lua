@@ -955,7 +955,7 @@ do -- parse tags
 		local str = {}
 		local in_lua = false
 
-		for _, char in ipairs(utf8.totable(arg_line)) do
+		for _, char in ipairs(utf8.to_list(arg_line)) do
 			if char == "[" then
 				in_lua = true
 			elseif in_lua and char == "]" then -- todo: longest match
@@ -1055,7 +1055,7 @@ do -- parse tags
 		local last_font
 		local last_color
 
-		for _, char in ipairs(utf8.totable(str)) do
+		for _, char in ipairs(utf8.to_list(str)) do
 			if char == "<" then
 				-- if we've been parsing a string add it
 				if current_string then
@@ -1357,7 +1357,7 @@ do -- invalidate
 							if self.LineWrap then
 								local str = {}
 
-								for _, char in ipairs(utf8.totable(chunk.val)) do
+								for _, char in ipairs(utf8.to_list(chunk.val)) do
 									if string.is_whitespace(char) then
 										if #str ~= 0 then
 											add_chunk(self, out, {type = "string", val = list.concat(str)})
@@ -1544,7 +1544,7 @@ do -- invalidate
 
 			if str == "" and chunk.internal then str = " " end
 
-			for i, char in ipairs(utf8.totable(str)) do
+			for i, char in ipairs(utf8.to_list(str)) do
 				local char_width, char_height = get_text_size(chunk.markup, char)
 				local x = chunk.x + width
 				local y = chunk.y

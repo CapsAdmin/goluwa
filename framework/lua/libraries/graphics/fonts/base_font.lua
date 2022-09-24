@@ -253,7 +253,7 @@ function META:CompileString(data)
 
 	for i, str in ipairs(data) do
 		if type(str) == "string" then
-			local chars = utf8.totable(str)
+			local chars = utf8.to_list(str)
 			vertex_count = vertex_count + (#chars * 6)
 			strings[i] = chars
 		end
@@ -372,7 +372,7 @@ function META:GetTextSize(str)
 	local max_x = 0
 	local spacing = self.Spacing
 
-	for i, char in ipairs(utf8.totable(str)) do
+	for i, char in ipairs(utf8.to_list(str)) do
 		local data = self:GetChar(char)
 
 		if char == "\n" then
@@ -413,7 +413,7 @@ function META:WrapString(str, max_width, max_word_length)
 	local tbl_i = 1
 	local start_pos = 1
 	local end_pos = 1
-	local str_tbl = utf8.totable(str)
+	local str_tbl = utf8.to_list(str)
 
 	for i = 1, #str_tbl do
 		end_pos = end_pos + 1

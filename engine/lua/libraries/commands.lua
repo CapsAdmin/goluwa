@@ -107,7 +107,7 @@ do -- commands
 		local escape = false
 		local in_capture = false
 
-		for _, char in ipairs(utf8.totable(arg_line)) do
+		for _, char in ipairs(utf8.to_list(arg_line)) do
 			if escape then
 				list.insert(capture, char)
 				escape = false

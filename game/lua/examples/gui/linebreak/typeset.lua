@@ -39,8 +39,8 @@ function hyphenate_word(language, word)
 	word = "_" .. word .. "_"
 	local characterPoints = {}
 	local points = {}
-	local characters = utf8.totable(utf8.lower(word))
-	local originalCharacters = utf8.totable(word)
+	local characters = utf8.to_list(utf8.lower(word))
+	local originalCharacters = utf8.to_list(word)
 	local wordLength = #characters
 
 	for i = 1, wordLength do
