@@ -6,7 +6,7 @@ var i = 0,
         y = 4,
         maxLength = Math.max.apply(null, lineLengths);
 ]]
-local chars = script:utotable()
+local chars = script:uto_list()
 local bracket_level = 0
 local scope = false
 local scopes = {

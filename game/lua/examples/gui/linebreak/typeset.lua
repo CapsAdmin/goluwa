@@ -8,8 +8,8 @@ function hyphenate_word(language, word)
 		for size, pattern in pairs(data.patterns) do
 			for i = 1, #pattern, size do
 				local str = pattern:sub(i, i + size)
-				local chars = str:gsub("%d", ""):utotable()
-				local points = str:gsub("[^%d]", ""):utotable()
+				local chars = str:gsub("%d", ""):uto_list()
+				local points = str:gsub("[^%d]", ""):uto_list()
 				local t = tree
 
 				for _, char in ipairs(chars) do

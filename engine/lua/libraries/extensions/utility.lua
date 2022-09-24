@@ -71,7 +71,7 @@ do
 		local current = out
 		local stack = {current}
 		local key
-		local chars = str:utotable()
+		local chars = str:uto_list()
 
 		for i, char in ipairs(chars) do
 			if (char == [["]] or (no_quotes and char:find("%s"))) and chars[i - 1] ~= "\\" then

@@ -70,7 +70,7 @@ do -- text wrap
 		local last_pos = 0
 		local line_width = 0
 		local space_pos
-		local tbl = str:utotable()
+		local tbl = str:uto_list()
 
 		--local pos = 1
 		--for _ = 1, 10000 do
@@ -108,7 +108,7 @@ do -- text wrap
 	end
 
 	local function wrap_2(str, max_width, font)
-		local tbl = str:utotable()
+		local tbl = str:uto_list()
 		local lines = {}
 		local chars = {}
 		local i = 1
@@ -208,7 +208,7 @@ function gfx.DotLimitText(text, w, font)
 	if strw > w + 2 then
 		local x = 0
 
-		for i, char in ipairs(text:utotable()) do
+		for i, char in ipairs(text:uto_list()) do
 			if x >= w - dot_w * 3 then return text:usub(0, i - 2) .. "..." end
 
 			x = x + gfx.GetTextSize(char, font)

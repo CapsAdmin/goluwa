@@ -303,7 +303,7 @@ do
 				local text = self:GetText():gsub("\t", "")
 
 				if text ~= "" then
-					for _, char in ipairs(text:utotable()) do
+					for _, char in ipairs(text:uto_list()) do
 						self.override_text = char
 						self:OnTextChanged()
 						self.override_text = nil

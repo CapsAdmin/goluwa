@@ -125,7 +125,7 @@ function META:DrawStringDynamic(str, x, y, w)
 	local last_tex
 	render2d.PushMatrix(x, y)
 	self.strtblcache = self.strtblcache or {}
-	self.strtblcache[str] = self.strtblcache[str] or str:utotable()
+	self.strtblcache[str] = self.strtblcache[str] or str:uto_list()
 
 	for str_i, char in ipairs(self.strtblcache[str]) do
 		local data = self:GetChar(char)

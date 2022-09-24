@@ -44,7 +44,7 @@ end
 function repl.CharInput(str)
 	event.Call("ReplCharInput", str)
 
-	for _, str in ipairs(str:utotable()) do
+	for _, str in ipairs(str:uto_list()) do
 		local x, y = repl.GetCaretPosition()
 		repl.buffer = repl.buffer:usub(0, x - 1) .. str .. repl.buffer:usub(x + str:ulen() - 1, -1)
 		repl.MoveCaret(str:ulen(), 0)
