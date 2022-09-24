@@ -213,7 +213,7 @@ function META:Initialize()
 						return
 					end
 
-					self:CallEvent("CharInput", utf8.char(uint))
+					self:CallEvent("CharInput", utf8.from_uint32(uint))
 				end)
 			end)
 

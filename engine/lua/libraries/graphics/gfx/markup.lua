@@ -1418,7 +1418,7 @@ do -- invalidate
 		local left_word, right_word = word:umidsplit()
 		local left_width, left_height = get_text_size(self, left_word)
 
-		if left_width >= max_width and left_word:ulength() > 1 then
+		if left_width >= max_width and left_word:utf8_length() > 1 then
 			additional_split(self, left_word, max_width, out)
 		else
 			list.insert(
@@ -1435,7 +1435,7 @@ do -- invalidate
 
 		local right_width, right_height = get_text_size(self, right_word)
 
-		if right_width >= max_width and right_word:ulength() > 1 then
+		if right_width >= max_width and right_word:utf8_length() > 1 then
 			additional_split(self, right_word, max_width, out)
 		else
 			list.insert(
@@ -1458,7 +1458,7 @@ do -- invalidate
 			if chunk.type == "font" then set_font(self, chunk.val) end
 
 			if chunk.type == "string" and not chunk.val:find("^%s+$") then
-				if chunk.val:ulength() > 1 then
+				if chunk.val:utf8_length() > 1 then
 					if not chunk.nolinebreak and chunk.w >= self.MaxWidth then
 						list.remove(chunks, i)
 
@@ -2061,7 +2061,7 @@ do -- shortcuts
 			end
 		else
 			-- TODO
-			--print(self.text:usub(sub_pos-1, sub_pos-1), back)
+			--print(self.text:utf8_sub(sub_pos-1, sub_pos-1), back)
 			if back and utf8.sub(self.text, sub_pos - 1, sub_pos - 1) == "\t" then
 				self:Backspace()
 			else

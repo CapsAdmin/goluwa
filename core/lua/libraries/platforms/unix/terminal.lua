@@ -284,9 +284,9 @@ local function process_input(str)
 			end
 		elseif c == "\127" then
 			add_event("backspace")
-		elseif utf8.bytelength(c) then
+		elseif utf8.byte_length(c) then
 			buf:Advance(-1)
-			add_event("string", buf:ReadString(utf8.bytelength(c)))
+			add_event("string", buf:ReadString(utf8.byte_length(c)))
 		end
 
 		if buf:GetPosition() >= buf:GetSize() then break end

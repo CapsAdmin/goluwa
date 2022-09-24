@@ -1,6 +1,6 @@
-function string.midsplit(str)
-	local half = math.round(str:ulength() / 2 + 1)
-	return str:usub(1, half - 1), str:usub(half)
+function string.mid_split(str)
+	local half = math.round(str:utf8_length() / 2 + 1)
+	return str:utf8_sub(1, half - 1), str:utf8_sub(half)
 end
 
 local font = fonts.CreateFont({path = "fonts/vera.ttf", size = 25})
@@ -24,10 +24,10 @@ local function split(word, max_width, i) end
 
 local function additional_split(word, max_width, out)
 	out = out or {}
-	local left_word, right_word = word:midsplit()
+	local left_word, right_word = word:mid_split()
 	local left_width = font:GetTextSize(left_word)
 
-	if left_width >= max_width and left_word:ulength() > 1 then
+	if left_width >= max_width and left_word:utf8_length() > 1 then
 		additional_split(left_word, max_width, out)
 	else
 		list.insert(out, 1, {
@@ -38,7 +38,7 @@ local function additional_split(word, max_width, out)
 
 	local right_width = font:GetTextSize(right_word)
 
-	if right_width >= max_width and right_word:ulength() > 1 then
+	if right_width >= max_width and right_word:utf8_length() > 1 then
 		additional_split(right_word, max_width, out)
 	else
 		list.insert(out, 1, {
@@ -52,7 +52,7 @@ end
 
 local function layout(boxes, max_width)
 	for i, box in ipairs(boxes) do
-		if box.word:ulength() > 1 then
+		if box.word:utf8_length() > 1 then
 			if box.width > max_width then
 				list.remove(boxes, i)
 

@@ -44,10 +44,10 @@ end
 function repl.CharInput(str)
 	event.Call("ReplCharInput", str)
 
-	for _, str in ipairs(str:uto_list()) do
+	for _, str in ipairs(str:utf8_to_list()) do
 		local x, y = repl.GetCaretPosition()
-		repl.buffer = repl.buffer:usub(0, x - 1) .. str .. repl.buffer:usub(x + str:ulen() - 1, -1)
-		repl.MoveCaret(str:ulen(), 0)
+		repl.buffer = repl.buffer:utf8_sub(0, x - 1) .. str .. repl.buffer:utf8_sub(x + str:utf8_length() - 1, -1)
+		repl.MoveCaret(str:utf8_length(), 0)
 		repl.RenderInput()
 	end
 
@@ -88,7 +88,7 @@ do
 		local str = list.concat(buf)
 		list.clear(buf)
 		repl.SetCaretPositionReal(0, repl.caret_y)
-		repl.WriteNow((" "):rep(repl.buffer:ulen() + 1))
+		repl.WriteNow((" "):rep(repl.buffer:utf8_length() + 1))
 		repl.SetCaretPositionReal(0, repl.caret_y - 1)
 		repl.WriteNow(str)
 		repl.SetCaretPositionReal(repl.caret_x, repl.caret_y)
@@ -99,13 +99,13 @@ do
 			do
 				local buf = repl.buffer .. " "
 				--repl.WriteStringToScreen(0, repl.caret_y, (" "):rep(100))
-				repl.StyledWrite(buf:usub(0, repl.caret_x - 1), true, true)
+				repl.StyledWrite(buf:utf8_sub(0, repl.caret_x - 1), true, true)
 				terminal.BackgroundColor(0.5, 0.5, 0.5)
 				--repl.Write("\27[47m")
-				repl.StyledWrite(buf:usub(repl.caret_x, repl.caret_x), true, true)
+				repl.StyledWrite(buf:utf8_sub(repl.caret_x, repl.caret_x), true, true)
 				--repl.SetBackgroundColor(0,0,0)
 				repl.Write("\27[0m")
-				repl.StyledWrite(buf:usub(repl.caret_x + 1), true, true)
+				repl.StyledWrite(buf:utf8_sub(repl.caret_x + 1), true, true)
 				repl.Write("\27[u")
 			end
 
@@ -145,7 +145,7 @@ do
 	function repl.GetTailPosition()
 		local tbl = list.concat(buf):split("\n")
 		local y = #tbl + repl.caret_y - 1
-		local x = tbl[#tbl]:ulen()
+		local x = tbl[#tbl]:utf8_length()
 		return x, y
 	end
 end
@@ -262,7 +262,9 @@ do
 end
 
 local function find_next_word(buffer, x, dir)
-	local str = dir == "left" and buffer:usub(0, x - 1):reverse() or buffer:usub(x + 1, -1)
+	local str = dir == "left" and
+		buffer:utf8_sub(0, x - 1):reverse() or
+		buffer:utf8_sub(x + 1, -1)
 
 	if str:find("^%s", 0) then
 		return str:find("%S")
@@ -270,7 +272,7 @@ local function find_next_word(buffer, x, dir)
 		return str:find("%P", 0) or str:find("^%p+$", 0)
 	end
 
-	return str:find("%s", 0) or str:find("%p", 0) or str:ulen() + 1
+	return str:find("%s", 0) or str:find("%p", 0) or str:utf8_length() + 1
 end
 
 function repl.InputLua(str)
@@ -367,7 +369,7 @@ function repl.KeyPressed(key)
 		serializer.WriteFile("luadata", "data/cmd_history.txt", repl.command_history)
 		repl.scroll_command_history = 0
 	elseif key == "delete" then
-		repl.buffer = repl.buffer:usub(0, x - 1) .. repl.buffer:usub(x + 1, -1)
+		repl.buffer = repl.buffer:utf8_sub(0, x - 1) .. repl.buffer:utf8_sub(x + 1, -1)
 	elseif key == "up" or key == "down" then
 		if key == "up" then
 			repl.scroll_command_history = repl.scroll_command_history - 1
@@ -379,7 +381,7 @@ function repl.KeyPressed(key)
 
 		if str then
 			repl.buffer = str
-			repl.SetCaretPosition(repl.buffer:ulen() + 1, y)
+			repl.SetCaretPosition(repl.buffer:utf8_length() + 1, y)
 		end
 	elseif key == "left" then
 		repl.MoveCaret(-1, 0)
@@ -388,7 +390,7 @@ function repl.KeyPressed(key)
 	elseif key == "home" then
 		repl.SetCaretPosition(1, y)
 	elseif key == "end" then
-		repl.SetCaretPosition(repl.buffer:ulen() + 1, y)
+		repl.SetCaretPosition(repl.buffer:utf8_length() + 1, y)
 	elseif key == "ctrl_right" then
 		local offset = find_next_word(repl.buffer, x, "right")
 
@@ -398,20 +400,20 @@ function repl.KeyPressed(key)
 
 		if offset then repl.MoveCaret(-offset + 1, 0) end
 	elseif key == "backspace" then
-		repl.buffer = repl.buffer:usub(0, math.max(x - 2, 0)) .. repl.buffer:usub(x, -1)
+		repl.buffer = repl.buffer:utf8_sub(0, math.max(x - 2, 0)) .. repl.buffer:utf8_sub(x, -1)
 		repl.MoveCaret(-1, 0)
 	elseif key == "ctrl_backspace" then
 		local offset = find_next_word(repl.buffer, x, "left")
 
 		if offset then
-			repl.buffer = repl.buffer:usub(0, x - offset) .. repl.buffer:usub(x, -1)
+			repl.buffer = repl.buffer:utf8_sub(0, x - offset) .. repl.buffer:utf8_sub(x, -1)
 			repl.SetCaretPosition(x - offset + 1, y)
 		end
 	elseif key == "ctrl_delete" then
 		local offset = find_next_word(repl.buffer, x, "right")
 
 		if offset then
-			repl.buffer = repl.buffer:usub(0, x - 1) .. repl.buffer:usub(x + offset, -1)
+			repl.buffer = repl.buffer:utf8_sub(0, x - 1) .. repl.buffer:utf8_sub(x + offset, -1)
 		end
 	elseif key == "cmd_backspace" then
 		repl.buffer = ""
@@ -459,7 +461,7 @@ function repl.KeyPressed(key)
 	end
 
 	local x, y = repl.GetCaretPosition()
-	x = math.min(x, repl.buffer:ulen() + 1)
+	x = math.min(x, repl.buffer:utf8_length() + 1)
 	repl.SetCaretPosition(x, y)
 	repl.RenderInput()
 	repl.Flush()

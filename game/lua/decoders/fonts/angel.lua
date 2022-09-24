@@ -75,8 +75,8 @@ function META:Initialize()
 					byte chnl;
 				]]
 				char.tex = self.pages[char.page].png
-				self.pages[char.page].chars[utf8.byte(char.id)] = char
-				self.char_data[utf8.byte(char.id)] = char
+				self.pages[char.page].chars[utf8.uint32(char.id)] = char
+				self.char_data[utf8.uint32(char.id)] = char
 			end
 		else
 			buffer:Advance(size)

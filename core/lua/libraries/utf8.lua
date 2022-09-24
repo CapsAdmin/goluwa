@@ -1,13 +1,13 @@
 local utf8 = _G.utf8 or {}
 
-function utf8.midsplit(str)
-	local half = math.round(str:ulength() / 2 + 1)
-	return str:usub(1, half - 1), str:usub(half)
+function utf8.mid_split(str)
+	local half = math.round(str:utf8_length() / 2 + 1)
+	return str:utf8_sub(1, half - 1), str:utf8_sub(half)
 end
 
 local math_floor = math.floor
 
-function utf8.byte(char, offset)
+function utf8.uint32(char, offset)
 	if char == "" then return -1 end
 
 	offset = offset or 1
@@ -40,7 +40,7 @@ function utf8.byte(char, offset)
 	return byte
 end
 
-function utf8.bytelength(char, offset)
+function utf8.byte_length(char, offset)
 	local byte = char:byte(offset or 1)
 	local length = 1
 
@@ -57,7 +57,7 @@ function utf8.bytelength(char, offset)
 	return length
 end
 
-function utf8.char(byte)
+function utf8.from_uint32(byte)
 	local utf8 = ""
 
 	if byte <= 127 then
@@ -112,7 +112,7 @@ function utf8.sub(str, i, j)
 
 		if length == start_char then start_byte = pos end
 
-		pos = pos + utf8.bytelength(str, pos)
+		pos = pos + utf8.byte_length(str, pos)
 
 		if length == end_char then
 			end_byte = pos - 1
@@ -182,7 +182,7 @@ do
 		end
 	end
 
-	function utf8.getsimilarity(a, b)
+	function utf8.get_similarity(a, b)
 		if not translate[1] then init() end
 
 		b = b:upper()
@@ -190,7 +190,7 @@ do
 
 		for i, char in ipairs(utf8.to_list(a)) do
 			if translate[char] then
-				local test = b:usub(i, i)
+				local test = b:utf8_sub(i, i)
 
 				if table.has_value(translate[char], test) then score = score + 1 end
 			end
@@ -211,8 +211,6 @@ function utf8.length(str)
 
 	return len
 end
-
-utf8.len = utf8.length
 
 function utf8.to_list(str)
 	local tbl = {}
@@ -243,7 +241,7 @@ function utf8.to_list(str)
 end
 
 for name, func in pairs(utf8) do
-	string["u" .. name] = func
+	string["utf8_" .. name] = func
 end
 
 return utf8

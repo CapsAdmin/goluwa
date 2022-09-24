@@ -527,13 +527,13 @@ function terminal.ReadEvents()
 				print(i, "uChar UnicodeChar: ", evt.Event.KeyEvent.uChar.UnicodeChar)
 				print(i, "uChar AsciiChar: ", evt.Event.KeyEvent.uChar.AsciiChar)
 				print(i, "dwControlKeyState: ", evt.Event.KeyEvent.dwControlKeyState)
-				print(i, "char: ", utf8.char(evt.Event.KeyEvent.uChar.UnicodeChar))
+				print(i, "char: ", utf8.from_uint32(evt.Event.KeyEvent.uChar.UnicodeChar))
 				print(i, "mod: ", utility.FlagsToTable(evt.Event.KeyEvent.dwControlKeyState, modifiers))
 
 				print("==========================================================")
 			--]] if evt.EventType == 1 then
 				if evt.Event.KeyEvent.bKeyDown == 1 then
-					local str = utf8.char(evt.Event.KeyEvent.uChar.UnicodeChar)
+					local str = utf8.from_uint32(evt.Event.KeyEvent.uChar.UnicodeChar)
 					local key = evt.Event.KeyEvent.wVirtualKeyCode
 					local mod = utility.FlagsToTable(evt.Event.KeyEvent.dwControlKeyState, modifiers)
 					--print(evt.Event.KeyEvent.uChar.UnicodeChar)

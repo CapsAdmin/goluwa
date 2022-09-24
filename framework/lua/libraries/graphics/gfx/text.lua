@@ -70,7 +70,7 @@ do -- text wrap
 		local last_pos = 0
 		local line_width = 0
 		local space_pos
-		local tbl = str:uto_list()
+		local tbl = str:utf8_to_list()
 
 		--local pos = 1
 		--for _ = 1, 10000 do
@@ -83,10 +83,10 @@ do -- text wrap
 
 			if line_width + w >= max_width then
 				if space_pos then
-					lines[i] = str:usub(last_pos + 1, space_pos)
+					lines[i] = str:utf8_sub(last_pos + 1, space_pos)
 					last_pos = space_pos
 				else
-					lines[i] = str:usub(last_pos + 1, pos)
+					lines[i] = str:utf8_sub(last_pos + 1, pos)
 					last_pos = pos
 				end
 
@@ -100,7 +100,7 @@ do -- text wrap
 		end
 
 		if lines[1] then
-			lines[i] = str:usub(last_pos + 1)
+			lines[i] = str:utf8_sub(last_pos + 1)
 			return list.concat(lines, "\n")
 		end
 
@@ -108,7 +108,7 @@ do -- text wrap
 	end
 
 	local function wrap_2(str, max_width, font)
-		local tbl = str:uto_list()
+		local tbl = str:utf8_to_list()
 		local lines = {}
 		local chars = {}
 		local i = 1
@@ -208,8 +208,8 @@ function gfx.DotLimitText(text, w, font)
 	if strw > w + 2 then
 		local x = 0
 
-		for i, char in ipairs(text:uto_list()) do
-			if x >= w - dot_w * 3 then return text:usub(0, i - 2) .. "..." end
+		for i, char in ipairs(text:utf8_to_list()) do
+			if x >= w - dot_w * 3 then return text:utf8_sub(0, i - 2) .. "..." end
 
 			x = x + gfx.GetTextSize(char, font)
 		end

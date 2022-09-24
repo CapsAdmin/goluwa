@@ -20,7 +20,7 @@ local function additional_split(word, max_width, out)
 	local left_word, right_word = word:umidsplit()
 	local left_width = font:GetTextSize(left_word)
 
-	if left_width >= max_width and left_word:ulength() > 1 then
+	if left_width >= max_width and left_word:utf8_length() > 1 then
 		additional_split(left_word, max_width, out)
 	else
 		list.insert(out, 1, {
@@ -31,7 +31,7 @@ local function additional_split(word, max_width, out)
 
 	local right_width = font:GetTextSize(right_word)
 
-	if right_width >= max_width and right_word:ulength() > 1 then
+	if right_width >= max_width and right_word:utf8_length() > 1 then
 		additional_split(right_word, max_width, out)
 	else
 		list.insert(out, 1, {
@@ -45,7 +45,7 @@ end
 
 local function layout(boxes, max_width)
 	for i, box in ipairs(boxes) do
-		if box.word:ulength() > 1 then
+		if box.word:utf8_length() > 1 then
 			if box.width > max_width then
 				list.remove(boxes, i)
 

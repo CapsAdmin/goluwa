@@ -345,13 +345,13 @@ end
 
 function META:GetGlyphData(code)
 	if
-		freetype.LoadChar(self.face, utf8.byte(code), table_to_flags(self.Flags or default_flags)) == 0
+		freetype.LoadChar(self.face, utf8.uint32(code), table_to_flags(self.Flags or default_flags)) == 0
 	then
 		freetype.RenderGlyph(self.face.glyph, 1)
 		local glyph = self.face.glyph
 		local bitmap = glyph.bitmap
 
-		if bitmap.width == 0 and bitmap.rows == 0 and utf8.byte(code) > 128 then
+		if bitmap.width == 0 and bitmap.rows == 0 and utf8.uint32(code) > 128 then
 			return
 		end
 

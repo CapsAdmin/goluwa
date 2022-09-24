@@ -125,7 +125,7 @@ function META:DrawStringDynamic(str, x, y, w)
 	local last_tex
 	render2d.PushMatrix(x, y)
 	self.strtblcache = self.strtblcache or {}
-	self.strtblcache[str] = self.strtblcache[str] or str:uto_list()
+	self.strtblcache[str] = self.strtblcache[str] or str:utf8_to_list()
 
 	for str_i, char in ipairs(self.strtblcache[str]) do
 		local data = self:GetChar(char)
@@ -418,7 +418,7 @@ function META:WrapString(str, max_width, max_word_length)
 	for i = 1, #str_tbl do
 		end_pos = end_pos + 1
 
-		if self:GetTextSize(str:usub(start_pos, end_pos)) > max_width then
+		if self:GetTextSize(str:utf8_sub(start_pos, end_pos)) > max_width then
 			local n = str_tbl[end_pos]
 
 			for i = 1, max_word_length do
@@ -430,13 +430,13 @@ function META:WrapString(str, max_width, max_word_length)
 				end
 			end
 
-			tbl[tbl_i] = str:usub(start_pos, end_pos):trim()
+			tbl[tbl_i] = str:utf8_sub(start_pos, end_pos):trim()
 			tbl_i = tbl_i + 1
 			start_pos = end_pos + 1
 		end
 	end
 
-	tbl[tbl_i] = str:usub(start_pos, end_pos)
+	tbl[tbl_i] = str:utf8_sub(start_pos, end_pos)
 	tbl_i = tbl_i + 1
 	return list.concat(tbl, "\n")
 end
