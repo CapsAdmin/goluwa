@@ -403,6 +403,9 @@ function ffibuild.GetMetaData(header)
 		header = header:gsub(" static inline.-%b().-%b{}", "")
 		header = header:gsub(" extern __inline.-%b().-%b{}", "")
 		header = header:gsub(" extern inline.-%b().-%b{}", "")
+		header = header:gsub(" inline.-%b().-%b{}", "")
+		-- remove namespaces
+		header = header:gsub(" namespace.-%b{}", "")
 		-- int foo(void); >> int foo();
 		header = header:gsub(" %( void %) ", " ( ) ")
 		-- TODO: support more than 2 definitions
@@ -471,6 +474,7 @@ function ffibuild.GetMetaData(header)
 	for line in header:gmatch(" (.-);\n") do
 		local extern
 		local typedef
+		local original_line = line
 
 		if line:find("^typedef") then
 			typedef = true
@@ -508,15 +512,19 @@ function ffibuild.GetMetaData(header)
 		elseif line:find("^extern") then
 			extern = true
 			line = line:match("^extern (.+)")
+		elseif line:find("^inline") then
+			line = nil
 		--elseif line:find("^static") then
 		--	print(line)
 		end
 
 		if line then
 			if is_function(line) then
+				print("FUNCTION", line)
 				local type = create_type("function", line:sub(0, -2), meta_data)
 				meta_data.functions[type.name] = type
 			elseif line:find("^enum") then
+				print("ENUM", line)
 				local tag, content = line:match("(enum [%a%d_]+) ({.+})")
 
 				if tag then
@@ -535,6 +543,7 @@ function ffibuild.GetMetaData(header)
 					list.insert(meta_data.global_enums, create_type("enums", content, meta_data))
 				end
 			elseif line:find("^struct") or line:find("^union") then
+				print("STRUCT/UNION", line)
 				local keyword = line:match("^([%a%d_]+)")
 				local tag, content = line:match("(" .. keyword .. " [%a%d_]+) ({.+})")
 
@@ -550,9 +559,12 @@ function ffibuild.GetMetaData(header)
 					tbl[tag] = create_type("struct", content, keyword == "union", meta_data)
 				end
 			elseif extern then
+				print("EXTERN", line)
 				local declaration, name, array_size = match_type_declaration(line:sub(0, -2))
 				meta_data.variables[name] = create_type("type", declaration, array_size)
 			end
+		else
+			print("UNHANDLED", original_line)
 		end
 
 		i = i + 1

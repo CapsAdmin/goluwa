@@ -1,42 +1,56 @@
-ffibuild.Build(
+ffibuild.DockerBuild(
 	{
 		name = "assimp",
-		url = "https://github.com/assimp/assimp.git",
-		cmd = "cmake CMakeLists.txt && make --jobs 32",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
+		dockerfile = [[
+			FROM ubuntu:20.04
+
+			ARG DEBIAN_FRONTEND=noninteractive
+			ENV TZ=America/New_York
+			RUN apt-get update
+
+			RUN apt-get install -y git g++ gcc cmake
+
+			WORKDIR /src
+
+			RUN git clone https://github.com/assimp/assimp.git --depth 1 .
+			RUN cmake CMakeLists.txt && make --jobs 32
+		]],
 		c_source = [[
-		#include "assimp/types.h"
-		#include "assimp/metadata.h"
-		#include "assimp/ai_assert.h"
-		#include "assimp/cexport.h"
 		#include "assimp/color4.h"
-		#include "assimp/config.h"
-		#include "assimp/matrix4x4.h"
-		#include "assimp/postprocess.h"
-		#include "assimp/vector3.h"
-		#include "assimp/anim.h"
+		#include "assimp/camera.h"
 		#include "assimp/cfileio.h"
-		#include "assimp/importerdesc.h"
-		#include "assimp/matrix3x3.h"
+		#include "assimp/mesh.h"
 		#include "assimp/scene.h"
 		#include "assimp/vector2.h"
-		#include "assimp/camera.h"
+		#include "assimp/anim.h"
+		#include "assimp/metadata.h"
 		#include "assimp/cimport.h"
-		#include "assimp/defs.h"
-		#include "assimp/light.h"
-		#include "assimp/material.h"
-		#include "assimp/mesh.h"
-		#include "assimp/quaternion.h"
-		#include "assimp/texture.h"
 		#include "assimp/version.h"
-
+		#include "assimp/types.h"
+		#include "assimp/material.h"
+		#include "assimp/config.h"
+		#include "assimp/matrix4x4.h"
+		#include "assimp/defs.h"
+		#include "assimp/cexport.h"
+		#include "assimp/importerdesc.h"
+		#include "assimp/postprocess.h"
+		#include "assimp/aabb.h"
+		#include "assimp/light.h"
+		#include "assimp/pbrmaterial.h"
+		#include "assimp/config.h.in"
+		#include "assimp/ai_assert.h"
+		#include "assimp/quaternion.h"
+		#include "assimp/matrix3x3.h"
+		#include "assimp/texture.h"
+		#include "assimp/vector3.h"
 
 		#undef aiProcess_ConvertToLeftHanded
 		#undef aiProcessPreset_TargetRealtime_Fast
 		#undef aiProcessPreset_TargetRealtime_Quality
 		#undef aiProcessPreset_TargetRealtime_MaxQuality
 
-		typedef enum {
+		enum aiProcessHack {
 			aiProcess_ConvertToLeftHanded =
 				aiProcess_MakeLeftHanded     |
 				aiProcess_FlipUVs            |
@@ -73,7 +87,7 @@ ffibuild.Build(
 				aiProcess_ValidateDataStructure          |
 				aiProcess_OptimizeMeshes                 |
 				0
-		} aiGrrr;
+		};
 
 		typedef struct aiFile aiFile;
 
@@ -95,7 +109,8 @@ ffibuild.Build(
 			)
 		end,
 		build_lua = function(header, meta_data)
-			local lua = ffibuild.StartLibrary(header)
+			local lua = ffibuild.StartLibrary(header, "safe_clib_index")
+			lua = lua .. "CLIB = SAFE_INDEX(CLIB)"
 			lua = lua .. "library = " .. meta_data:BuildFunctions("^ai(.+)")
 			lua = lua .. "library.e = " .. meta_data:BuildEnums("^ai.-_(%u.+)")
 			return ffibuild.EndLibrary(lua, header)
