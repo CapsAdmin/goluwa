@@ -1,13 +1,27 @@
-ffibuild.Build(
+ffibuild.DockerBuild(
 	{
 		name = "libtls",
-		url = "https://github.com/libressl-portable/portable.git",
-		cmd = "./autogen.sh && ./configure && make --jobs 32",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
-		c_source = [[
-        #include <tls.h>
-    ]],
+		dockerfile = [[
+			FROM ubuntu:20.04
+
+			ARG DEBIAN_FRONTEND=noninteractive
+			ENV TZ=America/New_York
+
+			RUN apt-get update 
+			
+			RUN apt-get install -y git make gcc 
+
+			RUN apt-get install -y autogen autoconf automake libtool perl
+
+			WORKDIR /src
+			RUN git clone https://github.com/libressl-portable/portable.git --depth 1 .
+			RUN ./autogen.sh && ./configure && make -j32
+		]],
 		gcc_flags = "-I./include",
+		c_source = [[
+			#include <tls.h>
+		]],
 		filter_library = function(path)
 			if
 				path:ends_with("libtls") or

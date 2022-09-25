@@ -1,9 +1,22 @@
-ffibuild.Build(
+ffibuild.DockerBuild(
 	{
 		name = "vtflib",
-		url = "https://github.com/CapsAdmin/VTFLib.git",
-		cmd = "cmake . -DUSE_LIBTXC_DXTN=0 && make --jobs 32",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
+		cmd = "cmake . -DUSE_LIBTXC_DXTN=0 && make --jobs 32",
+
+		dockerfile = [[
+			FROM ubuntu:20.04
+
+			ARG DEBIAN_FRONTEND=noninteractive
+			ENV TZ=America/New_York
+
+			RUN apt-get update
+			RUN apt-get install -y git cmake g++
+		
+			WORKDIR /src
+			RUN git clone https://github.com/CapsAdmin/VTFLib.git --depth 1 .
+			RUN cmake . -DUSE_LIBTXC_DXTN=0 && make --jobs 32
+		]],
 		c_source = [[
 		typedef struct tagSVTFImageFormatInfo {} SVTFImageFormatInfo;
 		#include "VTFLib.h"

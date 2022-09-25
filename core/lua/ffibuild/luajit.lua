@@ -1,4 +1,5 @@
 local instructions = {
+	name = "luajit",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 	c_source = [[
 	#include "lua.h"
@@ -28,10 +29,20 @@ local instructions = {
 		print(lua)
 		return ffibuild.EndLibrary(lua)
 	end,
+	dockerfile = [[
+		FROM ubuntu:20.04
+
+		ARG DEBIAN_FRONTEND=noninteractive
+		ENV TZ=America/New_York
+
+		RUN apt-get update 
+		
+		RUN apt-get install -y git make gcc 
+	
+		WORKDIR /src
+		RUN git clone https://github.com/LuaJIT/LuaJIT --depth 1 . && git checkout v2.1
+		RUN make -j32 CCDEBUG=-g XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
+	]]
 }
-local instructions = table.copy(instructions)
-instructions.name = "luajit"
-instructions.url = "https://github.com/LuaJIT/LuaJIT/tree/v2.1.git"
-instructions.cmd = "make --jobs 32 amalg CCDEBUG=-g XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT MACOSX_DEPLOYMENT_TARGET=10.6"
-instructions.clean = "make clean"
-ffibuild.Build(instructions)
+
+ffibuild.DockerBuild(instructions)

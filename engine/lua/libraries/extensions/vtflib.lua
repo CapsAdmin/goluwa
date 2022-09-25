@@ -1,7 +1,7 @@
 if not GRAPHICS then return end
 
 local render = ... or _G.render
-local vl = desire("VTFLib")
+local vl = desire("vtflib")
 
 if not vl then return end
 
