@@ -964,7 +964,7 @@ function chatsounds.ExtractSoundsFromLists()
 				file:PeakBytes(3) == "\xFF\xFB\x92" or
 				file:PeakBytes(3) == "\xFF\xFB\x90"
 			then
-				local buffer, len, info = audio.Decode(file, read_path, "mpg123")
+				local buffer, len, info = audio.Decode(file, read_path, "libsndfile")
 
 				if buffer then
 					vfs.CreateDirectoriesFromPath("os:" .. path)
