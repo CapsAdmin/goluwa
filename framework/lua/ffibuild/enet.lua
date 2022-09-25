@@ -1,11 +1,22 @@
-ffibuild.Build(
+ffibuild.DockerBuild(
 	{
 		name = "enet",
-		url = "https://github.com/lsalzman/enet.git",
-		cmd = "export AM_LDFLAGS=-no-undefined; autoreconf -vfi && ./configure && make --jobs 32",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 		c_source = [[#include "enet/enet.h"]],
 		gcc_flags = "-I./include",
+		dockerfile = [[		
+			FROM ubuntu:20.04
+			ARG DEBIAN_FRONTEND=noninteractive
+			ENV TZ=America/New_York
+			RUN apt-get update
+
+			RUN apt-get install -y git gcc automake libtool make
+
+			WORKDIR /src
+			RUN git clone https://github.com/lsalzman/enet.git --depth 1 .
+
+			RUN autoreconf -vfi && ./configure --disable-dependency-tracking && make --jobs 32
+		]],
 		process_header = function(header)
 			local meta_data = ffibuild.GetMetaData(header)
 			meta_data.functions.enet_socketset_select.arguments[2] = ffibuild.CreateType("type", "void *")
