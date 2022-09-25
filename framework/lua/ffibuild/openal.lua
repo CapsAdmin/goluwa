@@ -1,12 +1,24 @@
 for lib_name, enum_name in pairs({al = "AL_", alc = "ALC_"}) do
-	ffibuild.Build(
+	ffibuild.DockerBuild(
 		{
 			name = "openal",
-			url = "https://github.com/kcat/openal-soft.git",
-			cmd = "cmake . && make --jobs 32",
 			addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 			lua_name = lib_name,
 			shared_library_name = "openal",
+			dockerfile=[[
+				FROM ubuntu:20.04
+
+				ARG DEBIAN_FRONTEND=noninteractive
+				ENV TZ=America/New_York
+				RUN apt-get update
+
+				RUN apt-get install -y libpulse-dev portaudio19-dev libasound2-dev libjack-dev qtbase5-dev libdbus-1-dev cmake g++ 
+				RUN apt-get install -y git
+
+				WORKDIR /src
+				RUN git clone https://github.com/kcat/openal-soft.git --depth 1 .
+				RUN cmake . && make --jobs 32
+			]],
 			c_source = [[
 			#define AL_ALEXT_PROTOTYPES 1
 			#include "AL/alc.h"

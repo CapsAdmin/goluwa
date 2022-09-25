@@ -1,13 +1,29 @@
-ffibuild.Build(
+ffibuild.DockerBuild(
 	{
 		name = "sndfile",
-		url = "https://github.com/erikd/libsndfile.git", -- --host=x86_64-w64-mingw32
-		cmd = "mkdir out && cd out && cmake -DBUILD_SHARED_LIBS=ON .. && make --jobs 32",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
+		dockerfile = [[
+			FROM ubuntu:20.04
+
+			ARG DEBIAN_FRONTEND=noninteractive
+			ENV TZ=America/New_York
+
+			RUN apt-get update
+			RUN apt-get install -y autogen ninja-build libogg-dev libvorbis-dev libflac-dev libopus-dev libasound2-dev libsqlite3-dev libspeex-dev libmp3lame-dev libmpg123-dev cmake g++ python3
+			RUN apt-get install -y git
+		
+			WORKDIR /src
+			RUN git clone https://github.com/erikd/libsndfile.git --depth 1 .
+			RUN mkdir out
+			RUN cd out && cmake -DBUILD_SHARED_LIBS=ON -DENABLE_MPEG=ON .. && make --jobs 32
+			RUN cd out && ldd libsndfile.so
+			RUN cd out && mkdir deps
+			RUN cd out && ldd libsndfile.so | awk 'NF == 4 { system("cp " $3 " deps/. ") }'
+		]],
 		c_source = [[
 		#include "sndfile.h"
 	]],
-		gcc_flags = "-I./out/include",
+		gcc_flags = "-I./include",
 		process_header = function(header)
 			local meta_data = ffibuild.GetMetaData(header)
 			return meta_data:BuildMinimalHeader(

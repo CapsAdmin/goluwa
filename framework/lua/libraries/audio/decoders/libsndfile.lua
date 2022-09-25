@@ -51,6 +51,7 @@ audio.AddDecoder("libsndfile", function(vfs_file, path_hint)
 	local file = soundfile.OpenVFS(vfs_file, soundfile.e.READ, info)
 	local err = ffi.string(soundfile.Strerror(file))
 
+
 	if err ~= "No Error." then
 		vfs_file:SetPosition(0)
 		local header = vfs_file:ReadBytes(4)

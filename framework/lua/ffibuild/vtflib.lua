@@ -2,8 +2,6 @@ ffibuild.DockerBuild(
 	{
 		name = "vtflib",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
-		cmd = "cmake . -DUSE_LIBTXC_DXTN=0 && make --jobs 32",
-
 		dockerfile = [[
 			FROM ubuntu:20.04
 

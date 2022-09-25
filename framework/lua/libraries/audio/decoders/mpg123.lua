@@ -1,3 +1,4 @@
+do return end
 local ffi = require("ffi")
 local audio = ... or _G.audio
 local mpg123 = desire("mpg123")

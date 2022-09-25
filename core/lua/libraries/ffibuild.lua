@@ -2076,12 +2076,22 @@ do -- lua helper functions
 				logn(utility.GetLikelyLibraryDependenciesFormatted(path))
 				local to = git_dir .. bin_path
 
+				if path:find_simple("/deps") then
+					local name = vfs.GetFileNameFromPath(path)
+					to = git_dir .. "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. name
+				end
+
+
 				if vfs.IsDirectory(git_dir) then
 					vfs.CopyFile(path, to)
 					llog("%q was added to %q", path, to)
 				end
 
 				local to = addon_dir .. bin_path
+				if path:find_simple("/deps") then
+					local name = vfs.GetFileNameFromPath(path)
+					to = addon_dir .. "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. name
+				end
 				local ok, err = assert(vfs.CopyFileFileOnBoot(path, to))
 
 				if ok == "deferred" then
@@ -2197,12 +2207,23 @@ do -- lua helper functions
 				logn(utility.GetLikelyLibraryDependenciesFormatted(path))
 				local to = git_dir .. bin_path
 
+				if git_dir:find_simple("/deps") then
+					local name = vfs.GetFileNameFromPath(path)
+					to = git_dir .. "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. name
+				end
+
+
 				if vfs.IsDirectory(git_dir) then
 					vfs.CopyFile(path, to)
 					llog("%q was added to %q", path, to)
 				end
 
 				local to = addon_dir .. bin_path
+				if git_dir:find_simple("/deps") then
+					local name = vfs.GetFileNameFromPath(path)
+					to = addon_dir .. "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. name
+				end
+
 				local ok, err = assert(vfs.CopyFileFileOnBoot(path, to))
 
 				if ok == "deferred" then
