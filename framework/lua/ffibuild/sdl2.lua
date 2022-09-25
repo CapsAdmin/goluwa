@@ -1,10 +1,61 @@
-ffibuild.Build(
+ffibuild.DockerBuild(
 	{
 		name = "SDL2",
-		url = "https://github.com/spurious/SDL-mirror.git", -- --host=x86_64-w64-mingw32
-		cmd = "./autogen.sh && mkdir build && cd build && ../configure --disable-video-wayland && make --jobs 32 && cd ../",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 		strip_undefined_symbols = true,
+		dockerfile = [[
+			FROM ubuntu:20.04
+
+			ARG DEBIAN_FRONTEND=noninteractive
+			ENV TZ=America/New_York
+			RUN apt-get update
+			
+			# https://github.com/libsdl-org/SDL/blob/main/.github/workflows/main.yml
+			RUN apt-get install -y \
+				git \
+				wayland-protocols \
+				pkg-config \
+				ninja-build \
+				libasound2-dev \
+				libdbus-1-dev \
+				libegl1-mesa-dev \
+				libgl1-mesa-dev \
+				libgles2-mesa-dev \
+				libglu1-mesa-dev \
+				libibus-1.0-dev \
+				libpulse-dev \
+				libsdl2-2.0-0 \
+				libsndio-dev \
+				libudev-dev \
+				libwayland-dev \
+				libwayland-client++0 \
+				wayland-scanner++ \
+				libwayland-cursor++0 \
+				libx11-dev \
+				libxcursor-dev \
+				libxext-dev \
+				libxi-dev \
+				libxinerama-dev \
+				libxkbcommon-dev \
+				libxrandr-dev \
+				libxss-dev \
+				libxt-dev \
+				libxv-dev \
+				libxxf86vm-dev \
+				libdrm-dev \
+				libgbm-dev\
+				libpulse-dev \
+				libpango1.0-dev \ 
+				autoconf
+
+			RUN apt-get install -y gcc make
+
+			WORKDIR /src
+
+			RUN git clone https://github.com/libsdl-org/SDL --depth 1 .
+			RUN ./autogen.sh && mkdir build && cd build && ../configure --disable-video-wayland && make --jobs 32 && cd ../
+
+		]],
 		c_source = [[
 		typedef enum  {
 			SDL_INIT_TIMER = 0x00000001,
@@ -16,7 +67,6 @@ ffibuild.Build(
 			SDL_INIT_EVENTS = 0x00004000,
 			SDL_INIT_NOPARACHUTE = 0x00100000,
 			SDL_INIT_EVERYTHING = SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER,
-
 			SDL_WINDOWPOS_UNDEFINED_MASK  =  0x1FFF0000,
 			SDL_WINDOWPOS_UNDEFINED_DISPLAY  = SDL_WINDOWPOS_UNDEFINED_MASK,
 			SDL_WINDOWPOS_UNDEFINED       =  SDL_WINDOWPOS_UNDEFINED_DISPLAY,
@@ -30,14 +80,12 @@ ffibuild.Build(
 		#include "SDL.h"
 		#include "SDL_syswm.h"
 		#include "SDL_vulkan.h"
-ss
 	]],
 		gcc_flags = "-I./include",
 		filter_library = function(path)
 			if path:ends_with("libSDL2") then return true end
 		end,
 		process_header = function(header)
-			vfs.Write("rofl.h", header)
 			local meta_data = ffibuild.GetMetaData(header)
 			meta_data.functions.SDL_main = nil
 			meta_data.structs["struct SDL_WindowShapeMode"] = nil

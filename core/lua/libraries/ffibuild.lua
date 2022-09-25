@@ -457,7 +457,7 @@ function ffibuild.GetMetaData(header)
 	end
 
 	local function is_function(str)
-		return str:find("^.-%b() %b() $")
+		return str:find("^.-%b() %b() $") and not str:find_simple("=")
 	end
 
 	local i = 1
@@ -2027,29 +2027,46 @@ do -- lua helper functions
 		return ok, err
 	end
 
+	local function execute(cmd)
+		local ok, dunno, code = os.execute(cmd)
+
+		if not ok or (code and code ~= 0) then
+			error(
+				"command '" .. cmd .. "' failed  " .. "ok=" .. tostring(ok) .. " dunno=" .. tostring(dunno) .. " code=" .. tostring(code),
+				2
+			)
+		end
+	end
+
 	function ffibuild.DockerBuild(info)
 		local name = info.name
 		logn("building ", name, "...")
-		
-		local docker_name = "goluwa-ffibuild-" .. name
-
-		assert(fs.CreateDirectory(R"temp/" .. "ffibuild/" .. name, true))
-		local OUTPUT = R("temp/ffibuild/"..name.."/")
+		local docker_name = "goluwa-ffibuild-" .. name:lower()
+		assert(fs.CreateDirectory(R("temp/") .. "ffibuild/" .. name, true))
+		local OUTPUT = R("temp/ffibuild/" .. name .. "/")
 		vfs.Write(OUTPUT .. "goluwa_ffibuild_source.c", info.c_source)
 		local dockerfile = info.dockerfile
-
 		dockerfile = dockerfile .. "\n" .. "RUN ls\n"
 		dockerfile = dockerfile .. "\n" .. "COPY ./goluwa_ffibuild_source.c ./\n"
 		dockerfile = dockerfile .. "\n" .. "RUN gcc -xc -E -P " .. info.gcc_flags .. " goluwa_ffibuild_source.c > goluwa_ffibuild_source.h"
-
 		vfs.Write(OUTPUT .. "Dockerfile", dockerfile)
-
 		fs.PushWorkingDirectory(OUTPUT)
-		os.execute("docker build . -t "..docker_name)
-		os.execute("docker create --name "..docker_name.." "..docker_name..":latest") 
-		os.execute("docker cp "..docker_name..":/src/. .")
-		os.execute("docker rmi --force " .. docker_name)
+		local ok, err = pcall(function()
+			execute(
+				"docker build " .. (
+						info.nocache and
+						"--no-cache" or
+						""
+					) .. " . -t " .. docker_name
+			)
+			execute("docker container rm --force " .. docker_name)
+			execute("docker create --name " .. docker_name .. " " .. docker_name .. ":latest")
+			execute("docker cp " .. docker_name .. ":/src/. .")
+			execute("docker rmi --force " .. docker_name)
+		end)
 		fs.PopWorkingDirectory()
+
+		if not ok then error(err, 2) end
 
 		local dir = e.TEMP_FOLDER .. "ffibuild/" .. name .. "/"
 		local root = "os:" .. e.ROOT_FOLDER
@@ -2081,17 +2098,18 @@ do -- lua helper functions
 					to = git_dir .. "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. name
 				end
 
-
 				if vfs.IsDirectory(git_dir) then
 					vfs.CopyFile(path, to)
 					llog("%q was added to %q", path, to)
 				end
 
 				local to = addon_dir .. bin_path
+
 				if path:find_simple("/deps") then
 					local name = vfs.GetFileNameFromPath(path)
 					to = addon_dir .. "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. name
 				end
+
 				local ok, err = assert(vfs.CopyFileFileOnBoot(path, to))
 
 				if ok == "deferred" then
@@ -2212,13 +2230,13 @@ do -- lua helper functions
 					to = git_dir .. "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. name
 				end
 
-
 				if vfs.IsDirectory(git_dir) then
 					vfs.CopyFile(path, to)
 					llog("%q was added to %q", path, to)
 				end
 
 				local to = addon_dir .. bin_path
+
 				if git_dir:find_simple("/deps") then
 					local name = vfs.GetFileNameFromPath(path)
 					to = addon_dir .. "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. name
