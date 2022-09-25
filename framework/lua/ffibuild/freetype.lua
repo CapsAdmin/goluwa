@@ -1,8 +1,18 @@
-ffibuild.Build(
+ffibuild.DockerBuild(
 	{
 		name = "freetype",
-		url = "git://git.sv.nongnu.org/freetype/freetype2.git", -- --host=x86_64-w64-mingw32
-		cmd = "mkdir build && cd build && cmake .. -DBUILD_SHARED_LIBS=1 && make --jobs 32 && cd ../",
+		dockerfile = [[
+			FROM ubuntu:20.04
+			ARG DEBIAN_FRONTEND=noninteractive
+			ENV TZ=America/New_York
+			RUN apt-get update
+			RUN apt-get install -y git make cmake libx11-dev libpng-dev zlib1g-dev libbz2-dev libharfbuzz-dev tree libbrotli-dev
+
+			WORKDIR /src
+			RUN git clone git://git.sv.nongnu.org/freetype/freetype2.git --depth 1 .
+			RUN mkdir build && cd build && cmake .. -DBUILD_SHARED_LIBS=1 && make --jobs 32
+
+		]],
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 		strip_undefined_symbols = true,
 		c_source = [[
