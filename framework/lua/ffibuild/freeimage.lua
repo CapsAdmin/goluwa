@@ -1,8 +1,18 @@
-ffibuild.Build(
+ffibuild.DockerBuild(
 	{
 		name = "freeimage",
-		url = "https://svn.code.sf.net/p/freeimage/svn/FreeImage/trunk",
-		cmd = "make --jobs 32",
+		dockerfile = [[
+			FROM ubuntu:20.04
+			ARG DEBIAN_FRONTEND=noninteractive
+			ENV TZ=America/New_York
+			RUN apt-get update
+
+			RUN apt-get install -y subversion g++ make
+
+			WORKDIR /src
+			RUN svn checkout  --non-interactive --trust-server-cert https://svn.code.sf.net/p/freeimage/svn/FreeImage/trunk .
+			RUN make --jobs 32
+		]],
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 		c_source = [[#include "FreeImage.h"]],
 		gcc_flags = "-I./Source",
