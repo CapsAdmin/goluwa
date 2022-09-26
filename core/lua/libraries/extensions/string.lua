@@ -295,3 +295,35 @@ end
 function string.capitalize(self)
 	return self:sub(1, 1):upper() .. self:sub(2)
 end
+
+function string.transform_case(str, from, to)
+	if from == "fooBar" then
+		if to == "FooBar" then
+			return str:sub(1, 1):upper() .. str:sub(2)
+		elseif to == "foo_bar" then
+			return string.transform_case(str:sub(1, 1):upper() .. str:sub(2), "FooBar", "foo_bar")
+		end
+	elseif from == "FooBar" then
+		if to == "foo_bar" then
+			return str:gsub("(%l)(%u)", function(a, b)
+				return a .. "_" .. b:lower()
+			end):lower()
+		elseif to == "fooBar" then
+			return str:sub(1, 1):lower() .. str:sub(2)
+		end
+	elseif from == "foo_bar" then
+		if to == "FooBar" then
+			return ("_" .. str):gsub("_(%l)", function(s)
+				return s:upper()
+			end)
+		elseif to == "fooBar" then
+			return string.transform_case(string.transform_case(str, "foo_bar", "FooBar"), "FooBar", "fooBar")
+		end
+	elseif from == "Foo_Bar" then
+		return string.transform_case(("_" .. str):gsub("_(%u)", function(s)
+			return s:upper()
+		end), "FooBar", to)
+	end
+
+	return str
+end

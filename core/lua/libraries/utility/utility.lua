@@ -111,6 +111,33 @@ do
 	end
 end
 
+do
+	local function go(path, done)
+		local data = utility.GetLikelyLibraryDependencies(path)
+		local dir = vfs.GetFolderFromPath(R(path))
+
+		if WINDOWS then
+			for _, info in ipairs(data.dependencies) do
+				if info.status == "MISSING" and not done[info.name] then
+					local path = "C:/msys64/usr/bin/" .. info.name
+
+					if vfs.IsFile(path) then
+						done[info.name] = true
+						logn("\tfound ", info.name)
+						vfs.CopyFileFileOnBoot(path, dir .. info.name)
+						go(dir .. info.name, done)
+					end
+				end
+			end
+		end
+	end
+
+	function utility.FetchDependencies(path)
+		logn("finding missing libraries for ", vfs.GetFileNameFromPath(path))
+		return go(path, {})
+	end
+end
+
 function utility.AddPackageLoader(func, loaders)
 	loaders = loaders or package.loaders
 
@@ -461,6 +488,45 @@ do
 			tbl[func_name] = old
 			hooks[tag] = nil
 		end
+	end
+end
+
+function utility.SourceControlClone(str, dir)
+	assert(vfs.CreateDirectoriesFromPath("os:" .. dir))
+	local dir = R(dir)
+
+	if str:find("%.git$") then
+		local url, branch = str:match("(.-github%.com/.-/.-)/tree/(.+)%.git$")
+
+		if url then
+			str = url
+			branch = "-b " .. branch
+		end
+
+		branch = branch or ""
+
+		if vfs.IsDirectory(dir .. ".git") then
+			os.execute(print("git -C " .. dir .. " pull"))
+		else
+			os.execute(print("git clone " .. str .. " " .. dir .. " --depth 1 " .. branch .. " "))
+		end
+	elseif str:find("hg%.") then
+		local clone_, branch = str:match("(.+);(.+)")
+		str = clone_ or str
+
+		if branch then
+			os.execute("hg clone " .. str .. " " .. dir .. " -r " .. branch)
+		else
+			os.execute("hg clone " .. str .. " " .. dir)
+		end
+	elseif str:find("svn%.") or str:find("svn%:") then
+		if not system.OSCommandExists("svn") then
+			error("svn is not found in PATH")
+		end
+
+		os.execute("svn checkout " .. str .. " " .. dir)
+	else
+		os.execute(str)
 	end
 end
 

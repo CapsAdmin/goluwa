@@ -398,4 +398,79 @@ function system.GetCLICommand(cmd)
 	)
 end
 
+do
+	local function msys2(cmd, msys2_install)
+		msys2_install = msys2_install or "C:/msys64/"
+		local cd = fs.GetWorkingDirectory()
+		cd = cd:gsub("^(.):", function(drive)
+			return "/" .. drive:lower()
+		end)
+		fs.PushWorkingDirectory(msys2_install)
+		local ok, transformed_cmd = pcall(function()
+			local f = io.open("msys2_shell.cmd", "r")
+
+			if not f then error("could not find msys2") end
+
+			f:close()
+			return "usr\\bin\\bash.exe -l -c \"" .. "cd " .. cd .. ";" .. cmd .. "\""
+		end)
+		fs.PopWorkingDirectory()
+
+		if not ok then error(err) end
+
+		return transformed_cmd, msys2_install
+	end
+
+	if UNIX then
+		function system.UnixExecute(cmd, os_execute)
+			if os_execute then return os.execute(print(cmd)) end
+
+			local f, err = io.popen(cmd)
+
+			if not f then return f, err end
+
+			return f:read("*all")
+		end
+	end
+
+	if WINDOWS then
+		function system.UnixExecute(cmd, os_execute)
+			local transformed_cmd, cd = msys2(cmd)
+
+			if repl.started then
+				repl.Flush()
+				repl.Stop()
+			end
+
+			if os_execute then
+				fs.PushWorkingDirectory(cd)
+				os.setenv("MSYSTEM", "MINGW64")
+				local ok, err = os.execute(transformed_cmd)
+				fs.PopWorkingDirectory()
+
+				if repl.started then repl.Start() end
+
+				return ok, err
+			end
+
+			fs.PushWorkingDirectory(cd)
+			local f = io.popen(transformed_cmd)
+
+			if not f then
+				if repl.started then repl.Start() end
+
+				fs.PopWorkingDirectory()
+				return f, err
+			end
+
+			local str = f:read("*all")
+
+			if repl.started then repl.Start() end
+
+			fs.PopWorkingDirectory()
+			return str
+		end
+	end
+end
+
 return system

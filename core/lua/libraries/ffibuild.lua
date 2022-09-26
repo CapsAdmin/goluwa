@@ -1,144 +1,5 @@
 local ffibuild = _G.ffibuild or {}
 
-local function msys2(cmd, msys2_install)
-	msys2_install = msys2_install or "C:/msys64/"
-	local cd = fs.GetWorkingDirectory()
-	cd = cd:gsub("^(.):", function(drive)
-		return "/" .. drive:lower()
-	end)
-	fs.PushWorkingDirectory(msys2_install)
-	local ok, transformed_cmd = pcall(function()
-		local f = io.open("msys2_shell.cmd", "r")
-
-		if not f then error("could not find msys2") end
-
-		f:close()
-		return "usr\\bin\\bash.exe -l -c \"" .. "cd " .. cd .. ";" .. cmd .. "\""
-	end)
-	fs.PopWorkingDirectory()
-
-	if not ok then error(err) end
-
-	return transformed_cmd, msys2_install
-end
-
-do
-	local function go(path, done)
-		local data = utility.GetLikelyLibraryDependencies(path)
-		local dir = vfs.GetFolderFromPath(R(path))
-
-		if WINDOWS then
-			for _, info in ipairs(data.dependencies) do
-				if info.status == "MISSING" and not done[info.name] then
-					local path = "C:/msys64/usr/bin/" .. info.name
-
-					if vfs.IsFile(path) then
-						done[info.name] = true
-						logn("\tfound ", info.name)
-						vfs.CopyFileFileOnBoot(path, dir .. info.name)
-						go(dir .. info.name, done)
-					end
-				end
-			end
-		end
-	end
-
-	function ffibuild.FetchDependencies(path)
-		logn("finding missing libraries for ", vfs.GetFileNameFromPath(path))
-		return go(path, {})
-	end
-end
-
-if UNIX then
-	function ffibuild.UnixExecute(cmd, os_execute)
-		if os_execute then return os.execute(print(cmd)) end
-
-		local f, err = io.popen(cmd)
-
-		if not f then return f, err end
-
-		return f:read("*all")
-	end
-end
-
-if WINDOWS then
-	function ffibuild.UnixExecute(cmd, os_execute)
-		local transformed_cmd, cd = msys2(cmd)
-
-		if repl.started then
-			repl.Flush()
-			repl.Stop()
-		end
-
-		if os_execute then
-			fs.PushWorkingDirectory(cd)
-			os.setenv("MSYSTEM", "MINGW64")
-			local ok, err = os.execute(transformed_cmd)
-			fs.PopWorkingDirectory()
-
-			if repl.started then repl.Start() end
-
-			return ok, err
-		end
-
-		fs.PushWorkingDirectory(cd)
-		local f = io.popen(transformed_cmd)
-
-		if not f then
-			if repl.started then repl.Start() end
-
-			fs.PopWorkingDirectory()
-			return f, err
-		end
-
-		local str = f:read("*all")
-
-		if repl.started then repl.Start() end
-
-		fs.PopWorkingDirectory()
-		return str
-	end
-end
-
-function ffibuild.SourceControlClone(str, dir)
-	assert(vfs.CreateDirectoriesFromPath("os:" .. dir))
-	local dir = R(dir)
-
-	if str:find("%.git$") then
-		local url, branch = str:match("(.-github%.com/.-/.-)/tree/(.+)%.git$")
-
-		if url then
-			str = url
-			branch = "-b " .. branch
-		end
-
-		branch = branch or ""
-
-		if vfs.IsDirectory(dir .. ".git") then
-			os.execute(print("git -C " .. dir .. " pull"))
-		else
-			os.execute(print("git clone " .. str .. " " .. dir .. " --depth 1 " .. branch .. " "))
-		end
-	elseif str:find("hg%.") then
-		local clone_, branch = str:match("(.+);(.+)")
-		str = clone_ or str
-
-		if branch then
-			os.execute("hg clone " .. str .. " " .. dir .. " -r " .. branch)
-		else
-			os.execute("hg clone " .. str .. " " .. dir)
-		end
-	elseif str:find("svn%.") or str:find("svn%:") then
-		if not system.OSCommandExists("svn") then
-			error("svn is not found in PATH")
-		end
-
-		os.execute("svn checkout " .. str .. " " .. dir)
-	else
-		os.execute(str)
-	end
-end
-
 function ffibuild.GetSharedLibrariesInDirectory(dir)
 	local out = {}
 
@@ -158,155 +19,6 @@ function ffibuild.GetSharedLibrariesInDirectory(dir)
 	end
 
 	return out
-end
-
-function ffibuild.ManualBuild(name, clone, build, copy)
-	--os.execute("git --git-dir=./repo/.git pull")
-	local ext = jit.os == "OSX" and ".dylib" or ".so"
-	local f = io.open("lib" .. name .. ext, "r")
-
-	if not f then
-		ffibuild.Clone(clone)
-
-		if build then os.execute("cd repo && " .. build .. " && cd ..") end
-
-		if not copy then
-			-- there's an -o switch for cp but depending on which one you find first it doesn't work
-			-- so screw it
-			os.execute(
-				"cp $(find . -name 'lib" .. name .. "*" .. ext .. ".*' -type f -print -quit) lib" .. name .. ext
-			)
-			local f = io.open("lib" .. name .. ext, "r")
-
-			if not f then
-				os.execute(
-					"cp $(find . -name 'lib" .. name .. "*" .. ext .. "' -type f -print -quit) lib" .. name .. ext
-				)
-			else
-				f:close()
-			end
-		else
-			os.execute(copy)
-		end
-	else
-		f:close()
-	end
-end
-
-function ffibuild.NixBuild(data)
-	if not system.OSCommandExists("nix-build") then
-		error(
-			"you need to install the nix package manager for ffibuild.NixBuild to work. See https://nixos.org/nix/",
-			2
-		)
-	end
-
-	-- the output directory
-	local output_dir = fs.GetWorkingDirectory()
-	-- temporary filenames
-	local tmp_main = output_dir .. "/temp.c"
-	local tmp_out = "temp.p"
-	local tmp_nix = "temp.nix"
-	local build_phase
-	local build_phase_move
-
-	if data.src then
-		vfs.Write(tmp_main, data.src)
-		build_phase = [[buildPhase = ''
-			gcc -xc -E -P -c ]] .. tmp_main .. [[ -o temp.p
-		'';]]
-		build_phase_move = "mv temp.p $out/temp.p; cp -r ${lib.getDev " .. data.package_name .. "}/include/* $out/include/;"
-	else
-		build_phase = "buildPhase = ''echo no build phase'';"
-		build_phase_move = ""
-	end
-
-	local lib_name
-
-	if data.library_name and data.library_name:sub(-1) == "*" then
-		lib_name = data.library_name
-	else
-		if not data.library_name then
-			lib_name = "lib" .. data.package_name
-		else
-			lib_name = data.library_name
-		end
-
-		lib_name = lib_name .. "." .. (OSX and "dylib" or UNIX and "so" or WINDOWS and "dll")
-	end
-
-	-- temporary default.nix file
-	vfs.Write(
-		tmp_nix,
-		[==[
-	with import <nixpkgs> {};
-
-	]==] .. (
-				data.custom2 or
-				""
-			) .. [==[
-
-	stdenv.mkDerivation {
-
-		]==] .. (
-				data.custom or
-				""
-			) .. [==[
-
-		name = "ffibuild_luajit";
-		src = ./.;
-		buildInputs = [ gcc ]==] .. (
-				data.build_inputs and
-				(
-					" " .. data.build_inputs .. " "
-				)
-				or
-				""
-			) .. "(" .. data.package_name .. ")" .. [==[ ];
-		]==] .. build_phase .. [==[
-		installPhase = ''
-			mkdir $out;
-			mkdir $out/include;
-			cp -L -r ${lib.getLib ]==] .. data.package_name .. [==[}/lib/]==] .. lib_name .. [==[ $out/.;
-
-      ]==] .. build_phase_move .. [==[
-		'';
-	}
-]==]
-	)
-
-	-- now execute nix-build
-	if not os.execute("nix-build --show-trace " .. tmp_nix) then
-		error("failed to execute nix-build", 2)
-	end
-
-	-- return the preprocessed main.c file
-	local str
-
-	if data.src then
-		str = vfs.Read("result/" .. tmp_out)
-		os.remove(tmp_main)
-	end
-
-	os.execute("cp -r -f result/* .")
-
-	--os.remove(tmp_nix)
-	if data.src then os.remove(tmp_out) end
-
-	return str
-end
-
-function ffibuild.ProcessSourceFileGCC(c_source, flags, dir)
-	flags = flags or ""
-	fs.PushWorkingDirectory(dir)
-	local temp_name = "ffibuild_gcc_process_temp.c"
-	local temp_file = assert(io.open(temp_name, "w"))
-	temp_file:write(c_source)
-	temp_file:close()
-	local header = assert(ffibuild.UnixExecute("gcc -xc -E -P " .. flags .. " " .. temp_name))
-	fs.PopWorkingDirectory()
-	os.remove(temp_name)
-	return header
 end
 
 function ffibuild.SplitHeader(header, ...)
@@ -616,7 +328,7 @@ function ffibuild.GetMetaData(header)
 			local capture = func_name:match(pattern)
 
 			if capture then
-				if from and to then capture = ffibuild.ChangeCase(capture, from, to) end
+				if from and to then capture = string.transform_case(capture, from, to) end
 
 				out[capture] = func_type
 			end
@@ -749,7 +461,7 @@ function ffibuild.GetMetaData(header)
 				end
 
 				if friendly_name then
-					if from then friendly_name = ffibuild.ChangeCase(friendly_name, from, to) end
+					if from then friendly_name = string.transform_case(friendly_name, from, to) end
 
 					if ffibuild.undefined_symbols and ffibuild.undefined_symbols[func_type.name] then
 						s = s .. "--"
@@ -841,27 +553,6 @@ function ffibuild.GetMetaData(header)
 		end
 	end
 
-	function meta_data:BuildLuaMetaTable(
-		meta_name,
-		declaration,
-		functions,
-		argument_translate,
-		return_translate,
-		clib,
-		ffi_metatype
-	)
-		return ffibuild.BuildLuaMetaTable(
-			meta_name,
-			declaration,
-			functions,
-			argument_translate,
-			return_translate,
-			self,
-			clib,
-			ffi_metatype
-		)
-	end
-
 	function meta_data:BuildLuaFunction(real_name, func_type, call_translate, return_translate, first_argument_self, clib)
 		return ffibuild.BuildLuaFunction(
 			real_name,
@@ -875,38 +566,6 @@ function ffibuild.GetMetaData(header)
 	end
 
 	return meta_data
-end
-
-function ffibuild.ChangeCase(str, from, to)
-	if from == "fooBar" then
-		if to == "FooBar" then
-			return str:sub(1, 1):upper() .. str:sub(2)
-		elseif to == "foo_bar" then
-			return ffibuild.ChangeCase(str:sub(1, 1):upper() .. str:sub(2), "FooBar", "foo_bar")
-		end
-	elseif from == "FooBar" then
-		if to == "foo_bar" then
-			return str:gsub("(%l)(%u)", function(a, b)
-				return a .. "_" .. b:lower()
-			end):lower()
-		elseif to == "fooBar" then
-			return str:sub(1, 1):lower() .. str:sub(2)
-		end
-	elseif from == "foo_bar" then
-		if to == "FooBar" then
-			return ("_" .. str):gsub("_(%l)", function(s)
-				return s:upper()
-			end)
-		elseif to == "fooBar" then
-			return ffibuild.ChangeCase(ffibuild.ChangeCase(str, "foo_bar", "FooBar"), "FooBar", "fooBar")
-		end
-	elseif from == "Foo_Bar" then
-		return ffibuild.ChangeCase(("_" .. str):gsub("_(%u)", function(s)
-			return s:upper()
-		end), "FooBar", to)
-	end
-
-	return str
 end
 
 do -- type metatables
@@ -1774,8 +1433,6 @@ do -- lua helper functions
 				local ok, val = pcall(function() return clib[k] end)
 				if ok then
 					return val
-				elseif clib_index then
-					return clib_index(k)
 				end
 			end})
 		end
@@ -1803,45 +1460,6 @@ do -- lua helper functions
 			end
 		end
 
-		return lua
-	end
-
-	function ffibuild.BuildLuaMetaTable(
-		meta_name,
-		declaration,
-		functions,
-		argument_translate,
-		return_translate,
-		meta_data,
-		clib,
-		ffi_metatype
-	)
-		local lua = ""
-		lua = lua .. "do\n"
-		lua = lua .. "\tlocal META = {\n"
-
-		if not ffi_metatype then
-			lua = lua .. "\t\tctype = ffi.typeof(\"" .. declaration .. "\"),\n"
-		end
-
-		for friendly_name, func_type in pairs(functions) do
-			if type(func_type) == "string" then
-				lua = lua .. "\t\t" .. friendly_name .. " = " .. func_type .. ",\n"
-			else
-				lua = lua .. "\t\t" .. friendly_name .. " = " .. ffibuild.BuildLuaFunction(func_type.name, func_type, argument_translate, return_translate, meta_data, true, clib) .. ",\n"
-			end
-		end
-
-		lua = lua .. "\t}\n"
-		lua = lua .. "\tMETA.__index = META\n"
-
-		if ffi_metatype then
-			lua = lua .. "\tffi.metatype(\"" .. declaration .. "\", META)\n"
-		else
-			lua = lua .. "\tmetatables." .. meta_name .. " = META\n"
-		end
-
-		lua = lua .. "end\n"
 		return lua
 	end
 
@@ -2181,144 +1799,6 @@ do -- lua helper functions
 		end
 	end
 
-	function ffibuild.Build(info)
-		logn("building ", info.name, "...")
-		local addon = info.addon
-		ffibuild.SetBuildName(info.name)
-		ffibuild.shared_library_name = info.shared_library_name
-		local dir = e.TEMP_FOLDER .. "ffibuild/" .. info.name .. "/"
-		local root = "os:" .. e.ROOT_FOLDER
-		ffibuild.SourceControlClone(info.url, dir)
-
-		if info.patches then
-			fs.PushWorkingDirectory(dir)
-
-			for _, patch in ipairs(info.patches) do
-				io.open("temp.patch", "wb"):write(patch)
-				os.execute("git apply --ignore-space-change --ignore-whitespace temp.patch")
-				os.remove("temp.patch")
-			end
-
-			fs.PopWorkingDirectory()
-		end
-
-		if not vfs.IsFile(dir .. "ran_build") or info.force_build then
-			logn("running build command")
-			fs.PushWorkingDirectory(dir)
-			local ok, what, code = ffibuild.UnixExecute(info.cmd, true)
-
-			if not ok then
-				if info.clean then ffibuild.UnixExecute(info.clean, true) end
-			end
-
-			fs.PopWorkingDirectory()
-
-			if not ok then
-				llog("build failed, exited with code %s", code)
-
-				if os.getenv("GOLUWA_ARG_LINE"):starts_with("build") then
-					system.ShutDown(code)
-				end
-
-				return
-			end
-		end
-
-		for _, path in ipairs(ffibuild.GetSharedLibrariesInDirectory(dir)) do
-			local addon_dir = root .. addon .. "/"
-			local git_dir = root .. "__goluwa-binaries/" .. addon .. "/"
-			local res = not info.filter_library or info.filter_library(vfs.RemoveExtensionFromPath(path))
-
-			if res then
-				local name = (WINDOWS and "" or "lib") .. info.name
-
-				if name:starts_with("liblib") then name = name:sub(4) end
-
-				if res == true and info.filter_library then
-					name = vfs.RemoveExtensionFromPath(vfs.GetFileNameFromPath(path))
-				end
-
-				local relative_path = info.translate_path and info.translate_path(path) or name
-				local bin_path = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. relative_path .. "." .. vfs.GetSharedLibraryExtension()
-				llog("found %s", path)
-				logn(utility.GetLikelyLibraryDependenciesFormatted(path))
-				local to = git_dir .. bin_path
-
-				if git_dir:find_simple("/deps") then
-					local name = vfs.GetFileNameFromPath(path)
-					to = git_dir .. "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. name
-				end
-
-				if vfs.IsDirectory(git_dir) then
-					vfs.CopyFile(path, to)
-					llog("%q was added to %q", path, to)
-				end
-
-				local to = addon_dir .. bin_path
-
-				if git_dir:find_simple("/deps") then
-					local name = vfs.GetFileNameFromPath(path)
-					to = addon_dir .. "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. name
-				end
-
-				local ok, err = assert(vfs.CopyFileFileOnBoot(path, to))
-
-				if ok == "deferred" then
-					llog("%q will be replaced after restart", to)
-				else
-					llog("%q was added", to)
-				end
-
-				vfs.Write(dir .. "ran_build", "1")
-			end
-		end
-
-		if info.process_header then
-			local header = ffibuild.ProcessSourceFileGCC(info.c_source, info.gcc_flags, dir)
-
-			if #header == 0 then
-				logn("failed to process source:", info.c_source)
-				return
-			end
-
-			local header, meta_data = info.process_header(header)
-
-			if info.build_lua then
-				::again::
-
-				fs.PushWorkingDirectory(dir)
-				local lua = info.build_lua(header, meta_data)
-				fs.PopWorkingDirectory()
-				local name = info.lua_name or ffibuild.GetBuildName()
-
-				if
-					ffibuild.TestLibrary(lua, header) or
-					(
-						strip_undefined_symbols and
-						next(strip_undefined_symbols)
-					)
-				then
-					if info.strip_undefined_symbols and next(ffibuild.undefined_symbols) then
-						llog("rebuilding lua to get rid of undefined symbols")
-
-						goto again
-					else
-						ffibuild.undefined_symbols = nil
-					end
-
-					local dir = "os:" .. e.ROOT_FOLDER .. addon .. "/bin/shared/"
-					vfs.CreateDirectoriesFromPath(dir)
-					vfs.Write(dir .. name .. ".lua", lua)
-					logn("copied ", name .. ".lua", " to ", dir)
-					logn("successfully built ", name)
-				else
-					logn("failed to validate ", name)
-					vfs.Write("temp/last_ffibild_error.lua", lua)
-				end
-			end
-		end
-	end
-
 	function ffibuild.SetBuildName(name)
 		ffibuild.lib_name = name
 	end
@@ -2372,29 +1852,5 @@ do -- lua helper functions
 		return keywords[str] ~= nil
 	end
 end
-
-function ffibuild.PatchBinaries()
-	local root = "os:" .. e.ROOT_FOLDER
-	local git_dir = root .. "__goluwa-binaries/"
-
-	for _, path in ipairs(vfs.GetFilesRecursive(git_dir)) do
-		if path:ends_with(".so") then
-			local bin = vfs.Read(path)
-			bin = bin:gsub("(lib%w+%.so%.%d*)", function(name)
-				if
-					name:starts_with("libtls") or
-					name:starts_with("libcrypto") or
-					name:starts_with("libssl")
-				then
-					local start, stop = name:find(".so")
-					return name:sub(0, stop) .. ("\0"):rep(#name - stop)
-				end
-			end)
-			vfs.Write(path, bin)
-		end
-	end
-end
-
-if RELOAD then ffibuild.PatchBinaries() end
 
 return ffibuild

@@ -2,14 +2,6 @@ local ffi = require("ffi");local CLIB = ffi.C;ffi.cdef([[struct lua_State {};
 struct lua_Debug {int event;const char*name;const char*namewhat;const char*what;const char*source;int currentline;int nups;int linedefined;int lastlinedefined;char short_src[60];int i_ci;};
 struct luaL_Reg {const char*name;int(*func)(struct lua_State*);};
 struct luaL_Buffer {char*p;int lvl;struct lua_State*L;};
-int(lua_toboolean)(struct lua_State*,int);
-void(lua_pushcclosure)(struct lua_State*,int(*fn)(struct lua_State*),int);
-struct lua_State*(lua_newthread)(struct lua_State*);
-int(lua_yield)(struct lua_State*,int);
-unsigned long(lua_objlen)(struct lua_State*,int);
-int(lua_gc)(struct lua_State*,int,int);
-void(lua_insert)(struct lua_State*,int);
-void(lua_settop)(struct lua_State*,int);
 const char*(lua_typename)(struct lua_State*,int);
 struct lua_State*(lua_newstate)(void*(*f)(void*,void*,unsigned long,unsigned long),void*);
 int(lua_gettop)(struct lua_State*);
@@ -23,6 +15,7 @@ void(lua_pushinteger)(struct lua_State*,long);
 void(lua_pushstring)(struct lua_State*,const char*);
 void(lua_pushlightuserdata)(struct lua_State*,void*);
 int(lua_gethookcount)(struct lua_State*);
+int(luaL_error)(struct lua_State*,const char*,...);
 struct lua_State*(lua_tothread)(struct lua_State*,int);
 const char*(lua_setupvalue)(struct lua_State*,int,int);
 int(lua_isstring)(struct lua_State*,int);
@@ -35,79 +28,23 @@ int(lua_setfenv)(struct lua_State*,int);
 void(lua_gettable)(struct lua_State*,int);
 double(lua_tonumber)(struct lua_State*,int);
 const char*(lua_getupvalue)(struct lua_State*,int,int);
-void(luaL_buffinit)(struct lua_State*,struct luaL_Buffer*);
-double(luaL_optnumber)(struct lua_State*,int,double);
-int(luaL_loadbuffer)(struct lua_State*,const char*,unsigned long,const char*);
-void(luaL_unref)(struct lua_State*,int,int);
-int(luaL_execresult)(struct lua_State*,int);
-void(luaL_pushresult)(struct luaL_Buffer*);
-double(luaL_checknumber)(struct lua_State*,int);
-void(luaL_addstring)(struct luaL_Buffer*,const char*);
-const char*(luaL_gsub)(struct lua_State*,const char*,const char*,const char*);
-void(luaL_checktype)(struct lua_State*,int,int);
-char*(luaL_prepbuffer)(struct luaL_Buffer*);
-void(luaL_setmetatable)(struct lua_State*,const char*);
-void(luaL_traceback)(struct lua_State*,struct lua_State*,const char*,int);
-long(luaL_optinteger)(struct lua_State*,int,long);
-void(luaL_pushmodule)(struct lua_State*,const char*,int);
-void*(luaL_testudata)(struct lua_State*,int,const char*);
-long(luaL_checkinteger)(struct lua_State*,int);
-int(luaL_loadfilex)(struct lua_State*,const char*,const char*);
-int(luaL_loadstring)(struct lua_State*,const char*);
-int(luaL_ref)(struct lua_State*,int);
-int(luaL_error)(struct lua_State*,const char*,...);
-void(luaL_where)(struct lua_State*,int);
-struct lua_State*(luaL_newstate)();
-const char*(luaL_findtable)(struct lua_State*,int,const char*,int);
-void(luaL_checkany)(struct lua_State*,int);
-void(luaL_addlstring)(struct luaL_Buffer*,const char*,unsigned long);
-void(luaL_checkstack)(struct lua_State*,int,const char*);
 int(lua_isnumber)(struct lua_State*,int);
-int(luaL_loadbufferx)(struct lua_State*,const char*,unsigned long,const char*,const char*);
-void(luaL_register)(struct lua_State*,const char*,const struct luaL_Reg*);
-const char*(luaL_optlstring)(struct lua_State*,int,const char*,unsigned long*);
-int(luaL_checkoption)(struct lua_State*,int,const char*,const char*const lst);
-int(luaL_typerror)(struct lua_State*,int,const char*);
-int(luaL_argerror)(struct lua_State*,int,const char*);
-int(luaL_callmeta)(struct lua_State*,int,const char*);
-const char*(luaL_checklstring)(struct lua_State*,int,unsigned long*);
-int(luaL_getmetafield)(struct lua_State*,int,const char*);
-int(luaL_loadfile)(struct lua_State*,const char*);
 void(lua_call)(struct lua_State*,int,int);
-void*(luaL_checkudata)(struct lua_State*,int,const char*);
-void(luaL_openlibs)(struct lua_State*);
+int(luaL_callmeta)(struct lua_State*,int,const char*);
 void(lua_pushnil)(struct lua_State*);
-void(luaL_setfuncs)(struct lua_State*,const struct luaL_Reg*,int);
-void(luaL_addvalue)(struct luaL_Buffer*);
-void(luaL_openlib)(struct lua_State*,const char*,const struct luaL_Reg*,int);
 void(lua_createtable)(struct lua_State*,int,int);
-int(luaL_newmetatable)(struct lua_State*,const char*);
-int(luaL_fileresult)(struct lua_State*,int,const char*);
 void*(lua_newuserdata)(struct lua_State*,unsigned long);
-int(luaopen_math)(struct lua_State*);
 const double*(lua_version)(struct lua_State*);
 int(lua_getinfo)(struct lua_State*,const char*,struct lua_Debug*);
-int(luaopen_debug)(struct lua_State*);
-int(luaopen_table)(struct lua_State*);
-int(luaopen_jit)(struct lua_State*);
-int(luaopen_package)(struct lua_State*);
-int(luaopen_string_buffer)(struct lua_State*);
 long(lua_tointeger)(struct lua_State*,int);
-int(luaopen_bit)(struct lua_State*);
 void(lua_rawget)(struct lua_State*,int);
-int(luaopen_io)(struct lua_State*);
-int(luaopen_string)(struct lua_State*);
-int(luaopen_os)(struct lua_State*);
 void(lua_rawseti)(struct lua_State*,int,int);
-int(luaopen_base)(struct lua_State*);
 int(lua_getmetatable)(struct lua_State*,int);
 int(lua_type)(struct lua_State*,int);
 int(lua_rawequal)(struct lua_State*,int,int);
 int(lua_loadx)(struct lua_State*,const char*(*reader)(struct lua_State*,void*,unsigned long*),void*,const char*,const char*);
-void(lua_setfield)(struct lua_State*,int,const char*);
 void(lua_xmove)(struct lua_State*,struct lua_State*,int);
 int(*lua_tocfunction(struct lua_State*,int))(struct lua_State*);
-void*(*lua_getallocf(struct lua_State*,void**))(void*,void*,unsigned long,unsigned long);
 void*(lua_touserdata)(struct lua_State*,int);
 int(lua_cpcall)(struct lua_State*,int(*func)(struct lua_State*),void*);
 int(lua_status)(struct lua_State*);
@@ -136,7 +73,6 @@ int(lua_load)(struct lua_State*,const char*(*reader)(struct lua_State*,void*,uns
 void(lua_rawgeti)(struct lua_State*,int,int);
 long(lua_tointegerx)(struct lua_State*,int,int*);
 void*(lua_upvalueid)(struct lua_State*,int,int);
-int(luaopen_ffi)(struct lua_State*);
 int(*lua_atpanic(struct lua_State*,int(*panicf)(struct lua_State*)))(struct lua_State*);
 const char*(lua_setlocal)(struct lua_State*,const struct lua_Debug*,int);
 int(lua_next)(struct lua_State*,int);
@@ -146,6 +82,70 @@ double(lua_tonumberx)(struct lua_State*,int,int*);
 void(lua_copy)(struct lua_State*,int,int);
 const char*(lua_pushvfstring)(struct lua_State*,const char*,__builtin_va_list);
 void(lua_rawset)(struct lua_State*,int);
+void(luaL_where)(struct lua_State*,int);
+void(luaL_buffinit)(struct lua_State*,struct luaL_Buffer*);
+void(luaL_addvalue)(struct luaL_Buffer*);
+double(luaL_optnumber)(struct lua_State*,int,double);
+struct lua_State*(luaL_newstate)();
+int(luaL_loadbuffer)(struct lua_State*,const char*,unsigned long,const char*);
+void(luaL_addlstring)(struct luaL_Buffer*,const char*,unsigned long);
+void(luaL_unref)(struct lua_State*,int,int);
+int(luaL_fileresult)(struct lua_State*,int,const char*);
+int(luaL_execresult)(struct lua_State*,int);
+const char*(luaL_findtable)(struct lua_State*,int,const char*,int);
+void(luaL_pushresult)(struct luaL_Buffer*);
+int(luaL_ref)(struct lua_State*,int);
+double(luaL_checknumber)(struct lua_State*,int);
+void(luaL_setfuncs)(struct lua_State*,const struct luaL_Reg*,int);
+void(luaL_addstring)(struct luaL_Buffer*,const char*);
+const char*(luaL_gsub)(struct lua_State*,const char*,const char*,const char*);
+int(luaL_loadbufferx)(struct lua_State*,const char*,unsigned long,const char*,const char*);
+void(luaL_checktype)(struct lua_State*,int,int);
+void(luaL_checkany)(struct lua_State*,int);
+char*(luaL_prepbuffer)(struct luaL_Buffer*);
+void(luaL_setmetatable)(struct lua_State*,const char*);
+void(luaL_traceback)(struct lua_State*,struct lua_State*,const char*,int);
+void(luaL_checkstack)(struct lua_State*,int,const char*);
+long(luaL_optinteger)(struct lua_State*,int,long);
+int(luaL_loadfile)(struct lua_State*,const char*);
+void(luaL_pushmodule)(struct lua_State*,const char*,int);
+int(luaL_checkoption)(struct lua_State*,int,const char*,const char*const lst);
+void*(luaL_testudata)(struct lua_State*,int,const char*);
+void*(luaL_checkudata)(struct lua_State*,int,const char*);
+long(luaL_checkinteger)(struct lua_State*,int);
+int(luaL_newmetatable)(struct lua_State*,const char*);
+int(luaL_loadfilex)(struct lua_State*,const char*,const char*);
+int(luaL_loadstring)(struct lua_State*,const char*);
+const char*(luaL_optlstring)(struct lua_State*,int,const char*,unsigned long*);
+const char*(luaL_checklstring)(struct lua_State*,int,unsigned long*);
+int(luaL_argerror)(struct lua_State*,int,const char*);
+int(luaL_typerror)(struct lua_State*,int,const char*);
+int(luaL_getmetafield)(struct lua_State*,int,const char*);
+void(luaL_register)(struct lua_State*,const char*,const struct luaL_Reg*);
+void(luaL_openlib)(struct lua_State*,const char*,const struct luaL_Reg*,int);
+void*(*lua_getallocf(struct lua_State*,void**))(void*,void*,unsigned long,unsigned long);
+int(lua_yield)(struct lua_State*,int);
+int(lua_gc)(struct lua_State*,int,int);
+void(lua_setfield)(struct lua_State*,int,const char*);
+int(lua_toboolean)(struct lua_State*,int);
+void(lua_pushcclosure)(struct lua_State*,int(*fn)(struct lua_State*),int);
+void(luaL_openlibs)(struct lua_State*);
+int(luaopen_math)(struct lua_State*);
+int(luaopen_debug)(struct lua_State*);
+int(luaopen_table)(struct lua_State*);
+int(luaopen_jit)(struct lua_State*);
+int(luaopen_package)(struct lua_State*);
+int(luaopen_string_buffer)(struct lua_State*);
+int(luaopen_bit)(struct lua_State*);
+int(luaopen_io)(struct lua_State*);
+int(luaopen_string)(struct lua_State*);
+int(luaopen_os)(struct lua_State*);
+int(luaopen_base)(struct lua_State*);
+struct lua_State*(lua_newthread)(struct lua_State*);
+int(luaopen_ffi)(struct lua_State*);
+unsigned long(lua_objlen)(struct lua_State*,int);
+void(lua_insert)(struct lua_State*,int);
+void(lua_settop)(struct lua_State*,int);
 ]])
 local library = {}
 
@@ -156,8 +156,6 @@ local library = {}
 				local ok, val = pcall(function() return clib[k] end)
 				if ok then
 					return val
-				elseif clib_index then
-					return clib_index(k)
 				end
 			end})
 		end
@@ -165,14 +163,6 @@ local library = {}
 --====helper safe_clib_index====
 
 CLIB = SAFE_INDEX(CLIB)library = {
-	toboolean = CLIB.lua_toboolean,
-	pushcclosure = CLIB.lua_pushcclosure,
-	newthread = CLIB.lua_newthread,
-	yield = CLIB.lua_yield,
-	objlen = CLIB.lua_objlen,
-	gc = CLIB.lua_gc,
-	insert = CLIB.lua_insert,
-	settop = CLIB.lua_settop,
 	typename = CLIB.lua_typename,
 	newstate = CLIB.lua_newstate,
 	gettop = CLIB.lua_gettop,
@@ -212,10 +202,8 @@ CLIB = SAFE_INDEX(CLIB)library = {
 	type = CLIB.lua_type,
 	rawequal = CLIB.lua_rawequal,
 	loadx = CLIB.lua_loadx,
-	setfield = CLIB.lua_setfield,
 	xmove = CLIB.lua_xmove,
 	tocfunction = CLIB.lua_tocfunction,
-	getallocf = CLIB.lua_getallocf,
 	touserdata = CLIB.lua_touserdata,
 	cpcall = CLIB.lua_cpcall,
 	status = CLIB.lua_status,
@@ -253,52 +241,62 @@ CLIB = SAFE_INDEX(CLIB)library = {
 	copy = CLIB.lua_copy,
 	pushvfstring = CLIB.lua_pushvfstring,
 	rawset = CLIB.lua_rawset,
+	getallocf = CLIB.lua_getallocf,
+	yield = CLIB.lua_yield,
+	gc = CLIB.lua_gc,
+	setfield = CLIB.lua_setfield,
+	toboolean = CLIB.lua_toboolean,
+	pushcclosure = CLIB.lua_pushcclosure,
+	newthread = CLIB.lua_newthread,
+	objlen = CLIB.lua_objlen,
+	insert = CLIB.lua_insert,
+	settop = CLIB.lua_settop,
 }
 library.L = {
+	error = CLIB.luaL_error,
+	callmeta = CLIB.luaL_callmeta,
+	where = CLIB.luaL_where,
 	buffinit = CLIB.luaL_buffinit,
+	addvalue = CLIB.luaL_addvalue,
 	optnumber = CLIB.luaL_optnumber,
+	newstate = CLIB.luaL_newstate,
 	loadbuffer = CLIB.luaL_loadbuffer,
+	addlstring = CLIB.luaL_addlstring,
 	unref = CLIB.luaL_unref,
+	fileresult = CLIB.luaL_fileresult,
 	execresult = CLIB.luaL_execresult,
+	findtable = CLIB.luaL_findtable,
 	pushresult = CLIB.luaL_pushresult,
+	ref = CLIB.luaL_ref,
 	checknumber = CLIB.luaL_checknumber,
+	setfuncs = CLIB.luaL_setfuncs,
 	addstring = CLIB.luaL_addstring,
 	gsub = CLIB.luaL_gsub,
+	loadbufferx = CLIB.luaL_loadbufferx,
 	checktype = CLIB.luaL_checktype,
+	checkany = CLIB.luaL_checkany,
 	prepbuffer = CLIB.luaL_prepbuffer,
 	setmetatable = CLIB.luaL_setmetatable,
 	traceback = CLIB.luaL_traceback,
+	checkstack = CLIB.luaL_checkstack,
 	optinteger = CLIB.luaL_optinteger,
+	loadfile = CLIB.luaL_loadfile,
 	pushmodule = CLIB.luaL_pushmodule,
+	checkoption = CLIB.luaL_checkoption,
 	testudata = CLIB.luaL_testudata,
+	checkudata = CLIB.luaL_checkudata,
 	checkinteger = CLIB.luaL_checkinteger,
+	newmetatable = CLIB.luaL_newmetatable,
 	loadfilex = CLIB.luaL_loadfilex,
 	loadstring = CLIB.luaL_loadstring,
-	ref = CLIB.luaL_ref,
-	error = CLIB.luaL_error,
-	where = CLIB.luaL_where,
-	newstate = CLIB.luaL_newstate,
-	findtable = CLIB.luaL_findtable,
-	checkany = CLIB.luaL_checkany,
-	addlstring = CLIB.luaL_addlstring,
-	checkstack = CLIB.luaL_checkstack,
-	loadbufferx = CLIB.luaL_loadbufferx,
-	register = CLIB.luaL_register,
 	optlstring = CLIB.luaL_optlstring,
-	checkoption = CLIB.luaL_checkoption,
-	typerror = CLIB.luaL_typerror,
-	argerror = CLIB.luaL_argerror,
-	callmeta = CLIB.luaL_callmeta,
 	checklstring = CLIB.luaL_checklstring,
+	argerror = CLIB.luaL_argerror,
+	typerror = CLIB.luaL_typerror,
 	getmetafield = CLIB.luaL_getmetafield,
-	loadfile = CLIB.luaL_loadfile,
-	checkudata = CLIB.luaL_checkudata,
-	openlibs = CLIB.luaL_openlibs,
-	setfuncs = CLIB.luaL_setfuncs,
-	addvalue = CLIB.luaL_addvalue,
+	register = CLIB.luaL_register,
 	openlib = CLIB.luaL_openlib,
-	newmetatable = CLIB.luaL_newmetatable,
-	fileresult = CLIB.luaL_fileresult,
+	openlibs = CLIB.luaL_openlibs,
 }
 library.e = {
 	VERSION = "Lua 5.1",
