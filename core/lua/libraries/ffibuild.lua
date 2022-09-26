@@ -2062,6 +2062,13 @@ do -- lua helper functions
 		dockerfile = dockerfile .. "\n" .. "COPY ./goluwa_ffibuild_source.c ./\n"
 		dockerfile = dockerfile .. "\n" .. "RUN gcc -xc -E -P " .. info.gcc_flags .. " goluwa_ffibuild_source.c > goluwa_ffibuild_source.h"
 		vfs.Write(OUTPUT .. "Dockerfile", dockerfile)
+
+		if info.addfiles then
+			for k, v in pairs(info.addfiles) do
+				vfs.Write(OUTPUT .. k, v)
+			end
+		end
+
 		fs.PushWorkingDirectory(OUTPUT)
 		local ok, err = pcall(function()
 			execute(
