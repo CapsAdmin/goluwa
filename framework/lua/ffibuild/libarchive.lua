@@ -79,8 +79,8 @@ ffibuild.DockerBuild(
 					end
 				end})
 			]=]
-			s = s .. "library = " .. meta_data:BuildFunctions("^archive_(.+)", "foo_bar", "FooBar")
-			s = s .. "library.e = " .. meta_data:BuildEnums("^ARCHIVE_(.+)", "./libarchive/archive.h", "ARCHIVE_")
+			s = s .. "library = " .. meta_data:BuildLuaFunctions("^archive_(.+)", "foo_bar", "FooBar")
+			s = s .. "library.e = " .. meta_data:BuildLuaEnums("^ARCHIVE_(.+)", "./libarchive/archive.h", "ARCHIVE_")
 			s = s .. "library.clib = CLIB\n"
 			s = s .. "return library\n"
 			return s

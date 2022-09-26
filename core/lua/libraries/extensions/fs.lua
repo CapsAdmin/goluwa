@@ -99,22 +99,6 @@ function fs.CopyRecursively(from, to, verbose)
 	return true
 end
 
-function fs.GetFilesRecursive(path, blacklist)
-	local cb
-
-	if type(blacklist) == "string" then blacklist = {blacklist} end
-
-	if type(blacklist) == "table" then
-		cb = function(path)
-			for _, v in ipairs(blacklist) do
-				if path:ends_with(v) then return false end
-			end
-		end
-	end
-
-	return fs.get_files_recursive(path, cb)
-end
-
 do
 	function fs.NormalizePath(path, relative)
 		if not relative and not path:starts_with("/") and path:sub(2, 2) ~= ":" then

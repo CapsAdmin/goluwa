@@ -56,8 +56,8 @@ ffibuild.DockerBuild(
 					end
 				end})
 			]=]
-			s = s .. "library = " .. meta_data:BuildFunctions("^tls_(.+)")
-			s = s .. "library.e = " .. meta_data:BuildEnums("^TLS_(.+)", { "./include/tls.h" })
+			s = s .. "library = " .. meta_data:BuildLuaFunctions("^tls_(.+)")
+			s = s .. "library.e = " .. meta_data:BuildLuaEnums("^TLS_(.+)", { "./include/tls.h" })
 			s = s .. "library.clib = CLIB\n"
 			s = s .. "return library\n"
 			return s

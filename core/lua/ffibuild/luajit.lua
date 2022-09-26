@@ -32,9 +32,9 @@ local instructions = {
 				end
 			end})
 		]=]
-		s = s .. "library = " .. meta_data:BuildFunctions("^lua_(.+)")
-		s = s .. "library.L = " .. meta_data:BuildFunctions("^luaL_(.+)")
-		s = s .. "library.e = " .. meta_data:BuildEnums("^LUA_(.+)", { "./src/lua.h" })
+		s = s .. "library = " .. meta_data:BuildLuaFunctions("^lua_(.+)")
+		s = s .. "library.L = " .. meta_data:BuildLuaFunctions("^luaL_(.+)")
+		s = s .. "library.e = " .. meta_data:BuildLuaEnums("^LUA_(.+)", { "./src/lua.h" })
 		s = s .. "return library\n"
 		return s
 	end,

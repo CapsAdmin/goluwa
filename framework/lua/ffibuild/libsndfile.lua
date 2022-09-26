@@ -65,8 +65,8 @@ ffibuild.DockerBuild(
 				local CLIB = assert(ffi.load("sndfile"))
 				ffi.cdef([[]=] .. header .. [=[]])
 			]=]
-			s = s .. "library = " .. meta_data:BuildFunctions("^sf_(.+)", "foo_bar", "FooBar")
-			s = s .. "library.e = " .. meta_data:BuildEnums("^SF[CMD]?_(.+)")
+			s = s .. "library = " .. meta_data:BuildLuaFunctions("^sf_(.+)", "foo_bar", "FooBar")
+			s = s .. "library.e = " .. meta_data:BuildLuaEnums("^SF[CMD]?_(.+)")
 			s = s .. "library.clib = CLIB\n"
 			s = s .. "return library\n"
 			return s

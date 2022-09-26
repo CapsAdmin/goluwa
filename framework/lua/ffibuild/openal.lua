@@ -42,9 +42,14 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 				)
 			end,
 			build_lua = function(header, meta_data)
+				ffibuild.SetBuildName(lib_name)
+
+				-- seems to be windows only
+				meta_data.functions.alcReopenDeviceSOFT = nil
+
 				local s = [=[
 					local ffi = require("ffi")
-					local CLIB = assert(ffi.load("]=] .. lib_name .. [=["))
+					local CLIB = assert(ffi.load("openal"))
 					ffi.cdef([[]=] .. header .. [=[]])
 				]=]
 
@@ -72,7 +77,7 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 
 					s = s .. "}\n"
 				else
-					s = s .. "library = " .. meta_data:BuildFunctions("^" .. lib_name .. "(%u.+)")
+					s = s .. "library = " .. meta_data:BuildLuaFunctions("^" .. lib_name .. "(%u.+)")
 				end
 
 				local args = {}
@@ -81,7 +86,7 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 					list.insert(args, { "./include/AL/" .. name .. ".h", enum_name })
 				end
 
-				local enums = meta_data:BuildEnums("^" .. enum_name .. "(.+)", args)
+				local enums = meta_data:BuildLuaEnums("^" .. enum_name .. "(.+)", args)
 				s = s .. "library.e = " .. enums
 
 				if lib_name == "al" then

@@ -62,6 +62,105 @@ local function match_type_declaration(str)
 	return declaration, name, array_size
 end
 
+local function normalize_header(header)
+	-- this assumes the header has been preprocessed with gcc -E -P
+	header = " " .. header
+	-- process all single quote strings
+	header = header:gsub("('%S+')", function(val)
+		return assert(loadstring("return (" .. val .. "):byte()"))()
+	end)
+	header = header:gsub("' '", string.byte(" "))
+	-- remove comments
+	header = header:gsub("/%*.-%*/", "")
+	-- TODO: remove things like #pragma
+	header = header:gsub("#.-\n", "")
+	-- normalize everything to have equal spacing even between punctation
+	header = header:gsub("([*%(%){}&%[%],;&|<>=])", " %1 ")
+	header = header:gsub("%s+", " ")
+	-- insert a newline after ;
+	header = header:gsub(";", ";\n")
+	-- this will explode structs and and whatnot so make sure we remove newlines inside {} and ()
+	header = header:gsub("%b{}", function(s)
+		return s:gsub("%s+", " ")
+	end)
+	header = header:gsub("%b()", function(s)
+		return s:gsub("%s+", " ")
+	end)
+	--TODO
+	-- remove compiler __attribute__
+	header = header:gsub("__%a-__ %b() ", "")
+	-- remove __extension__
+	header = header:gsub("__extension__ ", "")
+	-- remove __restrict
+	header = header:gsub("__restrict__ ", "")
+	header = header:gsub("__restrict", "")
+	header = header:gsub("__max_align_..", "")
+	-- remove volatile
+	header = header:gsub(" volatile ", " ")
+	-- clang specific
+	header = header:gsub(" _Nullable ", " ")
+	-- remove inline functions
+	header = header:gsub(" static __inline.-%b().-%b{}", "")
+	header = header:gsub(" static inline.-%b().-%b{}", "")
+	header = header:gsub(" extern __inline.-%b().-%b{}", "")
+	header = header:gsub(" extern inline.-%b().-%b{}", "")
+	header = header:gsub(" inline.-%b().-%b{}", "")
+	-- remove namespaces
+	header = header:gsub(" namespace.-%b{}", "")
+	-- int foo(void); >> int foo();
+	header = header:gsub(" %( void %) ", " ( ) ")
+	-- TODO: support more than 2 definitions
+	-- struct foo {} foo_t, * pfoo_t;
+	-- >>
+	-- struct foo {} foo_t;
+	-- struct foo {} * pfoo_t;
+	header = header:gsub("typedef %a- [%a%d_]+ %b{} [^;]- ;", function(statement)
+		if statement:find(",") then
+			local tag, huh = statement:match("^typedef (%a- [%a%d_]+) %b{} .+,(.+);$")
+
+			if tag then
+				return statement:match("(typedef %a- [%a%d_]+ %b{} .-),") .. ";\n" .. "typedef " .. tag .. huh .. ";"
+			end
+		end
+	end)
+	-- void * foo ( int , int ) >> void * ( foo ) ( int , int )
+	-- this makes things easier to parse
+	header = header:gsub("([^\n]-) ([%a%d_]+) (%b() ;)", function(a, b, c)
+		local line = a .. " ( " .. b .. " ) " .. c
+		line = line:gsub("%( %(", "(")
+		line = line:gsub("%) %)", ")")
+		return line
+	end)
+	-- extern int foo, bar, faz;
+	-- >>
+	-- extern int foo;
+	-- extern int bar;
+	-- extern int faz;
+	header = header:gsub("extern (.-);", function(s)
+		if s:find(",", nil, true) and
+			not s:find("(", nil, true)
+			and
+			not s:find("{", nil, true)
+		then
+			local names = {}
+			s = s .. ", "
+			s = s:gsub(" ([%a%d_]+) ,", function(name)
+				list.insert(names, name)
+				return ""
+			end)
+			local new_str = ""
+
+			for _, name in ipairs(names) do
+				new_str = new_str .. " extern " .. s .. name .. " ;\n"
+			end
+
+			return new_str:sub(2, -2) -- get rid of exessive whitespace
+		end
+	end)
+
+	return header
+end
+
 function ffibuild.GetMetaData(header)
 	local meta_data = {
 		functions = {},
@@ -73,102 +172,8 @@ function ffibuild.GetMetaData(header)
 		global_enums = {},
 	}
 
-	do -- cleanup header
-		-- this assumes the header has been preprocessed with gcc -E -P
-		header = " " .. header
-		-- process all single quote strings
-		header = header:gsub("('%S+')", function(val)
-			return assert(loadstring("return (" .. val .. "):byte()"))()
-		end)
-		header = header:gsub("' '", string.byte(" "))
-		-- remove comments
-		header = header:gsub("/%*.-%*/", "")
-		-- TODO: remove things like #pragma
-		header = header:gsub("#.-\n", "")
-		-- normalize everything to have equal spacing even between punctation
-		header = header:gsub("([*%(%){}&%[%],;&|<>=])", " %1 ")
-		header = header:gsub("%s+", " ")
-		-- insert a newline after ;
-		header = header:gsub(";", ";\n")
-		-- this will explode structs and and whatnot so make sure we remove newlines inside {} and ()
-		header = header:gsub("%b{}", function(s)
-			return s:gsub("%s+", " ")
-		end)
-		header = header:gsub("%b()", function(s)
-			return s:gsub("%s+", " ")
-		end)
-		--TODO
-		-- remove compiler __attribute__
-		header = header:gsub("__%a-__ %b() ", "")
-		-- remove __extension__
-		header = header:gsub("__extension__ ", "")
-		-- remove __restrict
-		header = header:gsub("__restrict__ ", "")
-		header = header:gsub("__restrict", "")
-		header = header:gsub("__max_align_..", "")
-		-- remove volatile
-		header = header:gsub(" volatile ", " ")
-		-- clang specific
-		header = header:gsub(" _Nullable ", " ")
-		-- remove inline functions
-		header = header:gsub(" static __inline.-%b().-%b{}", "")
-		header = header:gsub(" static inline.-%b().-%b{}", "")
-		header = header:gsub(" extern __inline.-%b().-%b{}", "")
-		header = header:gsub(" extern inline.-%b().-%b{}", "")
-		header = header:gsub(" inline.-%b().-%b{}", "")
-		-- remove namespaces
-		header = header:gsub(" namespace.-%b{}", "")
-		-- int foo(void); >> int foo();
-		header = header:gsub(" %( void %) ", " ( ) ")
-		-- TODO: support more than 2 definitions
-		-- struct foo {} foo_t, * pfoo_t;
-		-- >>
-		-- struct foo {} foo_t;
-		-- struct foo {} * pfoo_t;
-		header = header:gsub("typedef %a- [%a%d_]+ %b{} [^;]- ;", function(statement)
-			if statement:find(",") then
-				local tag, huh = statement:match("^typedef (%a- [%a%d_]+) %b{} .+,(.+);$")
+	header = normalize_header(header)
 
-				if tag then
-					return statement:match("(typedef %a- [%a%d_]+ %b{} .-),") .. ";\n" .. "typedef " .. tag .. huh .. ";"
-				end
-			end
-		end)
-		-- void * foo ( int , int ) >> void * ( foo ) ( int , int )
-		-- this makes things easier to parse
-		header = header:gsub("([^\n]-) ([%a%d_]+) (%b() ;)", function(a, b, c)
-			local line = a .. " ( " .. b .. " ) " .. c
-			line = line:gsub("%( %(", "(")
-			line = line:gsub("%) %)", ")")
-			return line
-		end)
-		-- extern int foo, bar, faz;
-		-- >>
-		-- extern int foo;
-		-- extern int bar;
-		-- extern int faz;
-		header = header:gsub("extern (.-);", function(s)
-			if s:find(",", nil, true) and
-				not s:find("(", nil, true)
-				and
-				not s:find("{", nil, true)
-			then
-				local names = {}
-				s = s .. ", "
-				s = s:gsub(" ([%a%d_]+) ,", function(name)
-					list.insert(names, name)
-					return ""
-				end)
-				local new_str = ""
-
-				for _, name in ipairs(names) do
-					new_str = new_str .. " extern " .. s .. name .. " ;\n"
-				end
-
-				return new_str:sub(2, -2) -- get rid of exessive whitespace
-			end
-		end)
-	end
 
 	local function is_function(str)
 		return str:find("^.-%b() %b() $") and not str:find_simple("=")
@@ -184,11 +189,9 @@ function ffibuild.GetMetaData(header)
 
 	for line in header:gmatch(" (.-);\n") do
 		local extern
-		local typedef
-		local original_line = line
+
 
 		if line:find("^typedef") then
-			typedef = true
 			line = line:match("^typedef (.+)")
 
 			if is_function(line) then
@@ -199,7 +202,7 @@ function ffibuild.GetMetaData(header)
 				local content, alias = line:match("^(.+) ([%a%d_]+)")
 
 				if content:find("^struct ") or content:find("^union ") or content:find("^enum ") then
-					local tag, found = content:gsub(" %b{}", "")
+					local tag = content:gsub(" %b{}", "")
 
 					if not tag:find("%s") then
 						tag = tag .. " " .. alias
@@ -225,17 +228,13 @@ function ffibuild.GetMetaData(header)
 			line = line:match("^extern (.+)")
 		elseif line:find("^inline") then
 			line = nil
-			--elseif line:find("^static") then
-			--	print(line)
 		end
 
 		if line then
 			if is_function(line) then
-				print("FUNCTION", line)
 				local type = create_type("function", line:sub(0, -2), meta_data)
 				meta_data.functions[type.name] = type
 			elseif line:find("^enum") then
-				print("ENUM", line)
 				local tag, content = line:match("(enum [%a%d_]+) ({.+})")
 
 				if tag then
@@ -254,7 +253,6 @@ function ffibuild.GetMetaData(header)
 					list.insert(meta_data.global_enums, create_type("enums", content, meta_data))
 				end
 			elseif line:find("^struct") or line:find("^union") then
-				print("STRUCT/UNION", line)
 				local keyword = line:match("^([%a%d_]+)")
 				local tag, content = line:match("(" .. keyword .. " [%a%d_]+) ({.+})")
 
@@ -270,84 +268,24 @@ function ffibuild.GetMetaData(header)
 					tbl[tag] = create_type("struct", content, keyword == "union", meta_data)
 				end
 			elseif extern then
-				print("EXTERN", line)
 				local declaration, name, array_size = match_type_declaration(line:sub(0, -2))
 				meta_data.variables[name] = create_type("type", declaration, array_size)
 			end
-		else
-			print("UNHANDLED", original_line)
 		end
-
 		i = i + 1
-	end
-
-	function meta_data:GetStructTypes(pattern)
-		local out = {}
-
-		-- find all types that start with *pattern* and are also structs
-		for type_name, type in pairs(self.typedefs) do
-			local name = type_name:match(pattern)
-
-			if name and type:GetSubType() == "struct" then
-				list.insert(out, {
-					name = name,
-					type = type,
-				})
-			end
-		end
-
-		-- sort them by length to avoid functions like purple_>>conversation<<_foo_bar() to conflict with purple_>>conversation_im<<_foo_bar()
-		list.sort(out, function(a, b)
-			return #a.name > #b.name
-		end)
-
-		return out
-	end
-
-	function meta_data:GetFunctionsStartingWithType(type)
-		local out = {}
-
-		for func_name, func_type in pairs(self.functions) do
-			if func_type.arguments then
-				local evaluated = func_type.arguments[1]
-
-				if evaluated:GetBasicType(self) == type:GetBasicType(self) then
-					out[func_name] = func_type
-				end
-			end
-		end
-
-		return out
-	end
-
-	function meta_data:FindFunctions(pattern, from, to)
-		local out = {}
-
-		for func_name, func_type in pairs(self.functions) do
-			local capture = func_name:match(pattern)
-
-			if capture then
-				if from and to then capture = string.transform_case(capture, from, to) end
-
-				out[capture] = func_type
-			end
-		end
-
-		return out
 	end
 
 	function meta_data:BuildMinimalHeader(check_function, check_enum, keep_structs, iterate_all_enums)
 		local required = {}
-		local bottom = ""
-
+		local enum_header = {}
+		local function_header = {}
+		local type_header = {}
 		for func_name, func_type in pairs(self.functions) do
 			if not check_function or check_function(func_name, func_type) then
 				func_type:FetchRequired(self, required)
-				bottom = bottom .. func_type:GetDeclaration(self) .. ";\n"
+				list.insert(function_header, func_type:GetDeclaration(self) .. ";\n")
 			end
 		end
-
-		local top = ""
 
 		-- global enums
 		if #self.global_enums > 0 then
@@ -364,7 +302,7 @@ function ffibuild.GetMetaData(header)
 			end
 
 			if #str > 0 then
-				top = top .. "enum {" .. list.concat(str, "\n") .. "};"
+				list.insert(enum_header, "enum {" .. list.concat(str, "\n") .. "};")
 			end
 		end
 
@@ -373,15 +311,15 @@ function ffibuild.GetMetaData(header)
 			for name, enums in pairs(self.enums) do
 				local declaration = enums:GetDeclaration(self, check_enum)
 
-				if declaration then top = top .. declaration .. "\n" end
+				if declaration then list.insert(enum_header, declaration .. "\n") end
 			end
 		else
-			for _, type in pairs(required) do
+			for _, type in ipairs(required) do
 				if type:GetSubType() == "enum" then
 					local enums = self.enums[type:GetBasicType(self)]
 					local declaration = enums:GetDeclaration(self, check_enum)
 
-					if declaration then top = top .. declaration .. "\n" end
+					if declaration then list.insert(enum_header, declaration .. "\n") end
 				end
 			end
 		end
@@ -408,36 +346,52 @@ function ffibuild.GetMetaData(header)
 
 		required = temp
 
-		for _, val in ipairs(required) do
+		for _, val in pairs(required) do
 			local type = val.type
 			local basic_type = type:GetBasicType(self)
 
 			if type:GetSubType() == "struct" then
 				if keep_structs then
-					top = top .. basic_type .. " " .. self.structs[basic_type]:GetDeclaration(self) .. ";\n"
+					list.insert(type_header, basic_type .. " " .. self.structs[basic_type]:GetDeclaration(self) .. ";\n")
 				else
-					top = top .. basic_type .. " { };\n"
+					list.insert(type_header, basic_type .. " { };\n")
 				end
 			elseif type:GetSubType() == "union" then
 				if keep_structs then
-					top = top .. basic_type .. " " .. self.unions[basic_type]:GetDeclaration(self) .. ";\n"
+					list.insert(type_header, basic_type .. " " .. self.unions[basic_type]:GetDeclaration(self) .. ";\n")
 				else
-					top = top .. basic_type .. " { };\n"
+					list.insert(type_header, basic_type .. " { };\n")
 				end
 			end
 		end
 
-		local header = top .. bottom
+		table.sort(enum_header)
+		--table.sort(type_header)
+		table.sort(function_header)
+
+
+		local header = table.concat(enum_header) .. table.concat(type_header) .. table.concat(function_header)
 		--struct _GList { void * data; struct _GList * next; struct _GList * prev; };
 		header = header:gsub(" ([^%a%d%s_])", "%1"):gsub("([^%a%d%s_]) ", "%1")
 		--struct _GList{void*data;struct _GList*next;struct _GList*prev;};
 		return header, self
 	end
 
-	function meta_data:BuildFunctions(pattern, from, to, clib, callback)
+	function meta_data:BuildLuaFunctions(pattern, from, to, clib, callback)
 		local s = "{\n"
 
-		for func_name, func_type in pairs(self.functions) do
+		local functions = {}
+		for name, type in pairs(self.functions) do
+			list.insert(functions, { name = name, type = type })
+		end
+
+		table.sort(functions, function(a, b)
+			return a.name < b.name
+		end)
+
+		for _, func in pairs(functions) do
+			local func_type = func.type
+			local func_name = func.name
 			if not callback or callback(func_type.name) ~= false then
 				local friendly_name
 
@@ -512,7 +466,7 @@ function ffibuild.GetMetaData(header)
 			return key
 		end
 
-		function meta_data:BuildEnums(pattern, define_file, define_starts_with, group)
+		function meta_data:BuildLuaEnums(pattern, define_file, define_starts_with, group)
 			local s = "{\n"
 
 			for basic_type, type in pairs(self.enums) do
@@ -1781,6 +1735,26 @@ do -- lua helper functions
 	function ffibuild.IsKeyword(str)
 		return keywords[str] ~= nil
 	end
+end
+
+if RELOAD then
+	local lol = ""
+	for _, path in ipairs(fs.get_files_recursive("storage/temp/ffibuild")) do
+		if path:ends_with("goluwa_ffibuild_source.h") then
+			local f = assert(io.open(path))
+			local header = f:read("*all")
+			f:close()
+
+			lol = lol ..
+				ffibuild.GetMetaData(header):BuildMinimalHeader(function() return true end, function() return true end, true, true)
+		end
+	end
+
+
+	lol = "typedef __fd_mask uint32_t;\n" .. lol
+	vfs.Write("temp/ffibuild.h", lol)
+	local path = R "temp/ffibuild.h"
+	os.execute("luajit -e \"require('ffi').cdef(io.open('" .. path .. "'):read('*all'))\"")
 end
 
 return ffibuild

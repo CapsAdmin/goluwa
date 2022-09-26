@@ -1,4 +1,6 @@
-local ffi = require("ffi");local CLIB = assert(ffi.load("sndfile"));ffi.cdef([[enum{SF_FORMAT_WAV=65536,SF_FORMAT_AIFF=131072,SF_FORMAT_AU=196608,SF_FORMAT_RAW=262144,SF_FORMAT_PAF=327680,SF_FORMAT_SVX=393216,SF_FORMAT_NIST=458752,SF_FORMAT_VOC=524288,SF_FORMAT_IRCAM=655360,SF_FORMAT_W64=720896,SF_FORMAT_MAT4=786432,SF_FORMAT_MAT5=851968,SF_FORMAT_PVF=917504,SF_FORMAT_XI=983040,SF_FORMAT_HTK=1048576,SF_FORMAT_SDS=1114112,SF_FORMAT_AVR=1179648,SF_FORMAT_WAVEX=1245184,SF_FORMAT_SD2=1441792,SF_FORMAT_FLAC=1507328,SF_FORMAT_CAF=1572864,SF_FORMAT_WVE=1638400,SF_FORMAT_OGG=2097152,SF_FORMAT_MPC2K=2162688,SF_FORMAT_RF64=2228224,SF_FORMAT_MPEG=2293760,SF_FORMAT_PCM_S8=1,SF_FORMAT_PCM_16=2,SF_FORMAT_PCM_24=3,SF_FORMAT_PCM_32=4,SF_FORMAT_PCM_U8=5,SF_FORMAT_FLOAT=6,SF_FORMAT_DOUBLE=7,SF_FORMAT_ULAW=16,SF_FORMAT_ALAW=17,SF_FORMAT_IMA_ADPCM=18,SF_FORMAT_MS_ADPCM=19,SF_FORMAT_GSM610=32,SF_FORMAT_VOX_ADPCM=33,SF_FORMAT_NMS_ADPCM_16=34,SF_FORMAT_NMS_ADPCM_24=35,SF_FORMAT_NMS_ADPCM_32=36,SF_FORMAT_G721_32=48,SF_FORMAT_G723_24=49,SF_FORMAT_G723_40=50,SF_FORMAT_DWVW_12=64,SF_FORMAT_DWVW_16=65,SF_FORMAT_DWVW_24=66,SF_FORMAT_DWVW_N=67,SF_FORMAT_DPCM_8=80,SF_FORMAT_DPCM_16=81,SF_FORMAT_VORBIS=96,SF_FORMAT_OPUS=100,SF_FORMAT_ALAC_16=112,SF_FORMAT_ALAC_20=113,SF_FORMAT_ALAC_24=114,SF_FORMAT_ALAC_32=115,SF_FORMAT_MPEG_LAYER_I=128,SF_FORMAT_MPEG_LAYER_II=129,SF_FORMAT_MPEG_LAYER_III=130,SF_ENDIAN_FILE=0,SF_ENDIAN_LITTLE=268435456,SF_ENDIAN_BIG=536870912,SF_ENDIAN_CPU=805306368,SF_FORMAT_SUBMASK=65535,SF_FORMAT_TYPEMASK=268369920,SF_FORMAT_ENDMASK=805306368,
+				local ffi = require("ffi")
+				local CLIB = assert(ffi.load("sndfile"))
+				ffi.cdef([[enum{SF_FORMAT_WAV=65536,SF_FORMAT_AIFF=131072,SF_FORMAT_AU=196608,SF_FORMAT_RAW=262144,SF_FORMAT_PAF=327680,SF_FORMAT_SVX=393216,SF_FORMAT_NIST=458752,SF_FORMAT_VOC=524288,SF_FORMAT_IRCAM=655360,SF_FORMAT_W64=720896,SF_FORMAT_MAT4=786432,SF_FORMAT_MAT5=851968,SF_FORMAT_PVF=917504,SF_FORMAT_XI=983040,SF_FORMAT_HTK=1048576,SF_FORMAT_SDS=1114112,SF_FORMAT_AVR=1179648,SF_FORMAT_WAVEX=1245184,SF_FORMAT_SD2=1441792,SF_FORMAT_FLAC=1507328,SF_FORMAT_CAF=1572864,SF_FORMAT_WVE=1638400,SF_FORMAT_OGG=2097152,SF_FORMAT_MPC2K=2162688,SF_FORMAT_RF64=2228224,SF_FORMAT_MPEG=2293760,SF_FORMAT_PCM_S8=1,SF_FORMAT_PCM_16=2,SF_FORMAT_PCM_24=3,SF_FORMAT_PCM_32=4,SF_FORMAT_PCM_U8=5,SF_FORMAT_FLOAT=6,SF_FORMAT_DOUBLE=7,SF_FORMAT_ULAW=16,SF_FORMAT_ALAW=17,SF_FORMAT_IMA_ADPCM=18,SF_FORMAT_MS_ADPCM=19,SF_FORMAT_GSM610=32,SF_FORMAT_VOX_ADPCM=33,SF_FORMAT_NMS_ADPCM_16=34,SF_FORMAT_NMS_ADPCM_24=35,SF_FORMAT_NMS_ADPCM_32=36,SF_FORMAT_G721_32=48,SF_FORMAT_G723_24=49,SF_FORMAT_G723_40=50,SF_FORMAT_DWVW_12=64,SF_FORMAT_DWVW_16=65,SF_FORMAT_DWVW_24=66,SF_FORMAT_DWVW_N=67,SF_FORMAT_DPCM_8=80,SF_FORMAT_DPCM_16=81,SF_FORMAT_VORBIS=96,SF_FORMAT_OPUS=100,SF_FORMAT_ALAC_16=112,SF_FORMAT_ALAC_20=113,SF_FORMAT_ALAC_24=114,SF_FORMAT_ALAC_32=115,SF_FORMAT_MPEG_LAYER_I=128,SF_FORMAT_MPEG_LAYER_II=129,SF_FORMAT_MPEG_LAYER_III=130,SF_ENDIAN_FILE=0,SF_ENDIAN_LITTLE=268435456,SF_ENDIAN_BIG=536870912,SF_ENDIAN_CPU=805306368,SF_FORMAT_SUBMASK=65535,SF_FORMAT_TYPEMASK=268369920,SF_FORMAT_ENDMASK=805306368,
 SFC_GET_LIB_VERSION=4096,SFC_GET_LOG_INFO=4097,SFC_GET_CURRENT_SF_INFO=4098,SFC_GET_NORM_DOUBLE=4112,SFC_GET_NORM_FLOAT=4113,SFC_SET_NORM_DOUBLE=4114,SFC_SET_NORM_FLOAT=4115,SFC_SET_SCALE_FLOAT_INT_READ=4116,SFC_SET_SCALE_INT_FLOAT_WRITE=4117,SFC_GET_SIMPLE_FORMAT_COUNT=4128,SFC_GET_SIMPLE_FORMAT=4129,SFC_GET_FORMAT_INFO=4136,SFC_GET_FORMAT_MAJOR_COUNT=4144,SFC_GET_FORMAT_MAJOR=4145,SFC_GET_FORMAT_SUBTYPE_COUNT=4146,SFC_GET_FORMAT_SUBTYPE=4147,SFC_CALC_SIGNAL_MAX=4160,SFC_CALC_NORM_SIGNAL_MAX=4161,SFC_CALC_MAX_ALL_CHANNELS=4162,SFC_CALC_NORM_MAX_ALL_CHANNELS=4163,SFC_GET_SIGNAL_MAX=4164,SFC_GET_MAX_ALL_CHANNELS=4165,SFC_SET_ADD_PEAK_CHUNK=4176,SFC_UPDATE_HEADER_NOW=4192,SFC_SET_UPDATE_HEADER_AUTO=4193,SFC_FILE_TRUNCATE=4224,SFC_SET_RAW_START_OFFSET=4240,SFC_SET_DITHER_ON_WRITE=4256,SFC_SET_DITHER_ON_READ=4257,SFC_GET_DITHER_INFO_COUNT=4258,SFC_GET_DITHER_INFO=4259,SFC_GET_EMBED_FILE_INFO=4272,SFC_SET_CLIPPING=4288,SFC_GET_CLIPPING=4289,SFC_GET_CUE_COUNT=4301,SFC_GET_CUE=4302,SFC_SET_CUE=4303,SFC_GET_INSTRUMENT=4304,SFC_SET_INSTRUMENT=4305,SFC_GET_LOOP_INFO=4320,SFC_GET_BROADCAST_INFO=4336,SFC_SET_BROADCAST_INFO=4337,SFC_GET_CHANNEL_MAP_INFO=4352,SFC_SET_CHANNEL_MAP_INFO=4353,SFC_RAW_DATA_NEEDS_ENDSWAP=4368,SFC_WAVEX_SET_AMBISONIC=4608,SFC_WAVEX_GET_AMBISONIC=4609,SFC_RF64_AUTO_DOWNGRADE=4624,SFC_SET_VBR_ENCODING_QUALITY=4864,SFC_SET_COMPRESSION_LEVEL=4865,SFC_SET_OGG_PAGE_LATENCY_MS=4866,SFC_SET_OGG_PAGE_LATENCY=4867,SFC_GET_OGG_STREAM_SERIALNO=4870,SFC_GET_BITRATE_MODE=4868,SFC_SET_BITRATE_MODE=4869,SFC_SET_CART_INFO=5120,SFC_GET_CART_INFO=5121,SFC_SET_ORIGINAL_SAMPLERATE=5376,SFC_GET_ORIGINAL_SAMPLERATE=5377,SFC_TEST_IEEE_FLOAT_REPLACE=24577,SFC_SET_ADD_HEADER_PAD_CHUNK=4177,SFC_SET_ADD_DITHER_ON_WRITE=4208,SFC_SET_ADD_DITHER_ON_READ=4209,
 SF_STR_TITLE=1,SF_STR_COPYRIGHT=2,SF_STR_SOFTWARE=3,SF_STR_ARTIST=4,SF_STR_COMMENT=5,SF_STR_DATE=6,SF_STR_ALBUM=7,SF_STR_LICENSE=8,SF_STR_TRACKNUMBER=9,SF_STR_GENRE=16,
 SF_FALSE=0,SF_TRUE=1,SFM_READ=16,SFM_WRITE=32,SFM_RDWR=48,SF_AMBISONIC_NONE=64,SF_AMBISONIC_B_FORMAT=65,
@@ -12,46 +14,46 @@ struct SF_INFO {signed long frames;int samplerate;int channels;int format;int se
 struct SF_VIRTUAL_IO {signed long(*get_filelen)(void*);signed long(*seek)(signed long,int,void*);signed long(*read)(void*,signed long,void*);signed long(*write)(const void*,signed long,void*);signed long(*tell)(void*);};
 struct SF_CHUNK_INFO {char id[64];unsigned int id_size;unsigned int datalen;void*data;};
 struct SF_CHUNK_ITERATOR {};
-signed long(sf_writef_short)(struct sf_private_tag*,const short*,signed long);
+const char*(sf_error_number)(int);
 const char*(sf_get_string)(struct sf_private_tag*,int);
-signed long(sf_write_raw)(struct sf_private_tag*,const void*,signed long);
-signed long(sf_readf_short)(struct sf_private_tag*,short*,signed long);
-int(sf_get_chunk_data)(const struct SF_CHUNK_ITERATOR*,struct SF_CHUNK_INFO*);
-signed long(sf_read_raw)(struct sf_private_tag*,void*,signed long);
-int(sf_get_chunk_size)(const struct SF_CHUNK_ITERATOR*,struct SF_CHUNK_INFO*);
-void(sf_write_sync)(struct sf_private_tag*);
-signed long(sf_write_int)(struct sf_private_tag*,const int*,signed long);
-signed long(sf_write_short)(struct sf_private_tag*,const short*,signed long);
-struct SF_CHUNK_ITERATOR*(sf_next_chunk_iterator)(struct SF_CHUNK_ITERATOR*);
-struct SF_CHUNK_ITERATOR*(sf_get_chunk_iterator)(struct sf_private_tag*,const struct SF_CHUNK_INFO*);
-int(sf_set_chunk)(struct sf_private_tag*,const struct SF_CHUNK_INFO*);
+const char*(sf_strerror)(struct sf_private_tag*);
+const char*(sf_version_string)();
 int(sf_close)(struct sf_private_tag*);
-signed long(sf_write_double)(struct sf_private_tag*,const double*,signed long);
+int(sf_command)(struct sf_private_tag*,int,void*,int);
+int(sf_current_byterate)(struct sf_private_tag*);
+int(sf_error)(struct sf_private_tag*);
+int(sf_error_str)(struct sf_private_tag*,char*,unsigned long);
+int(sf_format_check)(const struct SF_INFO*);
+int(sf_get_chunk_data)(const struct SF_CHUNK_ITERATOR*,struct SF_CHUNK_INFO*);
+int(sf_get_chunk_size)(const struct SF_CHUNK_ITERATOR*,struct SF_CHUNK_INFO*);
+int(sf_perror)(struct sf_private_tag*);
+int(sf_set_chunk)(struct sf_private_tag*,const struct SF_CHUNK_INFO*);
+int(sf_set_string)(struct sf_private_tag*,int,const char*);
 signed long(sf_read_double)(struct sf_private_tag*,double*,signed long);
-signed long(sf_write_float)(struct sf_private_tag*,const float*,signed long);
 signed long(sf_read_float)(struct sf_private_tag*,float*,signed long);
 signed long(sf_read_int)(struct sf_private_tag*,int*,signed long);
-signed long(sf_writef_float)(struct sf_private_tag*,const float*,signed long);
-signed long(sf_readf_float)(struct sf_private_tag*,float*,signed long);
-signed long(sf_writef_int)(struct sf_private_tag*,const int*,signed long);
-int(sf_current_byterate)(struct sf_private_tag*);
-int(sf_set_string)(struct sf_private_tag*,int,const char*);
-int(sf_format_check)(const struct SF_INFO*);
-int(sf_command)(struct sf_private_tag*,int,void*,int);
-int(sf_error_str)(struct sf_private_tag*,char*,unsigned long);
-int(sf_perror)(struct sf_private_tag*);
-const char*(sf_error_number)(int);
-const char*(sf_strerror)(struct sf_private_tag*);
-int(sf_error)(struct sf_private_tag*);
-struct sf_private_tag*(sf_open_virtual)(struct SF_VIRTUAL_IO*,int,struct SF_INFO*,void*);
-struct sf_private_tag*(sf_open_fd)(int,int,struct SF_INFO*,int);
-struct sf_private_tag*(sf_open)(const char*,int,struct SF_INFO*);
-signed long(sf_readf_int)(struct sf_private_tag*,int*,signed long);
-signed long(sf_readf_double)(struct sf_private_tag*,double*,signed long);
-signed long(sf_writef_double)(struct sf_private_tag*,const double*,signed long);
+signed long(sf_read_raw)(struct sf_private_tag*,void*,signed long);
 signed long(sf_read_short)(struct sf_private_tag*,short*,signed long);
+signed long(sf_readf_double)(struct sf_private_tag*,double*,signed long);
+signed long(sf_readf_float)(struct sf_private_tag*,float*,signed long);
+signed long(sf_readf_int)(struct sf_private_tag*,int*,signed long);
+signed long(sf_readf_short)(struct sf_private_tag*,short*,signed long);
 signed long(sf_seek)(struct sf_private_tag*,signed long,int);
-const char*(sf_version_string)();
+signed long(sf_write_double)(struct sf_private_tag*,const double*,signed long);
+signed long(sf_write_float)(struct sf_private_tag*,const float*,signed long);
+signed long(sf_write_int)(struct sf_private_tag*,const int*,signed long);
+signed long(sf_write_raw)(struct sf_private_tag*,const void*,signed long);
+signed long(sf_write_short)(struct sf_private_tag*,const short*,signed long);
+signed long(sf_writef_double)(struct sf_private_tag*,const double*,signed long);
+signed long(sf_writef_float)(struct sf_private_tag*,const float*,signed long);
+signed long(sf_writef_int)(struct sf_private_tag*,const int*,signed long);
+signed long(sf_writef_short)(struct sf_private_tag*,const short*,signed long);
+struct SF_CHUNK_ITERATOR*(sf_get_chunk_iterator)(struct sf_private_tag*,const struct SF_CHUNK_INFO*);
+struct SF_CHUNK_ITERATOR*(sf_next_chunk_iterator)(struct SF_CHUNK_ITERATOR*);
+struct sf_private_tag*(sf_open)(const char*,int,struct SF_INFO*);
+struct sf_private_tag*(sf_open_fd)(int,int,struct SF_INFO*,int);
+struct sf_private_tag*(sf_open_virtual)(struct SF_VIRTUAL_IO*,int,struct SF_INFO*,void*);
+void(sf_write_sync)(struct sf_private_tag*);
 struct SF_FORMAT_INFO { int format ; const char * name ; const char * extension ;  };
 struct SF_DITHER_INFO { int type ; double level ; const char * name ;  };
 struct SF_EMBED_FILE_INFO { signed long offset ; signed long length ;  };
@@ -63,48 +65,47 @@ struct SF_BROADCAST_INFO { char description[ 256 ] ; char originator[ 32 ] ; cha
 struct SF_CART_TIMER { char usage[ 4 ] ; signed int value ;  };
 struct SF_CART_INFO { char version[ 4 ] ; char title[ 64 ] ; char artist[ 64 ] ; char cut_id[ 64 ] ; char client_id[ 64 ] ; char category[ 64 ] ; char classification[ 64 ] ; char out_cue[ 64 ] ; char start_date[ 10 ] ; char start_time[ 8 ] ; char end_date[ 10 ] ; char end_time[ 8 ] ; char producer_app_id[ 64 ] ; char producer_app_version[ 64 ] ; char user_def[ 64 ] ; signed int level_reference ; struct SF_CART_TIMER post_timers[ 8 ] ; char reserved[ 276 ] ; char url[ 1024 ] ; unsigned int tag_text_size ; char tag_text[ 256 ] ;  };
 ]])
-local library = {}
-library = {
-	WritefShort = CLIB.sf_writef_short,
-	GetString = CLIB.sf_get_string,
-	WriteRaw = CLIB.sf_write_raw,
-	ReadfShort = CLIB.sf_readf_short,
-	GetChunkData = CLIB.sf_get_chunk_data,
-	ReadRaw = CLIB.sf_read_raw,
-	GetChunkSize = CLIB.sf_get_chunk_size,
-	WriteSync = CLIB.sf_write_sync,
-	WriteInt = CLIB.sf_write_int,
-	WriteShort = CLIB.sf_write_short,
-	NextChunkIterator = CLIB.sf_next_chunk_iterator,
-	GetChunkIterator = CLIB.sf_get_chunk_iterator,
-	SetChunk = CLIB.sf_set_chunk,
+			library = {
 	Close = CLIB.sf_close,
-	WriteDouble = CLIB.sf_write_double,
+	Command = CLIB.sf_command,
+	CurrentByterate = CLIB.sf_current_byterate,
+	Error = CLIB.sf_error,
+	ErrorNumber = CLIB.sf_error_number,
+	ErrorStr = CLIB.sf_error_str,
+	FormatCheck = CLIB.sf_format_check,
+	GetChunkData = CLIB.sf_get_chunk_data,
+	GetChunkIterator = CLIB.sf_get_chunk_iterator,
+	GetChunkSize = CLIB.sf_get_chunk_size,
+	GetString = CLIB.sf_get_string,
+	NextChunkIterator = CLIB.sf_next_chunk_iterator,
+	Open = CLIB.sf_open,
+	OpenFd = CLIB.sf_open_fd,
+	OpenVirtual = CLIB.sf_open_virtual,
+	Perror = CLIB.sf_perror,
 	ReadDouble = CLIB.sf_read_double,
-	WriteFloat = CLIB.sf_write_float,
 	ReadFloat = CLIB.sf_read_float,
 	ReadInt = CLIB.sf_read_int,
-	WritefFloat = CLIB.sf_writef_float,
-	ReadfFloat = CLIB.sf_readf_float,
-	WritefInt = CLIB.sf_writef_int,
-	CurrentByterate = CLIB.sf_current_byterate,
-	SetString = CLIB.sf_set_string,
-	FormatCheck = CLIB.sf_format_check,
-	Command = CLIB.sf_command,
-	ErrorStr = CLIB.sf_error_str,
-	Perror = CLIB.sf_perror,
-	ErrorNumber = CLIB.sf_error_number,
-	Strerror = CLIB.sf_strerror,
-	Error = CLIB.sf_error,
-	OpenVirtual = CLIB.sf_open_virtual,
-	OpenFd = CLIB.sf_open_fd,
-	Open = CLIB.sf_open,
-	ReadfInt = CLIB.sf_readf_int,
-	ReadfDouble = CLIB.sf_readf_double,
-	WritefDouble = CLIB.sf_writef_double,
+	ReadRaw = CLIB.sf_read_raw,
 	ReadShort = CLIB.sf_read_short,
+	ReadfDouble = CLIB.sf_readf_double,
+	ReadfFloat = CLIB.sf_readf_float,
+	ReadfInt = CLIB.sf_readf_int,
+	ReadfShort = CLIB.sf_readf_short,
 	Seek = CLIB.sf_seek,
+	SetChunk = CLIB.sf_set_chunk,
+	SetString = CLIB.sf_set_string,
+	Strerror = CLIB.sf_strerror,
 	VersionString = CLIB.sf_version_string,
+	WriteDouble = CLIB.sf_write_double,
+	WriteFloat = CLIB.sf_write_float,
+	WriteInt = CLIB.sf_write_int,
+	WriteRaw = CLIB.sf_write_raw,
+	WriteShort = CLIB.sf_write_short,
+	WriteSync = CLIB.sf_write_sync,
+	WritefDouble = CLIB.sf_writef_double,
+	WritefFloat = CLIB.sf_writef_float,
+	WritefInt = CLIB.sf_writef_int,
+	WritefShort = CLIB.sf_writef_short,
 }
 library.e = {
 	FORMAT_WAV = 65536,

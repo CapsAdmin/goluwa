@@ -91,8 +91,8 @@ ffibuild.DockerBuild(
 				local CLIB = assert(ffi.load("freetype"))
 				ffi.cdef([[]=] .. header .. [=[]])
 			]=]
-			s = s .. "local library = " .. meta_data:BuildFunctions("^FT_(.+)", "Foo_Bar", "FooBar")
-			s = s .. "library.e = " .. meta_data:BuildEnums("^FT_(.+)")
+			s = s .. "local library = " .. meta_data:BuildLuaFunctions("^FT_(.+)", "Foo_Bar", "FooBar")
+			s = s .. "library.e = " .. meta_data:BuildLuaEnums("^FT_(.+)")
 			s = s .. "local error_code_to_str = {\n"
 
 			for _, enums in pairs(meta_data.global_enums) do

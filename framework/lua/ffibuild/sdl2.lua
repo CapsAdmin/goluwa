@@ -118,9 +118,8 @@ ffibuild.DockerBuild(
 				end})
 			]=]
 
-			s = s .. "CLIB = SAFE_INDEX(CLIB)"
-			s = s .. "library = " .. meta_data:BuildFunctions("^SDL_(.+)")
-			s = s .. "library.e = " .. meta_data:BuildEnums("^SDL_(.+)", { "./include/SDL_hints.h" }, "SDL_")
+			s = s .. "library = " .. meta_data:BuildLuaFunctions("^SDL_(.+)")
+			s = s .. "library.e = " .. meta_data:BuildLuaEnums("^SDL_(.+)", { "./include/SDL_hints.h" }, "SDL_")
 			s = s .. [[
 		function library.CreateVulkanSurface(window, instance)
 			local box = ffi.new("struct VkSurfaceKHR_T * [1]")

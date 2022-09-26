@@ -36,7 +36,7 @@ ffibuild.DockerBuild(
 				local CLIB = assert(ffi.load("freeimage"))
 				ffi.cdef([[]=] .. header .. [=[]])
 			]=]
-			s = s .. "local library = " .. meta_data:BuildFunctions("^FreeImage_(.+)")
+			s = s .. "local library = " .. meta_data:BuildLuaFunctions("^FreeImage_(.+)")
 
 			do -- enums
 				s = s .. "library.e = {\n"

@@ -41,8 +41,8 @@ ffibuild.DockerBuild(
 				local CLIB = assert(ffi.load("vtflib"))
 				ffi.cdef([[]=] .. header .. [=[]])
 			]=]
-			s = s .. "library = " .. meta_data:BuildFunctions("^vl(.+)")
-			s = s .. "library.e = " .. meta_data:BuildEnums(nil, nil, nil, "^enum tagVTF")
+			s = s .. "library = " .. meta_data:BuildLuaFunctions("^vl(.+)")
+			s = s .. "library.e = " .. meta_data:BuildLuaEnums(nil, nil, nil, "^enum tagVTF")
 			s = s .. [[
 
 

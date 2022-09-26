@@ -38,8 +38,8 @@ ffibuild.DockerBuild(
 				local CLIB = assert(ffi.load("enet"))
 				ffi.cdef([[]=] .. header .. [=[]])
 			]=]
-			s = s .. "local library = " .. meta_data:BuildFunctions("^enet_(.+)", "foo_bar", "FooBar")
-			s = s .. "library.e = " .. meta_data:BuildEnums("^ENET_(.+)")
+			s = s .. "local library = " .. meta_data:BuildLuaFunctions("^enet_(.+)", "foo_bar", "FooBar")
+			s = s .. "library.e = " .. meta_data:BuildLuaEnums("^ENET_(.+)")
 			s = s .. "library.clib = CLIB\n"
 			s = s .. "return library\n"
 			return s

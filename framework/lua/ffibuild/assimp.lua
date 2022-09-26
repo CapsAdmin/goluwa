@@ -120,8 +120,8 @@ ffibuild.DockerBuild(
 					end
 				end})
 			]=]
-			s = s .. "local library = " .. meta_data:BuildFunctions("^ai(.+)")
-			s = s .. "library.e = " .. meta_data:BuildEnums("^ai.-_(%u.+)")
+			s = s .. "local library = " .. meta_data:BuildLuaFunctions("^ai(.+)")
+			s = s .. "library.e = " .. meta_data:BuildLuaEnums("^ai.-_(%u.+)")
 			s = s .. "library.clib = CLIB\n"
 			s = s .. "return library\n"
 			return s
