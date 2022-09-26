@@ -3,7 +3,8 @@
 
 	https://github.com/libarchive/libarchive/blob/master/.github/workflows/ci.yml#L54
 
-]] ffibuild.DockerBuild(
+]]
+ffibuild.DockerBuild(
 	{
 		name = "libarchive",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
@@ -67,11 +68,22 @@
 			)
 		end,
 		build_lua = function(header, meta_data)
-			local lua = ffibuild.StartLibrary(header, "safe_clib_index")
-			lua = lua .. "CLIB = SAFE_INDEX(CLIB)"
-			lua = lua .. "library = " .. meta_data:BuildFunctions("^archive_(.+)", "foo_bar", "FooBar")
-			lua = lua .. "library.e = " .. meta_data:BuildEnums("^ARCHIVE_(.+)", "./libarchive/archive.h", "ARCHIVE_")
-			return ffibuild.EndLibrary(lua)
+			local s = [=[
+				local ffi = require("ffi")
+				local lib = assert(ffi.load("libarchive"))
+				ffi.cdef([[]=] .. header .. [=[]])
+				local CLIB = setmetatable({}, {__index = function(_, k)
+					local ok, val = pcall(function() return lib[k] end)
+					if ok then
+						return val
+					end
+				end})
+			]=]
+			s = s .. "library = " .. meta_data:BuildFunctions("^archive_(.+)", "foo_bar", "FooBar")
+			s = s .. "library.e = " .. meta_data:BuildEnums("^ARCHIVE_(.+)", "./libarchive/archive.h", "ARCHIVE_")
+			s = s .. "library.clib = CLIB\n"
+			s = s .. "return library\n"
+			return s
 		end,
 	}
 )

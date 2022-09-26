@@ -33,10 +33,16 @@ ffibuild.DockerBuild(
 			)
 		end,
 		build_lua = function(header, meta_data)
-			local lua = ffibuild.StartLibrary(header)
-			lua = lua .. "library = " .. meta_data:BuildFunctions("^enet_(.+)", "foo_bar", "FooBar")
-			lua = lua .. "library.e = " .. meta_data:BuildEnums("^ENET_(.+)")
-			return ffibuild.EndLibrary(lua)
+			local s = [=[
+				local ffi = require("ffi")
+				local CLIB = assert(ffi.load("enet"))
+				ffi.cdef([[]=] .. header .. [=[]])
+			]=]
+			s = s .. "local library = " .. meta_data:BuildFunctions("^enet_(.+)", "foo_bar", "FooBar")
+			s = s .. "library.e = " .. meta_data:BuildEnums("^ENET_(.+)")
+			s = s .. "library.clib = CLIB\n"
+			s = s .. "return library\n"
+			return s
 		end,
 	}
 )

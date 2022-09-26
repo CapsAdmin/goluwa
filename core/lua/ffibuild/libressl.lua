@@ -23,8 +23,7 @@ ffibuild.DockerBuild(
 			#include <tls.h>
 		]],
 		filter_library = function(path)
-			if
-				path:ends_with("libtls") or
+			if path:ends_with("libtls") or
 				path:ends_with("libssl") or
 				path:ends_with("libcrypto")
 			then
@@ -46,13 +45,22 @@ ffibuild.DockerBuild(
 			)
 		end,
 		build_lua = function(header, meta_data)
-			ffibuild.SetBuildName("tls")
-			local lua = ffibuild.StartLibrary(header, "safe_clib_index")
-			ffibuild.SetBuildName("libtls")
-			lua = lua .. "CLIB = SAFE_INDEX(CLIB)"
-			lua = lua .. "library = " .. meta_data:BuildFunctions("^tls_(.+)")
-			lua = lua .. "library.e = " .. meta_data:BuildEnums("^TLS_(.+)", {"./include/tls.h"})
-			return ffibuild.EndLibrary(lua)
+			local s = [=[
+				local ffi = require("ffi")
+				local lib = assert(ffi.load("tls"))
+				ffi.cdef([[]=] .. header .. [=[]])
+				local CLIB = setmetatable({}, {__index = function(_, k)
+					local ok, val = pcall(function() return lib[k] end)
+					if ok then
+						return val
+					end
+				end})
+			]=]
+			s = s .. "library = " .. meta_data:BuildFunctions("^tls_(.+)")
+			s = s .. "library.e = " .. meta_data:BuildEnums("^TLS_(.+)", { "./include/tls.h" })
+			s = s .. "library.clib = CLIB\n"
+			s = s .. "return library\n"
+			return s
 		end,
 	}
 )

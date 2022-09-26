@@ -105,11 +105,23 @@ ffibuild.DockerBuild(
 			header = header:gsub("struct VkInstance_T {};\n", "")
 			header = header:gsub("struct VkInstance_T", "void")
 			header = header:gsub("struct VkSurfaceKHR_T", "void")
-			local lua = ffibuild.StartLibrary(header, "safe_clib_index")
-			lua = lua .. "CLIB = SAFE_INDEX(CLIB)"
-			lua = lua .. "library = " .. meta_data:BuildFunctions("^SDL_(.+)")
-			lua = lua .. "library.e = " .. meta_data:BuildEnums("^SDL_(.+)", {"./include/SDL_hints.h"}, "SDL_")
-			lua = lua .. [[
+
+			local s = [=[
+				local ffi = require("ffi")
+				local lib = assert(ffi.load("SDL2"))
+				ffi.cdef([[]=] .. header .. [=[]])
+				local CLIB = setmetatable({}, {__index = function(_, k)
+					local ok, val = pcall(function() return lib[k] end)
+					if ok then
+						return val
+					end
+				end})
+			]=]
+
+			s = s .. "CLIB = SAFE_INDEX(CLIB)"
+			s = s .. "library = " .. meta_data:BuildFunctions("^SDL_(.+)")
+			s = s .. "library.e = " .. meta_data:BuildEnums("^SDL_(.+)", { "./include/SDL_hints.h" }, "SDL_")
+			s = s .. [[
 		function library.CreateVulkanSurface(window, instance)
 			local box = ffi.new("struct VkSurfaceKHR_T * [1]")
 
@@ -147,7 +159,9 @@ ffibuild.DockerBuild(
 			return out
 		end
 		]]
-			return ffibuild.EndLibrary(lua)
+			s = s .. "library.clib = CLIB\n"
+			s = s .. "return library\n"
+			return s
 		end,
 	}
 )

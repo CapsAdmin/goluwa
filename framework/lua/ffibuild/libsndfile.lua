@@ -43,7 +43,7 @@ ffibuild.DockerBuild(
 
 				for name, struct in pairs(meta_data.structs) do
 					if name:find("^struct SF_") and not header:find(name) then
-						list.insert(extra, {str = name .. struct:GetDeclaration(meta_data) .. ";\n", pos = struct.i})
+						list.insert(extra, { str = name .. struct:GetDeclaration(meta_data) .. ";\n", pos = struct.i })
 					end
 				end
 
@@ -60,10 +60,16 @@ ffibuild.DockerBuild(
 				header = header .. str
 			end
 
-			local lua = ffibuild.StartLibrary(header)
-			lua = lua .. "library = " .. meta_data:BuildFunctions("^sf_(.+)", "foo_bar", "FooBar")
-			lua = lua .. "library.e = " .. meta_data:BuildEnums("^SF[CMD]?_(.+)")
-			return ffibuild.EndLibrary(lua)
+			local s = [=[
+				local ffi = require("ffi")
+				local CLIB = assert(ffi.load("sndfile"))
+				ffi.cdef([[]=] .. header .. [=[]])
+			]=]
+			s = s .. "library = " .. meta_data:BuildFunctions("^sf_(.+)", "foo_bar", "FooBar")
+			s = s .. "library.e = " .. meta_data:BuildEnums("^SF[CMD]?_(.+)")
+			s = s .. "library.clib = CLIB\n"
+			s = s .. "return library\n"
+			return s
 		end,
 	}
 )

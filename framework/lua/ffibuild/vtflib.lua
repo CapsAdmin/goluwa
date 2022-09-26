@@ -36,10 +36,14 @@ ffibuild.DockerBuild(
 			)
 		end,
 		build_lua = function(header, meta_data)
-			local lua = ffibuild.StartLibrary(header)
-			lua = lua .. "library = " .. meta_data:BuildFunctions("^vl(.+)")
-			lua = lua .. "library.e = " .. meta_data:BuildEnums(nil, nil, nil, "^enum tagVTF")
-			lua = lua .. [[
+			local s = [=[
+				local ffi = require("ffi")
+				local CLIB = assert(ffi.load("vtflib"))
+				ffi.cdef([[]=] .. header .. [=[]])
+			]=]
+			s = s .. "library = " .. meta_data:BuildFunctions("^vl(.+)")
+			s = s .. "library.e = " .. meta_data:BuildEnums(nil, nil, nil, "^enum tagVTF")
+			s = s .. [[
 
 
 		local function float(high, low)
@@ -190,7 +194,9 @@ ffibuild.DockerBuild(
 			}
 		end
 		]]
-			return ffibuild.EndLibrary(lua)
+			s = s .. "library.clib = CLIB\n"
+			s = s .. "return library\n"
+			return s
 		end,
 	}
 )

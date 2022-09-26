@@ -86,10 +86,14 @@ ffibuild.DockerBuild(
 			)
 		end,
 		build_lua = function(header, meta_data)
-			local lua = ffibuild.StartLibrary(header)
-			lua = lua .. "library = " .. meta_data:BuildFunctions("^FT_(.+)", "Foo_Bar", "FooBar")
-			lua = lua .. "library.e = " .. meta_data:BuildEnums("^FT_(.+)")
-			lua = lua .. "local error_code_to_str = {\n"
+			local s = [=[
+				local ffi = require("ffi")
+				local CLIB = assert(ffi.load("freetype"))
+				ffi.cdef([[]=] .. header .. [=[]])
+			]=]
+			s = s .. "local library = " .. meta_data:BuildFunctions("^FT_(.+)", "Foo_Bar", "FooBar")
+			s = s .. "library.e = " .. meta_data:BuildEnums("^FT_(.+)")
+			s = s .. "local error_code_to_str = {\n"
 
 			for _, enums in pairs(meta_data.global_enums) do
 				for _, enum in ipairs(enums.enums) do
@@ -97,14 +101,16 @@ ffibuild.DockerBuild(
 
 					if err then
 						err = err:gsub("_", " "):lower()
-						lua = lua .. "\t[" .. enum.val .. "] = \"" .. err .. "\",\n"
+						s = s .. "\t[" .. enum.val .. "] = \"" .. err .. "\",\n"
 					end
 				end
 			end
 
-			lua = lua .. "}\n"
-			lua = lua .. "function library.ErrorCodeToString(code) return error_code_to_str[code] end\n"
-			return ffibuild.EndLibrary(lua)
+			s = s .. "}\n"
+			s = s .. "function library.ErrorCodeToString(code) return error_code_to_str[code] end\n"
+			s = s .. "library.clib = CLIB\n"
+			s = s .. "return library\n"
+			return s
 		end,
 	}
 )

@@ -31,11 +31,15 @@ ffibuild.DockerBuild(
 			)
 		end,
 		build_lua = function(header, meta_data)
-			local lua = ffibuild.StartLibrary(header)
-			lua = lua .. "library = " .. meta_data:BuildFunctions("^FreeImage_(.+)")
+			local s = [=[
+				local ffi = require("ffi")
+				local CLIB = assert(ffi.load("freeimage"))
+				ffi.cdef([[]=] .. header .. [=[]])
+			]=]
+			s = s .. "local library = " .. meta_data:BuildFunctions("^FreeImage_(.+)")
 
 			do -- enums
-				lua = lua .. "library.e = {\n"
+				s = s .. "library.e = {\n"
 
 				for basic_type, type in pairs(meta_data.enums) do
 					for i, enum in ipairs(type.enums) do
@@ -68,15 +72,15 @@ ffibuild.DockerBuild(
 								friendly = friendly:gsub("^TMO", "TONEMAP_OPERATOR")
 							end
 
-							lua = lua .. "\t" .. friendly .. " = ffi.cast(\"" .. basic_type .. "\", \"" .. enum.key .. "\"),\n"
+							s = s .. "\t" .. friendly .. " = ffi.cast(\"" .. basic_type .. "\", \"" .. enum.key .. "\"),\n"
 						end
 					end
 				end
 
-				lua = lua .. "}\n"
+				s = s .. "}\n"
 			end
 
-			lua = lua .. [[
+			s = s .. [[
 		do
 			local function pow2ceil(n)
 				return 2 ^ math.ceil(math.log(n) / math.log(2))
@@ -269,7 +273,10 @@ ffibuild.DockerBuild(
 			return buffer_box[0], size_box[0]
 		end
 		]]
-			return ffibuild.EndLibrary(lua, header)
+			s = s .. "library.clib = CLIB\n"
+			s = s .. "return library\n"
+
+			return s
 		end,
 	}
 )

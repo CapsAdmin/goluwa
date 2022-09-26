@@ -21,13 +21,22 @@ local instructions = {
 		)
 	end,
 	build_lua = function(header, meta_data)
-		local lua = ffibuild.StartLibrary(header, "safe_clib_index", "ffi.C")
-		lua = lua .. "CLIB = SAFE_INDEX(CLIB)"
-		lua = lua .. "library = " .. meta_data:BuildFunctions("^lua_(.+)")
-		lua = lua .. "library.L = " .. meta_data:BuildFunctions("^luaL_(.+)")
-		lua = lua .. "library.e = " .. meta_data:BuildEnums("^LUA_(.+)", {"./src/lua.h"})
-		print(lua)
-		return ffibuild.EndLibrary(lua)
+		local s = [=[
+			local ffi = require("ffi")
+			local lib = ffi.C
+			ffi.cdef([[]=] .. header .. [=[]])
+			local CLIB = setmetatable({}, {__index = function(_, k)
+				local ok, val = pcall(function() return lib[k] end)
+				if ok then
+					return val
+				end
+			end})
+		]=]
+		s = s .. "library = " .. meta_data:BuildFunctions("^lua_(.+)")
+		s = s .. "library.L = " .. meta_data:BuildFunctions("^luaL_(.+)")
+		s = s .. "library.e = " .. meta_data:BuildEnums("^LUA_(.+)", { "./src/lua.h" })
+		s = s .. "return library\n"
+		return s
 	end,
 	dockerfile = [[
 		FROM ubuntu:20.04

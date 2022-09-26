@@ -25,7 +25,7 @@ function ffibuild.SplitHeader(header, ...)
 	header = header:gsub("/%*.-%*/", "")
 	local found = {}
 
-	for _, what in ipairs({...}) do
+	for _, what in ipairs({ ... }) do
 		local _, stop_pos = header:find(".-" .. what)
 
 		if stop_pos then stop_pos = stop_pos - #what end
@@ -148,8 +148,7 @@ function ffibuild.GetMetaData(header)
 		-- extern int bar;
 		-- extern int faz;
 		header = header:gsub("extern (.-);", function(s)
-			if
-				s:find(",", nil, true) and
+			if s:find(",", nil, true) and
 				not s:find("(", nil, true)
 				and
 				not s:find("{", nil, true)
@@ -226,8 +225,8 @@ function ffibuild.GetMetaData(header)
 			line = line:match("^extern (.+)")
 		elseif line:find("^inline") then
 			line = nil
-		--elseif line:find("^static") then
-		--	print(line)
+			--elseif line:find("^static") then
+			--	print(line)
 		end
 
 		if line then
@@ -394,11 +393,11 @@ function ffibuild.GetMetaData(header)
 
 			if type:GetSubType() == "struct" then
 				if self.structs[basic_type] then
-					list.insert(temp, {type = type, i = self.structs[basic_type].i})
+					list.insert(temp, { type = type, i = self.structs[basic_type].i })
 				end
 			elseif type:GetSubType() == "union" then
 				if self.unions[basic_type] then
-					list.insert(temp, {type = type, i = self.unions[basic_type].i})
+					list.insert(temp, { type = type, i = self.unions[basic_type].i })
 				end
 			end
 		end
@@ -467,7 +466,9 @@ function ffibuild.GetMetaData(header)
 						s = s .. "--"
 					end
 
-					s = s .. "\t" .. friendly_name .. " = " .. ffibuild.BuildLuaFunction(func_type.name, func_type, nil, nil, nil, clib) .. ",\n"
+					s = s ..
+						"\t" ..
+						friendly_name .. " = " .. ffibuild.BuildLuaFunction(func_type.name, func_type, nil, nil, nil, clib) .. ",\n"
 				end
 			end
 		end
@@ -571,7 +572,7 @@ end
 do -- type metatables
 	local metatables = {}
 
-	for _, name in ipairs({"function", "struct", "type", "var_arg", "enums"}) do
+	for _, name in ipairs({ "function", "struct", "type", "var_arg", "enums" }) do
 		local META = {}
 		META.__index = META
 		META.MetaType = name
@@ -605,7 +606,7 @@ do -- type metatables
 		local LR = function(operator, name)
 			local func = bit[name]
 			operators[operator] = setmetatable(
-				{find = operator:gsub("(.)", "%%%1"), replace = "%%_O['" .. operator .. "']%%"},
+				{ find = operator:gsub("(.)", "%%%1"), replace = "%%_O['" .. operator .. "']%%" },
 				{
 					__mod = function(a)
 						return setmetatable({}, {
@@ -620,7 +621,7 @@ do -- type metatables
 		local L = function(operator, name)
 			local func = bit[name]
 			operators[operator] = setmetatable(
-				{find = operator:gsub("(.)", "%%%1"), replace = "_O['" .. operator .. "']"},
+				{ find = operator:gsub("(.)", "%%%1"), replace = "_O['" .. operator .. "']" },
 				{
 					__call = function(_, a)
 						return func(a)
@@ -716,10 +717,9 @@ do -- type metatables
 					else
 						val = find_enum(current_meta_data, enums, val) or val
 
-						if
-							type(val) == "string" and
+						if type(val) == "string" and
 							(
-								val:sub(#val, #val):lower() == "u" or
+							val:sub(#val, #val):lower() == "u" or
 								val:sub(#val, #val):lower() == "l"
 							)
 						then
@@ -754,11 +754,11 @@ do -- type metatables
 					key = line
 				end
 
-				list.insert(enums, {key = key, val = num})
+				list.insert(enums, { key = key, val = num })
 				num = num + 1
 			end
 
-			return {enums = enums}
+			return { enums = enums }
 		end
 
 		function ENUMS:GetCopy()
@@ -869,7 +869,7 @@ do -- type metatables
 					list.insert(declaration, (type_replace or node.type):reverse())
 				end
 
-				for _, flag in ipairs({"signed", "unsigned", "const", "volatile"}) do
+				for _, flag in ipairs({ "signed", "unsigned", "const", "volatile" }) do
 					if node[flag] then list.insert(declaration, flag:reverse()) end
 				end
 
@@ -1058,15 +1058,14 @@ do -- type metatables
 					else
 						local declaration, name = arg:match("^([%a%d%s_%*]-) ([%a%d_]-)$")
 
-						if
-							not declaration or
+						if not declaration or
 							(
-								meta_data and
+							meta_data and
 								meta_data.typedefs[name]
 							)
 							or
 							(
-								meta_data and
+							meta_data and
 								meta_data.enums[arg]
 							)
 							or
@@ -1161,10 +1160,10 @@ do -- type metatables
 			end
 
 			return return_type:GetDeclaration(meta_data) .. "(" .. (
-					func_type or
+				func_type or
 					self.func_type
 				) .. " " .. (
-					func_name or
+				func_name or
 					self.name or
 					""
 				) .. ")" .. arg_line
@@ -1324,7 +1323,7 @@ do -- type metatables
 		end
 
 		function STRUCT:GetCopy()
-			local copy = {data = {}, struct = self.struct, i = self.i}
+			local copy = { data = {}, struct = self.struct, i = self.i }
 
 			for i, v in ipairs(self.data) do
 				copy.data[i] = v:GetCopy()
@@ -1399,78 +1398,14 @@ do -- type metatables
 end
 
 do -- lua helper functions
-	ffibuild.helper_functions = {
-		chars_to_string = [[
-	local function chars_to_string(ctyp)
-		if ctyp ~= nil then
-			return ffi.string(ctyp)
-		end
-		return ""
-	end]],
-		metatables = [[
-	local metatables = {}
-	local object_cache = {}
-
-	local function wrap_pointer(ptr, meta_name)
-		-- TODO
-		-- you should be able to use cdata as key and it would use the address
-		-- but apparently that doesn't work
-		local id = tostring(ptr)
-
-		if not object_cache[meta_name] then
-			object_cache[meta_name] = setmetatable({}, {__mode = "v"})
-		end
-
-		if not object_cache[meta_name][id] then
-			object_cache[meta_name][id] = setmetatable({ptr = ptr}, metatables[meta_name])
-		end
-
-		return object_cache[meta_name][id]
-	end]],
-		safe_clib_index = [[
-		function SAFE_INDEX(clib)
-			return setmetatable({}, {__index = function(_, k)
-				local ok, val = pcall(function() return clib[k] end)
-				if ok then
-					return val
-				end
-			end})
-		end
-	]],
-	}
-
-	function ffibuild.StartLibrary(ffi_header, ...)
-		local helpers = {...}
-		local lua = "local ffi = require(\"ffi\");" .. (
-				table.has_value(helpers, "ffi.C") and
-				"local CLIB = ffi.C;" or
-				"local CLIB = assert(ffi.load(\"" .. (
-					ffibuild.shared_library_name or
-					ffibuild.GetBuildName()
-				) .. "\"));"
-			) .. "ffi.cdef([[" .. ffi_header .. "]])\n" .. "local library = {}\n"
-
-		if ... then
-			for _, which in ipairs(helpers) do
-				if ffibuild.helper_functions[which] then
-					lua = lua .. "\n\n--====helper " .. which .. "====\n"
-					lua = lua .. ffibuild.helper_functions[which] .. "\n"
-					lua = lua .. "--====helper " .. which .. "====\n\n"
-				end
-			end
-		end
-
-		return lua
-	end
-
 	function ffibuild.BuildLuaFunction(
-		real_name,
-		func_type,
-		call_translate,
-		return_translate,
-		meta_data,
-		first_argument_self,
-		clib
+	    real_name,
+	    func_type,
+	    call_translate,
+	    return_translate,
+	    meta_data,
+	    first_argument_self,
+	    clib
 	)
 		clib = clib or "CLIB"
 		local s = ""
@@ -1479,9 +1414,9 @@ do -- lua helper functions
 			local parameters, call = func_type:GetParameters(
 				first_argument_self,
 				call_translate and
-					function(type, name)
-						return call_translate(type:GetDeclaration(meta_data), name, type, func_type) or name
-					end
+				function(type, name)
+					return call_translate(type:GetDeclaration(meta_data), name, type, func_type) or name
+				end
 			)
 			s = s .. "function(" .. parameters .. ") "
 			s = s .. "local v = " .. clib .. "." .. real_name .. "(" .. call .. ") "
@@ -1599,12 +1534,6 @@ do -- lua helper functions
 		return s
 	end
 
-	function ffibuild.EndLibrary(lua)
-		lua = lua .. "library.clib = CLIB\n"
-		lua = lua .. "return library\n"
-		return lua
-	end
-
 	function ffibuild.TestLibrary(lua, header)
 		ffibuild.undefined_symbols = {}
 		-- check if this works if possible
@@ -1662,7 +1591,8 @@ do -- lua helper functions
 
 		if not ok or (code and code ~= 0) then
 			error(
-				"command '" .. cmd .. "' failed  " .. "ok=" .. tostring(ok) .. " dunno=" .. tostring(dunno) .. " code=" .. tostring(code),
+				"command '" ..
+				cmd .. "' failed  " .. "ok=" .. tostring(ok) .. " dunno=" .. tostring(dunno) .. " code=" .. tostring(code),
 				2
 			)
 		end
@@ -1678,7 +1608,8 @@ do -- lua helper functions
 		local dockerfile = info.dockerfile
 		dockerfile = dockerfile .. "\n" .. "RUN ls\n"
 		dockerfile = dockerfile .. "\n" .. "COPY ./goluwa_ffibuild_source.c ./\n"
-		dockerfile = dockerfile .. "\n" .. "RUN gcc -xc -E -P " .. info.gcc_flags .. " goluwa_ffibuild_source.c > goluwa_ffibuild_source.h"
+		dockerfile = dockerfile ..
+			"\n" .. "RUN gcc -xc -E -P " .. info.gcc_flags .. " goluwa_ffibuild_source.c > goluwa_ffibuild_source.h"
 		vfs.Write(OUTPUT .. "Dockerfile", dockerfile)
 
 		if info.addfiles then
@@ -1691,10 +1622,10 @@ do -- lua helper functions
 		local ok, err = pcall(function()
 			execute(
 				"docker build " .. (
-						info.nocache and
-						"--no-cache" or
-						""
-					) .. " . -t " .. docker_name
+				info.nocache and
+					"--no-cache" or
+					""
+				) .. " . -t " .. docker_name
 			)
 			execute("docker container rm --force " .. docker_name)
 			execute("docker create --name " .. docker_name .. " " .. docker_name .. ":latest")
@@ -1725,7 +1656,8 @@ do -- lua helper functions
 				end
 
 				local relative_path = info.translate_path and info.translate_path(path) or name
-				local bin_path = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. relative_path .. "." .. vfs.GetSharedLibraryExtension()
+				local bin_path = "bin/" ..
+					jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. relative_path .. "." .. vfs.GetSharedLibraryExtension()
 				llog("found %s", path)
 				logn(utility.GetLikelyLibraryDependenciesFormatted(path))
 				local to = git_dir .. bin_path
@@ -1765,16 +1697,14 @@ do -- lua helper functions
 
 			if info.build_lua then
 				::again::
-
 				fs.PushWorkingDirectory(dir)
 				local lua = info.build_lua(header, meta_data)
 				fs.PopWorkingDirectory()
 				local name = info.lua_name or ffibuild.GetBuildName()
 
-				if
-					ffibuild.TestLibrary(lua, header) or
+				if ffibuild.TestLibrary(lua, header) or
 					(
-						strip_undefined_symbols and
+					strip_undefined_symbols and
 						next(strip_undefined_symbols)
 					)
 				then
