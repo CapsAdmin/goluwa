@@ -1,3 +1,152 @@
+-- NO C API FOR BULLET >:(
+do
+	return
+end
+
+local swig = [[
+%module bullet
+
+#define SIMD_FORCE_INLINE inline
+#define ATTRIBUTE_ALIGNED16(a) a
+#define ATTRIBUTE_ALIGNED64(a) a
+#define ATTRIBUTE_ALIGNED128(a) a
+
+%include BulletCollision/CollisionDispatch/btCollisionWorld.h
+%include BulletCollision/CollisionDispatch/btCollisionObject.h
+%include BulletCollision/CollisionShapes/btBoxShape.h
+%include BulletCollision/CollisionShapes/btSphereShape.h
+%include BulletCollision/CollisionShapes/btCapsuleShape.h
+%include BulletCollision/CollisionShapes/btCylinderShape.h
+%include BulletCollision/CollisionShapes/btConeShape.h
+%include BulletCollision/CollisionShapes/btStaticPlaneShape.h
+%include BulletCollision/CollisionShapes/btConvexHullShape.h
+%include BulletCollision/CollisionShapes/btTriangleMesh.h
+%include BulletCollision/CollisionShapes/btConvexTriangleMeshShape.h
+%include BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h
+%include BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h
+%include BulletCollision/CollisionShapes/btTriangleMeshShape.h
+%include BulletCollision/CollisionShapes/btTriangleIndexVertexArray.h
+%include BulletCollision/CollisionShapes/btCompoundShape.h
+%include BulletCollision/CollisionShapes/btTetrahedronShape.h
+%include BulletCollision/CollisionShapes/btEmptyShape.h
+%include BulletCollision/CollisionShapes/btMultiSphereShape.h
+%include BulletCollision/CollisionShapes/btUniformScalingShape.h
+%include BulletCollision/CollisionDispatch/btSphereSphereCollisionAlgorithm.h
+%include BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h
+%include BulletCollision/CollisionDispatch/btCollisionDispatcher.h
+%include BulletCollision/BroadphaseCollision/btSimpleBroadphase.h
+%include BulletCollision/BroadphaseCollision/btAxisSweep3.h
+%include BulletCollision/BroadphaseCollision/btDbvtBroadphase.h
+%include LinearMath/btQuaternion.h
+%include LinearMath/btTransform.h
+%include LinearMath/btDefaultMotionState.h
+%include LinearMath/btQuickprof.h
+%include LinearMath/btIDebugDraw.h
+%include LinearMath/btSerializer.h
+%include btBulletCollisionCommon.h
+%include BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h
+%include BulletDynamics/Dynamics/btSimpleDynamicsWorld.h
+%include BulletDynamics/Dynamics/btRigidBody.h
+%include BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h
+%include BulletDynamics/ConstraintSolver/btHingeConstraint.h
+%include BulletDynamics/ConstraintSolver/btConeTwistConstraint.h
+%include BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.h
+%include BulletDynamics/ConstraintSolver/btSliderConstraint.h
+%include BulletDynamics/ConstraintSolver/btGeneric6DofSpringConstraint.h
+%include BulletDynamics/ConstraintSolver/btUniversalConstraint.h
+%include BulletDynamics/ConstraintSolver/btHinge2Constraint.h
+%include BulletDynamics/ConstraintSolver/btGearConstraint.h
+%include BulletDynamics/ConstraintSolver/btFixedConstraint.h
+%include BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h
+%include BulletDynamics/Vehicle/btRaycastVehicle.h
+]]
+ffibuild.DockerBuild(
+	{
+		name = "bullet",
+		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
+		addfiles = {
+			["bullet.i"] = swig,
+		},
+		dockerfile = [[
+			FROM ubuntu:20.04
+
+			ARG DEBIAN_FRONTEND=noninteractive
+			ENV TZ=America/New_York
+			RUN apt-get update
+
+			RUN apt-get install -y \
+				build-essential  \
+				clang \
+				cmake \
+				curl \
+				git \
+				libgl-dev \
+				libglu-dev \
+				libpython3-dev \
+				lsb-release \
+				pkg-config \
+				python3 \
+				python3-dev \
+				python3-distutils \
+				software-properties-common \
+				sudo
+
+			WORKDIR /src
+
+			RUN git clone https://github.com/bulletphysics/bullet3 --depth 1 .
+			RUN cmake . && make -j 32
+
+			WORKDIR /src/src
+			
+			RUN git clone https://github.com/vadz/swig 
+			
+			WORKDIR /src/src/swig
+			RUN git checkout C
+			RUN apt-get install -y libpcre2-dev libbison-dev
+			RUN mkdir build
+			RUN cd build && cmake .. && make -j 32 && make install
+			WORKDIR /src/src
+
+			ADD bullet.i .
+			RUN swig -c++ -c bullet.i
+
+			WORKDIR /src
+		]],
+		c_source = [[#include "PhysicsClientC_API.h"]],
+		gcc_flags = "-I./examples/SharedMemory/",
+		filter_library = function(path)
+			if path:ends_with("sharedmembullet") then
+				print("LIBRARY", path)
+				return true
+			end
+		end,
+		process_header = function(header)
+			local meta_data = ffibuild.GetMetaData(header)
+			return meta_data:BuildMinimalHeader(
+				function(name)
+					return name:find("^b3")
+				end,
+				function(name)
+					return name:find("^b3")
+				end,
+				true,
+				true
+			)
+		end,
+		build_lua = function(header, meta_data)
+			local lua = ffibuild.StartLibrary(header, "safe_clib_index")
+			lua = lua .. "CLIB = SAFE_INDEX(CLIB)"
+			lua = lua .. "library = " .. meta_data:BuildFunctions("^b3(.+)")
+			lua = lua .. "library.e = " .. meta_data:BuildEnums("^b3(%u.+)")
+			return ffibuild.EndLibrary(lua, header)
+		end,
+	}
+)
+
+do
+	return
+end
+
 if render then
 	os.execute("cd ../ffibuild/bullet/ && bash make.sh")
 	os.execute("cp -f ../ffibuild/bullet/bullet.lua ./bullet.lua")
