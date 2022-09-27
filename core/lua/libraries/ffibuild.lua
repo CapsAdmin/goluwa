@@ -469,7 +469,29 @@ function ffibuild.GetMetaData(header)
 		function meta_data:BuildLuaEnums(pattern, define_file, define_starts_with, group)
 			local s = "{\n"
 
+			local enums = {}
+			local global_enums = {}
 			for basic_type, type in pairs(self.enums) do
+				list.insert(enums, { basic_type = basic_type, type = type })
+			end
+
+			table.sort(enums, function(a, b)
+				return a.basic_type < b.basic_type
+			end)
+			for _, enums in pairs(self.global_enums) do
+				for _, enum in ipairs(enums.enums) do
+					list.insert(global_enums, enum)
+				end
+			end
+
+			table.sort(global_enums, function(a, b)
+				return a.key < b.key
+			end)
+
+
+			for _, enum in pairs(enums) do
+				local basic_type = enum.basic_type
+				local type = enum.type
 				for _, enum in ipairs(type.enums) do
 					local key = get_enum_name(enum.key, pattern, group, basic_type)
 
@@ -480,26 +502,24 @@ function ffibuild.GetMetaData(header)
 			end
 
 			if not group then
-				for _, enums in pairs(self.global_enums) do
-					for _, enum in ipairs(enums.enums) do
-						local key = get_enum_name(enum.key, pattern, group, basic_type)
+				for _, enum in ipairs(global_enums) do
+					local key = get_enum_name(enum.key, pattern, group)
 
-						if key then s = s .. "\t" .. key .. " = " .. enum.val .. ",\n" end
-					end
+					if key then s = s .. "\t" .. key .. " = " .. enum.val .. ",\n" end
 				end
 			end
 
 			if type(define_file) == "table" then
 				for i, v in ipairs(define_file) do
 					if type(v) == "string" then
-						s = s .. ffibuild.BuildDefineEnums(v, define_starts_with, "\t", ",\n", pattern)
+						s = s .. ffibuild.BuildLuaEnums(v, define_starts_with, "\t", ",\n", pattern)
 					else
-						s = s .. ffibuild.BuildDefineEnums(v[1], v[2], "\t", ",\n", pattern)
+						s = s .. ffibuild.BuildLuaEnums(v[1], v[2], "\t", ",\n", pattern)
 					end
 				end
 			else
 				if define_file and define_starts_with then
-					s = s .. ffibuild.BuildDefineEnums(define_file, define_starts_with, "\t", ",\n", pattern)
+					s = s .. ffibuild.BuildLuaEnums(define_file, define_starts_with, "\t", ",\n", pattern)
 				end
 			end
 
@@ -1395,7 +1415,7 @@ do -- lua helper functions
 		return s
 	end
 
-	function ffibuild.BuildDefineEnums(file, starts_with, prepend, append, pattern)
+	function ffibuild.BuildLuaEnums(file, starts_with, prepend, append, pattern)
 		append = append or "\n"
 		local temp = assert(io.open(file))
 		local raw_header = temp:read("*all")
@@ -1751,7 +1771,7 @@ if RELOAD then
 	end
 
 
-	lol = "typedef __fd_mask uint32_t;\n" .. lol
+	lol = "typedef uint32_t __fd_mask;\n" .. lol
 	vfs.Write("temp/ffibuild.h", lol)
 	local path = R "temp/ffibuild.h"
 	os.execute("luajit -e \"require('ffi').cdef(io.open('" .. path .. "'):read('*all'))\"")

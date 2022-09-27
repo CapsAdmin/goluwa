@@ -34,7 +34,7 @@ void(alcProcessContext)(struct ALCcontext*);
 void(alcRenderSamplesSOFT)(struct ALCdevice*,void*,int);
 void(alcSuspendContext)(struct ALCcontext*);
 ]])
-				library = {
+				local library = {
 	CaptureCloseDevice = CLIB.alcCaptureCloseDevice,
 	CaptureOpenDevice = CLIB.alcCaptureOpenDevice,
 	CaptureSamples = CLIB.alcCaptureSamples,

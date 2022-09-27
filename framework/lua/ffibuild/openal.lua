@@ -62,9 +62,9 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 							end
 						end
 					]]
-					s = s .. "library = {\n"
+					s = s .. "local library = {\n"
 
-					for func_name, type in pairs(meta_data.functions) do
+					for func_name, type in table.sorted_pairs(meta_data.functions, function(a, b) return a.key < b.key end) do
 						local friendly = func_name:match("^" .. lib_name .. "(%u.+)")
 
 						if friendly then
@@ -77,7 +77,7 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 
 					s = s .. "}\n"
 				else
-					s = s .. "library = " .. meta_data:BuildLuaFunctions("^" .. lib_name .. "(%u.+)")
+					s = s .. "local library = " .. meta_data:BuildLuaFunctions("^" .. lib_name .. "(%u.+)")
 				end
 
 				local args = {}
@@ -109,6 +109,7 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 						for key, val in pairs(enums) do
 							local type = key:match(type_pattern)
 
+
 							if type then
 								type = type:lower()
 
@@ -120,7 +121,7 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 
 						for name, data in pairs(available) do
 							for key, val in pairs(enums) do
-								local param = key:match(name:upper() .. "_(.+)")
+								local param = key:match("^" .. name:upper() .. "_(.+)")
 
 								if param then
 									local name = param:lower()
@@ -147,15 +148,15 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 
 						s = s .. "library." .. type .. "Params = {\n"
 
-						for type, info in pairs(available) do
+						for type, info in table.sorted_pairs(available, function(a, b) return a.key < b.key end) do
 							s = s .. "\t" .. type .. " = {\n"
 							s = s .. "\t\t" .. "enum = " .. tostring(info.enum) .. ",\n"
 							s = s .. "\t\t" .. "params = {\n"
 
-							for key, tbl in pairs(info.params) do
+							for key, tbl in table.sorted_pairs(info.params, function(a, b) return a.key < b.key end) do
 								s = s .. "\t\t\t" .. key .. " = {\n"
 
-								for key, val in pairs(tbl) do
+								for key, val in table.sorted_pairs(tbl, function(a, b) return a.key < b.key end) do
 									s = s .. "\t\t\t\t" .. key .. " = " .. tostring(val) .. ",\n"
 								end
 
@@ -174,7 +175,7 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 					gen_available_params("Filter", { "highpass", "bandpass" })
 				end
 
-				for func_name in pairs(meta_data.functions) do
+				for func_name in table.sorted_pairs(meta_data.functions, function(a, b) return a.key < b.key end) do
 					local friendly = func_name:match("^" .. lib_name .. "(%u.+)")
 
 					if friendly and friendly:find("^Gen%u%l") then
