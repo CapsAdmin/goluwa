@@ -7,7 +7,7 @@ local META = ... or prototype.GetRegistered("window")
 local flags_to_enums = {}
 
 for k, v in pairs(sdl.e) do
-	local friendly = k:match("WINDOW_(.+)")
+	local friendly = k:match("^WINDOW_(.+)")
 
 	if friendly then
 		friendly = friendly:lower()
