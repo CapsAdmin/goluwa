@@ -35,7 +35,7 @@ end
 line = runfile("lua/libraries/love/line.lua") -- a löve wrapper that lets you run löve games
 gine = runfile("lua/libraries/gmod/gine.lua") -- a gmod wrapper that lets you run gmod scripts
 if not CLI then
-	resource.AddProvider("https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/extras/", true)
+	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/", true)
 end
 
 if GRAPHICS then menu = runfile("lua/libraries/graphics/menu.lua") end

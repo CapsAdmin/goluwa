@@ -43,7 +43,7 @@ elseif CLI then
 	audio = runfile("!lua/libraries/audio/decoding.lua") -- only decoding
 end
 
-resource.AddProvider("https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/base/", true)
+resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/", true)
 
 event.AddListener("Initialize", function()
 	if SOUND then audio.Initialize(AUDIO_DEVICE) end
