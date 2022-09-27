@@ -27,88 +27,21 @@ do
 end
 
 do
-	function render2d.SetStencilState(tbl)
-		if tbl.function_ then  end
-	end
-
-	--[[
-		local function stencil_pass(func, ref)
-			if func == "never" then
-				return false
-			end
-
-			if func == "equal" then
-				return pixel == ref
-			end
-		end
-
-		local stencil_pass = stencil_pass(func, ref)
-		local depth_pass = depth_pass()
-
-		if depth_pass and stencil_pass then
-
-		elseif not depth_pass and stencil_pass then
-
-		elseif not stencil_pass then
-			if op == "incr" then
-				pixel = pixel + ref
-			end
-		end
-
-		1: 000000000 -- clear
-		2: 000111110 -- draw stencil rect
-		2: 000112210 -- draw stencil rect
-		2: 000111110 -- draw stencil rect
-	]] local i = 0
-	local X, Y, W, H
-
-	function render2d.PushStencilRect(x, y, w, h, i_override)
-		render.StencilFunction("never", 1)
-		render.StencilOperation("increase", "keep", "zero")
-		render2d.PushTexture()
+	function render2d.PushStencilRect(x, y, w, h)
+		render.SetStencil(true)
+		render.GetFrameBuffer():ClearStencil(0)
+		render.StencilFunction("always", 1, 0xFFFFFFFF)
+		render.StencilOperation("keep", "keep", "replace")
 		render.SetColorMask(0, 0, 0, 0)
+		render2d.PushTexture()
 		render2d.DrawRect(x, y, w, h)
-		render.SetColorMask(1, 1, 1, 1)
 		render2d.PopTexture()
-		render.StencilFunction("equal", i)
-		i = i + 1
-		X, Y, W, H = x, y, w, h
+		render.SetColorMask(1, 1, 1, 1)
+		render.StencilFunction("equal", 1)
 	end
 
 	function render2d.PopStencilRect()
-		render.StencilFunction("never", 1)
-		render.StencilOperation("decrease", "keep", "zero")
-		render2d.PushTexture()
-		render.SetColorMask(0, 0, 0, 0)
-		render2d.DrawRect(X, Y, W, H)
-		render.SetColorMask(1, 1, 1, 1)
-		render2d.PopTexture()
-
-		if i >= 4 then i = 0 end
-	end
-
-	local i = 0
-	local X, Y, W, H
-
-	function render2d.PushStencilRect2(x, y, w, h, i_override)
-		render.StencilFunction("never", 1)
-		render.StencilOperation("increase", "keep", "zero")
-		render2d.PushTexture()
-		render2d.DrawRect(x, y, w, h)
-		render2d.PopTexture()
-		render.StencilFunction("equal", i)
-		i = i + 1
-		X, Y, W, H = x, y, w, h
-	end
-
-	function render2d.PopStencilRect2()
-		render.StencilFunction("never", 1)
-		render.StencilOperation("decrease", "keep", "zero")
-		render2d.PushTexture()
-		render2d.DrawRect(X, Y, W, H)
-		render2d.PopTexture()
-
-		if i >= 4 then i = 0 end
+		render.SetStencil(false)
 	end
 end
 

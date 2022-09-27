@@ -356,9 +356,7 @@ do -- drawing
 		end
 
 		if not no_draw and self.Clipping then
-			--render2d.PushClipFunction(self.DrawClippingStencil, self)
 			render2d.PushStencilRect(0, 0, self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
-		--render2d.EnableClipRect(0, 0, self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
 		end
 
 		if from_cache then
@@ -399,10 +397,7 @@ do -- drawing
 
 	function META:PostDraw(from_cache)
 		if not self.draw_no_draw and self.Clipping then
-			--render2d.PopClipFunction()
 			render2d.PopStencilRect()
-		--render2d.DisableClipRect()
-		--render.PopViewport()
 		end
 
 		if self.ThreeDee then render2d.End3D2D() end

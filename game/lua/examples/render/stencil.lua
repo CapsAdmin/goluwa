@@ -1,25 +1,25 @@
-local screen_size = render.GetScreenSize()
-local background = render.CreateTextureFromPath(
-	"https://image.freepik.com/free-vector/abstract-background-with-a-watercolor-texture_1048-2144.jpg"
-)
+local function content()
+	love.graphics.setColor(255, 0, 0, 120)
+	love.graphics.circle("fill", 300, 300, 150, 50)
+	love.graphics.setColor(0, 255, 0, 120)
+	love.graphics.circle("fill", 500, 300, 150, 50)
+	love.graphics.setColor(0, 0, 255, 120)
+	love.graphics.circle("fill", 400, 400, 150, 50)
+end
+
+local function nested_stencil()
+	render2d.PushMatrix()
+	render2d.Translate(270, 250)
+	render2d.Scale(0.3, 0.3)
+	render2d.PushStencil(225, 200, 350, 300)
+	content()
+	render2d.PopStencil()
+	render2d.PopMatrix()
+end
 
 function goluwa.PreDrawGUI()
-	render.SetStencil(true)
-	render.GetFrameBuffer():ClearStencil(0) -- out = 0
-	render.StencilOperation("replace", "keep", "keep")
-	-- if true then stencil = 33 return true end
-	render.StencilFunction("never", 33)
-	-- on fail, keep zero value
-	-- on success replace it with 33
-	-- write to the stencil buffer
-	-- on fail is probably never reached
-	render2d.SetColor(0, 0, 0, 0)
-	render2d.SetTexture()
-	render2d.DrawRect(500, 500, 400, 400, os.clock(), 400 / 2, 400 / 2)
-	-- if stencil == 33 then stencil = 33 return true else return false end
-	render.StencilFunction("equal", 33)
-	render2d.SetTexture(background)
-	render2d.SetColor(1, 1, 1, 1)
-	render2d.DrawRect(0, 0, screen_size:Unpack())
-	render.SetStencil(false)
+	render2d.PushStencil(225, 200, 350, 300)
+	content()
+	nested_stencil()
+	render2d.PopStencil()
 end
