@@ -1,5 +1,9 @@
 local util = gine.env.util
 
+function util.FilterText(str, context, ply)
+	return str
+end
+
 function util.KeyValuesToTable(str)
 	local tbl, ok = utility.VDFToTable(str, true)
 
