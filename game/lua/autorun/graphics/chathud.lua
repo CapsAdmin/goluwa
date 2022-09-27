@@ -34,11 +34,12 @@ function chathud.Initialize()
 	chathud.markup:SetSelectable(false)
 	chathud.life_time = 20
 
-	resource.Download("http://cdn.steam.tools/data/emote.json"):Then(function(path)
+	resource.Download("data/steam_emotes.json"):Then(function(path)
 		profiler.StartTimer("emotes")
 		local i = 0
 
-		for name in vfs.Read(path):gmatch("\"name\": \":(.-):\"") do
+		for _, emote in ipairs(vfs.Read(path)) do
+			local name = emote.name:sub(2, -2)
 			chathud.emote_shortucts[name] = "<texture=http://cdn.steamcommunity.com/economy/emoticon/" .. name .. ">"
 			i = i + 1
 		end
