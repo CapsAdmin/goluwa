@@ -1,49 +1,51 @@
 --DISABLE_ANALYSIS
-local base = gui.CreatePanel("base", nil, "lol")
-base:SetSize(Vec2(1700, 1200))
-base:CenterSimple()
-base:SetResizable(true)
-base:SetDraggable(true)
-base:SetColor(Color(0.1, 0.1, 0.1, 1))
-base:SetName("base")
-base:SetMargin(Rect(0, 0, 0, 0))
+local function LSX(render: Function, props: Table, children: List<|string, number, Table|>)
+	if children and #children == 1 and list.is_list(children[1]) then
+		children = children[1]
+	end
 
-local function LSX(func, props, children)
-	return {func = func, props = props, children = children}
+	return {render = render, props = props, children = children}
 end
 
-local function Panel(type, props)
+local function Panel(type: string, props: Table)
 	local pnl = gui.CreatePanel(type)
 
 	for k, v in pairs(props) do
-		if pnl["Set" .. k] then pnl["Set" .. k](pnl, v) end
+		if k:starts_with("On") then
+			pnl[k] = v
+		elseif pnl["Set" .. k] then
+			pnl["Set" .. k](pnl, v)
+		elseif _G.type(pnl[k]) == "function" then
+			pnl[k](pnl, v)
+		end
 	end
 
 	return pnl
 end
 
-local View = function(props)
+local View = function(props: Table)
 	return Panel("base", props)
 end
-local Text = function(props)
+local Text = function(props: Table)
 	return Panel("text", props)
 end
-local Button = function(props)
+local Button = function(props: Table)
 	return Panel("button", props)
 end
 local base_elements = {
 	[View] = View,
 	[Text] = Text,
+	[Button] = Button,
 }
 
 local function build(node)
-	if node.func and not base_elements[node.func] then
-		local new_node = node.func(node.props)
+	if node.render and not base_elements[node.render] then
+		node.props.children = node.children
+		local new_node = node.render(node.props)
 		node.props = new_node.props
-		node.func = new_node.func
-	end
-
-	if node.children then
+		node.render = new_node.render
+		node.children = new_node.children
+	elseif node.children then
 		for k, v in pairs(node.children) do
 			build(v)
 		end
@@ -55,8 +57,8 @@ end
 local function render(node, parent)
 	local pnl
 
-	if node.func then
-		pnl = node.func(node.props)
+	if type(node) == "table" and node.render then
+		pnl = node.render(node.props)
 	else
 		pnl = Text({})
 		parent:SetText(parent:GetText() .. node:gsub("%s+", " "))
@@ -73,7 +75,9 @@ end
 
 local function Container(props)
 	return <View Size={Vec2() + 200} Color={Color(0, 0, 0, 1)}>
-		<Button>
+		<Button Size={Vec2() + 100} OnPress={function()
+			print("press!")
+		end}>
 			{props.children}
 		</Button>
 		
@@ -81,11 +85,25 @@ local function Container(props)
 	
 end
 
+print("=====")
 local x = <Container>
-	<Text>
+	<Text SetupLayout={"top"}>
+		Hello world 
+	</Text>
+	<Text SetupLayout={"top"}>
 		Hello world 
 	</Text>
 	
 </Container>
 
-render(build(x), base)
+local base = gui.CreatePanel("base", nil, "lol")
+base:SetSize(Vec2(1700, 1200))
+base:CenterSimple()
+base:SetResizable(true)
+base:SetDraggable(true)
+base:SetColor(Color(0.1, 0.1, 0.1, 1))
+base:SetName("base")
+base:SetMargin(Rect(0, 0, 0, 0))
+x = build(x)
+table.print(x)
+render(x, base)
