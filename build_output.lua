@@ -1,7 +1,7 @@
 #!/usr/local/bin/luajit
 _G.BUNDLE = true
 _G.IMPORTS = _G.IMPORTS or {}
-IMPORTS['nattlua/definitions/utility.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['nattlua/definitions/utility.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -82,7 +82,7 @@ IMPORTS['nattlua/definitions/utility.nlua'] = assert(loadstring([=======[ return
 
 
  end ]=======], '@nattlua/definitions/utility.nlua'))()
-IMPORTS['nattlua/definitions/attest.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['nattlua/definitions/attest.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -99,7 +99,7 @@ IMPORTS['nattlua/definitions/attest.nlua'] = assert(loadstring([=======[ return 
 
 
 _G.attest = attest end ]=======], '@nattlua/definitions/attest.nlua'))()
-do local __M; IMPORTS["nattlua.other.loadstring"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local f = _G.loadstring or _G.load
+do local __M; IMPORTS["nattlua.other.loadstring"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local f = _G.loadstring or _G.load
 return function(str, name)
 	if _G.CompileString then
 		local var = CompileString(str, name or "loadstring", false)
@@ -111,7 +111,7 @@ return function(str, name)
 
 	return (f)(str, name)
 end end ]=======], '@./nattlua/other/loadstring.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.other.table_new"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local table_new
+do local __M; IMPORTS["nattlua.other.table_new"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local table_new
 local ok
 
 if not _G.gmod then ok, table_new = pcall(require, "table.new") end
@@ -123,7 +123,7 @@ if not ok then
 end
 
 return table_new end ]=======], '@./nattlua/other/table_new.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.other.table_pool"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local pairs = _G.pairs
+do local __M; IMPORTS["nattlua.other.table_pool"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local pairs = _G.pairs
 local table_new = IMPORTS['nattlua.other.table_new']("nattlua.other.table_new")
 return function(alloc, size)
 	local records = 0
@@ -156,7 +156,7 @@ return function(alloc, size)
 		return tbl
 	end
 end end ]=======], '@./nattlua/other/table_pool.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.other.quote"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local helpers = {}
+do local __M; IMPORTS["nattlua.other.quote"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local helpers = {}
 
 function helpers.QuoteToken(str)
 	return "❲" .. str .. "❳"
@@ -179,7 +179,7 @@ function helpers.QuoteTokens(var)
 end
 
 return helpers end ]=======], '@./nattlua/other/quote.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.other.class"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local class = {}
+do local __M; IMPORTS["nattlua.other.class"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local class = {}
 
 function class.CreateTemplate(type_name)
 	local meta = {}
@@ -256,7 +256,7 @@ function class.CreateTemplate(type_name)
 end
 
 return class end ]=======], '@./nattlua/other/class.lua'))())(...) return __M end end
-IMPORTS['nattlua/lexer/token.lua'] = assert(loadstring([=======[ return function() local table_pool = IMPORTS['nattlua.other.table_pool']("nattlua.other.table_pool")
+IMPORTS['nattlua/lexer/token.lua'] = assert((loadstring or load)([=======[ return function() local table_pool = IMPORTS['nattlua.other.table_pool']("nattlua.other.table_pool")
 local quote_helper = IMPORTS['nattlua.other.quote']("nattlua.other.quote")
 local class = IMPORTS['nattlua.other.class']("nattlua.other.class")
 local META = class.CreateTemplate("token")
@@ -320,7 +320,7 @@ function META.New(
 end
 
 return META end ]=======], '@nattlua/lexer/token.lua'))()
-do local __M; IMPORTS["nattlua.other.helpers"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) 
+do local __M; IMPORTS["nattlua.other.helpers"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) 
 
 local math = _G.math
 local table = _G.table
@@ -661,7 +661,7 @@ function helpers.JITOptimize()
 end
 
 return helpers end ]=======], '@./nattlua/other/helpers.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.types.error_messages"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local table = _G.table
+do local __M; IMPORTS["nattlua.types.error_messages"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local table = _G.table
 local type = _G.type
 local ipairs = _G.ipairs
 local errors = {
@@ -763,7 +763,7 @@ local errors = {
 	end,
 }
 return errors end ]=======], '@./nattlua/types/error_messages.lua'))())(...) return __M end end
-IMPORTS['nattlua/types/base.lua'] = assert(loadstring([=======[ return function() local assert = _G.assert
+IMPORTS['nattlua/types/base.lua'] = assert((loadstring or load)([=======[ return function() local assert = _G.assert
 local tostring = _G.tostring
 local setmetatable = _G.setmetatable
 local type_errors = IMPORTS['nattlua.types.error_messages']("nattlua.types.error_messages")
@@ -1041,7 +1041,7 @@ function META.New()
 	return setmetatable({}, META)
 end --copy<|META|>.@Self
 return META end ]=======], '@nattlua/types/base.lua'))()
-do local __M; IMPORTS["nattlua.types.symbol"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local type = type
+do local __M; IMPORTS["nattlua.types.symbol"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local type = type
 local tostring = tostring
 local setmetatable = _G.setmetatable
 local type_errors = IMPORTS['nattlua.types.error_messages']("nattlua.types.error_messages")
@@ -1141,7 +1141,7 @@ return {
 		return Symbol(false)
 	end,
 } end ]=======], '@./nattlua/types/symbol.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.types.number"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local math = math
+do local __M; IMPORTS["nattlua.types.number"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local math = math
 local assert = assert
 local error = _G.error
 local tostring = _G.tostring
@@ -1609,7 +1609,7 @@ return {
 	end,
 	TNumber = TNumber,
 } end ]=======], '@./nattlua/types/number.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.types.union"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) --ANALYZE
+do local __M; IMPORTS["nattlua.types.union"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) --ANALYZE
 local tostring = tostring
 local setmetatable = _G.setmetatable
 local table = _G.table
@@ -2082,7 +2082,7 @@ return {
 		return META.New({True(), False()})
 	end,
 } end ]=======], '@./nattlua/types/union.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.context"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local current_analyzer = {}
+do local __M; IMPORTS["nattlua.analyzer.context"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local current_analyzer = {}
 local CONTEXT = {}
 
 function CONTEXT:GetCurrentAnalyzer()
@@ -2098,7 +2098,7 @@ function CONTEXT:PopCurrentAnalyzer()
 end
 
 return CONTEXT end ]=======], '@./nattlua/analyzer/context.lua'))())(...) return __M end end
-IMPORTS['nattlua/code.lua'] = assert(loadstring([=======[ return function() local helpers = IMPORTS['nattlua.other.helpers']("nattlua.other.helpers")
+IMPORTS['nattlua/code.lua'] = assert((loadstring or load)([=======[ return function() local helpers = IMPORTS['nattlua.other.helpers']("nattlua.other.helpers")
 local class = IMPORTS['nattlua.other.class']("nattlua.other.class")
 local META = class.CreateTemplate("code")
 
@@ -2195,7 +2195,7 @@ end
 
 
 return META end ]=======], '@nattlua/code.lua'))()
-IMPORTS['./nattlua/types/../parser/nodes.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['./nattlua/types/../parser/nodes.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -2260,7 +2260,7 @@ return {
 	statement = statement,
 	expression = expression,
 } end ]=======], '@./nattlua/types/../parser/nodes.nlua'))()
-do local __M; IMPORTS["nattlua.types.string"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) --ANALYZE
+do local __M; IMPORTS["nattlua.types.string"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) --ANALYZE
 local tostring = tostring
 local setmetatable = _G.setmetatable
 local type_errors = IMPORTS['nattlua.types.error_messages']("nattlua.types.error_messages")
@@ -2461,7 +2461,7 @@ return {
 		return META.New(node.value.value):SetLiteral(true)
 	end,
 } end ]=======], '@./nattlua/types/string.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.types.any"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local type_errors = IMPORTS['nattlua.types.error_messages']("nattlua.types.error_messages")
+do local __M; IMPORTS["nattlua.types.any"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local type_errors = IMPORTS['nattlua.types.error_messages']("nattlua.types.error_messages")
 local META = IMPORTS['nattlua/types/base.lua']("nattlua/types/base.lua")
 
 
@@ -2512,7 +2512,7 @@ return {
 		return META.New()
 	end,
 } end ]=======], '@./nattlua/types/any.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.types.tuple"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) --ANALYZE
+do local __M; IMPORTS["nattlua.types.tuple"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) --ANALYZE
 local tostring = tostring
 local table = _G.table
 local math = math
@@ -3022,7 +3022,7 @@ return {
 		return arguments
 	end,
 } end ]=======], '@./nattlua/types/tuple.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.other.shallow_copy"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local function shallow_copy(tbl)
+do local __M; IMPORTS["nattlua.other.shallow_copy"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local function shallow_copy(tbl)
 	local copy = {}
 
 	for i, val in ipairs(tbl) do
@@ -3033,7 +3033,7 @@ do local __M; IMPORTS["nattlua.other.shallow_copy"] = function(...) __M = __M or
 end
 
 return shallow_copy end ]=======], '@./nattlua/other/shallow_copy.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.mutation_solver"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ipairs = ipairs
+do local __M; IMPORTS["nattlua.analyzer.mutation_solver"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ipairs = ipairs
 local table = _G.table
 local Union = IMPORTS['nattlua.types.union']("nattlua.types.union").Union
 
@@ -3236,7 +3236,7 @@ local function mutation_solver(mutations, scope, obj)
 end
 
 return mutation_solver end ]=======], '@./nattlua/analyzer/mutation_solver.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.types.table"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local setmetatable = _G.setmetatable
+do local __M; IMPORTS["nattlua.types.table"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local setmetatable = _G.setmetatable
 local table = _G.table
 local ipairs = _G.ipairs
 local tostring = _G.tostring
@@ -4325,7 +4325,7 @@ function META.New()
 end
 
 return {Table = META.New} end ]=======], '@./nattlua/types/table.lua'))())(...) return __M end end
-IMPORTS['nattlua/definitions/lua/globals.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['nattlua/definitions/lua/globals.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -4415,7 +4415,7 @@ function _G.LSX(
 	e.tag = tag
 	return e
 end end ]=======], '@nattlua/definitions/lua/globals.nlua'))()
-IMPORTS['nattlua/definitions/lua/io.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['nattlua/definitions/lua/io.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -4427,15 +4427,15 @@ IMPORTS['nattlua/definitions/lua/io.nlua'] = assert(loadstring([=======[ return 
 
 
  end ]=======], '@nattlua/definitions/lua/io.nlua'))()
-IMPORTS['nattlua/definitions/lua/luajit.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['nattlua/definitions/lua/luajit.nlua'] = assert((loadstring or load)([=======[ return function() 
 
  end ]=======], '@nattlua/definitions/lua/luajit.nlua'))()
-IMPORTS['nattlua/definitions/lua/debug.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['nattlua/definitions/lua/debug.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
  end ]=======], '@nattlua/definitions/lua/debug.nlua'))()
-IMPORTS['nattlua/definitions/lua/package.nlua'] = assert(loadstring([=======[ return function()  end ]=======], '@nattlua/definitions/lua/package.nlua'))()
-IMPORTS['nattlua/definitions/lua/bit.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['nattlua/definitions/lua/package.nlua'] = assert((loadstring or load)([=======[ return function()  end ]=======], '@nattlua/definitions/lua/package.nlua'))()
+IMPORTS['nattlua/definitions/lua/bit.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 do
@@ -4463,7 +4463,7 @@ do
 
 	
 end end ]=======], '@nattlua/definitions/lua/bit.nlua'))()
-IMPORTS['nattlua/definitions/lua/table.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['nattlua/definitions/lua/table.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -4508,7 +4508,7 @@ function table.spread(tbl)
 
 	return table.unpack(tbl)
 end end ]=======], '@nattlua/definitions/lua/table.nlua'))()
-IMPORTS['nattlua/definitions/lua/string.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['nattlua/definitions/lua/string.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -4535,7 +4535,7 @@ IMPORTS['nattlua/definitions/lua/string.nlua'] = assert(loadstring([=======[ ret
 
 
  end ]=======], '@nattlua/definitions/lua/string.nlua'))()
-IMPORTS['nattlua/definitions/lua/math.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['nattlua/definitions/lua/math.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -4560,8 +4560,8 @@ IMPORTS['nattlua/definitions/lua/math.nlua'] = assert(loadstring([=======[ retur
 
 
  end ]=======], '@nattlua/definitions/lua/math.nlua'))()
-IMPORTS['nattlua/definitions/lua/os.nlua'] = assert(loadstring([=======[ return function()  end ]=======], '@nattlua/definitions/lua/os.nlua'))()
-IMPORTS['nattlua/definitions/lua/coroutine.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['nattlua/definitions/lua/os.nlua'] = assert((loadstring or load)([=======[ return function()  end ]=======], '@nattlua/definitions/lua/os.nlua'))()
+IMPORTS['nattlua/definitions/lua/coroutine.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -4570,7 +4570,7 @@ IMPORTS['nattlua/definitions/lua/coroutine.nlua'] = assert(loadstring([=======[ 
 
 
  end ]=======], '@nattlua/definitions/lua/coroutine.nlua'))()
-do local __M; IMPORTS["nattlua.other.table_print"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) --ANALYZE
+do local __M; IMPORTS["nattlua.other.table_print"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) --ANALYZE
 local pairs = _G.pairs
 local tostring = _G.tostring
 local type = _G.type
@@ -4889,7 +4889,7 @@ return function(...)
 
 	io.write(luadata.ToString(tbl, {tab = -1, tab_limit = max_level, done = {}}):sub(0, -2))
 end end ]=======], '@./nattlua/other/table_print.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.other.cparser"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local pcall = _G.pcall
+do local __M; IMPORTS["nattlua.other.cparser"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local pcall = _G.pcall
 local type = _G.type
 local getmetatable = _G.getmetatable
 local tostring = _G.tostring
@@ -8916,7 +8916,7 @@ cparser.parseString = function(cdecl, options, args)
 	return out
 end
 return cparser end ]=======], '@./nattlua/other/cparser.lua'))())(...) return __M end end
-IMPORTS['nattlua/definitions/typed_ffi.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['nattlua/definitions/typed_ffi.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -8939,7 +8939,7 @@ IMPORTS['nattlua/definitions/typed_ffi.nlua'] = assert(loadstring([=======[ retu
 
 
  end ]=======], '@nattlua/definitions/typed_ffi.nlua'))()
-do local __M; IMPORTS["nattlua.compiler"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local io = io
+do local __M; IMPORTS["nattlua.compiler"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local io = io
 local error = error
 local xpcall = xpcall
 local tostring = tostring
@@ -9225,7 +9225,7 @@ function META.New(
 end
 
 return META end ]=======], '@./nattlua/compiler.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.runtime.base_environment"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local Table = IMPORTS['nattlua.types.table']("nattlua.types.table").Table
+do local __M; IMPORTS["nattlua.runtime.base_environment"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local Table = IMPORTS['nattlua.types.table']("nattlua.types.table").Table
 local Nil = IMPORTS['nattlua.types.symbol']("nattlua.types.symbol").Nil
 local LStringNoMeta = IMPORTS['nattlua.types.string']("nattlua.types.string").LStringNoMeta
 
@@ -9286,7 +9286,7 @@ return {
 		return runtime_env, typesystem_env
 	end,
 } end ]=======], '@./nattlua/runtime/base_environment.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.code"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local helpers = IMPORTS['nattlua.other.helpers']("nattlua.other.helpers")
+do local __M; IMPORTS["nattlua.code"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local helpers = IMPORTS['nattlua.other.helpers']("nattlua.other.helpers")
 local class = IMPORTS['nattlua.other.class']("nattlua.other.class")
 local META = class.CreateTemplate("code")
 
@@ -9383,7 +9383,7 @@ end
 
 
 return META end ]=======], '@./nattlua/code.lua'))())(...) return __M end end
-IMPORTS['./nattlua/lexer/token.lua'] = assert(loadstring([=======[ return function() local table_pool = IMPORTS['nattlua.other.table_pool']("nattlua.other.table_pool")
+IMPORTS['./nattlua/lexer/token.lua'] = assert((loadstring or load)([=======[ return function() local table_pool = IMPORTS['nattlua.other.table_pool']("nattlua.other.table_pool")
 local quote_helper = IMPORTS['nattlua.other.quote']("nattlua.other.quote")
 local class = IMPORTS['nattlua.other.class']("nattlua.other.class")
 local META = class.CreateTemplate("token")
@@ -9447,7 +9447,7 @@ function META.New(
 end
 
 return META end ]=======], '@./nattlua/lexer/token.lua'))()
-do local __M; IMPORTS["nattlua.other.reverse_escape_string"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) --ANALYZE
+do local __M; IMPORTS["nattlua.other.reverse_escape_string"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) --ANALYZE
 local map = {
 	["a"] = "\a",
 	["b"] = "\b",
@@ -9562,7 +9562,7 @@ local function reverse_escape_string(str)
 end
 
 return reverse_escape_string end ]=======], '@./nattlua/other/reverse_escape_string.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.lexer.token"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local table_pool = IMPORTS['nattlua.other.table_pool']("nattlua.other.table_pool")
+do local __M; IMPORTS["nattlua.lexer.token"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local table_pool = IMPORTS['nattlua.other.table_pool']("nattlua.other.table_pool")
 local quote_helper = IMPORTS['nattlua.other.quote']("nattlua.other.quote")
 local class = IMPORTS['nattlua.other.class']("nattlua.other.class")
 local META = class.CreateTemplate("token")
@@ -9626,7 +9626,7 @@ function META.New(
 end
 
 return META end ]=======], '@./nattlua/lexer/token.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.syntax.characters"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local characters = {}
+do local __M; IMPORTS["nattlua.syntax.characters"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local characters = {}
 local B = string.byte
 
 function characters.IsNumber(c)
@@ -9715,7 +9715,7 @@ if jit then
 end
 
 return characters end ]=======], '@./nattlua/syntax/characters.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.syntax"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local class = IMPORTS['nattlua.other.class']("nattlua.other.class")
+do local __M; IMPORTS["nattlua.syntax"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local class = IMPORTS['nattlua.other.class']("nattlua.other.class")
 
 
 
@@ -9977,7 +9977,7 @@ function META:GetTokenType(tk)
 end
 
 return META end ]=======], '@./nattlua/syntax.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.syntax.runtime"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local Syntax = IMPORTS['nattlua.syntax']("nattlua.syntax").New
+do local __M; IMPORTS["nattlua.syntax.runtime"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local Syntax = IMPORTS['nattlua.syntax']("nattlua.syntax").New
 local runtime = Syntax()
 runtime:AddSymbolCharacters(
 	{
@@ -10079,7 +10079,7 @@ runtime:AddPostfixOperatorFunctionTranslate({
 	["ÆØÅÆ"] = "(A)",
 })
 return runtime end ]=======], '@./nattlua/syntax/runtime.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.lexer"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) 
+do local __M; IMPORTS["nattlua.lexer"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) 
 
 
 
@@ -10821,7 +10821,7 @@ do
 end
 
 return META end ]=======], '@./nattlua/lexer.lua'))())(...) return __M end end
-IMPORTS['./nattlua/parser/nodes.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['./nattlua/parser/nodes.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -10886,7 +10886,7 @@ return {
 	statement = statement,
 	expression = expression,
 } end ]=======], '@./nattlua/parser/nodes.nlua'))()
-IMPORTS['./nattlua/parser/../parser/nodes.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['./nattlua/parser/../parser/nodes.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -10951,7 +10951,7 @@ return {
 	statement = statement,
 	expression = expression,
 } end ]=======], '@./nattlua/parser/../parser/nodes.nlua'))()
-IMPORTS['./nattlua/parser/../config.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['./nattlua/parser/../config.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -10964,7 +10964,7 @@ return {
 	TranspilerConfig = nil,
 	CompilerConfig = nil,
 } end ]=======], '@./nattlua/parser/../config.nlua'))()
-IMPORTS['nattlua/parser/nodes.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['nattlua/parser/nodes.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -11029,7 +11029,7 @@ return {
 	statement = statement,
 	expression = expression,
 } end ]=======], '@nattlua/parser/nodes.nlua'))()
-do local __M; IMPORTS["nattlua.parser.node"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) 
+do local __M; IMPORTS["nattlua.parser.node"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) 
 
 
 
@@ -11214,7 +11214,7 @@ function META:FindNodesByType(what)
 end
 
 return META end ]=======], '@./nattlua/parser/node.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.parser.base"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) 
+do local __M; IMPORTS["nattlua.parser.base"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) 
 
 
 
@@ -11584,7 +11584,7 @@ function META:ParseMultipleValues(
 end
 
 return META end ]=======], '@./nattlua/parser/base.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.other.profiler2"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) --ANALYZE
+do local __M; IMPORTS["nattlua.other.profiler2"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) --ANALYZE
 local logf = function(f, ...)
 	io.write((f):format(...))
 end
@@ -12514,7 +12514,7 @@ end
 
 profiler.Restart()
 return profiler end ]=======], '@./nattlua/other/profiler2.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.other.profiler"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local profiler2 = IMPORTS['nattlua.other.profiler2']("nattlua.other.profiler2")
+do local __M; IMPORTS["nattlua.other.profiler"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local profiler2 = IMPORTS['nattlua.other.profiler2']("nattlua.other.profiler2")
 local profiler = {}
 local should_run = true
 
@@ -12545,7 +12545,7 @@ function profiler.PopZone()
 end
 
 return profiler end ]=======], '@./nattlua/other/profiler.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.syntax.typesystem"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local Syntax = IMPORTS['nattlua.syntax']("nattlua.syntax").New
+do local __M; IMPORTS["nattlua.syntax.typesystem"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local Syntax = IMPORTS['nattlua.syntax']("nattlua.syntax").New
 local typesystem = Syntax()
 typesystem:AddSymbolCharacters(
 	{
@@ -12691,7 +12691,7 @@ typesystem:AddBinaryOperators(
 	}
 )
 return typesystem end ]=======], '@./nattlua/syntax/typesystem.lua'))())(...) return __M end end
-IMPORTS['nattlua/parser/expressions.lua'] = assert(loadstring([=======[ return function(...) local META = ...
+IMPORTS['nattlua/parser/expressions.lua'] = assert((loadstring or load)([=======[ return function(...) local META = ...
 local table_insert = _G.table.insert
 local table_remove = _G.table.remove
 local math_huge = math.huge
@@ -13632,7 +13632,8 @@ do -- runtime
 			self:ParseAnalyzerFunctionExpression() or
 			self:ParseFunctionExpression() or
 			self:ParseValueExpression() or
-			self:ParseTableExpression()
+			self:ParseTableExpression() or
+			self:ParseLSXExpression()
 		local first = node
 
 		if node then
@@ -13724,7 +13725,7 @@ do -- runtime
 		return self:ParseRuntimeExpression(priority)
 	end
 end end ]=======], '@nattlua/parser/expressions.lua'))()
-IMPORTS['nattlua/parser/statements.lua'] = assert(loadstring([=======[ return function(...) local META = ...
+IMPORTS['nattlua/parser/statements.lua'] = assert((loadstring or load)([=======[ return function(...) local META = ...
 local runtime_syntax = IMPORTS['nattlua.syntax.runtime']("nattlua.syntax.runtime")
 local typesystem_syntax = IMPORTS['nattlua.syntax.typesystem']("nattlua.syntax.typesystem")
 
@@ -14273,7 +14274,7 @@ function META:ParseCallOrAssignmentStatement()
 		self:GetToken().value
 	)
 end end ]=======], '@nattlua/parser/statements.lua'))()
-IMPORTS['nattlua/parser/teal.lua'] = assert(loadstring([=======[ return function(...) local META = ...
+IMPORTS['nattlua/parser/teal.lua'] = assert((loadstring or load)([=======[ return function(...) local META = ...
 
 
 
@@ -14749,7 +14750,91 @@ do
 		return assignment
 	end
 end end ]=======], '@nattlua/parser/teal.lua'))()
-do local __M; IMPORTS["nattlua.parser"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local META = IMPORTS['nattlua.parser.base']("nattlua.parser.base")
+IMPORTS['nattlua/parser/lsx.lua'] = assert((loadstring or load)([=======[ return function(...) local META = ...
+
+function META:ParseLSXExpression()
+	if
+		not (
+			self:IsValue("<") and
+			self:IsType("letter", 1) and
+			not self:IsValue("local", -1)
+		)
+	then
+		return
+	end
+
+	local node = self:StartNode("expression", "lsx")
+	node.tokens["<"] = self:ExpectValue("<")
+	node.tag = self:ExpectType("letter")
+	node.props = {}
+	node.children = {}
+
+	for i = 1, self:GetLength() do
+		if self:IsType("letter") and self:IsValue("=", 1) then
+			if self:IsValue("{", 2) then
+				local keyval = self:StartNode("expression", "lsx")
+				keyval.key = self:ExpectType("letter")
+				keyval.tokens["="] = self:ExpectValue("=")
+				keyval.tokens["{"] = self:ExpectValue("{")
+				keyval.val = self:ExpectRuntimeExpression()
+				keyval.tokens["}"] = self:ExpectValue("}")
+				keyval = self:EndNode(keyval)
+				table.insert(node.props, keyval)
+			elseif self:IsType("string", 2) or self:IsType("number", 2) then
+				local keyval = self:StartNode("expression", "lsx")
+				keyval.key = self:ExpectType("letter")
+				keyval.tokens["="] = self:ExpectValue("=")
+				keyval.val = self:ParseToken()
+				keyval = self:EndNode(keyval)
+				table.insert(node.props, keyval)
+			else
+				self:Error("expected = { or = string or = number got " .. self:GetToken(3).type)
+			end
+		else
+			break
+		end
+	end
+
+	if self:IsValue("/") then
+		node.tokens["/"] = self:ExpectValue("/")
+		node.tokens[">"] = self:ExpectValue(">")
+		node = self:EndNode(node)
+		return node
+	end
+
+	node.tokens[">"] = self:ExpectValue(">")
+
+	for i = 1, self:GetLength() do
+		if self:IsValue("{") then
+			local left = self:ExpectValue("{")
+			local child = self:ExpectRuntimeExpression()
+			child.tokens["lsx{"] = left
+			table.insert(node.children, child)
+			child.tokens["lsx}"] = self:ExpectValue("}")
+		end
+
+		for i = 1, self:GetLength() do
+			if self:IsValue("<") and self:IsType("letter", 1) then
+				table.insert(node.children, self:ParseLSXExpression())
+			else
+				break
+			end
+		end
+
+		if self:IsValue("<") and self:IsValue("/", 1) then break end
+
+		local tk = self:ParseToken()
+		table.insert(node.children, tk)
+	end
+
+	node.tokens["<2"] = self:ExpectValue("<")
+	node.tokens["/"] = self:ExpectValue("/")
+	node.tokens["type2"] = self:ExpectType("letter")
+	node.tokens[">2"] = self:ExpectValue(">")
+	node = self:EndNode(node)
+	return node
+end end ]=======], '@nattlua/parser/lsx.lua'))()
+do local __M; IMPORTS["nattlua.parser"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local META = IMPORTS['nattlua.parser.base']("nattlua.parser.base")
 local profiler = IMPORTS['nattlua.other.profiler']("nattlua.other.profiler")
 local Code = IMPORTS['nattlua.code']("nattlua.code").New
 local Lexer = IMPORTS['nattlua.lexer']("nattlua.lexer").New
@@ -14960,6 +15045,7 @@ end
 assert(IMPORTS['nattlua/parser/expressions.lua'])(META)
 assert(IMPORTS['nattlua/parser/statements.lua'])(META)
 assert(IMPORTS['nattlua/parser/teal.lua'])(META)
+assert(IMPORTS['nattlua/parser/lsx.lua'])(META)
 
 function META:LexString(str, config)
 	config = config or {}
@@ -15114,7 +15200,7 @@ function META:ParseStatement()
 end
 
 return META end ]=======], '@./nattlua/parser.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.types.function"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local tostring = _G.tostring
+do local __M; IMPORTS["nattlua.types.function"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local tostring = _G.tostring
 local ipairs = _G.ipairs
 local setmetatable = _G.setmetatable
 local table = _G.table
@@ -15350,7 +15436,7 @@ return {
 		return self
 	end,
 } end ]=======], '@./nattlua/types/function.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.types.types"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local types = {}
+do local __M; IMPORTS["nattlua.types.types"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local types = {}
 
 function types.Initialize()
 	types.Table = IMPORTS['nattlua.types.table']("nattlua.types.table").Table
@@ -15374,7 +15460,7 @@ function types.Initialize()
 end
 
 return types end ]=======], '@./nattlua/types/types.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.base.upvalue"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local class = IMPORTS['nattlua.other.class']("nattlua.other.class")
+do local __M; IMPORTS["nattlua.analyzer.base.upvalue"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local class = IMPORTS['nattlua.other.class']("nattlua.other.class")
 local shallow_copy = IMPORTS['nattlua.other.shallow_copy']("nattlua.other.shallow_copy")
 local mutation_solver = IMPORTS['nattlua.analyzer.mutation_solver']("nattlua.analyzer.mutation_solver")
 local META = class.CreateTemplate("upvalue")
@@ -15441,7 +15527,7 @@ function META.New(obj)
 end
 
 return META end ]=======], '@./nattlua/analyzer/base/upvalue.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.base.lexical_scope"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ipairs = ipairs
+do local __M; IMPORTS["nattlua.analyzer.base.lexical_scope"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ipairs = ipairs
 local pairs = pairs
 local error = error
 local tostring = tostring
@@ -15911,7 +15997,7 @@ function META.New(parent, upvalue_position, obj)
 end
 
 return META end ]=======], '@./nattlua/analyzer/base/lexical_scope.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.base.scopes"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local type = type
+do local __M; IMPORTS["nattlua.analyzer.base.scopes"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local type = type
 local ipairs = ipairs
 local tostring = tostring
 local LexicalScope = IMPORTS['nattlua.analyzer.base.lexical_scope']("nattlua.analyzer.base.lexical_scope").New
@@ -16099,7 +16185,7 @@ return function(META)
 		end
 	end
 end end ]=======], '@./nattlua/analyzer/base/scopes.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.base.error_handling"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local table = _G.table
+do local __M; IMPORTS["nattlua.analyzer.base.error_handling"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local table = _G.table
 local type = type
 local ipairs = ipairs
 local tostring = tostring
@@ -16231,7 +16317,7 @@ return function(META)
 		return self.diagnostics
 	end
 end end ]=======], '@./nattlua/analyzer/base/error_handling.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.base.base_analyzer"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local tonumber = tonumber
+do local __M; IMPORTS["nattlua.analyzer.base.base_analyzer"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local tonumber = tonumber
 local ipairs = ipairs
 local os = os
 local print = print
@@ -16742,7 +16828,7 @@ return function(META)
 		end
 	end
 end end ]=======], '@./nattlua/analyzer/base/base_analyzer.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.control_flow"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ipairs = ipairs
+do local __M; IMPORTS["nattlua.analyzer.control_flow"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ipairs = ipairs
 local Any = IMPORTS['nattlua.types.any']("nattlua.types.any").Any
 local Nil = IMPORTS['nattlua.types.symbol']("nattlua.types.symbol").Nil
 local Tuple = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").Tuple
@@ -17038,7 +17124,7 @@ return function(META)
 		--[[for i, frame in ipairs(self.call_stack) do
 				print(("\t"):rep(i - 1) .. tostring(frame.call_node))
 				print(("\t"):rep(i - 1) .. tostring(frame.obj:GetFunctionBodyNode() or frame.obj))
-			end[[]] end
+			end]] end
 
 		function META:PopCallFrame()
 			table.remove(self.call_stack, 1)
@@ -17148,7 +17234,7 @@ return function(META)
 		self:PopScope()
 	end
 end end ]=======], '@./nattlua/analyzer/control_flow.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.mutation_tracking"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ipairs = ipairs
+do local __M; IMPORTS["nattlua.analyzer.mutation_tracking"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ipairs = ipairs
 local table = _G.table
 local Union = IMPORTS['nattlua.types.union']("nattlua.types.union").Union
 local shallow_copy = IMPORTS['nattlua.other.shallow_copy']("nattlua.other.shallow_copy")
@@ -17625,7 +17711,7 @@ return function(META)
 		end
 	end
 end end ]=======], '@./nattlua/analyzer/mutation_tracking.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.operators.index"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local LString = IMPORTS['nattlua.types.string']("nattlua.types.string").LString
+do local __M; IMPORTS["nattlua.analyzer.operators.index"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local LString = IMPORTS['nattlua.types.string']("nattlua.types.string").LString
 local Nil = IMPORTS['nattlua.types.symbol']("nattlua.types.symbol").Nil
 local Tuple = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").Tuple
 local Union = IMPORTS['nattlua.types.union']("nattlua.types.union").Union
@@ -17772,7 +17858,7 @@ return {
 		end
 	end,
 } end ]=======], '@./nattlua/analyzer/operators/index.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.operators.newindex"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ipairs = ipairs
+do local __M; IMPORTS["nattlua.analyzer.operators.newindex"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ipairs = ipairs
 local tostring = tostring
 local LString = IMPORTS['nattlua.types.string']("nattlua.types.string").LString
 local Any = IMPORTS['nattlua.types.any']("nattlua.types.any").Any
@@ -17935,7 +18021,7 @@ return {
 		end
 	end,
 } end ]=======], '@./nattlua/analyzer/operators/newindex.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.operators.call_analyzer"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ipairs = ipairs
+do local __M; IMPORTS["nattlua.analyzer.operators.call_analyzer"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ipairs = ipairs
 local math = math
 local ipairs = ipairs
 local type = type
@@ -18154,7 +18240,7 @@ return function(META)
 		return ret
 	end
 end end ]=======], '@./nattlua/analyzer/operators/call_analyzer.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.operators.call_body"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ipairs = ipairs
+do local __M; IMPORTS["nattlua.analyzer.operators.call_body"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ipairs = ipairs
 local table = _G.table
 local type_errors = IMPORTS['nattlua.types.error_messages']("nattlua.types.error_messages")
 local Tuple = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").Tuple
@@ -18736,7 +18822,7 @@ return function(META)
 		return contract
 	end
 end end ]=======], '@./nattlua/analyzer/operators/call_body.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.operators.call_function_signature"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ipairs = ipairs
+do local __M; IMPORTS["nattlua.analyzer.operators.call_function_signature"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ipairs = ipairs
 local type_errors = IMPORTS['nattlua.types.error_messages']("nattlua.types.error_messages")
 return function(META)
 	function META:CallFunctionSignature(obj, input)
@@ -18774,7 +18860,7 @@ return function(META)
 		return ret
 	end
 end end ]=======], '@./nattlua/analyzer/operators/call_function_signature.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.operators.call"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ipairs = ipairs
+do local __M; IMPORTS["nattlua.analyzer.operators.call"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ipairs = ipairs
 local Union = IMPORTS['nattlua.types.union']("nattlua.types.union").Union
 local Any = IMPORTS['nattlua.types.any']("nattlua.types.any").Any
 local type_errors = IMPORTS['nattlua.types.error_messages']("nattlua.types.error_messages")
@@ -19016,7 +19102,7 @@ return {
 		end
 	end,
 } end ]=======], '@./nattlua/analyzer/operators/call.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.destructure_assignment"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local tostring = tostring
+do local __M; IMPORTS["nattlua.analyzer.statements.destructure_assignment"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local tostring = tostring
 local ipairs = ipairs
 local NodeToString = IMPORTS['nattlua.types.string']("nattlua.types.string").NodeToString
 local Nil = IMPORTS['nattlua.types.symbol']("nattlua.types.symbol").Nil
@@ -19060,7 +19146,7 @@ return {
 		end
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/destructure_assignment.lua'))())(...) return __M end end
-IMPORTS['./nattlua/transpiler/../parser/nodes.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['./nattlua/transpiler/../parser/nodes.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -19125,7 +19211,7 @@ return {
 	statement = statement,
 	expression = expression,
 } end ]=======], '@./nattlua/transpiler/../parser/nodes.nlua'))()
-IMPORTS['./nattlua/transpiler/../config.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['./nattlua/transpiler/../config.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -19138,7 +19224,7 @@ return {
 	TranspilerConfig = nil,
 	CompilerConfig = nil,
 } end ]=======], '@./nattlua/transpiler/../config.nlua'))()
-do local __M; IMPORTS["nattlua.transpiler.emitter"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local runtime_syntax = IMPORTS['nattlua.syntax.runtime']("nattlua.syntax.runtime")
+do local __M; IMPORTS["nattlua.transpiler.emitter"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local runtime_syntax = IMPORTS['nattlua.syntax.runtime']("nattlua.syntax.runtime")
 local characters = IMPORTS['nattlua.syntax.characters']("nattlua.syntax.characters")
 local class = IMPORTS['nattlua.other.class']("nattlua.other.class")
 local print = _G.print
@@ -19502,7 +19588,7 @@ local function encapsulate_module(content, name, method)
 		end)
 
 		local eq = ("="):rep(len + 1)
-		return "assert(loadstring([" .. eq .. "[ return " .. content .. " ]" .. eq .. "], '" .. name .. "'))()"
+		return "assert((loadstring or load)([" .. eq .. "[ return " .. content .. " ]" .. eq .. "], '" .. name .. "'))()"
 	end
 
 	return content
@@ -19663,7 +19749,9 @@ function META:EmitExpression(node)
 		end
 	end
 
-	if node.kind == "binary_operator" then
+	if node.kind == "lsx" then
+		self:EmitLSXExpression(node)
+	elseif node.kind == "binary_operator" then
 		self:EmitBinaryOperator(node)
 	elseif node.kind == "function" then
 		self:EmitAnonymousFunction(node)
@@ -20321,9 +20409,9 @@ function META:EmitRepeatStatement(node)
 	self:Whitespace("\n")
 	self:EmitBlock(node.statements)
 	self:Whitespace("\t")
-	self:PopLoop()
 	self:Whitespace("\n")
 	self:Whitespace("\t")
+	self:PopLoop()
 	self:EmitToken(node.tokens["until"])
 	self:Whitespace(" ")
 	self:EmitExpression(node.expression)
@@ -21091,6 +21179,60 @@ do -- extra
 	end
 end
 
+do
+	function META:EmitLSXExpression(node)
+		self:EmitToken(node.tokens["<"])
+		self:EmitToken(node.tag)
+
+		for _, prop in ipairs(node.props) do
+			self:Whitespace(" ")
+			self:EmitToken(prop.key)
+			self:EmitToken(prop.tokens["="])
+
+			if prop.tokens["{"] then
+				self:EmitToken(prop.tokens["{"])
+				self:EmitExpression(prop.val)
+				self:EmitToken(prop.tokens["}"])
+			else
+				self:EmitToken(prop.val)
+			end
+		end
+
+		if node.children[1] then
+			self:EmitToken(node.tokens[">"])
+			self:Indent()
+			self:Whitespace("\n")
+			self:Whitespace("\t")
+
+			for _, child in ipairs(node.children) do
+				if not child.tokens then
+					self:EmitToken(child)
+					self:Whitespace(" ")
+				elseif child.type == "expression" and child.kind == "lsx" then
+					self:EmitLSXExpression(child)
+				else
+					self:EmitToken(child.tokens["lsx{"])
+					self:EmitExpression(child)
+					self:EmitToken(child.tokens["lsx}"])
+				end
+			end
+
+			self:Outdent()
+			self:Whitespace("\n")
+			self:Whitespace("\t")
+			self:EmitToken(node.tokens["<2"])
+			self:EmitToken(node.tokens["/"])
+			self:EmitToken(node.tokens["type2"])
+			self:EmitToken(node.tokens[">2"])
+			self:Whitespace("\n")
+			self:Whitespace("\t")
+		else
+			self:EmitToken(node.tokens["/"])
+			self:EmitToken(node.tokens[">"])
+		end
+	end
+end
+
 function META.New(config)
 	local self = setmetatable({}, META)
 	self.config = config or {}
@@ -21106,7 +21248,7 @@ function META.New(config)
 end
 
 return META end ]=======], '@./nattlua/transpiler/emitter.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.expressions.function"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local tostring = tostring
+do local __M; IMPORTS["nattlua.analyzer.expressions.function"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local tostring = tostring
 local table = _G.table
 local Union = IMPORTS['nattlua.types.union']("nattlua.types.union").Union
 local Any = IMPORTS['nattlua.types.any']("nattlua.types.any").Any
@@ -21303,7 +21445,7 @@ return {
 		return obj
 	end,
 } end ]=======], '@./nattlua/analyzer/expressions/function.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.function"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local AnalyzeFunction = IMPORTS['nattlua.analyzer.expressions.function']("nattlua.analyzer.expressions.function").AnalyzeFunction
+do local __M; IMPORTS["nattlua.analyzer.statements.function"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local AnalyzeFunction = IMPORTS['nattlua.analyzer.expressions.function']("nattlua.analyzer.expressions.function").AnalyzeFunction
 local NodeToString = IMPORTS['nattlua.types.string']("nattlua.types.string").NodeToString
 return {
 	AnalyzeFunction = function(self, statement)
@@ -21341,7 +21483,7 @@ return {
 		end
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/function.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.if"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ipairs = ipairs
+do local __M; IMPORTS["nattlua.analyzer.statements.if"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ipairs = ipairs
 local Union = IMPORTS['nattlua.types.union']("nattlua.types.union").Union
 
 local function contains_ref_argument(upvalues)
@@ -21468,14 +21610,14 @@ return {
 		self:ClearTracked()
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/if.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.do"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) return {
+do local __M; IMPORTS["nattlua.analyzer.statements.do"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) return {
 	AnalyzeDo = function(self, statement)
 		self:CreateAndPushScope()
 		self:AnalyzeStatements(statement.statements)
 		self:PopScope()
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/do.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.generic_for"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local table = _G.table
+do local __M; IMPORTS["nattlua.analyzer.statements.generic_for"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local table = _G.table
 local ipairs = ipairs
 local Tuple = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").Tuple
 local NormalizeTuples = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").NormalizeTuples
@@ -21595,12 +21737,12 @@ return {
 		end
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/generic_for.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.call_expression"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) return {
+do local __M; IMPORTS["nattlua.analyzer.statements.call_expression"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) return {
 	AnalyzeCall = function(self, statement)
 		self:AnalyzeExpression(statement.value)
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/call_expression.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.operators.binary"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local tostring = tostring
+do local __M; IMPORTS["nattlua.analyzer.operators.binary"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local tostring = tostring
 local ipairs = ipairs
 local table = _G.table
 local LString = IMPORTS['nattlua.types.string']("nattlua.types.string").LString
@@ -22109,7 +22251,7 @@ local function Binary(self, node, l, r, op)
 end
 
 return {Binary = Binary} end ]=======], '@./nattlua/analyzer/operators/binary.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.numeric_for"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ipairs = ipairs
+do local __M; IMPORTS["nattlua.analyzer.statements.numeric_for"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ipairs = ipairs
 local math = math
 local assert = assert
 local True = IMPORTS['nattlua.types.symbol']("nattlua.types.symbol").True
@@ -22230,37 +22372,37 @@ return {
 		self:PopConditionalScope()
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/numeric_for.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.break"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) return {
+do local __M; IMPORTS["nattlua.analyzer.statements.break"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) return {
 	AnalyzeBreak = function(self, statement)
 		self:Break()
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/break.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.continue"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) return {
+do local __M; IMPORTS["nattlua.analyzer.statements.continue"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) return {
 	AnalyzeContinue = function(self, statement)
 		self._continue_ = true
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/continue.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.repeat"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) return {
+do local __M; IMPORTS["nattlua.analyzer.statements.repeat"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) return {
 	AnalyzeRepeat = function(self, statement)
 		self:CreateAndPushScope()
 		self:AnalyzeStatements(statement.statements)
 		self:PopScope()
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/repeat.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.return"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local Nil = IMPORTS['nattlua.types.symbol']("nattlua.types.symbol").Nil
+do local __M; IMPORTS["nattlua.analyzer.statements.return"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local Nil = IMPORTS['nattlua.types.symbol']("nattlua.types.symbol").Nil
 return {
 	AnalyzeReturn = function(self, statement)
 		local ret = self:AnalyzeExpressions(statement.expressions)
 		self:Return(statement, ret)
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/return.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.analyzer_debug_code"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) return {
+do local __M; IMPORTS["nattlua.analyzer.statements.analyzer_debug_code"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) return {
 	AnalyzeAnalyzerDebugCode = function(self, statement)
 		local code = statement.lua_code.value.value:sub(3)
 		self:CallLuaTypeFunction(self:CompileLuaAnalyzerDebugCode(code, statement.lua_code), self:GetScope())
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/analyzer_debug_code.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.while"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) return {
+do local __M; IMPORTS["nattlua.analyzer.statements.while"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) return {
 	AnalyzeWhile = function(self, statement)
 		local obj = self:AnalyzeExpression(statement.expression)
 		local upvalues = self:GetTrackedUpvalues()
@@ -22299,7 +22441,7 @@ do local __M; IMPORTS["nattlua.analyzer.statements.while"] = function(...) __M =
 		end
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/while.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.statements.assignment"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ipairs = ipairs
+do local __M; IMPORTS["nattlua.analyzer.statements.assignment"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ipairs = ipairs
 local tostring = tostring
 local table = _G.table
 local NodeToString = IMPORTS['nattlua.types.string']("nattlua.types.string").NodeToString
@@ -22534,7 +22676,7 @@ return {
 		end
 	end,
 } end ]=======], '@./nattlua/analyzer/statements/assignment.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.expressions.binary_operator"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local table = _G.table
+do local __M; IMPORTS["nattlua.analyzer.expressions.binary_operator"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local table = _G.table
 local Binary = IMPORTS['nattlua.analyzer.operators.binary']("nattlua.analyzer.operators.binary").Binary
 local Nil = IMPORTS['nattlua.types.symbol']("nattlua.types.symbol").Nil
 local assert = _G.assert
@@ -22543,7 +22685,7 @@ return {
 		return self:Assert(Binary(self, node))
 	end,
 } end ]=======], '@./nattlua/analyzer/expressions/binary_operator.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.operators.prefix"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ipairs = ipairs
+do local __M; IMPORTS["nattlua.analyzer.operators.prefix"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ipairs = ipairs
 local error = error
 local tostring = tostring
 local Union = IMPORTS['nattlua.types.union']("nattlua.types.union").Union
@@ -22682,13 +22824,13 @@ local function Prefix(self, node, r)
 end
 
 return {Prefix = Prefix} end ]=======], '@./nattlua/analyzer/operators/prefix.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.expressions.prefix_operator"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local Prefix = IMPORTS['nattlua.analyzer.operators.prefix']("nattlua.analyzer.operators.prefix").Prefix
+do local __M; IMPORTS["nattlua.analyzer.expressions.prefix_operator"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local Prefix = IMPORTS['nattlua.analyzer.operators.prefix']("nattlua.analyzer.operators.prefix").Prefix
 return {
 	AnalyzePrefixOperator = function(self, node)
 		return self:Assert(Prefix(self, node))
 	end,
 } end ]=======], '@./nattlua/analyzer/expressions/prefix_operator.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.operators.postfix"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local Binary = IMPORTS['nattlua.analyzer.operators.binary']("nattlua.analyzer.operators.binary").Binary
+do local __M; IMPORTS["nattlua.analyzer.operators.postfix"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local Binary = IMPORTS['nattlua.analyzer.operators.binary']("nattlua.analyzer.operators.binary").Binary
 local Node = IMPORTS['nattlua.parser.node']("nattlua.parser.node")
 return {
 	Postfix = function(self, node, r)
@@ -22699,13 +22841,13 @@ return {
 		end
 	end,
 } end ]=======], '@./nattlua/analyzer/operators/postfix.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.expressions.postfix_operator"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local Postfix = IMPORTS['nattlua.analyzer.operators.postfix']("nattlua.analyzer.operators.postfix").Postfix
+do local __M; IMPORTS["nattlua.analyzer.expressions.postfix_operator"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local Postfix = IMPORTS['nattlua.analyzer.operators.postfix']("nattlua.analyzer.operators.postfix").Postfix
 return {
 	AnalyzePostfixOperator = function(self, node)
 		return self:Assert(Postfix(self, node, self:AnalyzeExpression(node.left)))
 	end,
 } end ]=======], '@./nattlua/analyzer/expressions/postfix_operator.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.expressions.import"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local LString = IMPORTS['nattlua.types.string']("nattlua.types.string").LString
+do local __M; IMPORTS["nattlua.analyzer.expressions.import"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local LString = IMPORTS['nattlua.types.string']("nattlua.types.string").LString
 local Nil = IMPORTS['nattlua.types.symbol']("nattlua.types.symbol").Nil
 return {
 	AnalyzeImport = function(self, node)
@@ -22723,7 +22865,7 @@ return {
 		return Nil()
 	end,
 } end ]=======], '@./nattlua/analyzer/expressions/import.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.expressions.postfix_call"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local table = _G.table
+do local __M; IMPORTS["nattlua.analyzer.expressions.postfix_call"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local table = _G.table
 local NormalizeTuples = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").NormalizeTuples
 local Tuple = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").Tuple
 local AnalyzeImport = IMPORTS['nattlua.analyzer.expressions.import']("nattlua.analyzer.expressions.import").AnalyzeImport
@@ -22796,7 +22938,7 @@ return {
 		return returned_tuple
 	end,
 } end ]=======], '@./nattlua/analyzer/expressions/postfix_call.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.expressions.postfix_index"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) return {
+do local __M; IMPORTS["nattlua.analyzer.expressions.postfix_index"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) return {
 	AnalyzePostfixIndex = function(self, node)
 		return self:Assert(
 			self:IndexOperator(
@@ -22806,7 +22948,7 @@ do local __M; IMPORTS["nattlua.analyzer.expressions.postfix_index"] = function(.
 		)
 	end,
 } end ]=======], '@./nattlua/analyzer/expressions/postfix_index.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.expressions.table"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local tostring = tostring
+do local __M; IMPORTS["nattlua.analyzer.expressions.table"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local tostring = tostring
 local ipairs = ipairs
 local LNumber = IMPORTS['nattlua.types.number']("nattlua.types.number").LNumber
 local LString = IMPORTS['nattlua.types.string']("nattlua.types.string").LString
@@ -22891,7 +23033,7 @@ return {
 		return tbl
 	end,
 } end ]=======], '@./nattlua/analyzer/expressions/table.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.expressions.atomic_value"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local runtime_syntax = IMPORTS['nattlua.syntax.runtime']("nattlua.syntax.runtime")
+do local __M; IMPORTS["nattlua.analyzer.expressions.atomic_value"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local runtime_syntax = IMPORTS['nattlua.syntax.runtime']("nattlua.syntax.runtime")
 local NodeToString = IMPORTS['nattlua.types.string']("nattlua.types.string").NodeToString
 local LNumber = IMPORTS['nattlua.types.number']("nattlua.types.number").LNumber
 local LNumberFromString = IMPORTS['nattlua.types.number']("nattlua.types.number").LNumberFromString
@@ -23026,7 +23168,7 @@ return {
 		self:FatalError("unhandled value type " .. type .. " " .. node:Render())
 	end,
 } end ]=======], '@./nattlua/analyzer/expressions/atomic_value.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.expressions.tuple"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local Tuple = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").Tuple
+do local __M; IMPORTS["nattlua.analyzer.expressions.tuple"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local Tuple = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").Tuple
 return {
 	AnalyzeTuple = function(self, node)
 		local tup = Tuple():SetUnpackable(true)
@@ -23036,13 +23178,19 @@ return {
 		return tup
 	end,
 } end ]=======], '@./nattlua/analyzer/expressions/tuple.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer.expressions.vararg"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local VarArg = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").VarArg
+do local __M; IMPORTS["nattlua.analyzer.expressions.vararg"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local VarArg = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").VarArg
 return {
 	AnalyzeVararg = function(self, node)
 		return VarArg(self:AnalyzeExpression(node.value))
 	end,
 } end ]=======], '@./nattlua/analyzer/expressions/vararg.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.analyzer"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local class = IMPORTS['nattlua.other.class']("nattlua.other.class")
+do local __M; IMPORTS["nattlua.analyzer.expressions.lsx"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local Any = IMPORTS['nattlua.types.any']("nattlua.types.any").Any
+return {
+	AnalyzeLSX = function(self, tree)
+		return Any() -- TODO
+	end,
+} end ]=======], '@./nattlua/analyzer/expressions/lsx.lua'))())(...) return __M end end
+do local __M; IMPORTS["nattlua.analyzer"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local class = IMPORTS['nattlua.other.class']("nattlua.other.class")
 local profiler = IMPORTS['nattlua.other.profiler']("nattlua.other.profiler")
 local tostring = tostring
 local error = error
@@ -23147,6 +23295,7 @@ do
 	local AnalyzeAtomicValue = IMPORTS['nattlua.analyzer.expressions.atomic_value']("nattlua.analyzer.expressions.atomic_value").AnalyzeAtomicValue
 	local AnalyzeTuple = IMPORTS['nattlua.analyzer.expressions.tuple']("nattlua.analyzer.expressions.tuple").AnalyzeTuple
 	local AnalyzeVararg = IMPORTS['nattlua.analyzer.expressions.vararg']("nattlua.analyzer.expressions.vararg").AnalyzeVararg
+	local AnalyzeLSX = IMPORTS['nattlua.analyzer.expressions.lsx']("nattlua.analyzer.expressions.lsx").AnalyzeLSX
 	local Union = IMPORTS['nattlua.types.union']("nattlua.types.union").Union
 
 	function META:AnalyzeExpression2(node)
@@ -23179,6 +23328,8 @@ do
 			return Union({})
 		elseif node.kind == "tuple" then
 			return AnalyzeTuple(self, node)
+		elseif node.kind == "lsx" then
+			return AnalyzeLSX(self, node)
 		else
 			self:FatalError("unhandled expression " .. node.kind)
 		end
@@ -23236,7 +23387,7 @@ function META.New(config)
 end
 
 return META end ]=======], '@./nattlua/analyzer.lua'))())(...) return __M end end
-IMPORTS['./nattlua/config.nlua'] = assert(loadstring([=======[ return function() 
+IMPORTS['./nattlua/config.nlua'] = assert((loadstring or load)([=======[ return function() 
 
 
 
@@ -23249,7 +23400,7 @@ return {
 	TranspilerConfig = nil,
 	CompilerConfig = nil,
 } end ]=======], '@./nattlua/config.nlua'))()
-do local __M; IMPORTS["nattlua.init"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local nl = {}
+do local __M; IMPORTS["nattlua.init"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local nl = {}
 local loadstring = IMPORTS['nattlua.other.loadstring']("nattlua.other.loadstring")
 nl.Compiler = IMPORTS['nattlua.compiler']("nattlua.compiler").New
 
@@ -23288,7 +23439,7 @@ function nl.File(path, config)
 end
 
 return nl end ]=======], '@./nattlua/init.lua'))())(...) return __M end end
-IMPORTS['nattlua/definitions/index.nlua'] = assert(loadstring([=======[ return function() IMPORTS['nattlua/definitions/utility.nlua']("./utility.nlua")
+IMPORTS['nattlua/definitions/index.nlua'] = assert((loadstring or load)([=======[ return function() IMPORTS['nattlua/definitions/utility.nlua']("./utility.nlua")
 IMPORTS['nattlua/definitions/attest.nlua']("./attest.nlua")
 IMPORTS['nattlua/definitions/lua/globals.nlua']("./lua/globals.nlua")
 IMPORTS['nattlua/definitions/lua/io.nlua']("./lua/io.nlua")
@@ -25634,7 +25785,7 @@ IMPORTS['nattlua/definitions/lua/math.nlua']("./lua/math.nlua")
 IMPORTS['nattlua/definitions/lua/os.nlua']("./lua/os.nlua")
 IMPORTS['nattlua/definitions/lua/coroutine.nlua']("./lua/coroutine.nlua")
 IMPORTS['nattlua/definitions/typed_ffi.nlua']("./typed_ffi.nlua") ]======] end
-do local __M; IMPORTS["language_server.server.ljsocket"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ffi = require("ffi")
+do local __M; IMPORTS["language_server.server.ljsocket"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ffi = require("ffi")
 local socket = {}
 local e = {}
 
@@ -26920,7 +27071,7 @@ function M.bind(host, service)
 end
 
 return M end ]=======], '@./language_server/server/ljsocket.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.other.base64"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) 
+do local __M; IMPORTS["nattlua.other.base64"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) 
 local base64 = {}
 local extract = _G.bit32 and _G.bit32.extract -- Lua 5.2/Lua 5.3 in compatibility mode
 if not extract then
@@ -27166,7 +27317,7 @@ function base64.decode(
 end
 
 return base64 end ]=======], '@./nattlua/other/base64.lua'))())(...) return __M end end
-do local __M; IMPORTS["language_server.server.lsp"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) --DONT_ANALYZE
+do local __M; IMPORTS["language_server.server.lsp"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) --DONT_ANALYZE
 local Compiler = IMPORTS['nattlua.compiler']("nattlua.compiler").New
 local helpers = IMPORTS['nattlua.other.helpers']("nattlua.other.helpers")
 local b64 = IMPORTS['nattlua.other.base64']("nattlua.other.base64")
@@ -27492,27 +27643,6 @@ local function find_token_from_line_character(
 	end
 end
 
-local function find_token_from_line_character_range(
-	tokens,
-	code,
-	lineStart,
-	charStart,
-	lineStop,
-	charStop
-)
-	local sub_pos_start = helpers.LinePositionToSubPosition(code, lineStart, charStart)
-	local sub_pos_stop = helpers.LinePositionToSubPosition(code, lineStop, charStop)
-	local found = {}
-
-	for _, token in ipairs(tokens) do
-		if token.start >= sub_pos_start and token.stop <= sub_pos_stop then
-			table.insert(found, token)
-		end
-	end
-
-	return found
-end
-
 local function get_analyzer_config()
 	
 
@@ -27551,7 +27681,22 @@ local cache = {}
 local temp_files = {}
 
 local function find_file(uri)
+	if not cache[uri] then
+		print("no such file loaded ", uri)
+
+		for k, v in pairs(cache) do
+			print(k)
+		end
+	end
+
 	return cache[uri]
+end
+
+local function store_file(uri, code, tokens)
+	cache[uri] = {
+		code = code,
+		tokens = tokens,
+	}
 end
 
 local function find_temp_file(uri)
@@ -27569,26 +27714,40 @@ local function clear_temp_file(uri)
 end
 
 local function recompile(uri)
-	local cfg = get_analyzer_config()
-	local entry_point = cfg.entry_point
-
-	if not entry_point and uri then
-		entry_point = uri:gsub(working_directory .. "/", "")
-	end
-
-	if not entry_point then return false end
-
 	local responses = {}
-	cfg.inline_require = false
-	cfg.on_read_file = function(parser, path)
-		responses[path] = responses[path] or
+	local compiler
+	local entry_point
+	local cfg
+
+	if working_directory then
+		cfg = get_analyzer_config()
+		entry_point = cfg.entry_point
+
+		if not entry_point and uri then
+			entry_point = uri:gsub(working_directory .. "/", "")
+		end
+
+		if not entry_point then return false end
+
+		cfg.inline_require = false
+		cfg.on_read_file = function(parser, path)
+			responses[path] = responses[path] or
+				{
+					method = "textDocument/publishDiagnostics",
+					params = {uri = working_directory .. "/" .. path, diagnostics = {}},
+				}
+			return find_temp_file(working_directory .. "/" .. path)
+		end
+		compiler = Compiler([[return import("./]] .. entry_point .. [[")]], "file://" .. entry_point, cfg)
+	else
+		compiler = Compiler(find_temp_file(uri), uri)
+		responses[uri] = responses[uri] or
 			{
 				method = "textDocument/publishDiagnostics",
-				params = {uri = working_directory .. "/" .. path, diagnostics = {}},
+				params = {uri = uri, diagnostics = {}},
 			}
-		return find_temp_file(working_directory .. "/" .. path)
 	end
-	local compiler = Compiler([[return import("./]] .. entry_point .. [[")]], "file://" .. entry_point, cfg)
+
 	compiler.debug = true
 	compiler:SetEnvironments(runtime_env, typesystem_env)
 
@@ -27616,27 +27775,40 @@ local function recompile(uri)
 		end
 
 		if compiler:Parse() then
-			for _, root_node in ipairs(compiler.SyntaxTree.imports) do
-				local root = root_node.RootStatement
+			if compiler.SyntaxTree.imports then
+				for _, root_node in ipairs(compiler.SyntaxTree.imports) do
+					local root = root_node.RootStatement
 
-				if root_node.RootStatement then
-					if not root_node.RootStatement.parser then
-						root = root_node.RootStatement.RootStatement
+					if root_node.RootStatement then
+						if not root_node.RootStatement.parser then
+							root = root_node.RootStatement.RootStatement
+						end
+
+						store_file(
+							working_directory .. "/" .. root.parser.config.file_path,
+							root.code,
+							root.lexer_tokens
+						)
 					end
+				end
+			else
+				store_file(uri, compiler.Code, compiler.Tokens)
+			end
 
-					cache[working_directory .. "/" .. root.parser.config.file_path] = {tokens = root.lexer_tokens, code = root.code}
+			local should_analyze = true
+
+			if cfg then
+				if entry_point then
+					local code = assert(io.open((cfg.working_directory or "") .. entry_point, "r")):read("*all")
+					should_analyze = code:find("-" .. "-ANALYZE", nil, true)
+				end
+
+				if not should_analyze and uri and uri:find("%.nlua$") then
+					should_analyze = true
 				end
 			end
 
-			local code = assert(io.open((cfg.working_directory or "") .. entry_point, "r")):read("*all")
-
-			if
-				code:find("-" .. "-ANALYZE", nil, true) or
-				(
-					uri and
-					uri:find("%.nlua$")
-				)
-			then
+			if should_analyze then
 				print("RECOMPILE")
 				local ok, err = compiler:Analyze()
 
@@ -27673,7 +27845,6 @@ end
 
 lsp.methods["initialize"] = function(params)
 	working_directory = params.workspaceFolders[1].uri
-	table.print(params)
 	return {
 		clientInfo = {name = "NattLua", version = "1.0"},
 		capabilities = {
@@ -27805,14 +27976,7 @@ do -- semantic tokens
 				-- x is not relative when there's a new line
 				if y ~= 0 then x = data.character_start - 1 end
 
-				if type then
-					if x < 0 or y < 0 then
-						print(token)
-						table.print(data)
-						table.print({x = x, y = y, len = len, last_x = last_x, last_y = last_y})
-						error("bad token")
-					end
-
+				if type and x >= 0 and y >= 0 then
 					table.insert(integers, y)
 					table.insert(integers, x)
 					table.insert(integers, len)
@@ -27866,13 +28030,50 @@ lsp.methods["textDocument/didSave"] = function(params)
 	recompile(params.textDocument.uri)
 end
 
-local function find_token(uri, text, line, character)
+local function find_token(uri, line, character)
 	local data = find_file(uri)
 
-	if not data then return end
+	if not data then
+		print("unable to find token", uri, line, character)
+		return
+	end
 
 	local token, data = find_token_from_line_character(data.tokens, data.code:GetString(), line + 1, character + 1)
 	return token, data
+end
+
+local function find_token_from_line_character_range(
+	uri,
+	lineStart,
+	charStart,
+	lineStop,
+	charStop
+)
+	local data = find_file(uri)
+
+	if not data then
+		print(
+			"unable to find requested token range",
+			uri,
+			lineStart,
+			charStart,
+			lineStop,
+			charStop
+		)
+		return
+	end
+
+	local sub_pos_start = helpers.LinePositionToSubPosition(data.code, lineStart, charStart)
+	local sub_pos_stop = helpers.LinePositionToSubPosition(data.code, lineStop, charStop)
+	local found = {}
+
+	for _, token in ipairs(tokens) do
+		if token.start >= sub_pos_start and token.stop <= sub_pos_stop then
+			table.insert(found, token)
+		end
+	end
+
+	return found
 end
 
 local function has_value(tbl, str)
@@ -27914,16 +28115,16 @@ local function find_nodes(tokens, type, kind)
 end
 
 lsp.methods["textDocument/inlayHint"] = function(params)
-	print("INLAY REQUEST")
-	local compiler = compile(params.textDocument.uri, params.textDocument.text)
 	local tokens = find_token_from_line_character_range(
-		compiler.Tokens,
-		compiler.Code:GetString(),
+		params.textDocument.uri,
 		params.start.line - 1,
 		params.start.character - 1,
 		params["end"].line - 1,
 		params["end"].character - 1
 	)
+
+	if not tokens then return end
+
 	local hints = {}
 	local assignments = find_nodes(tokens, "statement", "local_assignment")
 
@@ -27974,12 +28175,7 @@ lsp.methods["textDocument/rename"] = function(params)
 		return
 	end
 
-	local token, data = find_token(
-		params.textDocument.uri,
-		params.textDocument.text,
-		params.position.line,
-		params.position.character
-	)
+	local token, data = find_token(params.textDocument.uri, params.position.line, params.position.character)
 
 	if not token or not data or not token.parent then return end
 
@@ -28016,12 +28212,7 @@ lsp.methods["textDocument/rename"] = function(params)
 	}
 end
 lsp.methods["textDocument/definition"] = function(params)
-	local token, data = find_token(
-		params.textDocument.uri,
-		params.textDocument.text,
-		params.position.line,
-		params.position.character
-	)
+	local token, data = find_token(params.textDocument.uri, params.position.line, params.position.character)
 
 	if not token or not data or not token.parent then return end
 
@@ -28040,12 +28231,7 @@ lsp.methods["textDocument/definition"] = function(params)
 	}
 end
 lsp.methods["textDocument/hover"] = function(params)
-	local token, data = find_token(
-		params.textDocument.uri,
-		params.textDocument.text,
-		params.position.line,
-		params.position.character
-	)
+	local token, data = find_token(params.textDocument.uri, params.position.line, params.position.character)
 
 	if not token or not data or not token.parent then return end
 
@@ -28071,7 +28257,7 @@ lsp.methods["textDocument/hover"] = function(params)
 			if upvalue:HasMutations() then
 				local code = ""
 
-				for i, mutation in ipairs(upvalue.mutations) do
+				for i, mutation in ipairs(upvalue.Mutations) do
 					code = code .. "-- " .. i .. "\n"
 					code = code .. "\tvalue = " .. tostring(mutation.value) .. "\n"
 					code = code .. "\tscope = " .. tostring(mutation.scope) .. "\n"
@@ -28154,7 +28340,7 @@ function lsp.Call(params)
 end
 
 return lsp end ]=======], '@./language_server/server/lsp.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.other.json"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) --ANALYZE
+do local __M; IMPORTS["nattlua.other.json"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) --ANALYZE
 local pairs = _G.pairs
 local string = _G.string
 local error = _G.error
@@ -28568,7 +28754,7 @@ function json.decode(str)
 end
 
 return json end ]=======], '@./nattlua/other/json.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.other.jsonrpc"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) --ANALYZE
+do local __M; IMPORTS["nattlua.other.jsonrpc"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) --ANALYZE
 local type = _G.type
 local ipairs = _G.ipairs
 local table = _G.table
@@ -28719,7 +28905,7 @@ function rpc_util.ReceiveHTTP(state, data)
 end
 
 return rpc_util end ]=======], '@./nattlua/other/jsonrpc.lua'))())(...) return __M end end
-do local __M; IMPORTS["language_server.server.main"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local ffi = require("ffi")
+do local __M; IMPORTS["language_server.server.main"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local ffi = require("ffi")
 local ljsocket = IMPORTS['language_server.server.ljsocket']("language_server.server.ljsocket")
 local lsp = IMPORTS['language_server.server.lsp']("language_server.server.lsp")
 local json = IMPORTS['nattlua.other.json']("nattlua.other.json")
@@ -28838,7 +29024,7 @@ return function(port)
 	io.flush()
 	server:Loop()
 end end ]=======], '@./language_server/server/main.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua.cli"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) local nattlua = IMPORTS['nattlua.init']("nattlua.init")
+do local __M; IMPORTS["nattlua.cli"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local nattlua = IMPORTS['nattlua.init']("nattlua.init")
 local ARGS = _G.ARGS or {...}
 local cmd = ARGS[1]
 
@@ -28884,7 +29070,7 @@ elseif cmd == "language-server" then
 else
 	run_nlconfig()
 end end ]=======], '@./nattlua/cli.lua'))())(...) return __M end end
-do local __M; IMPORTS["nattlua"] = function(...) __M = __M or (assert(loadstring([=======[ return function(...) if not table.unpack and _G.unpack then table.unpack = _G.unpack end
+do local __M; IMPORTS["nattlua"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) if not table.unpack and _G.unpack then table.unpack = _G.unpack end
 
 if not io or not io.write then
 	io = io or {}

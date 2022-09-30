@@ -939,7 +939,8 @@ do -- runtime
 			self:ParseAnalyzerFunctionExpression() or
 			self:ParseFunctionExpression() or
 			self:ParseValueExpression() or
-			self:ParseTableExpression()
+			self:ParseTableExpression() or
+			self:ParseLSXExpression()
 		local first = node
 
 		if node then

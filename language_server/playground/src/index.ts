@@ -23,6 +23,39 @@ const main = async () => {
 		tab.setValue(select.value)
 	})
 
+	const lsp = lua.global.get("lsp")
+
+	const callMethodOnServer = (method: string, params: any) => {
+		console.log("calling", method, params)
+		let response = lsp.methods[method](params)
+		console.log("\tgot", response)
+		return response
+	}
+
+	const onMessageFromServer = (method: string, callback: (params: any) => void) => {
+		lsp.On(method, (params) => {
+			console.log("received", method, params)
+			callback(params)
+		})
+	}
+
+	const recompile = () => {
+		let request: DidChangeTextDocumentParams = {
+			textDocument: {
+				uri: "file:///test.nlua",
+			} as DidChangeTextDocumentParams["textDocument"],
+			contentChanges: [
+				{
+					text: tab.getValue(),
+				},
+			],
+		}
+
+		MonacoEditor.setModelMarkers(tab, "owner", [])
+		callMethodOnServer("textDocument/didChange", request)
+	}
+
+
 	for (const [name, code] of Object.entries(assortedExamples)) {
 		let str: string
 		if (typeof code === "string") {
@@ -50,24 +83,6 @@ const main = async () => {
 		tab.setValue(prettyPrint(lua, tab.getValue()))
 	})
 
-	const lsp = lua.global.get("lsp")
-
-	const recompile = () => {
-		let response: DidChangeTextDocumentParams = {
-			textDocument: {
-				uri: "file:///test.nlua",
-			} as DidChangeTextDocumentParams["textDocument"],
-			contentChanges: [
-				{
-					text: tab.getValue(),
-				},
-			],
-		}
-
-		MonacoEditor.setModelMarkers(tab, "owner", [])
-
-		lsp.methods["textDocument/didChange"](lsp, response)
-	}
 
 	tab.onDidChangeContent((e) => {
 		recompile()
@@ -75,7 +90,7 @@ const main = async () => {
 
 	languages.registerInlayHintsProvider("nattlua", {
 		provideInlayHints(model, range) {
-			let response = {
+			let request = {
 				textDocument: {
 					uri: model.uri,
 					text: model.getValue(),
@@ -90,15 +105,13 @@ const main = async () => {
 				},
 			}
 
-			let result = lsp.methods["textDocument/inlay"](lsp, response)
-
-			return result
+			return callMethodOnServer("textDocument/inlayHint", request)
 		},
 	})
 
 	languages.registerRenameProvider("nattlua", {
 		provideRenameEdits: (model, position, newName, token) => {
-			let response = {
+			let request = {
 				textDocument: {
 					uri: model.uri,
 					text: model.getValue(),
@@ -110,7 +123,7 @@ const main = async () => {
 				newName,
 			}
 
-			let result = lsp.methods["textDocument/rename"](lsp, response) as {
+			let response = callMethodOnServer("textDocument/rename", request) as {
 				changes: {
 					[uri: string]: {
 						textDocument: { version?: number }
@@ -122,7 +135,7 @@ const main = async () => {
 				}
 			}
 			let edits = []
-			for (const [uri, changes] of Object.entries(result.changes)) {
+			for (const [uri, changes] of Object.entries(response.changes)) {
 				for (const change of changes.edits) {
 					edits.push({
 						resource: model.uri,
@@ -149,7 +162,7 @@ const main = async () => {
 
 	languages.registerHoverProvider("nattlua", {
 		provideHover: (model, position) => {
-			let response = {
+			let request = {
 				textDocument: {
 					uri: "file:///test.nlua",
 					text: model.getValue(),
@@ -160,33 +173,33 @@ const main = async () => {
 				},
 			}
 
-			let result = lsp.methods["textDocument/hover"](lsp, response) as
+			let response = callMethodOnServer("textDocument/hover", request) as
 				| undefined
 				| {
-						range: Range
-						contents: string
-				  }
+					range: Range
+					contents: string
+				}
 
-			if (!result) return
+			if (!response) return
 
 			// TODO: how to highlight non letters?
 
 			return {
 				contents: [
 					{
-						value: result.contents,
+						value: response.contents,
 					},
 				],
 				// these start at 1, but according to LSP they should be zero indexed
-				startLineNumber: result.range.start.line + 1,
-				startColumn: result.range.start.character + 1,
-				endLineNumber: result.range.end.line + 1,
-				endColumn: result.range.end.character + 1,
+				startLineNumber: response.range.start.line + 1,
+				startColumn: response.range.start.character + 1,
+				endLineNumber: response.range.end.line + 1,
+				endColumn: response.range.end.character + 1,
 			}
 		},
 	})
 
-	lsp.On("textDocument/publishDiagnostics", (params) => {
+	onMessageFromServer("textDocument/publishDiagnostics", (params) => {
 		const { diagnostics } = params as PublishDiagnosticsParams
 		const markers: MonacoEditor.IMarkerData[] = []
 		for (const diag of diagnostics) {
@@ -216,6 +229,8 @@ const main = async () => {
 	})
 
 	editor.setModel(tab)
+
+	setTimeout(() => recompile(), 100)
 }
 
 main()

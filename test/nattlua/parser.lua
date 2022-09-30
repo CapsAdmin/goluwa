@@ -337,3 +337,72 @@ parse[=[
 	end
 	
 ]=]
+parse[=[
+
+local x = <View style={styles.container} foo={1} bar={"aa"}/>
+
+local x = <View>
+	hello world 
+</View>
+
+local x = <View>
+	hello world 12314 aowdk oawkd } 
+</View>
+
+local x = <View>
+	<View>
+		hello world 12314 aowdk oawkd 	
+	</View>
+	
+</View>
+
+local x = <View>
+	<MaterialIcons style={styles.delete} name="delete" size={18} color='#fff'/>
+	
+</View>
+
+local x = <Text>
+	{props.index}
+</Text>
+
+local x = <View style={styles.container}>
+	<View style={styles.indexContainer}>
+		<Text style={styles.index}>
+			{props.index}		
+		</Text>
+			
+	</View>
+	
+</View>
+
+local x = <View style={styles.container}>
+	<Text1 style={styles.index}>
+		{props.index}	
+	</Text1>
+	lol <Text2 style={styles.index}>
+		{props.index}	
+	</Text2>
+</View>
+
+local x = <View style={styles.container}>
+	<View style={styles.indexContainer}>
+		<Text style={styles.index}>
+			{props.index}		
+		</Text>
+			
+	</View>
+	<View style={styles.taskContainer}>
+		<Text style={styles.task}>
+			{props.task}		
+		</Text>
+		<TouchableOpacity onPress={function()
+			props.deleteTask()
+		end}>
+			<MaterialIcons style={styles.delete} name="delete" size={18} color='#fff'/>
+					
+		</TouchableOpacity>
+			
+	</View>
+	
+</View>
+]=]

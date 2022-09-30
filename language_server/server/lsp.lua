@@ -324,27 +324,6 @@ local function find_token_from_line_character(
 	end
 end
 
-local function find_token_from_line_character_range(
-	tokens--[[#: {[number] = Token}]],
-	code--[[#: string]],
-	lineStart--[[#: number]],
-	charStart--[[#: number]],
-	lineStop--[[#: number]],
-	charStop--[[#: number]]
-)
-	local sub_pos_start = helpers.LinePositionToSubPosition(code, lineStart, charStart)
-	local sub_pos_stop = helpers.LinePositionToSubPosition(code, lineStop, charStop)
-	local found = {}
-
-	for _, token in ipairs(tokens) do
-		if token.start >= sub_pos_start and token.stop <= sub_pos_stop then
-			table.insert(found, token)
-		end
-	end
-
-	return found
-end
-
 local function get_analyzer_config()
 	--[[#£ parser.dont_hoist_next_import = true]]
 
@@ -383,7 +362,22 @@ local cache = {}
 local temp_files = {}
 
 local function find_file(uri)
+	if not cache[uri] then
+		print("no such file loaded ", uri)
+
+		for k, v in pairs(cache) do
+			print(k)
+		end
+	end
+
 	return cache[uri]
+end
+
+local function store_file(uri, code, tokens)
+	cache[uri] = {
+		code = code,
+		tokens = tokens,
+	}
 end
 
 local function find_temp_file(uri)
@@ -401,26 +395,40 @@ local function clear_temp_file(uri)
 end
 
 local function recompile(uri)
-	local cfg = get_analyzer_config()
-	local entry_point = cfg.entry_point
-
-	if not entry_point and uri then
-		entry_point = uri:gsub(working_directory .. "/", "")
-	end
-
-	if not entry_point then return false end
-
 	local responses = {}
-	cfg.inline_require = false
-	cfg.on_read_file = function(parser, path)
-		responses[path] = responses[path] or
+	local compiler
+	local entry_point
+	local cfg
+
+	if working_directory then
+		cfg = get_analyzer_config()
+		entry_point = cfg.entry_point
+
+		if not entry_point and uri then
+			entry_point = uri:gsub(working_directory .. "/", "")
+		end
+
+		if not entry_point then return false end
+
+		cfg.inline_require = false
+		cfg.on_read_file = function(parser, path)
+			responses[path] = responses[path] or
+				{
+					method = "textDocument/publishDiagnostics",
+					params = {uri = working_directory .. "/" .. path, diagnostics = {}},
+				}
+			return find_temp_file(working_directory .. "/" .. path)
+		end
+		compiler = Compiler([[return import("./]] .. entry_point .. [[")]], "file://" .. entry_point, cfg)
+	else
+		compiler = Compiler(find_temp_file(uri), uri)
+		responses[uri] = responses[uri] or
 			{
 				method = "textDocument/publishDiagnostics",
-				params = {uri = working_directory .. "/" .. path, diagnostics = {}},
+				params = {uri = uri, diagnostics = {}},
 			}
-		return find_temp_file(working_directory .. "/" .. path)
 	end
-	local compiler = Compiler([[return import("./]] .. entry_point .. [[")]], "file://" .. entry_point, cfg)
+
 	compiler.debug = true
 	compiler:SetEnvironments(runtime_env, typesystem_env)
 
@@ -448,27 +456,40 @@ local function recompile(uri)
 		end
 
 		if compiler:Parse() then
-			for _, root_node in ipairs(compiler.SyntaxTree.imports) do
-				local root = root_node.RootStatement
+			if compiler.SyntaxTree.imports then
+				for _, root_node in ipairs(compiler.SyntaxTree.imports) do
+					local root = root_node.RootStatement
 
-				if root_node.RootStatement then
-					if not root_node.RootStatement.parser then
-						root = root_node.RootStatement.RootStatement
+					if root_node.RootStatement then
+						if not root_node.RootStatement.parser then
+							root = root_node.RootStatement.RootStatement
+						end
+
+						store_file(
+							working_directory .. "/" .. root.parser.config.file_path,
+							root.code,
+							root.lexer_tokens
+						)
 					end
+				end
+			else
+				store_file(uri, compiler.Code, compiler.Tokens)
+			end
 
-					cache[working_directory .. "/" .. root.parser.config.file_path] = {tokens = root.lexer_tokens, code = root.code}
+			local should_analyze = true
+
+			if cfg then
+				if entry_point then
+					local code = assert(io.open((cfg.working_directory or "") .. entry_point, "r")):read("*all")
+					should_analyze = code:find("-" .. "-ANALYZE", nil, true)
+				end
+
+				if not should_analyze and uri and uri:find("%.nlua$") then
+					should_analyze = true
 				end
 			end
 
-			local code = assert(io.open((cfg.working_directory or "") .. entry_point, "r")):read("*all")
-
-			if
-				code:find("-" .. "-ANALYZE", nil, true) or
-				(
-					uri and
-					uri:find("%.nlua$")
-				)
-			then
+			if should_analyze then
 				print("RECOMPILE")
 				local ok, err = compiler:Analyze()
 
@@ -505,7 +526,6 @@ end
 
 lsp.methods["initialize"] = function(params)
 	working_directory = params.workspaceFolders[1].uri
-	table.print(params)
 	return {
 		clientInfo = {name = "NattLua", version = "1.0"},
 		capabilities = {
@@ -637,14 +657,7 @@ do -- semantic tokens
 				-- x is not relative when there's a new line
 				if y ~= 0 then x = data.character_start - 1 end
 
-				if type then
-					if x < 0 or y < 0 then
-						print(token)
-						table.print(data)
-						table.print({x = x, y = y, len = len, last_x = last_x, last_y = last_y})
-						error("bad token")
-					end
-
+				if type and x >= 0 and y >= 0 then
 					table.insert(integers, y)
 					table.insert(integers, x)
 					table.insert(integers, len)
@@ -698,13 +711,50 @@ lsp.methods["textDocument/didSave"] = function(params)
 	recompile(params.textDocument.uri)
 end
 
-local function find_token(uri, text, line, character)
+local function find_token(uri, line, character)
 	local data = find_file(uri)
 
-	if not data then return end
+	if not data then
+		print("unable to find token", uri, line, character)
+		return
+	end
 
 	local token, data = find_token_from_line_character(data.tokens, data.code:GetString(), line + 1, character + 1)
 	return token, data
+end
+
+local function find_token_from_line_character_range(
+	uri--[[#: string]],
+	lineStart--[[#: number]],
+	charStart--[[#: number]],
+	lineStop--[[#: number]],
+	charStop--[[#: number]]
+)
+	local data = find_file(uri)
+
+	if not data then
+		print(
+			"unable to find requested token range",
+			uri,
+			lineStart,
+			charStart,
+			lineStop,
+			charStop
+		)
+		return
+	end
+
+	local sub_pos_start = helpers.LinePositionToSubPosition(data.code, lineStart, charStart)
+	local sub_pos_stop = helpers.LinePositionToSubPosition(data.code, lineStop, charStop)
+	local found = {}
+
+	for _, token in ipairs(tokens) do
+		if token.start >= sub_pos_start and token.stop <= sub_pos_stop then
+			table.insert(found, token)
+		end
+	end
+
+	return found
 end
 
 local function has_value(tbl, str)
@@ -746,16 +796,16 @@ local function find_nodes(tokens, type, kind)
 end
 
 lsp.methods["textDocument/inlayHint"] = function(params)
-	print("INLAY REQUEST")
-	local compiler = compile(params.textDocument.uri, params.textDocument.text)
 	local tokens = find_token_from_line_character_range(
-		compiler.Tokens,
-		compiler.Code:GetString(),
+		params.textDocument.uri,
 		params.start.line - 1,
 		params.start.character - 1,
 		params["end"].line - 1,
 		params["end"].character - 1
 	)
+
+	if not tokens then return end
+
 	local hints = {}
 	local assignments = find_nodes(tokens, "statement", "local_assignment")
 
@@ -806,12 +856,7 @@ lsp.methods["textDocument/rename"] = function(params)
 		return
 	end
 
-	local token, data = find_token(
-		params.textDocument.uri,
-		params.textDocument.text,
-		params.position.line,
-		params.position.character
-	)
+	local token, data = find_token(params.textDocument.uri, params.position.line, params.position.character)
 
 	if not token or not data or not token.parent then return end
 
@@ -848,12 +893,7 @@ lsp.methods["textDocument/rename"] = function(params)
 	}
 end
 lsp.methods["textDocument/definition"] = function(params)
-	local token, data = find_token(
-		params.textDocument.uri,
-		params.textDocument.text,
-		params.position.line,
-		params.position.character
-	)
+	local token, data = find_token(params.textDocument.uri, params.position.line, params.position.character)
 
 	if not token or not data or not token.parent then return end
 
@@ -872,12 +912,7 @@ lsp.methods["textDocument/definition"] = function(params)
 	}
 end
 lsp.methods["textDocument/hover"] = function(params)
-	local token, data = find_token(
-		params.textDocument.uri,
-		params.textDocument.text,
-		params.position.line,
-		params.position.character
-	)
+	local token, data = find_token(params.textDocument.uri, params.position.line, params.position.character)
 
 	if not token or not data or not token.parent then return end
 
@@ -903,7 +938,7 @@ lsp.methods["textDocument/hover"] = function(params)
 			if upvalue:HasMutations() then
 				local code = ""
 
-				for i, mutation in ipairs(upvalue.mutations) do
+				for i, mutation in ipairs(upvalue.Mutations) do
 					code = code .. "-- " .. i .. "\n"
 					code = code .. "\tvalue = " .. tostring(mutation.value) .. "\n"
 					code = code .. "\tscope = " .. tostring(mutation.scope) .. "\n"
