@@ -1,8 +1,8 @@
-ffibuild.DockerBuild(
+ffibuild.Build(
 	{
 		name = "vtflib",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
-		dockerfile = [[
+		linux = [[
 			FROM ubuntu:20.04
 
 			ARG DEBIAN_FRONTEND=noninteractive

@@ -1,8 +1,8 @@
-ffibuild.DockerBuild(
+ffibuild.Build(
 	{
 		name = "libtls",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
-		dockerfile = [[
+		linux = [[
 			FROM ubuntu:20.04
 
 			ARG DEBIAN_FRONTEND=noninteractive
@@ -23,7 +23,8 @@ ffibuild.DockerBuild(
 			#include <tls.h>
 		]],
 		filter_library = function(path)
-			if path:ends_with("libtls") or
+			if
+				path:ends_with("libtls") or
 				path:ends_with("libssl") or
 				path:ends_with("libcrypto")
 			then
@@ -57,7 +58,7 @@ ffibuild.DockerBuild(
 				end})
 			]=]
 			s = s .. "library = " .. meta_data:BuildLuaFunctions("^tls_(.+)")
-			s = s .. "library.e = " .. meta_data:BuildLuaEnums("^TLS_(.+)", { "./include/tls.h" })
+			s = s .. "library.e = " .. meta_data:BuildLuaEnums("^TLS_(.+)", {"./include/tls.h"})
 			s = s .. "library.clib = CLIB\n"
 			s = s .. "return library\n"
 			return s

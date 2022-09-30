@@ -1,7 +1,7 @@
-ffibuild.DockerBuild(
+ffibuild.Build(
 	{
 		name = "freetype",
-		dockerfile = [[
+		linux = [[
 			FROM ubuntu:20.04
 			ARG DEBIAN_FRONTEND=noninteractive
 			ENV TZ=America/New_York

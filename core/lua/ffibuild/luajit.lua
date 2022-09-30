@@ -34,24 +34,27 @@ local instructions = {
 		]=]
 		s = s .. "library = " .. meta_data:BuildLuaFunctions("^lua_(.+)")
 		s = s .. "library.L = " .. meta_data:BuildLuaFunctions("^luaL_(.+)")
-		s = s .. "library.e = " .. meta_data:BuildLuaEnums("^LUA_(.+)", { "./src/lua.h" })
+		s = s .. "library.e = " .. meta_data:BuildLuaEnums("^LUA_(.+)", {"./src/lua.h"})
 		s = s .. "return library\n"
 		return s
 	end,
-	dockerfile = [[
+	linux = [[
 		FROM ubuntu:20.04
-
+		
 		ARG DEBIAN_FRONTEND=noninteractive
 		ENV TZ=America/New_York
 
 		RUN apt-get update 
-		
 		RUN apt-get install -y git make gcc 
 	
 		WORKDIR /src
 		RUN git clone https://github.com/LuaJIT/LuaJIT --depth 1 . && git checkout v2.1
 		RUN make -j32 CCDEBUG=-g XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
-	]]
+	]],
+	macos = [[
+		git clone https://github.com/LuaJIT/LuaJIT --depth 1 . && git checkout v2.1
+		
+		export MACOSX_DEPLOYMENT_TARGET=11.0 && make -j32 CCDEBUG=-g XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT
+	]],
 }
-
-ffibuild.DockerBuild(instructions)
+ffibuild.Build(instructions)

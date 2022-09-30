@@ -1,8 +1,8 @@
-ffibuild.DockerBuild(
+ffibuild.Build(
 	{
 		name = "sndfile",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
-		dockerfile = [[
+		linux = [[
 			FROM ubuntu:20.04
 
 			ARG DEBIAN_FRONTEND=noninteractive
@@ -43,7 +43,10 @@ ffibuild.DockerBuild(
 
 				for name, struct in pairs(meta_data.structs) do
 					if name:find("^struct SF_") and not header:find(name) then
-						list.insert(extra, { str = name .. struct:GetDeclaration(meta_data) .. ";\n", pos = struct.i })
+						list.insert(
+							extra,
+							{str = name .. struct:GetDeclaration(meta_data) .. ";\n", pos = struct.i}
+						)
 					end
 				end
 

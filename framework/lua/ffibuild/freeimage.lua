@@ -1,7 +1,7 @@
-ffibuild.DockerBuild(
+ffibuild.Build(
 	{
 		name = "freeimage",
-		dockerfile = [[
+		linux = [[
 			FROM ubuntu:20.04
 			ARG DEBIAN_FRONTEND=noninteractive
 			ENV TZ=America/New_York
@@ -275,7 +275,6 @@ ffibuild.DockerBuild(
 		]]
 			s = s .. "library.clib = CLIB\n"
 			s = s .. "return library\n"
-
 			return s
 		end,
 	}

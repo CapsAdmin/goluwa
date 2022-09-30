@@ -1,10 +1,10 @@
-ffibuild.DockerBuild(
+ffibuild.Build(
 	{
 		name = "enet",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 		c_source = [[#include "enet/enet.h"]],
 		gcc_flags = "-I./include",
-		dockerfile = [[		
+		linux = [[		
 			FROM ubuntu:20.04
 			ARG DEBIAN_FRONTEND=noninteractive
 			ENV TZ=America/New_York

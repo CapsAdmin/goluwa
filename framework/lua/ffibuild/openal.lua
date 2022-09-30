@@ -1,11 +1,11 @@
-for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
-	ffibuild.DockerBuild(
+for lib_name, enum_name in pairs({al = "AL_", alc = "ALC_"}) do
+	ffibuild.Build(
 		{
 			name = "openal",
 			addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 			lua_name = lib_name,
 			shared_library_name = "openal",
-			dockerfile = [[
+			linux = [[
 				FROM ubuntu:20.04
 
 				ARG DEBIAN_FRONTEND=noninteractive
@@ -43,10 +43,8 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 			end,
 			build_lua = function(header, meta_data)
 				ffibuild.SetBuildName(lib_name)
-
 				-- seems to be windows only
 				meta_data.functions.alcReopenDeviceSOFT = nil
-
 				local s = [=[
 					local ffi = require("ffi")
 					local CLIB = assert(ffi.load("openal"))
@@ -64,14 +62,13 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 					]]
 					s = s .. "local library = {\n"
 
-					for func_name, type in table.sorted_pairs(meta_data.functions, function(a, b) return a.key < b.key end) do
+					for func_name, type in table.sorted_pairs(meta_data.functions, function(a, b)
+						return a.key < b.key
+					end) do
 						local friendly = func_name:match("^" .. lib_name .. "(%u.+)")
 
 						if friendly then
-							s = s ..
-								"\t" ..
-								friendly ..
-								" = get_proc_address(\"" .. func_name .. "\", \"" .. type:GetDeclaration(meta_data, "*", "") .. "\"),\n"
+							s = s .. "\t" .. friendly .. " = get_proc_address(\"" .. func_name .. "\", \"" .. type:GetDeclaration(meta_data, "*", "") .. "\"),\n"
 						end
 					end
 
@@ -82,8 +79,8 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 
 				local args = {}
 
-				for _, name in ipairs({ "al", "alc", "alext", "efx" }) do
-					list.insert(args, { "./include/AL/" .. name .. ".h", enum_name })
+				for _, name in ipairs({"al", "alc", "alext", "efx"}) do
+					list.insert(args, {"./include/AL/" .. name .. ".h", enum_name})
 				end
 
 				local enums = meta_data:BuildLuaEnums("^" .. enum_name .. "(.+)", args)
@@ -109,12 +106,11 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 						for key, val in pairs(enums) do
 							local type = key:match(type_pattern)
 
-
 							if type then
 								type = type:lower()
 
 								if not unavailable[type] then
-									available[type] = { enum = val, params = {} }
+									available[type] = {enum = val, params = {}}
 								end
 							end
 						end
@@ -148,15 +144,21 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 
 						s = s .. "library." .. type .. "Params = {\n"
 
-						for type, info in table.sorted_pairs(available, function(a, b) return a.key < b.key end) do
+						for type, info in table.sorted_pairs(available, function(a, b)
+							return a.key < b.key
+						end) do
 							s = s .. "\t" .. type .. " = {\n"
 							s = s .. "\t\t" .. "enum = " .. tostring(info.enum) .. ",\n"
 							s = s .. "\t\t" .. "params = {\n"
 
-							for key, tbl in table.sorted_pairs(info.params, function(a, b) return a.key < b.key end) do
+							for key, tbl in table.sorted_pairs(info.params, function(a, b)
+								return a.key < b.key
+							end) do
 								s = s .. "\t\t\t" .. key .. " = {\n"
 
-								for key, val in table.sorted_pairs(tbl, function(a, b) return a.key < b.key end) do
+								for key, val in table.sorted_pairs(tbl, function(a, b)
+									return a.key < b.key
+								end) do
 									s = s .. "\t\t\t\t" .. key .. " = " .. tostring(val) .. ",\n"
 								end
 
@@ -171,11 +173,13 @@ for lib_name, enum_name in pairs({ al = "AL_", alc = "ALC_" }) do
 						s = s .. "function library.GetAvailable" .. type .. "s()\n\treturn library." .. type .. "Params\nend\n"
 					end
 
-					gen_available_params("Effect", { "pitch_shifter", "vocal_morpher", "frequency_shifter" })
-					gen_available_params("Filter", { "highpass", "bandpass" })
+					gen_available_params("Effect", {"pitch_shifter", "vocal_morpher", "frequency_shifter"})
+					gen_available_params("Filter", {"highpass", "bandpass"})
 				end
 
-				for func_name in table.sorted_pairs(meta_data.functions, function(a, b) return a.key < b.key end) do
+				for func_name in table.sorted_pairs(meta_data.functions, function(a, b)
+					return a.key < b.key
+				end) do
 					local friendly = func_name:match("^" .. lib_name .. "(%u.+)")
 
 					if friendly and friendly:find("^Gen%u%l") then

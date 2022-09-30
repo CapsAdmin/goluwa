@@ -1,9 +1,9 @@
-ffibuild.DockerBuild(
+ffibuild.Build(
 	{
 		name = "SDL2",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 		strip_undefined_symbols = true,
-		dockerfile = [[
+		linux = [[
 			FROM ubuntu:20.04
 
 			ARG DEBIAN_FRONTEND=noninteractive
@@ -105,7 +105,6 @@ ffibuild.DockerBuild(
 			header = header:gsub("struct VkInstance_T {};\n", "")
 			header = header:gsub("struct VkInstance_T", "void")
 			header = header:gsub("struct VkSurfaceKHR_T", "void")
-
 			local s = [=[
 				local ffi = require("ffi")
 				local lib = assert(ffi.load("SDL2"))
@@ -117,9 +116,8 @@ ffibuild.DockerBuild(
 					end
 				end})
 			]=]
-
 			s = s .. "library = " .. meta_data:BuildLuaFunctions("^SDL_(.+)")
-			s = s .. "library.e = " .. meta_data:BuildLuaEnums("^SDL_(.+)", { "./include/SDL_hints.h" }, "SDL_")
+			s = s .. "library.e = " .. meta_data:BuildLuaEnums("^SDL_(.+)", {"./include/SDL_hints.h"}, "SDL_")
 			s = s .. [[
 		function library.CreateVulkanSurface(window, instance)
 			local box = ffi.new("struct VkSurfaceKHR_T * [1]")

@@ -25,7 +25,7 @@ function ffibuild.SplitHeader(header, ...)
 	header = header:gsub("/%*.-%*/", "")
 	local found = {}
 
-	for _, what in ipairs({ ... }) do
+	for _, what in ipairs({...}) do
 		local _, stop_pos = header:find(".-" .. what)
 
 		if stop_pos then stop_pos = stop_pos - #what end
@@ -137,7 +137,8 @@ local function normalize_header(header)
 	-- extern int bar;
 	-- extern int faz;
 	header = header:gsub("extern (.-);", function(s)
-		if s:find(",", nil, true) and
+		if
+			s:find(",", nil, true) and
 			not s:find("(", nil, true)
 			and
 			not s:find("{", nil, true)
@@ -157,7 +158,6 @@ local function normalize_header(header)
 			return new_str:sub(2, -2) -- get rid of exessive whitespace
 		end
 	end)
-
 	return header
 end
 
@@ -171,9 +171,7 @@ function ffibuild.GetMetaData(header)
 		enums = {},
 		global_enums = {},
 	}
-
 	header = normalize_header(header)
-
 
 	local function is_function(str)
 		return str:find("^.-%b() %b() $") and not str:find_simple("=")
@@ -189,7 +187,6 @@ function ffibuild.GetMetaData(header)
 
 	for line in header:gmatch(" (.-);\n") do
 		local extern
-
 
 		if line:find("^typedef") then
 			line = line:match("^typedef (.+)")
@@ -272,6 +269,7 @@ function ffibuild.GetMetaData(header)
 				meta_data.variables[name] = create_type("type", declaration, array_size)
 			end
 		end
+
 		i = i + 1
 	end
 
@@ -280,6 +278,7 @@ function ffibuild.GetMetaData(header)
 		local enum_header = {}
 		local function_header = {}
 		local type_header = {}
+
 		for func_name, func_type in pairs(self.functions) do
 			if not check_function or check_function(func_name, func_type) then
 				func_type:FetchRequired(self, required)
@@ -331,11 +330,11 @@ function ffibuild.GetMetaData(header)
 
 			if type:GetSubType() == "struct" then
 				if self.structs[basic_type] then
-					list.insert(temp, { type = type, i = self.structs[basic_type].i })
+					list.insert(temp, {type = type, i = self.structs[basic_type].i})
 				end
 			elseif type:GetSubType() == "union" then
 				if self.unions[basic_type] then
-					list.insert(temp, { type = type, i = self.unions[basic_type].i })
+					list.insert(temp, {type = type, i = self.unions[basic_type].i})
 				end
 			end
 		end
@@ -352,13 +351,19 @@ function ffibuild.GetMetaData(header)
 
 			if type:GetSubType() == "struct" then
 				if keep_structs then
-					list.insert(type_header, basic_type .. " " .. self.structs[basic_type]:GetDeclaration(self) .. ";\n")
+					list.insert(
+						type_header,
+						basic_type .. " " .. self.structs[basic_type]:GetDeclaration(self) .. ";\n"
+					)
 				else
 					list.insert(type_header, basic_type .. " { };\n")
 				end
 			elseif type:GetSubType() == "union" then
 				if keep_structs then
-					list.insert(type_header, basic_type .. " " .. self.unions[basic_type]:GetDeclaration(self) .. ";\n")
+					list.insert(
+						type_header,
+						basic_type .. " " .. self.unions[basic_type]:GetDeclaration(self) .. ";\n"
+					)
 				else
 					list.insert(type_header, basic_type .. " { };\n")
 				end
@@ -368,8 +373,6 @@ function ffibuild.GetMetaData(header)
 		table.sort(enum_header)
 		--table.sort(type_header)
 		table.sort(function_header)
-
-
 		local header = table.concat(enum_header) .. table.concat(type_header) .. table.concat(function_header)
 		--struct _GList { void * data; struct _GList * next; struct _GList * prev; };
 		header = header:gsub(" ([^%a%d%s_])", "%1"):gsub("([^%a%d%s_]) ", "%1")
@@ -379,10 +382,10 @@ function ffibuild.GetMetaData(header)
 
 	function meta_data:BuildLuaFunctions(pattern, from, to, clib, callback)
 		local s = "{\n"
-
 		local functions = {}
+
 		for name, type in pairs(self.functions) do
-			list.insert(functions, { name = name, type = type })
+			list.insert(functions, {name = name, type = type})
 		end
 
 		table.sort(functions, function(a, b)
@@ -392,6 +395,7 @@ function ffibuild.GetMetaData(header)
 		for _, func in pairs(functions) do
 			local func_type = func.type
 			local func_name = func.name
+
 			if not callback or callback(func_type.name) ~= false then
 				local friendly_name
 
@@ -420,9 +424,7 @@ function ffibuild.GetMetaData(header)
 						s = s .. "--"
 					end
 
-					s = s ..
-						"\t" ..
-						friendly_name .. " = " .. ffibuild.BuildLuaFunction(func_type.name, func_type, nil, nil, nil, clib) .. ",\n"
+					s = s .. "\t" .. friendly_name .. " = " .. ffibuild.BuildLuaFunction(func_type.name, func_type, nil, nil, nil, clib) .. ",\n"
 				end
 			end
 		end
@@ -468,16 +470,17 @@ function ffibuild.GetMetaData(header)
 
 		function meta_data:BuildLuaEnums(pattern, define_file, define_starts_with, group)
 			local s = "{\n"
-
 			local enums = {}
 			local global_enums = {}
+
 			for basic_type, type in pairs(self.enums) do
-				list.insert(enums, { basic_type = basic_type, type = type })
+				list.insert(enums, {basic_type = basic_type, type = type})
 			end
 
 			table.sort(enums, function(a, b)
 				return a.basic_type < b.basic_type
 			end)
+
 			for _, enums in pairs(self.global_enums) do
 				for _, enum in ipairs(enums.enums) do
 					list.insert(global_enums, enum)
@@ -488,10 +491,10 @@ function ffibuild.GetMetaData(header)
 				return a.key < b.key
 			end)
 
-
 			for _, enum in pairs(enums) do
 				local basic_type = enum.basic_type
 				local type = enum.type
+
 				for _, enum in ipairs(type.enums) do
 					local key = get_enum_name(enum.key, pattern, group, basic_type)
 
@@ -546,7 +549,7 @@ end
 do -- type metatables
 	local metatables = {}
 
-	for _, name in ipairs({ "function", "struct", "type", "var_arg", "enums" }) do
+	for _, name in ipairs({"function", "struct", "type", "var_arg", "enums"}) do
 		local META = {}
 		META.__index = META
 		META.MetaType = name
@@ -580,7 +583,7 @@ do -- type metatables
 		local LR = function(operator, name)
 			local func = bit[name]
 			operators[operator] = setmetatable(
-				{ find = operator:gsub("(.)", "%%%1"), replace = "%%_O['" .. operator .. "']%%" },
+				{find = operator:gsub("(.)", "%%%1"), replace = "%%_O['" .. operator .. "']%%"},
 				{
 					__mod = function(a)
 						return setmetatable({}, {
@@ -595,7 +598,7 @@ do -- type metatables
 		local L = function(operator, name)
 			local func = bit[name]
 			operators[operator] = setmetatable(
-				{ find = operator:gsub("(.)", "%%%1"), replace = "_O['" .. operator .. "']" },
+				{find = operator:gsub("(.)", "%%%1"), replace = "_O['" .. operator .. "']"},
 				{
 					__call = function(_, a)
 						return func(a)
@@ -691,9 +694,10 @@ do -- type metatables
 					else
 						val = find_enum(current_meta_data, enums, val) or val
 
-						if type(val) == "string" and
+						if
+							type(val) == "string" and
 							(
-							val:sub(#val, #val):lower() == "u" or
+								val:sub(#val, #val):lower() == "u" or
 								val:sub(#val, #val):lower() == "l"
 							)
 						then
@@ -728,11 +732,11 @@ do -- type metatables
 					key = line
 				end
 
-				list.insert(enums, { key = key, val = num })
+				list.insert(enums, {key = key, val = num})
 				num = num + 1
 			end
 
-			return { enums = enums }
+			return {enums = enums}
 		end
 
 		function ENUMS:GetCopy()
@@ -843,7 +847,7 @@ do -- type metatables
 					list.insert(declaration, (type_replace or node.type):reverse())
 				end
 
-				for _, flag in ipairs({ "signed", "unsigned", "const", "volatile" }) do
+				for _, flag in ipairs({"signed", "unsigned", "const", "volatile"}) do
 					if node[flag] then list.insert(declaration, flag:reverse()) end
 				end
 
@@ -1032,14 +1036,15 @@ do -- type metatables
 					else
 						local declaration, name = arg:match("^([%a%d%s_%*]-) ([%a%d_]-)$")
 
-						if not declaration or
+						if
+							not declaration or
 							(
-							meta_data and
+								meta_data and
 								meta_data.typedefs[name]
 							)
 							or
 							(
-							meta_data and
+								meta_data and
 								meta_data.enums[arg]
 							)
 							or
@@ -1134,10 +1139,10 @@ do -- type metatables
 			end
 
 			return return_type:GetDeclaration(meta_data) .. "(" .. (
-				func_type or
+					func_type or
 					self.func_type
 				) .. " " .. (
-				func_name or
+					func_name or
 					self.name or
 					""
 				) .. ")" .. arg_line
@@ -1297,7 +1302,7 @@ do -- type metatables
 		end
 
 		function STRUCT:GetCopy()
-			local copy = { data = {}, struct = self.struct, i = self.i }
+			local copy = {data = {}, struct = self.struct, i = self.i}
 
 			for i, v in ipairs(self.data) do
 				copy.data[i] = v:GetCopy()
@@ -1373,13 +1378,13 @@ end
 
 do -- lua helper functions
 	function ffibuild.BuildLuaFunction(
-	    real_name,
-	    func_type,
-	    call_translate,
-	    return_translate,
-	    meta_data,
-	    first_argument_self,
-	    clib
+		real_name,
+		func_type,
+		call_translate,
+		return_translate,
+		meta_data,
+		first_argument_self,
+		clib
 	)
 		clib = clib or "CLIB"
 		local s = ""
@@ -1388,9 +1393,9 @@ do -- lua helper functions
 			local parameters, call = func_type:GetParameters(
 				first_argument_self,
 				call_translate and
-				function(type, name)
-					return call_translate(type:GetDeclaration(meta_data), name, type, func_type) or name
-				end
+					function(type, name)
+						return call_translate(type:GetDeclaration(meta_data), name, type, func_type) or name
+					end
 			)
 			s = s .. "function(" .. parameters .. ") "
 			s = s .. "local v = " .. clib .. "." .. real_name .. "(" .. call .. ") "
@@ -1565,50 +1570,65 @@ do -- lua helper functions
 
 		if not ok or (code and code ~= 0) then
 			error(
-				"command '" ..
-				cmd .. "' failed  " .. "ok=" .. tostring(ok) .. " dunno=" .. tostring(dunno) .. " code=" .. tostring(code),
+				"command '" .. cmd .. "' failed  " .. "ok=" .. tostring(ok) .. " dunno=" .. tostring(dunno) .. " code=" .. tostring(code),
 				2
 			)
 		end
 	end
 
-	function ffibuild.DockerBuild(info)
+	function ffibuild.Build(info)
 		local name = info.name
 		logn("building ", name, "...")
-		local docker_name = "goluwa-ffibuild-" .. name:lower()
 		assert(fs.CreateDirectory(R("temp/") .. "ffibuild/" .. name, true))
 		local OUTPUT = R("temp/ffibuild/" .. name .. "/")
-		vfs.Write(OUTPUT .. "goluwa_ffibuild_source.c", info.c_source)
-		local dockerfile = info.dockerfile
-		dockerfile = dockerfile .. "\n" .. "RUN ls\n"
-		dockerfile = dockerfile .. "\n" .. "COPY ./goluwa_ffibuild_source.c ./\n"
-		dockerfile = dockerfile ..
-			"\n" .. "RUN gcc -xc -E -P " .. info.gcc_flags .. " goluwa_ffibuild_source.c > goluwa_ffibuild_source.h"
-		vfs.Write(OUTPUT .. "Dockerfile", dockerfile)
 
-		if info.addfiles then
-			for k, v in pairs(info.addfiles) do
-				vfs.Write(OUTPUT .. k, v)
+		if info.macos and jit.os == "OSX" then
+			assert(fs.RemoveRecursively(OUTPUT))
+			fs.CreateDirectory(OUTPUT)
+			fs.PushWorkingDirectory(OUTPUT)
+
+			for _, line in ipairs(info.macos:split("\n")) do
+				execute(line)
 			end
-		end
 
-		fs.PushWorkingDirectory(OUTPUT)
-		local ok, err = pcall(function()
+			vfs.Write(OUTPUT .. "goluwa_ffibuild_source.c", info.c_source)
 			execute(
-				"docker build " .. (
-				info.nocache and
-					"--no-cache" or
-					""
-				) .. " . -t " .. docker_name
+				"gcc -xc -E -P " .. info.gcc_flags .. " goluwa_ffibuild_source.c > goluwa_ffibuild_source.h"
 			)
-			execute("docker container rm --force " .. docker_name)
-			execute("docker create --name " .. docker_name .. " " .. docker_name .. ":latest")
-			execute("docker cp " .. docker_name .. ":/src/. .")
-			execute("docker rmi --force " .. docker_name)
-		end)
-		fs.PopWorkingDirectory()
+			fs.PopWorkingDirectory()
+		elseif info.linux then
+			local docker_name = "goluwa-ffibuild-" .. name:lower()
+			vfs.Write(OUTPUT .. "goluwa_ffibuild_source.c", info.c_source)
+			local linux = info.linux
+			assert(system.OSCommandExists("docker"), "must have docker installed")
+			linux = linux .. "\n" .. "COPY ./goluwa_ffibuild_source.c ./\n"
+			linux = linux .. "\n" .. "RUN gcc -xc -E -P " .. info.gcc_flags .. " goluwa_ffibuild_source.c > goluwa_ffibuild_source.h"
+			vfs.Write(OUTPUT .. "Dockerfile", linux)
 
-		if not ok then error(err, 2) end
+			if info.addfiles then
+				for k, v in pairs(info.addfiles) do
+					vfs.Write(OUTPUT .. k, v)
+				end
+			end
+
+			fs.PushWorkingDirectory(OUTPUT)
+			local ok, err = pcall(function()
+				execute(
+					"docker build " .. (
+							info.nocache and
+							"--no-cache" or
+							""
+						) .. " . -t " .. docker_name
+				)
+				execute("docker container rm --force " .. docker_name)
+				execute("docker create --name " .. docker_name .. " " .. docker_name .. ":latest")
+				execute("docker cp " .. docker_name .. ":/src/. .")
+				execute("docker rmi --force " .. docker_name)
+			end)
+			fs.PopWorkingDirectory()
+
+			if not ok then error(err, 2) end
+		end
 
 		local dir = e.TEMP_FOLDER .. "ffibuild/" .. name .. "/"
 		local root = "os:" .. e.ROOT_FOLDER
@@ -1630,8 +1650,7 @@ do -- lua helper functions
 				end
 
 				local relative_path = info.translate_path and info.translate_path(path) or name
-				local bin_path = "bin/" ..
-					jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. relative_path .. "." .. vfs.GetSharedLibraryExtension()
+				local bin_path = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" .. relative_path .. "." .. vfs.GetSharedLibraryExtension()
 				llog("found %s", path)
 				logn(utility.GetLikelyLibraryDependenciesFormatted(path))
 				local to = git_dir .. bin_path
@@ -1671,14 +1690,16 @@ do -- lua helper functions
 
 			if info.build_lua then
 				::again::
+
 				fs.PushWorkingDirectory(dir)
 				local lua = info.build_lua(header, meta_data)
 				fs.PopWorkingDirectory()
 				local name = info.lua_name or ffibuild.GetBuildName()
 
-				if ffibuild.TestLibrary(lua, header) or
+				if
+					ffibuild.TestLibrary(lua, header) or
 					(
-					strip_undefined_symbols and
+						strip_undefined_symbols and
 						next(strip_undefined_symbols)
 					)
 				then
@@ -1759,21 +1780,28 @@ end
 
 if RELOAD then
 	local lol = ""
+
 	for _, path in ipairs(fs.get_files_recursive("storage/temp/ffibuild")) do
 		if path:ends_with("goluwa_ffibuild_source.h") then
 			local f = assert(io.open(path))
 			local header = f:read("*all")
 			f:close()
-
-			lol = lol ..
-				ffibuild.GetMetaData(header):BuildMinimalHeader(function() return true end, function() return true end, true, true)
+			lol = lol .. ffibuild.GetMetaData(header):BuildMinimalHeader(
+					function()
+						return true
+					end,
+					function()
+						return true
+					end,
+					true,
+					true
+				)
 		end
 	end
 
-
 	lol = "typedef uint32_t __fd_mask;\n" .. lol
 	vfs.Write("temp/ffibuild.h", lol)
-	local path = R "temp/ffibuild.h"
+	local path = R("temp/ffibuild.h")
 	os.execute("luajit -e \"require('ffi').cdef(io.open('" .. path .. "'):read('*all'))\"")
 end
 

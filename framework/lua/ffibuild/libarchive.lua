@@ -3,12 +3,11 @@
 
 	https://github.com/libarchive/libarchive/blob/master/.github/workflows/ci.yml#L54
 
-]]
-ffibuild.DockerBuild(
+]] ffibuild.Build(
 	{
 		name = "libarchive",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
-		dockerfile = [[
+		linux = [[
 			FROM ubuntu:20.04
 
 			ARG DEBIAN_FRONTEND=noninteractive
