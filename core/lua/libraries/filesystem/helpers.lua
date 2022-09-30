@@ -411,7 +411,7 @@ function vfs.WatchLuaFiles2(b)
 
 			if files then
 				for _, path in ipairs(files) do
-					if path:ends_with(".lua") or path:ends_with(".oh") then
+					if path:ends_with(".lua") or path:ends_with(".nlua") then
 						if not path:ends_with("core/lua/boot.lua") then
 							list.insert(paths, {path = e.ROOT_FOLDER .. path})
 						end

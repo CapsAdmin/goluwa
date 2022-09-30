@@ -1,0 +1,91 @@
+--DISABLE_ANALYSIS
+local base = gui.CreatePanel("base", nil, "lol")
+base:SetSize(Vec2(1700, 1200))
+base:CenterSimple()
+base:SetResizable(true)
+base:SetDraggable(true)
+base:SetColor(Color(0.1, 0.1, 0.1, 1))
+base:SetName("base")
+base:SetMargin(Rect(0, 0, 0, 0))
+
+local function LSX(func, props, children)
+	return {func = func, props = props, children = children}
+end
+
+local function Panel(type, props)
+	local pnl = gui.CreatePanel(type)
+
+	for k, v in pairs(props) do
+		if pnl["Set" .. k] then pnl["Set" .. k](pnl, v) end
+	end
+
+	return pnl
+end
+
+local View = function(props)
+	return Panel("base", props)
+end
+local Text = function(props)
+	return Panel("text", props)
+end
+local Button = function(props)
+	return Panel("button", props)
+end
+local base_elements = {
+	[View] = View,
+	[Text] = Text,
+}
+
+local function build(node)
+	if node.func and not base_elements[node.func] then
+		local new_node = node.func(node.props)
+		node.props = new_node.props
+		node.func = new_node.func
+	end
+
+	if node.children then
+		for k, v in pairs(node.children) do
+			build(v)
+		end
+	end
+
+	return node
+end
+
+local function render(node, parent)
+	local pnl
+
+	if node.func then
+		pnl = node.func(node.props)
+	else
+		pnl = Text({})
+		parent:SetText(parent:GetText() .. node:gsub("%s+", " "))
+	end
+
+	pnl:SetParent(parent)
+
+	if node.children then
+		for _, child in ipairs(node.children) do
+			render(child, pnl)
+		end
+	end
+end
+
+local function Container(props)
+	return <View Size={Vec2() + 200} Color={Color(0, 0, 0, 1)}>
+		<Button>
+			{props.children}
+		</Button>
+		
+	</View>
+	
+end
+
+local x = <Container>
+	<Text>
+		Hello world 
+	</Text>
+	
+</Container>
+
+render(build(x), base)

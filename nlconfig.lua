@@ -24,7 +24,6 @@ local function write_file(path, content)
 end
 
 local function get_files_recursive(dir, ext)
-	ext = ext or {".lua"}
 	local f = assert(io.popen("find " .. dir))
 	local lines = f:read("*all")
 	local paths = {}
@@ -42,7 +41,7 @@ if cmd == "format" then
 	local allowed = {"core", "framework", "engine", "game"}
 
 	for _, directory in ipairs(allowed) do
-		for _, path in ipairs(get_files_recursive("./" .. directory, {".lua"})) do
+		for _, path in ipairs(get_files_recursive("./" .. directory, {".lua", ".nlua"})) do
 			if not path:find("libraries/nattlua", nil, true) then
 				local code = read_file(path)
 				local Compiler = require("nattlua.compiler").New

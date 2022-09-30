@@ -282,6 +282,12 @@ do -- nattlua
 	_G.nl.runtime_syntax = require("nattlua.syntax.runtime")
 	_G.nl.typesystem_syntax = require("nattlua.syntax.typesystem")
 	fs.PopWorkingDirectory()
+
+	event.AddListener("PreLoadString", "natlua", function(code, path)
+		if path:ends_with(".nlua") then
+			return assert(nl.Compiler(code, "@" .. path):Emit({transpile_extensions = true}))
+		end
+	end)
 end
 
 _G.repl = runfile("lua/libraries/repl.lua")
