@@ -596,3 +596,19 @@ check(
 	code = code:gsub("\\\\\"", "____DOUBLE_QUOTE_ESCAPE")
 ]]
 )
+check(
+	{
+		preserve_whitespace = false,
+		comment_type_annotations = true,
+		type_annotations = true,
+	},
+	[=[
+		repeat
+			if test then
+			end
+		until foo
+	]=],
+	[[repeat
+	if test then  end
+until foo]]
+)

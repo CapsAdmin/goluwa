@@ -3,14 +3,14 @@ import { registerSyntax } from "./syntax"
 import { loadLuaModule } from "./util"
 
 export const loadLua = async () => {
-	const factory = new LuaFactory("https://unpkg.com/wasmoon/dist/glue.wasm")
+	const factory = new LuaFactory("https://unpkg.com/wasmoon@1.14.0/dist/glue.wasm")
 	const lua = await factory.createEngine({
 		openStandardLibs: true,
 	})
 
 	await loadLuaModule(lua, import("./../../../build_output.lua"), "nattlua")
 	await lua.doString("for k, v in pairs(package.preload) do print(k,v) end require('nattlua') for k,v in pairs(IMPORTS) do package.preload[k] = v end")
-	await loadLuaModule(lua, import("./../../server/lsp.lua"), "lsp")
+	await loadLuaModule(lua, import("./../../server/lsp.lua"), "lsp", "@language_server/server/lsp.lua")
 
 	await lua.doString(`
 		local lsp = require("lsp")
@@ -25,6 +25,19 @@ export const loadLua = async () => {
 
 		function lsp.On(method, callback)
 			listeners[method] = callback
+		end
+
+		for k,v in pairs(lsp.methods) do
+			lsp.methods[k] = function(params)
+				print("calling on server", k)
+				local ok, res = xpcall(function()
+					return v(params)
+				end, debug.traceback)
+				if not ok then
+					error(res, 2)
+				end
+				return res
+			end
 		end
 
 		_G.lsp = lsp`)

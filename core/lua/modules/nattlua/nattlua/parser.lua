@@ -209,6 +209,7 @@ end
 assert(loadfile("nattlua/parser/expressions.lua"))(META)
 assert(loadfile("nattlua/parser/statements.lua"))(META)
 assert(loadfile("nattlua/parser/teal.lua"))(META)
+assert(loadfile("nattlua/parser/lsx.lua"))(META)
 
 function META:LexString(str--[[#: string]], config--[[#: nil | any]])
 	config = config or {}

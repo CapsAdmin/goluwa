@@ -103,6 +103,7 @@ do
 	local AnalyzeAtomicValue = require("nattlua.analyzer.expressions.atomic_value").AnalyzeAtomicValue
 	local AnalyzeTuple = require("nattlua.analyzer.expressions.tuple").AnalyzeTuple
 	local AnalyzeVararg = require("nattlua.analyzer.expressions.vararg").AnalyzeVararg
+	local AnalyzeLSX = require("nattlua.analyzer.expressions.lsx").AnalyzeLSX
 	local Union = require("nattlua.types.union").Union
 
 	function META:AnalyzeExpression2(node)
@@ -135,6 +136,8 @@ do
 			return Union({})
 		elseif node.kind == "tuple" then
 			return AnalyzeTuple(self, node)
+		elseif node.kind == "lsx" then
+			return AnalyzeLSX(self, node)
 		else
 			self:FatalError("unhandled expression " .. node.kind)
 		end

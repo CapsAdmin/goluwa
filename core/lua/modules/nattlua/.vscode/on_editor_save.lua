@@ -61,6 +61,7 @@ local function run_nattlua(path)
 				preserve_whitespace = preserve_whitespace,
 				string_quote = "\"",
 				no_semicolon = true,
+				transpile_extensions = lua_code:find("%-%-%s-TRANSPILE_EXTENSIONS") ~= nil,
 				comment_type_annotations = lua_code:find("%-%-%s-COMMENT_TYPE_ANNOTATIONS") ~= nil,
 				type_annotations = true,
 				force_parenthesis = true,

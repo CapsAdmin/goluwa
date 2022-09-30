@@ -6,10 +6,10 @@
 	},
 	"dependencies": {
 		"esbuild": "^0.14.27",
-		"monaco-editor": "^0.33.0",
+		"monaco-editor": "^0.34.0",
 		"ts-loader": "^9.2.8",
 		"typescript": "^4.6.2",
-		"wasmoon": "^1.12.1"
+		"wasmoon": "^1.14.0"
 	},
 	"devDependencies": {
 		"prettier": "^2.5.1",
