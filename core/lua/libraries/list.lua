@@ -58,6 +58,8 @@ end
 
 -- http://stackoverflow.com/questions/6077006/how-can-i-check-if-a-lua-table-contains-only-sequential-numeric-indices
 function list.is_list(t)
+	if type(t) ~= "table" then return false end
+
 	local i = 0
 
 	for _ in pairs(t) do
