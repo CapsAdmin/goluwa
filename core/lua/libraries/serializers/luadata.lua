@@ -30,72 +30,94 @@ luadata.SetModifier("boolean", function(var)
 	return var and "true" or "false"
 end)
 
-luadata.SetModifier("table", function(tbl, context)
-	local str
-
-	if context.tab_limit and context.tab >= context.tab_limit then
-		return "{--[[ " .. tostringx(tbl) .. " (tab limit reached)]]}"
-	end
-
-	if context.done then
-		if context.done[tbl] then
-			return ("{--[=[%s already serialized]=]}"):format(tostring(tbl))
+do
+	local function sort(a, b)
+		if type(a.v) == "table" and type(b.v) ~= "table" then
+			return false
+		elseif type(a.v) ~= "table" and type(b.v) == "table" then
+			return true
 		end
 
-		context.done[tbl] = true
+		return tostring(a.k) < tostring(b.k)
 	end
 
-	context.tab = context.tab + 1
+	luadata.SetModifier("table", function(tbl, context)
+		local str
 
-	if context.tab == 0 then str = {} else str = {"{\n"} end
+		if context.tab_limit and context.tab >= context.tab_limit then
+			return "{--[[ " .. tostringx(tbl) .. " (tab limit reached)]]}"
+		end
 
-	if list.is_list(tbl) then
-		if #tbl == 0 then
-			str = {"{"}
+		if context.done then
+			if context.done[tbl] then
+				return ("{--[=[%s already serialized]=]}"):format(tostring(tbl))
+			end
+
+			context.done[tbl] = true
+		end
+
+		context.tab = context.tab + 1
+
+		if context.tab == 0 then str = {} else str = {"{\n"} end
+
+		if list.is_list(tbl) then
+			if #tbl == 0 then
+				str = {"{"}
+			else
+				for i = 1, #tbl do
+					str[#str + 1] = ("%s%s,\n"):format(("\t"):rep(context.tab), luadata.ToString(tbl[i], context))
+
+					if context.thread then thread:Wait() end
+				end
+			end
 		else
-			for i = 1, #tbl do
-				str[#str + 1] = ("%s%s,\n"):format(("\t"):rep(context.tab), luadata.ToString(tbl[i], context))
+			local sorted = {}
+
+			for k, v in pairs(tbl) do
+				list.insert(sorted, {k = k, v = v})
+			end
+
+			list.sort(sorted, sort)
+
+			for _, kv in ipairs(sorted) do
+				local key = kv.k
+				local value = kv.v
+				value = luadata.ToString(value, context)
+
+				if value then
+					if type(key) == "string" and key:find("^[%w_]+$") and not tonumber(key) then
+						str[#str + 1] = ("%s%s = %s,\n"):format(("\t"):rep(context.tab), key, value)
+					else
+						key = luadata.ToString(key, context)
+
+						if key then
+							str[#str + 1] = ("%s[%s] = %s,\n"):format(("\t"):rep(context.tab), key, value)
+						end
+					end
+				end
 
 				if context.thread then thread:Wait() end
 			end
 		end
-	else
-		for key, value in pairs(tbl) do
-			value = luadata.ToString(value, context)
 
-			if value then
-				if type(key) == "string" and key:find("^[%w_]+$") and not tonumber(key) then
-					str[#str + 1] = ("%s%s = %s,\n"):format(("\t"):rep(context.tab), key, value)
-				else
-					key = luadata.ToString(key, context)
-
-					if key then
-						str[#str + 1] = ("%s[%s] = %s,\n"):format(("\t"):rep(context.tab), key, value)
-					end
-				end
+		if context.tab == 0 then
+			if str[1] == "{" then
+				str[#str + 1] = "}" -- empty table
+			else
+				str[#str + 1] = "\n"
 			end
-
-			if context.thread then thread:Wait() end
-		end
-	end
-
-	if context.tab == 0 then
-		if str[1] == "{" then
-			str[#str + 1] = "}" -- empty table
 		else
-			str[#str + 1] = "\n"
+			if str[1] == "{" then
+				str[#str + 1] = "}" -- empty table
+			else
+				str[#str + 1] = ("%s}"):format(("\t"):rep(context.tab - 1))
+			end
 		end
-	else
-		if str[1] == "{" then
-			str[#str + 1] = "}" -- empty table
-		else
-			str[#str + 1] = ("%s}"):format(("\t"):rep(context.tab - 1))
-		end
-	end
 
-	context.tab = context.tab - 1
-	return list.concat(str, "")
-end)
+		context.tab = context.tab - 1
+		return list.concat(str, "")
+	end)
+end
 
 local idx = function(var)
 	return var.LuaDataType
