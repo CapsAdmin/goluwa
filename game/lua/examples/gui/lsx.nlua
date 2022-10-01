@@ -1,12 +1,3 @@
---DISABLE_ANALYSIS
-local function LSX(render: Function, props: Table, children: List<|string, number, Table|>)
-	if children and #children == 1 and list.is_list(children[1]) then
-		children = children[1]
-	end
-
-	return {render = render, props = props, children = children}
-end
-
 local function Panel(type: string, props: Table)
 	local pnl = gui.CreatePanel(type)
 
@@ -23,13 +14,13 @@ local function Panel(type: string, props: Table)
 	return pnl
 end
 
-local View = function(props: Table)
+local function View(props: Table)
 	return Panel("base", props)
 end
-local Text = function(props: Table)
+local function Text(props: Table)
 	return Panel("text", props)
 end
-local Button = function(props: Table)
+local function Button(props: Table)
 	return Panel("button", props)
 end
 local base_elements = {
@@ -38,72 +29,151 @@ local base_elements = {
 	[Button] = Button,
 }
 
-local function build(node)
-	if node.render and not base_elements[node.render] then
-		node.props.children = node.children
-		local new_node = node.render(node.props)
-		node.props = new_node.props
-		node.render = new_node.render
-		node.children = new_node.children
-	elseif node.children then
-		for k, v in pairs(node.children) do
-			build(v)
+local function table_equal(a, b)
+	if _G.type(a) ~= "table" or _G.type(b) ~= "table" then return false end
+
+	for k, v in pairs(a) do
+		if b[k] ~= v then return false end
+	end
+
+	for k, v in pairs(b) do
+		if a[k] ~= v then return false end
+	end
+
+	return true
+end
+
+local function expand_children(children)
+	if #children == 1 and list.is_list(children[1]) then return children[1] end
+
+	return children
+end
+
+local function merge_children_with_props(props, children)
+	local new_props = {
+		children = children,
+	}
+
+	for k, v in pairs(props) do
+		new_props[k] = v
+	end
+
+	return new_props
+end
+
+local function LSX(render: Function, props: Table, children: List<|string, number, Table|>)
+	children = expand_children(children or {})
+	local node = {}
+	node.props = props
+	node.children = children
+	node.rerender = render
+	node.name = debug.get_name(render)
+
+	function node:build()
+		
+		if not base_elements[self.rerender] then
+			local new_props = merge_children_with_props(props, children)
+			local res = self.rerender(new_props, self)
+			res:build()
+			self.children = {
+				res
+			}
+
+			for _, child in ipairs(res.children) do
+				if type(child) == "table" then
+					child:build()
+				end
+			end
+		end
+
+		return self
+	end
+
+	function node:render(parent)
+		if base_elements[render] then
+			prototype.SafeRemove(self.panel)
+			self.panel = render(self.props)
+			self.panel:SetParent(parent)
+		else
+			self.panel = parent
+		end
+
+		for _, child in ipairs(self.children) do
+			if type(child) == "table" then
+				child:render(self.panel)
+			elseif self.panel then
+				self.panel:SetText(self.panel:GetText() .. tostring(child):gsub("%s+", " "))
+			end
 		end
 	end
 
 	return node
 end
 
-local function render(node, parent)
-	local pnl
-
-	if type(node) == "table" and node.render then
-		pnl = node.render(node.props)
-	else
-		pnl = Text({})
-		parent:SetText(parent:GetText() .. node:gsub("%s+", " "))
-	end
-
-	pnl:SetParent(parent)
-
-	if node.children then
-		for _, child in ipairs(node.children) do
-			render(child, pnl)
-		end
-	end
+local function Random()
+	return <Text SetupLayout={"top"} is_text=1>
+		{math.random()}
+	</Text>
+	
 end
 
-local function Container(props)
-	return <View Size={Vec2() + 200} Color={Color(0, 0, 0, 1)}>
-		<Button Size={Vec2() + 100} OnPress={function()
-			print("press!")
+local function Container(props, node)
+	node.state = node.state or 1
+	local state = node.state
+
+	return <View Size={Vec2() + 200} Color={Color(0, 0, 0, 1)} is_view=1 from_container={props.is_container}>
+		<Button some_state={state} is_button=1 Size={Vec2() + 100} OnPress={function()
+			print(node.state)
+			node.state = node.state + 1
+			node:build()
+			node:render(node.panel)
 		end}>
 			{props.children}
 		</Button>
-		
+		<Random/>
 	</View>
 	
 end
 
 print("=====")
-local x = <Container>
-	<Text SetupLayout={"top"}>
-		Hello world 
-	</Text>
-	<Text SetupLayout={"top"}>
-		Hello world 
-	</Text>
+
+local function App()
+	return <Container is_container=1>
+		<Text SetupLayout={"top"} is_text=1>
+			Hello world {math.random()}
+		</Text>
+		<Text SetupLayout={"top"} is_text=1>
+			Hello world 
+		</Text>
+		
+	</Container>
 	
-</Container>
+end
 
 local base = gui.CreatePanel("base", nil, "lol")
-base:SetSize(Vec2(1700, 1200))
+base:SetSize(window.GetSize() * 0.5)
 base:CenterSimple()
 base:SetResizable(true)
 base:SetDraggable(true)
 base:SetColor(Color(0.1, 0.1, 0.1, 1))
 base:SetName("base")
 base:SetMargin(Rect(0, 0, 0, 0))
-x = build(x)
-table.print(x)
-render(x, base)
+local tree = <App/>:build()
+--table.print(tree)
+_G.treelol = tree
+tree:render(base)
+
+timer.Repeat(
+	"test",
+	(60 / 140),
+	0,
+	function()
+		do
+			return
+		end
+
+		local test = tree.children[2]
+		test:build()
+		test:render(tree.panel)
+	end
+)
