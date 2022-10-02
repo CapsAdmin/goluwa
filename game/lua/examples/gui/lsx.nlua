@@ -3,7 +3,7 @@ local DEPTH = 0
 local function Panel(type: string, props: Table)
 	local tabs = string.rep("\t", DEPTH)
 	local pnl = gui.CreatePanel(type)
-	llog("%slocal %s = gui.CreatePanel(%s)", tabs, type, type)
+	llog("%slocal %s = %s", tabs, type, pnl)
 
 	for k, v in pairs(props) do
 		k = k:transform_case("foo_bar", "FooBar")
@@ -69,7 +69,6 @@ do
 		self.original_props = props
 		self.rerender = render
 		self.name = base_elements[render] or debug.get_name(render) or "unknown"
-		self.state_index = 0
 		return self
 	end
 
@@ -78,6 +77,7 @@ do
 
 	function META:build()
 		self.state_index = 0
+		self.persistent_state_index = 0
 
 		if not base_elements[self.rerender] then
 			local new_props = merge_children_with_props(self.original_props, self.original_children)
@@ -99,9 +99,13 @@ do
 
 	function META:render(parent)
 		if base_elements[self.rerender] then
+			if self.parent then self.parent:OnUnmount(parent) end
+
 			prototype.SafeRemove(self.panel)
 			self.panel = self.rerender(self.props)
 			self.panel:SetParent(parent)
+
+			if self.parent then self.parent:OnMount(self.panel) end
 		else
 			self.panel = parent
 		end
@@ -120,24 +124,70 @@ do
 		end
 	end
 
-	function META:useState(init)
-		self.states = self.states or {}
-		self.state_index = self.state_index + 1
+	function META:PersistentState(init)
+		self.persistent_states = self.persistent_states or {}
+		self.persistent_state_index = self.persistent_state_index + 1
 
-		if self.states[self.state_index] == nil then
-			self.states[self.state_index] = {
-				value = init,
-				set = function(new_state)
-					if not equal(state, new_state) then
-						self.states[self.state_index].value = new_state
-						self:build()
-						self:render(self.parent.panel)
-					end
-				end,
-			}
+		if self.persistent_states[self.persistent_state_index] == nil then
+			self.persistent_states[self.persistent_state_index] = init()
 		end
 
-		local state = self.states[self.state_index]
+		return self.persistent_states[self.persistent_state_index],
+		function(state)
+			self.persistent_states[self.persistent_state_index] = state
+		end
+	end
+
+	function META:ReRender()
+		self:build()
+		self:render(self.parent.panel)
+	end
+
+	function META:OnMount(parent) end
+
+	function META:OnUnmount() end
+
+	function META:useEffect(func, deps)
+		self.effects = self.effects or {}
+		local state, update = self:PersistentState(function()
+			return {
+				effect = true,
+				dependencies = deps,
+				func = func,
+			}
+		end)
+	end
+
+	function META:memo(val, deps)
+		local state, update = self:PersistentState({value = val(), deps = deps})
+
+		if not equal(state.deps, deps) then
+			state.value = val()
+			state.deps = deps
+			update(state)
+		end
+
+		return state.value
+	end
+
+	function META:useState(init)
+		local state, update
+		state, update = self:PersistentState(function()
+			local function set(new_state)
+				if not equal(state.value, new_state) then
+					update({
+						value = new_state,
+						set = set,
+					})
+					self:ReRender()
+				end
+			end
+
+			return {
+				value = init,
+				set = set,
+			}
+		end)
 		return state.value, state.set
 	end
 
@@ -154,7 +204,12 @@ do
 
 	local function Container(props, node)
 		local state, setState = node:useState(0)
-		return <Base setup_layout={"center_simple"} size={Vec2() + 200} color={Color(0.5, 0.5, 0.5, 1)} is_view=1 from_container={props.is_container}>
+
+		function node:OnMount(panel)
+			panel:SetColor(Color(1, 0.5, 0.5, 1))
+		end
+
+		return <Base name="test" setup_layout={"center_simple"} size={Vec2() + 200} is_view=1 from_container={props.is_container}>
 			<Button some_state={state} is_button=1 size={Vec2() + 100 + state} on_press={function()
 				setState(state + 1)
 			end}>
