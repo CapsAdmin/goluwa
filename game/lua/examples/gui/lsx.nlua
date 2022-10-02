@@ -1,17 +1,20 @@
+local DEPTH = 0
+
 local function Panel(type: string, props: Table)
+	local tabs = string.rep("\t", DEPTH)
 	local pnl = gui.CreatePanel(type)
-	llog("creating panel: ", type)
+	llog("%slocal %s = gui.CreatePanel(%s)", tabs, type, type)
 
 	for k, v in pairs(props) do
 		if k:starts_with("On") then
 			pnl[k] = v
-			llog("\t.%s = %s", k, v)
+			llog("%s%s.%s = %s", tabs, type, k, v)
 		elseif pnl["Set" .. k] then
 			pnl["Set" .. k](pnl, v)
-			llog("\t:Set%s(%s)", k, v)
+			llog("%s%s:Set%s(%s)", tabs, type, k, v)
 		elseif _G.type(pnl[k]) == "function" then
 			pnl[k](pnl, v)
-			llog("\t:%s(%s)", k, v)
+			llog("%s%s:%s(%s)", tabs, type, k, v)
 		end
 	end
 
@@ -99,7 +102,9 @@ local function LSX(render: Function, props: Table, children: List<|string, numbe
 
 		for _, child in ipairs(self.children) do
 			if type(child) == "table" then
+				DEPTH = DEPTH + 1
 				child:render(self.panel)
+				DEPTH = DEPTH - 1
 			elseif self.panel then
 				self.panel:SetText(self.panel:GetText() .. tostring(child):gsub("%s+", " "))
 			end
