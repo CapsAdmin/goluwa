@@ -33,48 +33,64 @@ local function Button(props: Table)
 	return Panel("button", props)
 end
 
+local function TextButton(props: Table)
+	return Panel("text_button", props)
+end
+
 local base_elements = {
 	[View] = View,
 	[Text] = Text,
 	[Button] = Button,
+	[TextButton] = TextButton,
 }
 
-local function equal(a, b)
-	return a == b
-end
-
-local function expand_children(children)
-	if #children == 1 and list.is_list(children[1]) then return children[1] end
-
-	return children
-end
-
-local function merge_children_with_props(props, children)
-	local new_props = {
-		children = children,
-	}
-
-	for k, v in pairs(props) do
-		new_props[k] = v
+do
+	local function equal(a, b)
+		return a == b
 	end
 
-	return new_props
-end
+	local function expand_children(children)
+		if #children == 1 and list.is_list(children[1]) then return children[1] end
 
-local function LSX(render: Function, props: Table, children: List<|string, number, Table|>)
-	children = expand_children(children or {})
-	local node = {}
-	node.props = props
-	node.children = children
-	node.rerender = render
-	node.name = debug.get_name(render)
-	node.state_index = 0
+		return children
+	end
 
-	function node:build()
+	local function merge_children_with_props(props, children)
+		local new_props = {
+			children = children,
+		}
+
+		for k, v in pairs(props) do
+			new_props[k] = v
+		end
+
+		return new_props
+	end
+
+	local META = prototype.CreateTemplate("lsx_node", "base")
+	runfile("lua/libraries/prototype/parenting_template.lua", META)
+
+	local function Node(render: Function, props: Table, children: List<|string, number, Table|>)
+		children = expand_children(children or {})
+		local self = META:CreateObject()
+		self.props = props
+		self.children = children
+		self.original_children = children
+		self.original_props = props
+		self.rerender = render
+		self.name = debug.get_name(render)
+		self.state_index = 0
+		return self
+	end
+
+	-- the xml syntax will be transformed to call LSX(render, props, children)
+	_G.LSX = Node
+
+	function META:build()
 		self.state_index = 0
 
 		if not base_elements[self.rerender] then
-			local new_props = merge_children_with_props(props, children)
+			local new_props = merge_children_with_props(self.original_props, self.original_children)
 			local res = self.rerender(new_props, self)
 			res:build()
 			res.parent = self
@@ -91,10 +107,10 @@ local function LSX(render: Function, props: Table, children: List<|string, numbe
 		return self
 	end
 
-	function node:render(parent)
-		if base_elements[render] then
+	function META:render(parent)
+		if base_elements[self.rerender] then
 			prototype.SafeRemove(self.panel)
-			self.panel = render(self.props)
+			self.panel = self.rerender(self.props)
 			self.panel:SetParent(parent)
 		else
 			self.panel = parent
@@ -106,12 +122,15 @@ local function LSX(render: Function, props: Table, children: List<|string, numbe
 				child:render(self.panel)
 				DEPTH = DEPTH - 1
 			elseif self.panel then
-				self.panel:SetText(self.panel:GetText() .. tostring(child):gsub("%s+", " "))
+				local str = self.panel:GetText() .. tostring(child):gsub("%s+", " ")
+				self.panel:SetText(str)
+				local tabs = string.rep("\t", DEPTH)
+				llog("%s%s:SetText(%s)", tabs, self.panel.ClassName, str)
 			end
 		end
 	end
 
-	function node:useState(init)
+	function META:useState(init)
 		self.states = self.states or {}
 		self.state_index = self.state_index + 1
 
@@ -132,7 +151,7 @@ local function LSX(render: Function, props: Table, children: List<|string, numbe
 		return state.value, state.set
 	end
 
-	return node
+	META:Register()
 end
 
 do
