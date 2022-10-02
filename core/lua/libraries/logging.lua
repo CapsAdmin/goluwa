@@ -133,7 +133,13 @@ function logfile.LibraryLog(fmt, ...)
 	local str = fmt:safe_format(...)
 
 	if not main_category or not sub_category or main_category == sub_category then
-		return logf("[%s] %s\n", main_category or sub_category, str)
+		return logf(
+			"[%s] %s\n",
+			main_category or
+				sub_category or
+				vfs.RemoveExtensionFromPath(vfs.GetFileNameFromPath(source)),
+			str
+		)
 	else
 		return logf("[%s][%s] %s\n", main_category, sub_category, str)
 	end
