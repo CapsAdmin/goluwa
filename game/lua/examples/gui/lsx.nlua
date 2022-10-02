@@ -29,18 +29,8 @@ local base_elements = {
 	[Button] = Button,
 }
 
-local function table_equal(a, b)
-	if _G.type(a) ~= "table" or _G.type(b) ~= "table" then return false end
-
-	for k, v in pairs(a) do
-		if b[k] ~= v then return false end
-	end
-
-	for k, v in pairs(b) do
-		if a[k] ~= v then return false end
-	end
-
-	return true
+local function equal(a, b)
+	return a == b
 end
 
 local function expand_children(children)
@@ -68,13 +58,16 @@ local function LSX(render: Function, props: Table, children: List<|string, numbe
 	node.children = children
 	node.rerender = render
 	node.name = debug.get_name(render)
+	node.state_index = 0
 
 	function node:build()
+		self.state_index = 0
 		
 		if not base_elements[self.rerender] then
 			local new_props = merge_children_with_props(props, children)
 			local res = self.rerender(new_props, self)
 			res:build()
+			res.parent = self
 			self.children = {
 				res
 			}
@@ -82,6 +75,7 @@ local function LSX(render: Function, props: Table, children: List<|string, numbe
 			for _, child in ipairs(res.children) do
 				if type(child) == "table" then
 					child:build()
+					child.parent = res
 				end
 			end
 		end
@@ -107,6 +101,28 @@ local function LSX(render: Function, props: Table, children: List<|string, numbe
 		end
 	end
 
+	
+	function node:useState(init)
+		self.states = self.states or {}
+		self.state_index = self.state_index + 1
+		
+		if self.states[self.state_index] == nil then
+			self.states[self.state_index] = {
+				value = init,
+				set = function(new_state)
+					if not equal(state, new_state) then
+						self.states[self.state_index].value = new_state
+						self:build()
+						self:render(self.parent.panel)
+					end
+				end
+			}
+		end
+
+		local state = self.states[self.state_index]
+		return state.value, state.set
+	end
+
 	return node
 end
 
@@ -118,15 +134,11 @@ local function Random()
 end
 
 local function Container(props, node)
-	node.state = node.state or 1
-	local state = node.state
+	local state, setState = node:useState(0)
 
 	return <View Size={Vec2() + 200} Color={Color(0, 0, 0, 1)} is_view=1 from_container={props.is_container}>
-		<Button some_state={state} is_button=1 Size={Vec2() + 100} OnPress={function()
-			print(node.state)
-			node.state = node.state + 1
-			node:build()
-			node:render(node.panel)
+		<Button some_state={state} is_button=1 Size={Vec2() + 100 + state} OnPress={function()
+			setState(state + 1)
 		end}>
 			{props.children}
 		</Button>
@@ -134,8 +146,6 @@ local function Container(props, node)
 	</View>
 	
 end
-
-print("=====")
 
 local function App()
 	return <Container is_container=1>
@@ -158,22 +168,5 @@ base:SetDraggable(true)
 base:SetColor(Color(0.1, 0.1, 0.1, 1))
 base:SetName("base")
 base:SetMargin(Rect(0, 0, 0, 0))
-local tree = <App/>:build()
---table.print(tree)
-_G.treelol = tree
-tree:render(base)
 
-timer.Repeat(
-	"test",
-	(60 / 140),
-	0,
-	function()
-		do
-			return
-		end
-
-		local test = tree.children[2]
-		test:build()
-		test:render(tree.panel)
-	end
-)
+<App/>:build():render(base)
