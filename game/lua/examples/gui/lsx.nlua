@@ -6,6 +6,8 @@ local function Panel(type: string, props: Table)
 	llog("%slocal %s = gui.CreatePanel(%s)", tabs, type, type)
 
 	for k, v in pairs(props) do
+		k = k:transform_case("foo_bar", "FooBar")
+
 		if k:starts_with("On") then
 			pnl[k] = v
 			llog("%s%s.%s = %s", tabs, type, k, v)
@@ -21,28 +23,15 @@ local function Panel(type: string, props: Table)
 	return pnl
 end
 
-local function View(props: Table)
-	return Panel("base", props)
-end
+local base_elements = {}
 
-local function Text(props: Table)
-	return Panel("text", props)
+for k, v in pairs(prototype.GetRegisteredSubTypes("panel")) do
+	local name = k:transform_case("foo_bar", "FooBar")
+	_G[name] = function(props: Table)
+		return Panel(k, props)
+	end
+	base_elements[_G[name]] = name
 end
-
-local function Button(props: Table)
-	return Panel("button", props)
-end
-
-local function TextButton(props: Table)
-	return Panel("text_button", props)
-end
-
-local base_elements = {
-	[View] = View,
-	[Text] = Text,
-	[Button] = Button,
-	[TextButton] = TextButton,
-}
 
 do
 	local function equal(a, b)
@@ -71,6 +60,7 @@ do
 	runfile("lua/libraries/prototype/parenting_template.lua", META)
 
 	local function Node(render: Function, props: Table, children: List<|string, number, Table|>)
+		assert(render, "render function is nil")
 		children = expand_children(children or {})
 		local self = META:CreateObject()
 		self.props = props
@@ -78,7 +68,7 @@ do
 		self.original_children = children
 		self.original_props = props
 		self.rerender = render
-		self.name = debug.get_name(render)
+		self.name = base_elements[render] or debug.get_name(render) or "unknown"
 		self.state_index = 0
 		return self
 	end
@@ -156,7 +146,7 @@ end
 
 do
 	local function Random()
-		return <Text SetupLayout={"top"} is_text=1>
+		return <Text setup_layout={"top"} is_text=1>
 			{math.random()}
 		</Text>
 		
@@ -164,23 +154,23 @@ do
 
 	local function Container(props, node)
 		local state, setState = node:useState(0)
-		return <View SetupLayout={"center_simple"} Size={Vec2() + 200} Color={Color(0.5, 0.5, 0.5, 1)} is_view=1 from_container={props.is_container}>
-			<Button some_state={state} is_button=1 Size={Vec2() + 100 + state} OnPress={function()
+		return <Base setup_layout={"center_simple"} size={Vec2() + 200} color={Color(0.5, 0.5, 0.5, 1)} is_view=1 from_container={props.is_container}>
+			<Button some_state={state} is_button=1 size={Vec2() + 100 + state} on_press={function()
 				setState(state + 1)
 			end}>
 				{props.children}
 			</Button>
 			<Random/>
-		</View>
+		</Base>
 		
 	end
 
 	local function App()
 		return <Container is_container=1>
-			<Text SetupLayout={"top"} is_text=1>
+			<Text setup_layout={"top"} is_text=1>
 				Hello world {math.random()}
 			</Text>
-			<Text SetupLayout={"top"} is_text=1>
+			<Text setup_layout={"top"} is_text=1>
 				Hello world 
 			</Text>
 			
