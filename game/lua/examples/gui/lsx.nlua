@@ -1,13 +1,17 @@
 local function Panel(type: string, props: Table)
 	local pnl = gui.CreatePanel(type)
+	llog("creating panel: ", type)
 
 	for k, v in pairs(props) do
 		if k:starts_with("On") then
 			pnl[k] = v
+			llog("\t.%s = %s", k, v)
 		elseif pnl["Set" .. k] then
 			pnl["Set" .. k](pnl, v)
+			llog("\t:Set%s(%s)", k, v)
 		elseif _G.type(pnl[k]) == "function" then
 			pnl[k](pnl, v)
+			llog("\t:%s(%s)", k, v)
 		end
 	end
 
@@ -17,12 +21,15 @@ end
 local function View(props: Table)
 	return Panel("base", props)
 end
+
 local function Text(props: Table)
 	return Panel("text", props)
 end
+
 local function Button(props: Table)
 	return Panel("button", props)
 end
+
 local base_elements = {
 	[View] = View,
 	[Text] = Text,
@@ -62,15 +69,13 @@ local function LSX(render: Function, props: Table, children: List<|string, numbe
 
 	function node:build()
 		self.state_index = 0
-		
+
 		if not base_elements[self.rerender] then
 			local new_props = merge_children_with_props(props, children)
 			local res = self.rerender(new_props, self)
 			res:build()
 			res.parent = self
-			self.children = {
-				res
-			}
+			self.children = {res}
 
 			for _, child in ipairs(res.children) do
 				if type(child) == "table" then
@@ -101,11 +106,10 @@ local function LSX(render: Function, props: Table, children: List<|string, numbe
 		end
 	end
 
-	
 	function node:useState(init)
 		self.states = self.states or {}
 		self.state_index = self.state_index + 1
-		
+
 		if self.states[self.state_index] == nil then
 			self.states[self.state_index] = {
 				value = init,
@@ -115,7 +119,7 @@ local function LSX(render: Function, props: Table, children: List<|string, numbe
 						self:build()
 						self:render(self.parent.panel)
 					end
-				end
+				end,
 			}
 		end
 
@@ -126,47 +130,48 @@ local function LSX(render: Function, props: Table, children: List<|string, numbe
 	return node
 end
 
-local function Random()
-	return <Text SetupLayout={"top"} is_text=1>
-		{math.random()}
-	</Text>
-	
-end
-
-local function Container(props, node)
-	local state, setState = node:useState(0)
-
-	return <View Size={Vec2() + 200} Color={Color(0, 0, 0, 1)} is_view=1 from_container={props.is_container}>
-		<Button some_state={state} is_button=1 Size={Vec2() + 100 + state} OnPress={function()
-			setState(state + 1)
-		end}>
-			{props.children}
-		</Button>
-		<Random/>
-	</View>
-	
-end
-
-local function App()
-	return <Container is_container=1>
-		<Text SetupLayout={"top"} is_text=1>
-			Hello world {math.random()}
-		</Text>
-		<Text SetupLayout={"top"} is_text=1>
-			Hello world 
+do
+	local function Random()
+		return <Text SetupLayout={"top"} is_text=1>
+			{math.random()}
 		</Text>
 		
-	</Container>
-	
+	end
+
+	local function Container(props, node)
+		local state, setState = node:useState(0)
+		return <View SetupLayout={"center_simple"} Size={Vec2() + 200} Color={Color(0.5, 0.5, 0.5, 1)} is_view=1 from_container={props.is_container}>
+			<Button some_state={state} is_button=1 Size={Vec2() + 100 + state} OnPress={function()
+				setState(state + 1)
+			end}>
+				{props.children}
+			</Button>
+			<Random/>
+		</View>
+		
+	end
+
+	local function App()
+		return <Container is_container=1>
+			<Text SetupLayout={"top"} is_text=1>
+				Hello world {math.random()}
+			</Text>
+			<Text SetupLayout={"top"} is_text=1>
+				Hello world 
+			</Text>
+			
+		</Container>
+		
+	end
+
+	local base = gui.CreatePanel("base", nil, "lol")
+	base:SetSize(window.GetSize() * 0.5)
+	base:CenterSimple()
+	base:SetResizable(true)
+	base:SetDraggable(true)
+	base:SetColor(Color(0.1, 0.1, 0.1, 1))
+	base:SetName("base")
+	base:SetMargin(Rect(0, 0, 0, 0))
+	local x = <App/>
+	x:build():render(base)
 end
-
-local base = gui.CreatePanel("base", nil, "lol")
-base:SetSize(window.GetSize() * 0.5)
-base:CenterSimple()
-base:SetResizable(true)
-base:SetDraggable(true)
-base:SetColor(Color(0.1, 0.1, 0.1, 1))
-base:SetName("base")
-base:SetMargin(Rect(0, 0, 0, 0))
-
-<App/>:build():render(base)
