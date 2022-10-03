@@ -2032,7 +2032,7 @@ do
 				self:EmitToken(prop.tokens["}"])
 			else
 				self:Whitespace(" ")
-				self:EmitToken(prop.key, "{k=")
+				self:EmitToken(prop.tokens["identifier"], "{k=")
 				self:EmitNonSpace("\"")
 				self:EmitNonSpace(prop.tokens["identifier"].value)
 				self:EmitNonSpace("\"")
