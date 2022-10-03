@@ -15678,13 +15678,13 @@ function META:Copy()
 
 	if self.upvalues.typesystem then
 		for _, upvalue in ipairs(self.upvalues.typesystem.list) do
-			copy:CreateUpvalue(upvalue.key, upvalue:GetValue(), "typesystem")
+			copy:CreateUpvalue(upvalue:GetKey(), upvalue:GetValue(), "typesystem")
 		end
 	end
 
 	if self.upvalues.runtime then
 		for _, upvalue in ipairs(self.upvalues.runtime.list) do
-			copy:CreateUpvalue(upvalue.key, upvalue:GetValue(), "runtime")
+			copy:CreateUpvalue(upvalue:GetKey(), upvalue:GetValue(), "runtime")
 		end
 	end
 
@@ -21210,7 +21210,7 @@ do
 					self:EmitExpression(prop.value_expression)
 					self:EmitToken(prop.tokens["}"])
 				else
-					self:EmitToken(prop.val)
+					self:EmitExpression(prop.value_expression)
 				end
 			end
 		end
@@ -21265,17 +21265,17 @@ do
 				self:Whitespace(" ")
 				self:EmitToken(prop.key, "{k=")
 				self:EmitNonSpace("\"")
-				self:EmitNonSpace(prop.key.value)
+				self:EmitNonSpace(prop.tokens["identifier"].value)
 				self:EmitNonSpace("\"")
 				self:EmitToken(prop.tokens["="], ",")
 				self:EmitNonSpace("v=")
 
 				if prop.tokens["{"] then
 					self:EmitToken(prop.tokens["{"], "")
-					self:EmitExpression(prop.val)
+					self:EmitExpression(prop.value_expression)
 					self:EmitToken(prop.tokens["}"], "")
 				else
-					self:EmitToken(prop.val)
+					self:EmitExpression(prop.value_expression)
 				end
 
 				self:Emit("}")
@@ -22955,6 +22955,7 @@ return {
 do local __M; IMPORTS["nattlua.analyzer.expressions.postfix_call"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local table = _G.table
 local NormalizeTuples = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").NormalizeTuples
 local Tuple = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").Tuple
+local Nil = IMPORTS['nattlua.types.symbol']("nattlua.types.symbol").Nil
 local AnalyzeImport = IMPORTS['nattlua.analyzer.expressions.import']("nattlua.analyzer.expressions.import").AnalyzeImport
 return {
 	AnalyzePostfixCall = function(self, node)
@@ -23005,6 +23006,8 @@ return {
 
 			if callable.Type == "function" and callable:IsExplicitOutputSignature() then
 				returned_tuple = callable:GetOutputSignature():Copy()
+			else
+				returned_tuple = Tuple({Nil()})
 			end
 		else
 			returned_tuple = ret
@@ -23279,7 +23282,9 @@ return {
 	AnalyzeLSX = function(self, node)
 		self:PushAnalyzerEnvironment("runtime")
 		local func = self:AnalyzeExpression(node.tag)
-		node.tokens["type2"]:AddType(func)
+
+		if node.tokens["type2"] then node.tokens["type2"]:AddType(func) end
+
 		local tbl = Table()
 
 		do
