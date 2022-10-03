@@ -4400,20 +4400,8 @@ _G.arg = _
 
 
 
-function _G.LSX(
-	tag,
-	constructor,
-	props,
-	children
-)
-	local e = constructor and
-		constructor(props, children) or
-		{
-			props = props,
-			children = children,
-		}
-	e.tag = tag
-	return e
+function _G.LSX(func, props, children)
+	return {func = func, props = props, children = children}
 end end ]=======], '@nattlua/definitions/lua/globals.nlua'))()
 IMPORTS['nattlua/definitions/lua/io.nlua'] = assert((loadstring or load)([=======[ return function() 
 
@@ -14765,26 +14753,39 @@ function META:ParseLSXExpression()
 
 	local node = self:StartNode("expression", "lsx")
 	node.tokens["<"] = self:ExpectValue("<")
-	node.tag = self:ExpectType("letter")
+	node.tag = self:ParseFunctionNameIndex()
 	node.props = {}
 	node.children = {}
 
 	for i = 1, self:GetLength() do
-		if self:IsType("letter") and self:IsValue("=", 1) then
+		if self:IsValue("{") and self:IsValue("...", 1) then
+			local left = self:ExpectValue("{")
+			local spread = self:read_table_spread()
+
+			if not spread then
+				self:Error("expected table spread")
+				return
+			end
+
+			local right = self:ExpectValue("}")
+			spread.tokens["{"] = left
+			spread.tokens["}"] = right
+			table.insert(node.props, spread)
+		elseif self:IsType("letter") and self:IsValue("=", 1) then
 			if self:IsValue("{", 2) then
-				local keyval = self:StartNode("expression", "lsx")
-				keyval.key = self:ExpectType("letter")
+				local keyval = self:StartNode("sub_statement", "table_key_value")
+				keyval.tokens["identifier"] = self:ExpectType("letter")
 				keyval.tokens["="] = self:ExpectValue("=")
 				keyval.tokens["{"] = self:ExpectValue("{")
-				keyval.val = self:ExpectRuntimeExpression()
+				keyval.value_expression = self:ExpectRuntimeExpression()
 				keyval.tokens["}"] = self:ExpectValue("}")
 				keyval = self:EndNode(keyval)
 				table.insert(node.props, keyval)
 			elseif self:IsType("string", 2) or self:IsType("number", 2) then
-				local keyval = self:StartNode("expression", "lsx")
-				keyval.key = self:ExpectType("letter")
+				local keyval = self:StartNode("sub_statement", "table_key_value")
+				keyval.tokens["identifier"] = self:ExpectType("letter")
 				keyval.tokens["="] = self:ExpectValue("=")
-				keyval.val = self:ParseToken()
+				keyval.value_expression = self:ParseKeywordValueTypeExpression()
 				keyval = self:EndNode(keyval)
 				table.insert(node.props, keyval)
 			else
@@ -14823,8 +14824,12 @@ function META:ParseLSXExpression()
 
 		if self:IsValue("<") and self:IsValue("/", 1) then break end
 
-		local tk = self:ParseToken()
-		table.insert(node.children, tk)
+		do
+			local string_node = self:StartNode("expression", "value")
+			string_node.value = self:ExpectType("string")
+			string_node = self:EndNode(string_node)
+			table.insert(node.children, string_node)
+		end
 	end
 
 	node.tokens["<2"] = self:ExpectValue("<")
@@ -19750,7 +19755,11 @@ function META:EmitExpression(node)
 	end
 
 	if node.kind == "lsx" then
-		self:EmitLSXExpression(node)
+		if self.config.transpile_extensions then
+			self:EmitTranspiledLSXExpression(node)
+		else
+			self:EmitLSXExpression(node)
+		end
 	elseif node.kind == "binary_operator" then
 		self:EmitBinaryOperator(node)
 	elseif node.kind == "function" then
@@ -21182,19 +21191,27 @@ end
 do
 	function META:EmitLSXExpression(node)
 		self:EmitToken(node.tokens["<"])
-		self:EmitToken(node.tag)
+		self:EmitExpression(node.tag)
 
 		for _, prop in ipairs(node.props) do
-			self:Whitespace(" ")
-			self:EmitToken(prop.key)
-			self:EmitToken(prop.tokens["="])
-
-			if prop.tokens["{"] then
+			if prop.kind == "table_spread" then
+				self:Whitespace(" ")
 				self:EmitToken(prop.tokens["{"])
-				self:EmitExpression(prop.val)
+				self:EmitToken(prop.tokens["..."])
+				self:EmitExpression(prop.expression)
 				self:EmitToken(prop.tokens["}"])
 			else
-				self:EmitToken(prop.val)
+				self:Whitespace(" ")
+				self:EmitToken(prop.tokens["identifier"])
+				self:EmitToken(prop.tokens["="])
+
+				if prop.tokens["{"] then
+					self:EmitToken(prop.tokens["{"])
+					self:EmitExpression(prop.value_expression)
+					self:EmitToken(prop.tokens["}"])
+				else
+					self:EmitToken(prop.val)
+				end
 			end
 		end
 
@@ -21205,9 +21222,8 @@ do
 			self:Whitespace("\t")
 
 			for _, child in ipairs(node.children) do
-				if not child.tokens then
-					self:EmitToken(child)
-					self:Whitespace(" ")
+				if child.kind == "value" then
+					self:EmitExpression(child)
 				elseif child.type == "expression" and child.kind == "lsx" then
 					self:EmitLSXExpression(child)
 				else
@@ -21229,6 +21245,77 @@ do
 		else
 			self:EmitToken(node.tokens["/"])
 			self:EmitToken(node.tokens[">"])
+		end
+	end
+
+	function META:EmitTranspiledLSXExpression(node)
+		self:EmitToken(node.tokens["<"], "LSX(")
+		self:EmitExpression(node.tag)
+		self:Emit(",")
+		self:Emit("{")
+
+		for i, prop in ipairs(node.props) do
+			if prop.kind == "table_spread" then
+				self:Whitespace(" ")
+				self:EmitToken(prop.tokens["{"])
+				self:EmitToken(prop.tokens["..."])
+				self:EmitExpression(prop.expression)
+				self:EmitToken(prop.tokens["}"])
+			else
+				self:Whitespace(" ")
+				self:EmitToken(prop.key, "{k=")
+				self:EmitNonSpace("\"")
+				self:EmitNonSpace(prop.key.value)
+				self:EmitNonSpace("\"")
+				self:EmitToken(prop.tokens["="], ",")
+				self:EmitNonSpace("v=")
+
+				if prop.tokens["{"] then
+					self:EmitToken(prop.tokens["{"], "")
+					self:EmitExpression(prop.val)
+					self:EmitToken(prop.tokens["}"], "")
+				else
+					self:EmitToken(prop.val)
+				end
+
+				self:Emit("}")
+			end
+
+			if i ~= #node.props then self:Emit(",") end
+		end
+
+		if node.children[1] then
+			self:EmitToken(node.tokens[">"], "},{")
+			self:Indent()
+			self:Whitespace("\n")
+			self:Whitespace("\t")
+
+			for i, child in ipairs(node.children) do
+				if child.kind == "value" then
+					self:EmitExpression(child)
+				elseif child.type == "expression" and child.kind == "lsx" then
+					self:EmitTranspiledLSXExpression(child)
+				else
+					self:EmitToken(child.tokens["lsx{"], "")
+					self:EmitExpression(child)
+					self:EmitToken(child.tokens["lsx}"], "")
+				end
+
+				if i ~= #node.children then self:Emit(",") end
+			end
+
+			self:Outdent()
+			self:Whitespace("\n")
+			self:Whitespace("\t")
+			self:EmitToken(node.tokens["<2"], "")
+			self:EmitToken(node.tokens["/"], "")
+			self:EmitToken(node.tokens["type2"], "")
+			self:EmitToken(node.tokens[">2"], "})")
+			self:Whitespace("\n")
+			self:Whitespace("\t")
+		else
+			self:EmitToken(node.tokens["/"], "")
+			self:EmitToken(node.tokens[">"], "})")
 		end
 	end
 end
@@ -23185,9 +23272,48 @@ return {
 	end,
 } end ]=======], '@./nattlua/analyzer/expressions/vararg.lua'))())(...) return __M end end
 do local __M; IMPORTS["nattlua.analyzer.expressions.lsx"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local Any = IMPORTS['nattlua.types.any']("nattlua.types.any").Any
+local Table = IMPORTS['nattlua.types.table']("nattlua.types.table").Table
+local Tuple = IMPORTS['nattlua.types.tuple']("nattlua.types.tuple").Tuple
+local LString = IMPORTS['nattlua.types.string']("nattlua.types.string").LString
 return {
-	AnalyzeLSX = function(self, tree)
-		return Any() -- TODO
+	AnalyzeLSX = function(self, node)
+		self:PushAnalyzerEnvironment("runtime")
+		local func = self:AnalyzeExpression(node.tag)
+		node.tokens["type2"]:AddType(func)
+		local tbl = Table()
+
+		do
+			self:PushCurrentType(tbl, "table")
+			tbl:SetCreationScope(self:GetScope())
+
+			for _, node in ipairs(node.props) do
+				if node.kind == "table_key_value" then
+					local key = LString(node.tokens["identifier"].value)
+					local val = self:AnalyzeExpression(node.value_expression):GetFirstValue() or Nil()
+					self:NewIndexOperator(tbl, key, val)
+				end
+			end
+
+			local children = Table()
+
+			for _, node in ipairs(node.children) do
+				children:Insert(self:AnalyzeExpression(node))
+			end
+
+			self:NewIndexOperator(tbl, LString("children"), children)
+			self:PopCurrentType("table")
+		end
+
+		local ret, err = self:Call(func, Tuple({tbl}), node)
+		self.current_expression = node
+		self:PopAnalyzerEnvironment()
+
+		if not ret then
+			self:Error(err)
+			return Any()
+		end
+
+		return ret
 	end,
 } end ]=======], '@./nattlua/analyzer/expressions/lsx.lua'))())(...) return __M end end
 do local __M; IMPORTS["nattlua.analyzer"] = function(...) __M = __M or (assert((loadstring or load)([=======[ return function(...) local class = IMPORTS['nattlua.other.class']("nattlua.other.class")
@@ -24450,20 +24576,8 @@ analyzer function tonumber(val: string | number, base: number | nil)
 	return val
 end
 
-function _G.LSX(
-	tag: string,
-	constructor: function=(Table, Table)>(Table),
-	props: Table,
-	children: Table
-)
-	local e = constructor and
-		constructor(props, children) or
-		{
-			props = props,
-			children = children,
-		}
-	e.tag = tag
-	return e
+function _G.LSX(func: Function, props: Table, children: List<|Table | string | number|>)
+	return {func = func, props = props, children = children}
 end end
 IMPORTS['nattlua/definitions/lua/io.nlua'] = function() type io = {
 	write = function=(...string)>(nil),
