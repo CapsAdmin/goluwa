@@ -48,14 +48,24 @@ do
 
 	local function merge_children_with_props(props, children)
 		local new_props = {
-			children = children,
+			{k = "children", v = children},
 		}
 
-		for k, v in pairs(props) do
-			new_props[k] = v
+		for _, kv in ipairs(props) do
+			list.insert(new_props, kv)
 		end
 
 		return new_props
+	end
+
+	local function props_to_map(props)
+		local map = {}
+
+		for _, kv in ipairs(props) do
+			map[kv.k] = kv.v
+		end
+
+		return map
 	end
 
 	local META = prototype.CreateTemplate("lsx_node", "base")
@@ -83,7 +93,7 @@ do
 
 		if not base_elements[self.rerender] then
 			local new_props = merge_children_with_props(self.original_props, self.original_children)
-			local res = self.rerender(new_props, self)
+			local res = self.rerender(props_to_map(new_props), self)
 			res:build()
 			res.parent = self
 			self.children = {res}
@@ -142,7 +152,12 @@ do
 
 	function META:ReRender()
 		self:build()
-		self:render(self.parent.panel)
+
+		if not self.parent then
+			self:render(self.root_panel)
+		else
+			self:render(self.parent.panel)
+		end
 	end
 
 	function META:OnMount(parent) end
@@ -196,7 +211,7 @@ do
 	META:Register()
 end
 
-do
+if false then
 	local function Random()
 		return <Text setup_layout={"top"} is_text=1>
 			{math.random()}
@@ -247,7 +262,7 @@ do
 	x:build():render(base)
 end
 
-if false then
+if true then
 	local scoreboard_title = fonts.CreateFont(
 		{
 			path = "Oswald",
@@ -266,11 +281,27 @@ if false then
 	)
 
 	local function Info(props, node)
-		function node:OnMount(panel)
-			panel:SetLayoutSize()
+		function node:OnMount(info)
+			if props.expanded then
+				info:SetVisible(true)
+				info:Animate("Size", {Vec2(1, 0), Vec2(1, 1)}, 0.25, "*", 0.25, true)
+			else
+				info:Animate(
+					"Size",
+					{Vec2(1, 1), Vec2(1, 0)},
+					0.25,
+					"*",
+					0.25,
+					true,
+					function()
+						info:SetVisible(false)
+						title:SetState(false)
+					end
+				)
+			end
 		end
 
-		return <Base set_visible={false} set_height={30} set_style={"frame2"} setup_layout={{"top", "fill_x"}} set_clipping={true} set_minimum_size={Vec2()}>
+		return <Base set_visible={false} set_height={30} set_style={"frame2"} setup_layout={{"top", "fill_x"}} set_clipping={true} set_minimum_size={Vec2()} layout_size={nil}>
 			<Text padding={Rect(10, 5, 10, 5)} setup_layout={{"left", "top"}}>
 				"gm_metrostroi_b47 with 3 players"
 			</Text>
@@ -297,27 +328,7 @@ if false then
 		end
 
 		return <TextButton mode="toggle" font={scoreboard_title} on_state_changed={function(_, b)
-			do
-				return
-			end
-
-			if b then
-				info:SetVisible(true)
-				info:Animate("Size", {Vec2(1, 0), Vec2(1, 1)}, 0.25, "*", 0.25, true)
-			else
-				info:Animate(
-					"Size",
-					{Vec2(1, 1), Vec2(1, 0)},
-					0.25,
-					"*",
-					0.25,
-					true,
-					function()
-						info:SetVisible(false)
-						title:SetState(false)
-					end
-				)
-			end
+			props.on_expand(b)
 		end}>
 			"Bubu's Server - Subway Simulator"
 		</TextButton>
@@ -325,13 +336,17 @@ if false then
 	end
 
 	local function Scoreboard(props, node)
+		local expanded, setExpanded = node:useState(false)
+		-- TODO: title will re-render resetting the state
 		return <Base size={window.GetSize() * 0.5} setup_layout={{
 			"layout_children",
 			"size_to_children_height",
 			"center_x_simple",
 			"center_y_simple",
 		}}>
-			<Title/><Info/>
+			<Title on_expand={function(b)
+				setExpanded(b)
+			end}/><Info expanded={expanded}/>
 		</Base>
 		
 	end
@@ -345,5 +360,6 @@ if false then
 	base:SetName("base")
 	base:SetMargin(Rect(0, 0, 0, 0))
 	local x = <Scoreboard/>
+	x.root_panel = base
 	x:build():render(base)
 end
