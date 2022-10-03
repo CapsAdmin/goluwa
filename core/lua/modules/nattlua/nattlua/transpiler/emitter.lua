@@ -1979,7 +1979,7 @@ do
 					self:EmitExpression(prop.value_expression)
 					self:EmitToken(prop.tokens["}"])
 				else
-					self:EmitToken(prop.val)
+					self:EmitExpression(prop.value_expression)
 				end
 			end
 		end
@@ -2034,17 +2034,17 @@ do
 				self:Whitespace(" ")
 				self:EmitToken(prop.key, "{k=")
 				self:EmitNonSpace("\"")
-				self:EmitNonSpace(prop.key.value)
+				self:EmitNonSpace(prop.tokens["identifier"].value)
 				self:EmitNonSpace("\"")
 				self:EmitToken(prop.tokens["="], ",")
 				self:EmitNonSpace("v=")
 
 				if prop.tokens["{"] then
 					self:EmitToken(prop.tokens["{"], "")
-					self:EmitExpression(prop.val)
+					self:EmitExpression(prop.value_expression)
 					self:EmitToken(prop.tokens["}"], "")
 				else
-					self:EmitToken(prop.val)
+					self:EmitExpression(prop.value_expression)
 				end
 
 				self:Emit("}")

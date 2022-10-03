@@ -6,7 +6,9 @@ return {
 	AnalyzeLSX = function(self, node)
 		self:PushAnalyzerEnvironment("runtime")
 		local func = self:AnalyzeExpression(node.tag)
-		node.tokens["type2"]:AddType(func)
+
+		if node.tokens["type2"] then node.tokens["type2"]:AddType(func) end
+
 		local tbl = Table()
 
 		do

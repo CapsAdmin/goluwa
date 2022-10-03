@@ -1,6 +1,7 @@
 local table = _G.table
 local NormalizeTuples = require("nattlua.types.tuple").NormalizeTuples
 local Tuple = require("nattlua.types.tuple").Tuple
+local Nil = require("nattlua.types.symbol").Nil
 local AnalyzeImport = require("nattlua.analyzer.expressions.import").AnalyzeImport
 return {
 	AnalyzePostfixCall = function(self, node)
@@ -44,12 +45,15 @@ return {
 
 		local ret, err = self:Call(callable, arguments, node)
 		self.current_expression = node
-		
 		local returned_tuple
+
 		if not ret then
 			self:Error(err)
+
 			if callable.Type == "function" and callable:IsExplicitOutputSignature() then
 				returned_tuple = callable:GetOutputSignature():Copy()
+			else
+				returned_tuple = Tuple({Nil()})
 			end
 		else
 			returned_tuple = ret

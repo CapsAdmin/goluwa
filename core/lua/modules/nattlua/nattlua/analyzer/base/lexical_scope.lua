@@ -144,13 +144,13 @@ function META:Copy()
 
 	if self.upvalues.typesystem then
 		for _, upvalue in ipairs(self.upvalues.typesystem.list) do
-			copy:CreateUpvalue(upvalue.key, upvalue:GetValue(), "typesystem")
+			copy:CreateUpvalue(upvalue:GetKey(), upvalue:GetValue(), "typesystem")
 		end
 	end
 
 	if self.upvalues.runtime then
 		for _, upvalue in ipairs(self.upvalues.runtime.list) do
-			copy:CreateUpvalue(upvalue.key, upvalue:GetValue(), "runtime")
+			copy:CreateUpvalue(upvalue:GetKey(), upvalue:GetValue(), "runtime")
 		end
 	end
 
