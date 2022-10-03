@@ -5,7 +5,9 @@ local function Panel(type: string, props: Table)
 	local pnl = gui.CreatePanel(type)
 	llog("%slocal %s = %s", tabs, type, pnl)
 
-	for k, v in pairs(props) do
+	for _, kv in pairs(props) do
+		local k = kv.k
+		local v = kv.v
 		k = k:transform_case("foo_bar", "FooBar")
 
 		if k:starts_with("On") then
@@ -59,7 +61,7 @@ do
 	local META = prototype.CreateTemplate("lsx_node", "base")
 	runfile("lua/libraries/prototype/parenting_template.lua", META)
 
-	local function Node(render: Function, props: Table, children: List<|string, number, Table|>)
+	local function Node(render: Function, props: Table, children: List<|string | number | Table|>)
 		assert(render, "render function is nil")
 		children = expand_children(children or {})
 		local self = META:CreateObject()
@@ -104,8 +106,6 @@ do
 			prototype.SafeRemove(self.panel)
 			self.panel = self.rerender(self.props)
 			self.panel:SetParent(parent)
-
-			if self.parent then self.parent:OnMount(self.panel) end
 		else
 			self.panel = parent
 		end
@@ -122,6 +122,8 @@ do
 				llog("%s%s:SetText(%s)", tabs, self.panel.ClassName, str)
 			end
 		end
+
+		if self.parent then self.parent:OnMount(self.panel) end
 	end
 
 	function META:PersistentState(init)
@@ -209,7 +211,7 @@ do
 			panel:SetColor(Color(1, 0.5, 0.5, 1))
 		end
 
-		return <Base name="test" setup_layout={"center_simple"} size={Vec2() + 200} is_view=1 from_container={props.is_container}>
+		return <Base size={Vec2() + 200} setup_layout={"center_simple"} is_view=1 from_container={props.is_container}>
 			<Button some_state={state} is_button=1 size={Vec2() + 100 + state} on_press={function()
 				setState(state + 1)
 			end}>
@@ -223,10 +225,10 @@ do
 	local function App()
 		return <Container is_container=1>
 			<Text setup_layout={"top"} is_text=1>
-				Hello world {math.random()}
+				"Hello world"{math.random()}
 			</Text>
 			<Text setup_layout={"top"} is_text=1>
-				Hello world 
+				"Hello world"
 			</Text>
 			
 		</Container>
@@ -242,5 +244,106 @@ do
 	base:SetName("base")
 	base:SetMargin(Rect(0, 0, 0, 0))
 	local x = <App/>
+	x:build():render(base)
+end
+
+if false then
+	local scoreboard_title = fonts.CreateFont(
+		{
+			path = "Oswald",
+			fallback = gfx.GetDefaultFont(),
+			size = 17,
+			shadow = 1,
+		}
+	)
+	local scoreboard_title_2 = fonts.CreateFont(
+		{
+			path = "Oswald",
+			fallback = gfx.GetDefaultFont(),
+			size = 11,
+			shadow = 5,
+		}
+	)
+
+	local function Info(props, node)
+		function node:OnMount(panel)
+			panel:SetLayoutSize()
+		end
+
+		return <Base set_visible={false} set_height={30} set_style={"frame2"} setup_layout={{"top", "fill_x"}} set_clipping={true} set_minimum_size={Vec2()}>
+			<Text padding={Rect(10, 5, 10, 5)} setup_layout={{"left", "top"}}>
+				"gm_metrostroi_b47 with 3 players"
+			</Text>
+			<Text padding={Rect(10, 5, 10, 5)} setup_layout={{"left", "top"}}>
+				"tickrate: 67"
+			</Text>
+			<Text padding={Rect(10, 5, 10, 5)} setup_layout={{"left", "top"}}>
+				"curtime: 1:24h"
+			</Text>
+			
+		</Base>
+		
+	end
+
+	local function Title(props, node)
+		function node:OnMount(title)
+			-- TODO: not sure how to solve this yet
+			-- this is called after all children are "mounted" so we have the text
+			-- the layout stuff is dependent on the prop order
+			title:SetMargin(Rect() + 7)
+			title:SizeToText()
+			title:SetupLayout("top", "fill_x")
+			title.label:SetupLayout("left")
+		end
+
+		return <TextButton mode="toggle" font={scoreboard_title} on_state_changed={function(_, b)
+			do
+				return
+			end
+
+			if b then
+				info:SetVisible(true)
+				info:Animate("Size", {Vec2(1, 0), Vec2(1, 1)}, 0.25, "*", 0.25, true)
+			else
+				info:Animate(
+					"Size",
+					{Vec2(1, 1), Vec2(1, 0)},
+					0.25,
+					"*",
+					0.25,
+					true,
+					function()
+						info:SetVisible(false)
+						title:SetState(false)
+					end
+				)
+			end
+		end}>
+			"Bubu's Server - Subway Simulator"
+		</TextButton>
+		
+	end
+
+	local function Scoreboard(props, node)
+		return <Base size={window.GetSize() * 0.5} setup_layout={{
+			"layout_children",
+			"size_to_children_height",
+			"center_x_simple",
+			"center_y_simple",
+		}}>
+			<Title/><Info/>
+		</Base>
+		
+	end
+
+	local base = gui.CreatePanel("base", nil, "lol")
+	base:SetSize(window.GetSize() * 0.5)
+	base:CenterSimple()
+	base:SetResizable(true)
+	base:SetDraggable(true)
+	base:SetColor(Color(0.1, 0.1, 0.1, 1))
+	base:SetName("base")
+	base:SetMargin(Rect(0, 0, 0, 0))
+	local x = <Scoreboard/>
 	x:build():render(base)
 end
