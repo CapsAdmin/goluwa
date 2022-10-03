@@ -13,7 +13,7 @@ function META:ParseLSXExpression()
 
 	local node = self:StartNode("expression", "lsx")
 	node.tokens["<"] = self:ExpectValue("<")
-	node.tag = self:ExpectType("letter")
+	node.tag = self:ParseFunctionNameIndex()
 	node.props = {}
 	node.children = {}
 
@@ -33,19 +33,19 @@ function META:ParseLSXExpression()
 			table.insert(node.props, spread)
 		elseif self:IsType("letter") and self:IsValue("=", 1) then
 			if self:IsValue("{", 2) then
-				local keyval = self:StartNode("expression", "lsx")
-				keyval.key = self:ExpectType("letter")
+				local keyval = self:StartNode("sub_statement", "table_key_value")
+				keyval.tokens["identifier"] = self:ExpectType("letter")
 				keyval.tokens["="] = self:ExpectValue("=")
 				keyval.tokens["{"] = self:ExpectValue("{")
-				keyval.val = self:ExpectRuntimeExpression()
+				keyval.value_expression = self:ExpectRuntimeExpression()
 				keyval.tokens["}"] = self:ExpectValue("}")
 				keyval = self:EndNode(keyval)
 				table.insert(node.props, keyval)
 			elseif self:IsType("string", 2) or self:IsType("number", 2) then
-				local keyval = self:StartNode("expression", "lsx")
-				keyval.key = self:ExpectType("letter")
+				local keyval = self:StartNode("sub_statement", "table_key_value")
+				keyval.tokens["identifier"] = self:ExpectType("letter")
 				keyval.tokens["="] = self:ExpectValue("=")
-				keyval.val = self:ParseToken()
+				keyval.value_expression = self:ParseKeywordValueTypeExpression()
 				keyval = self:EndNode(keyval)
 				table.insert(node.props, keyval)
 			else
@@ -84,8 +84,12 @@ function META:ParseLSXExpression()
 
 		if self:IsValue("<") and self:IsValue("/", 1) then break end
 
-		local tk = self:ParseToken()
-		table.insert(node.children, tk)
+		do
+			local string_node = self:StartNode("expression", "value")
+			string_node.value = self:ExpectType("string")
+			string_node = self:EndNode(string_node)
+			table.insert(node.children, string_node)
+		end
 	end
 
 	node.tokens["<2"] = self:ExpectValue("<")

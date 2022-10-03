@@ -589,6 +589,6 @@ analyzer function tonumber(val: string | number, base: number | nil)
 	return val
 end
 
-function _G.LSX(func, props, children)
+function _G.LSX(func: Function, props: Table, children: List<|Table | string | number|>)
 	return {func = func, props = props, children = children}
 end

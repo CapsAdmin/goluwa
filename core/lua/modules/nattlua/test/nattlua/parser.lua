@@ -293,6 +293,8 @@ test("parser errors", function()
 			{"do do end", "expected.-end.-got.-"},
 			{"local a = 1 === 1", "expected assignment or call"},
 			{"\n\n\nif $test then end", "expected.-then.-got.-$"},
+			{"local x = <Text>foo</Text>", "expected.-string.-got.-letter.-$"},
+			{"local x = <Text>1</Text>", "expected.-string.-got.-number.-$"},
 		}
 	)
 end)
@@ -342,16 +344,18 @@ parse[=[
 local x = <View style={styles.container} foo={1} bar={"aa"}/>
 
 local x = <View>
-	hello world 
+	"hello world"
 </View>
 
 local x = <View>
-	hello world 12314 aowdk oawkd } 
+	"hello world 12314 aowdk oawkd }"
 </View>
 
 local x = <View>
 	<View>
-		hello world 12314 aowdk oawkd 	
+		[[hello world 
+		
+		12314 aowdk oawkd]]
 	</View>
 	
 </View>
@@ -379,7 +383,7 @@ local x = <View style={styles.container}>
 	<Text1 style={styles.index}>
 		{props.index}	
 	</Text1>
-	lol <Text2 style={styles.index}>
+	"lol" <Text2 style={styles.index}>
 		{props.index}	
 	</Text2>
 </View>
