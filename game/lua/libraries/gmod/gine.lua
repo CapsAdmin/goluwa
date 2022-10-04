@@ -173,24 +173,24 @@ function gine.Initialize(gamemode, skip_addons)
 	end)
 
 	event.AddListener("PreLoadString", "glua_preprocess", function(code, path)
-		if gine.IsGLuaPath(path) then
-			local ok, msg = pcall(gine.PreprocessLua, code)
+		if not gine.IsGLuaPath(path) then return end
 
-			if not ok then
-				logn(msg)
-				return
-			end
+		local ok, msg = pcall(gine.PreprocessLua, code)
 
-			code = msg
-
-			if not loadstring(code) then vfs.Write("glua_preprocess_error.lua", code) end
-
-			if not gine.init then
-				return "commands.RunString('gluacheck " .. path .. "')"
-			end
-
-			return code
+		if not ok then
+			logn(msg)
+			return
 		end
+
+		code = msg
+
+		if not loadstring(code) then vfs.Write("glua_preprocess_error.lua", code) end
+
+		if not gine.init then
+			return "commands.RunString('gluacheck " .. path .. "')"
+		end
+
+		return code
 	end)
 
 	event.AddListener("PostLoadString", "glua_function_env", function(func, path)

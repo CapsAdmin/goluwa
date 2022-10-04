@@ -283,10 +283,12 @@ do -- nattlua
 	_G.nl.typesystem_syntax = require("nattlua.syntax.typesystem")
 	fs.PopWorkingDirectory()
 
-	event.AddListener("PreLoadString", "natlua", function(code, path)
-		if path:ends_with(".nlua") then
-			return assert(nl.Compiler(code, "@" .. path):Emit({transpile_extensions = true}))
-		end
+	event.AddListener("PreLoadString", "nattlua", function(code, path)
+		if not path:ends_with(".nlua") then return end
+
+		local ok, err = nl.Compiler(code, "@" .. path):Emit({transpile_extensions = true})
+		-- event listeners look for a value, not nil
+		return ok or false, err
 	end)
 end
 

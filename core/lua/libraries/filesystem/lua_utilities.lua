@@ -51,7 +51,7 @@ local function loadfile(path, chunkname)
 		if event then
 			local newcode, err = event.Call("PreLoadString", res, full_path)
 
-			if newcode == nil and type(err) == "string" then
+			if (newcode == nil or newcode == false) and type(err) == "string" then
 				return newcode, err
 			elseif type(newcode) == "string" then
 				res = newcode
