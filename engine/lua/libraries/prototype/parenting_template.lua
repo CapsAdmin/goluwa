@@ -108,14 +108,18 @@ function META:GetRoot()
 end
 
 function META:RemoveChildren()
-	for _, obj in ipairs(self:GetChildrenList()) do
-		if obj:IsValid() then
-			obj:OnUnParent(self)
-			obj:Remove()
+	if self.children_list then
+		for _, obj in ipairs(self.children_list) do
+			if obj:IsValid() then
+				obj:OnUnParent(self)
+				obj:Remove()
+			end
 		end
+
+		self.children_list = nil
 	end
 
-	self.children_list = nil
+	self.Children = {}
 end
 
 function META:UnParent()
