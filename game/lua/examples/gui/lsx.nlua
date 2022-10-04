@@ -1,10 +1,12 @@
+local type list = table
 local DEPTH = 0
 
-local function Panel(type: string, props: Table)
+local function Panel(type: string, node, key, props: Table, panel, parent)
 	local tabs = string.rep("\t", DEPTH)
+	utility.SafeRemove(panel)
 	local pnl = gui.CreatePanel(type)
-	llog("%slocal %s = %s", tabs, type, pnl)
 
+	--llog("%slocal %s = %s", tabs, type, pnl)
 	for _, kv in pairs(props) do
 		local k = kv.k
 		local v = kv.v
@@ -12,16 +14,17 @@ local function Panel(type: string, props: Table)
 
 		if k:starts_with("On") then
 			pnl[k] = v
-			llog("%s%s.%s = %s", tabs, type, k, v)
+		--llog("%s%s.%s = %s", tabs, type, k, v)
 		elseif pnl["Set" .. k] then
 			pnl["Set" .. k](pnl, v)
-			llog("%s%s:Set%s(%s)", tabs, type, k, v)
+		--llog("%s%s:Set%s(%s)", tabs, type, k, v)
 		elseif _G.type(pnl[k]) == "function" then
 			pnl[k](pnl, v)
-			llog("%s%s:%s(%s)", tabs, type, k, v)
+		--llog("%s%s:%s(%s)", tabs, type, k, v)
 		end
 	end
 
+	pnl:SetParent(parent)
 	return pnl
 end
 
@@ -29,80 +32,90 @@ local base_elements = {}
 
 for k, v in pairs(prototype.GetRegisteredSubTypes("panel")) do
 	local name = k:transform_case("foo_bar", "FooBar")
-	_G[name] = function(props: Table)
-		return Panel(k, props)
+	_G[name] = function(...)
+		return Panel(k, ...)
 	end
 	base_elements[_G[name]] = name
 end
 
 do
-	local function equal(a, b)
-		return a == b
-	end
-
-	local function expand_children(children)
-		if #children == 1 and list.is_list(children[1]) then return children[1] end
-
-		return children
-	end
-
-	local function merge_children_with_props(props, children)
-		local new_props = {
-			{k = "children", v = children},
-		}
-
-		for _, kv in ipairs(props) do
-			list.insert(new_props, kv)
-		end
-
-		return new_props
-	end
-
-	local function props_to_map(props)
-		local map = {}
-
-		for _, kv in ipairs(props) do
-			map[kv.k] = kv.v
-		end
-
-		return map
-	end
-
 	local META = prototype.CreateTemplate("lsx_node", "base")
 	runfile("lua/libraries/prototype/parenting_template.lua", META)
 
-	local function Node(render: Function, props: Table, children: List<|string | number | Table|>)
-		assert(render, "render function is nil")
-		children = expand_children(children or {})
-		local self = META:CreateObject()
-		self.props = props
-		self.children = children
-		self.original_children = children
-		self.original_props = props
-		self.rerender = render
-		self.name = base_elements[render] or debug.get_name(render) or "unknown"
-		return self
+	do
+		local function normalize_children(children)
+			local out = {}
+
+			if #children == 1 and list.is_list(children[1]) then children = children[1] end
+
+			local last_type
+
+			for i, v in ipairs(children) do
+				local t = type(v)
+
+				if t == "string" and last_type == t then
+					out[#out] = out[#out] .. v
+				else
+					table.insert(out, v)
+				end
+
+				last_type = t
+			end
+
+			return out
+		end
+
+		local function cleanup_name(name)
+			if not name then return "unknown" end
+
+			return name:gsub("%b()", ""):trim()
+		end
+
+		local function Node(render: Function, props: Table, children: List<|string | Table|>)
+			assert(render, "render function is nil")
+			children = normalize_children(children or {})
+			local self = META:CreateObject()
+			self.props = props
+			self.children = children
+			self.original_children = children
+			self.original_props = props
+
+			if base_elements[render] then
+				self.rerender = render
+			else
+				self.evaluate = render
+			end
+
+			self.name = base_elements[render] or cleanup_name(debug.get_name(render))
+			return self
+		end
+
+		-- the xml syntax will be transformed to call LSX(render, props, children)
+		_G.LSX = Node
 	end
 
-	-- the xml syntax will be transformed to call LSX(render, props, children)
-	_G.LSX = Node
+	do
+		function META:Call()
+			local map = {}
 
-	function META:build()
-		self.state_index = 0
+			for _, kv in ipairs(self.original_props) do
+				map[kv.k] = kv.v
+			end
+
+			map.children = self.original_children
+			return self.evaluate(map, self)
+		end
+	end
+
+	function META:Evaluate()
 		self.persistent_state_index = 0
 
-		if not base_elements[self.rerender] then
-			local new_props = merge_children_with_props(self.original_props, self.original_children)
-			local res = self.rerender(props_to_map(new_props), self)
-			res:build()
-			res.parent = self
-			self.children = {res}
+		if self.evaluate then self.children = {self:Call()} end
 
-			for _, child in ipairs(res.children) do
-				if type(child) == "table" then
-					child:build()
-					child.parent = res
-				end
+		for _, child in ipairs(self.children) do
+			if type(child) == "table" then
+				child:Evaluate()
+				child:SetParent(self)
 			end
 		end
 
@@ -110,12 +123,10 @@ do
 	end
 
 	function META:render(parent)
-		if base_elements[self.rerender] then
-			if self.parent then self.parent:OnUnmount(parent) end
+		if self.rerender then
+			if self:HasParent() then self:GetParent():OnUnmount(parent) end
 
-			prototype.SafeRemove(self.panel)
-			self.panel = self.rerender(self.props)
-			self.panel:SetParent(parent)
+			self.panel = self.rerender(self, "nokey", self.props, self.panel, parent)
 		else
 			self.panel = parent
 		end
@@ -126,14 +137,14 @@ do
 				child:render(self.panel)
 				DEPTH = DEPTH - 1
 			elseif self.panel then
-				local str = self.panel:GetText() .. tostring(child):gsub("%s+", " ")
+				local str = tostring(child):gsub("%s+", " ")
 				self.panel:SetText(str)
 				local tabs = string.rep("\t", DEPTH)
-				llog("%s%s:SetText(%s)", tabs, self.panel.ClassName, str)
+			--llog("%s%s:SetText(%s)", tabs, self.panel.ClassName, str)
 			end
 		end
 
-		if self.parent then self.parent:OnMount(self.panel) end
+		if self:HasParent() then self:GetParent():OnMount(self.panel) end
 	end
 
 	function META:PersistentState(init)
@@ -151,12 +162,12 @@ do
 	end
 
 	function META:ReRender()
-		self:build()
+		self:Evaluate()
 
-		if not self.parent then
-			self:render(self.root_panel)
+		if self:HasParent() then
+			self:render(self:GetParent().panel)
 		else
-			self:render(self.parent.panel)
+			self:render(self.root_panel)
 		end
 	end
 
@@ -178,7 +189,7 @@ do
 	function META:memo(val, deps)
 		local state, update = self:PersistentState({value = val(), deps = deps})
 
-		if not equal(state.deps, deps) then
+		if not table.equal(state.deps, deps) then
 			state.value = val()
 			state.deps = deps
 			update(state)
@@ -191,7 +202,7 @@ do
 		local state, update
 		state, update = self:PersistentState(function()
 			local function set(new_state)
-				if not equal(state.value, new_state) then
+				if not table.equal(state.value, new_state) then
 					update({
 						value = new_state,
 						set = set,
@@ -208,10 +219,101 @@ do
 		return state.value, state.set
 	end
 
+	function META:Dump()
+		local str = ""
+		str = "<" .. self.name
+
+		if next(self.props) then str = str .. " " end
+
+		for _, kv in pairs(self.props) do
+			str = str .. kv.k .. "=" .. kv.v
+		end
+
+		str = str .. ">"
+
+		for _, child in ipairs(self.children) do
+			if type(child) == "table" then
+				str = str .. child:Dump()
+			else
+				str = str .. "\"" .. child .. "\""
+			end
+		end
+
+		str = str .. "<" .. self.name .. "/>"
+		return str
+	end
+
 	META:Register()
 end
 
-if false then
+do
+	local function eq(a, b)
+		local x = a
+		x:Evaluate()
+		test(x.Dump, x).expect(b)
+	end
+
+	eq(<Base/>, "<Base><Base/>")
+	eq(<Base foo=1/>, "<Base foo=1><Base/>")
+	eq(<Base>
+		"foo"
+	</Base>
+	, "<Base>\"foo\"<Base/>")
+	eq(<Base>
+		"foo""bar"
+	</Base>
+	, "<Base>\"foobar\"<Base/>")
+	eq(<Base>
+		<Base/>
+	</Base>
+	, "<Base><Base><Base/><Base/>")
+	eq(<Base>
+		<Base/><Base/>
+	</Base>
+	, "<Base><Base><Base/><Base><Base/><Base/>")
+
+	do
+		local function Custom(props)
+			return <Base>
+				{props.children}
+			</Base>
+			
+		end
+
+		eq(<Custom>
+			<Base/>
+		</Custom>
+		, "<Custom><Base><Base><Base/><Base/><Custom/>")
+	end
+
+	do
+		local function Custom()
+			return <Text/>
+		end
+
+		eq(<Custom>
+			<Base/>
+		</Custom>
+		, "<Custom><Text><Text/><Custom/>")
+	end
+
+	do
+		local function Custom(props)
+			return <Base>
+				{props.children}
+			</Base>
+			
+		end
+
+		local x = <Custom>
+			<Base/>
+		</Custom>
+		
+		x:Evaluate()
+	end
+end
+
+if true then
 	local function Random()
 		return <Text setup_layout={"top"} is_text=1>
 			{math.random()}
@@ -232,6 +334,12 @@ if false then
 			end}>
 				{props.children}
 			</Button>
+			<Base>
+				<Base>
+					<Base/>
+				</Base>
+				
+			</Base>
 			<Random/>
 		</Base>
 		
@@ -259,10 +367,10 @@ if false then
 	base:SetName("base")
 	base:SetMargin(Rect(0, 0, 0, 0))
 	local x = <App/>
-	x:build():render(base)
+	x:Evaluate():render(base)
 end
 
-if true then
+if false then
 	local scoreboard_title = fonts.CreateFont(
 		{
 			path = "Oswald",
@@ -361,5 +469,5 @@ if true then
 	base:SetMargin(Rect(0, 0, 0, 0))
 	local x = <Scoreboard/>
 	x.root_panel = base
-	x:build():render(base)
+	x:Evaluate():render(base)
 end
