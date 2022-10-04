@@ -41,7 +41,7 @@ local function draw_scene(mat, pos, rot, fov, w, h)
 	local lol = render.active_framebuffer
 	ent:SetMaterialOverride(mat)
 	ent:SetVisible(true)
-	render.DrawGBuffer()
+	render3d.DrawGBuffer()
 	ent:SetVisible(false)
 	print(render.active_framebuffer == lol)
 	render3d.camera:SetViewport(old_viewport)
