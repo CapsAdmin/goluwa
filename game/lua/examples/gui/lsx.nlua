@@ -40,7 +40,12 @@ end
 
 do
 	local META = prototype.CreateTemplate("lsx_node", "base")
+	META.Kind = "node"
 	runfile("lua/libraries/prototype/parenting_template.lua", META)
+
+	function META:OnRemove()
+		self:UnParent()
+	end
 
 	do
 		local function normalize_children(children)
@@ -53,6 +58,11 @@ do
 			for i, v in ipairs(children) do
 				local t = type(v)
 
+				if t == "number" then
+					v = tostring(v)
+					t = "string"
+				end
+
 				if t == "string" and last_type == t then
 					out[#out] = out[#out] .. v
 				else
@@ -60,6 +70,15 @@ do
 				end
 
 				last_type = t
+			end
+
+			for i, v in ipairs(out) do
+				if type(v) == "string" then
+					local self = META:CreateObject()
+					self.Kind = "text"
+					self.Value = v
+					out[i] = self
+				end
 			end
 
 			return out
@@ -76,13 +95,25 @@ do
 			children = normalize_children(children or {})
 			local self = META:CreateObject()
 			self.props = props
-			self.children = children
-			self.original_children = children
-			self.original_props = props
+
+			for i, v in ipairs(children) do
+				self:AddChild(v)
+			end
 
 			if base_elements[render] then
-				self.rerender = render
+				self.build_panel = render
 			else
+				do
+					local map = {}
+
+					for _, kv in ipairs(props) do
+						map[kv.k] = kv.v
+					end
+
+					map.children = children
+					self.props_evaluate = map
+				end
+
 				self.evaluate = render
 			end
 
@@ -94,26 +125,22 @@ do
 		_G.LSX = Node
 	end
 
-	do
-		function META:Call()
-			local map = {}
-
-			for _, kv in ipairs(self.original_props) do
-				map[kv.k] = kv.v
-			end
-
-			map.children = self.original_children
-			return self.evaluate(map, self)
-		end
-	end
-
 	function META:Evaluate()
 		self.persistent_state_index = 0
 
-		if self.evaluate then self.children = {self:Call()} end
+		-- nodes with evaluate are nodes that are custom functions
+		-- for example a wrapper contaier that takes in children and renders them
+		-- so we have to discard their initial children, ie:
+		-- local function Wrapper(props) return <Base>{props.children}</Base> end
+		-- <Wrapper>foo</Wrapper> 
+		-- >> <Base>foo</Base>
+		if self.evaluate then
+			self:RemoveChildren()
+			self:AddChild(self.evaluate(self.props_evaluate, self))
+		end
 
-		for _, child in ipairs(self.children) do
-			if type(child) == "table" then
+		for _, child in ipairs(self:GetChildren()) do
+			if child.Kind == "node" then
 				child:Evaluate()
 				child:SetParent(self)
 			end
@@ -122,22 +149,22 @@ do
 		return self
 	end
 
-	function META:render(parent)
-		if self.rerender then
+	function META:BuildPanels(parent)
+		if self.build_panel then
 			if self:HasParent() then self:GetParent():OnUnmount(parent) end
 
-			self.panel = self.rerender(self, "nokey", self.props, self.panel, parent)
+			self.panel = self.build_panel(self, "nokey", self.props, self.panel, parent)
 		else
 			self.panel = parent
 		end
 
-		for _, child in ipairs(self.children) do
-			if type(child) == "table" then
+		for _, child in ipairs(self:GetChildren()) do
+			if child.Kind == "node" then
 				DEPTH = DEPTH + 1
-				child:render(self.panel)
+				child:BuildPanels(self.panel)
 				DEPTH = DEPTH - 1
 			elseif self.panel then
-				local str = tostring(child):gsub("%s+", " ")
+				local str = tostring(child.Value):gsub("%s+", " ")
 				self.panel:SetText(str)
 				local tabs = string.rep("\t", DEPTH)
 			--llog("%s%s:SetText(%s)", tabs, self.panel.ClassName, str)
@@ -165,9 +192,9 @@ do
 		self:Evaluate()
 
 		if self:HasParent() then
-			self:render(self:GetParent().panel)
+			self:BuildPanels(self:GetParent().panel)
 		else
-			self:render(self.root_panel)
+			self:BuildPanels(self.root_panel)
 		end
 	end
 
@@ -231,11 +258,11 @@ do
 
 		str = str .. ">"
 
-		for _, child in ipairs(self.children) do
-			if type(child) == "table" then
+		for _, child in ipairs(self:GetChildren()) do
+			if child.Kind == "node" then
 				str = str .. child:Dump()
 			else
-				str = str .. "\"" .. child .. "\""
+				str = str .. "\"" .. child.Value .. "\""
 			end
 		end
 
@@ -367,7 +394,7 @@ if true then
 	base:SetName("base")
 	base:SetMargin(Rect(0, 0, 0, 0))
 	local x = <App/>
-	x:Evaluate():render(base)
+	x:Evaluate():BuildPanels(base)
 end
 
 if false then
@@ -469,5 +496,5 @@ if false then
 	base:SetMargin(Rect(0, 0, 0, 0))
 	local x = <Scoreboard/>
 	x.root_panel = base
-	x:Evaluate():render(base)
+	x:Evaluate():BuildPanels(base)
 end
