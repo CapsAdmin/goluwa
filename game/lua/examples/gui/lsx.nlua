@@ -3,8 +3,7 @@ local DEPTH = 0
 
 local function Panel(type: string, node, key, props: Table, panel, parent)
 	local tabs = string.rep("\t", DEPTH)
-	utility.SafeRemove(panel)
-	local pnl = gui.CreatePanel(type)
+	local pnl = panel or gui.CreatePanel(type)
 
 	--llog("%slocal %s = %s", tabs, type, pnl)
 	for _, kv in pairs(props) do
@@ -19,12 +18,17 @@ local function Panel(type: string, node, key, props: Table, panel, parent)
 			pnl["Set" .. k](pnl, v)
 		--llog("%s%s:Set%s(%s)", tabs, type, k, v)
 		elseif _G.type(pnl[k]) == "function" then
-			pnl[k](pnl, v)
+			if k == "SetupLayout" then
+				pnl[k](pnl, unpack(v))
+			else
+				pnl[k](pnl, v)
+			end
 		--llog("%s%s:%s(%s)", tabs, type, k, v)
 		end
 	end
 
-	pnl:SetParent(parent)
+	if not panel then pnl:SetParent(parent) end
+
 	return pnl
 end
 
@@ -48,11 +52,23 @@ do
 	end
 
 	do
+		local function unpack_children(children, out): List<|any|>
+			out = out or {}
+
+			for i, v in ipairs(children) do
+				if list.is_list(v) then
+					unpack_children(v, out)
+				else
+					table.insert(out, v)
+				end
+			end
+
+			return out
+		end
+
 		local function normalize_children(children)
+			children = unpack_children(children)
 			local out = {}
-
-			if #children == 1 and list.is_list(children[1]) then children = children[1] end
-
 			local last_type
 
 			for i, v in ipairs(children) do
@@ -135,8 +151,51 @@ do
 		-- <Wrapper>foo</Wrapper> 
 		-- >> <Base>foo</Base>
 		if self.evaluate then
+			-- a function component only returns 1 node
+			local prev_child = self:GetChildren()[1]
+			local panel = prev_child and prev_child.panel
+			local child_list = self:GetChildrenList()
+			local panel_list = {}
+
+			for i, v in ipairs(child_list) do
+				panel_list[i] = {
+					panel = v.panel,
+					persistent_states = v.persistent_states,
+					persistent_state_index = v.persistent_state_index,
+				}
+			end
+
 			self:RemoveChildren()
-			self:AddChild(self.evaluate(self.props_evaluate, self))
+			local test = self.evaluate(self.props_evaluate, self)
+
+			if test then
+				test.panel = panel
+				test:Evaluate()
+				self:AddChild(test)
+
+				for _, child in ipairs(self:GetChildren()) do
+					if child.Kind == "node" then
+						child:Evaluate()
+						child:SetParent(self)
+					end
+				end
+
+				table.remove(panel_list, 1)
+
+				for i, v in ipairs(test:GetChildrenList()) do
+					if v.Kind == "node" then
+						if panel_list[i] then
+							v.panel = panel_list[i].panel
+							v.persistent_states = panel_list[i].persistent_states
+							v.persistent_state_index = panel_list[i].persistent_state_index
+						end
+					end
+				end
+
+				return self
+			else
+				utility.SafeRemove(panel)
+			end
 		end
 
 		for _, child in ipairs(self:GetChildren()) do
@@ -164,7 +223,7 @@ do
 				child:BuildPanels(self.panel)
 				DEPTH = DEPTH - 1
 			elseif self.panel then
-				local str = tostring(child.Value):gsub("%s+", " ")
+				local str = tostring(child.Value)
 				self.panel:SetText(str)
 				local tabs = string.rep("\t", DEPTH)
 			--llog("%s%s:SetText(%s)", tabs, self.panel.ClassName, str)
@@ -230,10 +289,11 @@ do
 		state, update = self:PersistentState(function()
 			local function set(new_state)
 				if not table.equal(state.value, new_state) then
-					update({
+					state = {
 						value = new_state,
 						set = set,
-					})
+					}
+					update(state)
 					self:ReRender()
 				end
 			end
@@ -253,7 +313,7 @@ do
 		if next(self.props) then str = str .. " " end
 
 		for _, kv in pairs(self.props) do
-			str = str .. kv.k .. "=" .. kv.v
+			str = str .. kv.k .. "=" .. tostring(kv.v)
 		end
 
 		str = str .. ">"
@@ -273,7 +333,7 @@ do
 	META:Register()
 end
 
-do
+if true then
 	local function eq(a, b)
 		local x = a
 		x:Evaluate()
@@ -325,22 +385,117 @@ do
 	end
 
 	do
+		local function Test()
+			return <Text>
+				"1"
+			</Text>
+			
+		end
+
 		local function Custom(props)
 			return <Base>
-				{props.children}
+				{props.children}<Test/>
 			</Base>
 			
 		end
 
-		local x = <Custom>
-			<Base/>
-		</Custom>
-		
-		x:Evaluate()
+		eq(
+			<Custom>
+				<Base/>
+			</Custom>
+			,
+			"<Custom><Base><Base><Base/><Test><Text>\"1\"<Text/><Test/><Base/><Custom/>"
+		)
+	end
+
+	do
+		local function Test2()
+			return <Text>
+				"2"
+			</Text>
+			
+		end
+
+		local function Test()
+			return <Text>
+				"1"<Test2/>
+			</Text>
+			
+		end
+
+		local function Custom(props)
+			return <Base>
+				{props.children}<Test/>
+			</Base>
+			
+		end
+
+		eq(
+			<Custom>
+				<Base/>
+			</Custom>
+			,
+			"<Custom><Base><Base><Base/><Test><Text>\"1\"<Test2><Text>\"2\"<Text/><Test2/><Text/><Test/><Base/><Custom/>"
+		)
 	end
 end
 
-if true then
+if false then
+	local test = 0
+
+	local function Test(props)
+		test = test + 1
+
+		if test % 3 == 0 then return nil end
+
+		if test % 3 == 1 then
+			return <Text position={Vec2() + 5}>
+				"1"
+			</Text>
+			
+		end
+
+		return <Text position={Vec2() + 10}>
+			{math.random()}
+		</Text>
+		
+	end
+
+	local function Custom(props)
+		return <Base size={Vec2() + 50} color={Color(0, 0, 0.3, 1)}>
+			{props.children}<Test/>
+		</Base>
+		
+	end
+
+	local function App()
+		return <Custom>
+			<Base position={Vec2() + 10} size={Vec2() + 20} color={Color(0.2, 0, 0, 1)}/>
+		</Custom>
+		
+	end
+
+	local base = gui.CreatePanel("base", nil, "lol")
+	base:SetSize(window.GetSize() * 0.5)
+	base:CenterSimple()
+	base:SetResizable(true)
+	base:SetDraggable(true)
+	base:SetColor(Color(0.1, 0.1, 0.1, 1))
+	base:SetName("base")
+	base:SetMargin(Rect(0, 0, 0, 0))
+	local x = <App/>
+	x = x:Evaluate()
+	x:BuildPanels(base)
+	local test_node = x:GetChildren()[1]:GetChildren()[1]:GetChildren()[2]
+
+	timer.Repeat("test", 0.5, 0, function()
+		test_node:ReRender()
+	end)
+
+	return
+end
+
+if false then
 	local function Random()
 		return <Text setup_layout={"top"} is_text=1>
 			{math.random()}
@@ -356,33 +511,15 @@ if true then
 		end
 
 		return <Base size={Vec2() + 200} setup_layout={"center_simple"} is_view=1 from_container={props.is_container}>
-			<Button some_state={state} is_button=1 size={Vec2() + 100 + state} on_press={function()
+			<Button some_state={state} is_button=1 size={Vec2() + 100 + state} on_release={function()
 				setState(state + 1)
-			end}>
-				{props.children}
-			</Button>
-			<Base>
-				<Base>
-					<Base/>
-				</Base>
-				
-			</Base>
-			<Random/>
+			end}/><Random/>
 		</Base>
 		
 	end
 
 	local function App()
-		return <Container is_container=1>
-			<Text setup_layout={"top"} is_text=1>
-				"Hello world"{math.random()}
-			</Text>
-			<Text setup_layout={"top"} is_text=1>
-				"Hello world"
-			</Text>
-			
-		</Container>
-		
+		return <Container is_container=1/>
 	end
 
 	local base = gui.CreatePanel("base", nil, "lol")
@@ -397,7 +534,7 @@ if true then
 	x:Evaluate():BuildPanels(base)
 end
 
-if false then
+if true then
 	local scoreboard_title = fonts.CreateFont(
 		{
 			path = "Oswald",
@@ -415,6 +552,73 @@ if false then
 		}
 	)
 
+	local function Friend()
+		return <Base cursor="hand" texture={render.CreateTextureFromPath("textures/silkicons/user.png")} size={Rect() + 16} padding={Rect() + 5} setup_layout={{"left", "center_y_simple"}}/>
+	end
+
+	local function Avatar(props, node)
+		function node:OnMount(avatar)
+			prototype.AddPropertyLink(avatar, props.client, "Path", "AvatarPath")
+		end
+
+		return <Image size={Vec2() + 30} padding={Rect()} setup_layout={{"left", "center_y_simple"}}/>
+	end
+
+	local function Info2()
+		return <Base height=30 style="tab_frame" setup_layout={{"left", "fill_x"}} on_right_click={function()
+			gui.CreateMenu(
+				{
+					{
+						"goto",
+						{{"bring", nil, "textures/silkicons/arrow_in.png"}},
+						"textures/silkicons/arrow_right.png",
+					},
+					{},
+					{
+						"spawn",
+						{{"revive", nil, "textures/silkicons/heart.png"}},
+						"textures/silkicons/heart_add.png",
+					},
+					{
+						"cleanup",
+						{{"kick", nil, "textures/silkicons/connect.png"}},
+						"textures/silkicons/bin.png",
+					},
+					{},
+					{
+						"admin menu",
+						{
+							{"ban weapons", nil, "textures/silkicons/gun.png"},
+							{"kick", nil, "textures/silkicons/door_out.png"},
+							{"ban", nil, "textures/silkicons/delete.png"},
+						},
+						"textures/silkicons/lock.png",
+					},
+					{
+						"mute",
+						{{"gag", nil, "textures/silkicons/comment_delete.png"}},
+						"textures/silkicons/sound_mute.png",
+					},
+				},
+				info
+			)
+		end}/>
+	end
+
+	local function TeamContainer(props)
+		return <Base style="text_edit" margin={Rect()} setup_layout={{"layout_children", "top", "size_to_children_height"}} no_draw={true} minimum_size={Vec2()} layout_size={nil} width={200}>
+			<TextButton font={scoreboard_title_2} mode="toggle" margin={Rect() + 5} text={props.id} size_to_text={nil} width={512} color={Color(0.25, 0.5, 1, 1) * 3.75} setup_layout={{"top"}} state={true}/>
+		</Base>
+		
+	end
+
+	local function Client()
+		return <Base height={30} setup_layout={{"top", "fill_x"}} no_draw={true} margin={Rect()}>
+			<Friend/><Avatar client={clients.GetLocalClient()}/><Info2/>
+		</Base>
+		
+	end
+
 	local function Info(props, node)
 		function node:OnMount(info)
 			if props.expanded then
@@ -430,13 +634,12 @@ if false then
 					true,
 					function()
 						info:SetVisible(false)
-						title:SetState(false)
 					end
 				)
 			end
 		end
 
-		return <Base set_visible={false} set_height={30} set_style={"frame2"} setup_layout={{"top", "fill_x"}} set_clipping={true} set_minimum_size={Vec2()} layout_size={nil}>
+		return <Base visibile={false} height={30} style={"frame2"} setup_layout={{"top", "fill_x"}} clipping={true} minimum_size={Vec2()} layout_size={nil}>
 			<Text padding={Rect(10, 5, 10, 5)} setup_layout={{"left", "top"}}>
 				"gm_metrostroi_b47 with 3 players"
 			</Text>
@@ -481,7 +684,7 @@ if false then
 		}}>
 			<Title on_expand={function(b)
 				setExpanded(b)
-			end}/><Info expanded={expanded}/>
+			end}/><Info expanded={expanded}/><Client/>
 		</Base>
 		
 	end
