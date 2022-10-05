@@ -344,33 +344,29 @@ if true then
 	eq(<Base foo=1/>, "<Base foo=1><Base/>")
 	eq(<Base>
 		"foo"
-	</Base>
-	, "<Base>\"foo\"<Base/>")
+	</Base>, "<Base>\"foo\"<Base/>")
 	eq(<Base>
-		"foo""bar"
-	</Base>
-	, "<Base>\"foobar\"<Base/>")
+		"foo"
+		"bar"
+	</Base>, "<Base>\"foobar\"<Base/>")
 	eq(<Base>
 		<Base/>
-	</Base>
-	, "<Base><Base><Base/><Base/>")
+	</Base>, "<Base><Base><Base/><Base/>")
 	eq(<Base>
-		<Base/><Base/>
-	</Base>
-	, "<Base><Base><Base/><Base><Base/><Base/>")
+		<Base/>
+		<Base/>
+	</Base>, "<Base><Base><Base/><Base><Base/><Base/>")
 
 	do
 		local function Custom(props)
 			return <Base>
 				{props.children}
 			</Base>
-			
 		end
 
 		eq(<Custom>
 			<Base/>
-		</Custom>
-		, "<Custom><Base><Base><Base/><Base/><Custom/>")
+		</Custom>, "<Custom><Base><Base><Base/><Base/><Custom/>")
 	end
 
 	do
@@ -380,8 +376,7 @@ if true then
 
 		eq(<Custom>
 			<Base/>
-		</Custom>
-		, "<Custom><Text><Text/><Custom/>")
+		</Custom>, "<Custom><Text><Text/><Custom/>")
 	end
 
 	do
@@ -389,21 +384,19 @@ if true then
 			return <Text>
 				"1"
 			</Text>
-			
 		end
 
 		local function Custom(props)
 			return <Base>
-				{props.children}<Test/>
+				{props.children}
+				<Test/>
 			</Base>
-			
 		end
 
 		eq(
 			<Custom>
 				<Base/>
-			</Custom>
-			,
+			</Custom>,
 			"<Custom><Base><Base><Base/><Test><Text>\"1\"<Text/><Test/><Base/><Custom/>"
 		)
 	end
@@ -413,28 +406,26 @@ if true then
 			return <Text>
 				"2"
 			</Text>
-			
 		end
 
 		local function Test()
 			return <Text>
-				"1"<Test2/>
+				"1"
+				<Test2/>
 			</Text>
-			
 		end
 
 		local function Custom(props)
 			return <Base>
-				{props.children}<Test/>
+				{props.children}
+				<Test/>
 			</Base>
-			
 		end
 
 		eq(
 			<Custom>
 				<Base/>
-			</Custom>
-			,
+			</Custom>,
 			"<Custom><Base><Base><Base/><Test><Text>\"1\"<Test2><Text>\"2\"<Text/><Test2/><Text/><Test/><Base/><Custom/>"
 		)
 	end
@@ -452,27 +443,24 @@ if false then
 			return <Text position={Vec2() + 5}>
 				"1"
 			</Text>
-			
 		end
 
 		return <Text position={Vec2() + 10}>
 			{math.random()}
 		</Text>
-		
 	end
 
 	local function Custom(props)
 		return <Base size={Vec2() + 50} color={Color(0, 0, 0.3, 1)}>
-			{props.children}<Test/>
+			{props.children}
+			<Test/>
 		</Base>
-		
 	end
 
 	local function App()
 		return <Custom>
 			<Base position={Vec2() + 10} size={Vec2() + 20} color={Color(0.2, 0, 0, 1)}/>
 		</Custom>
-		
 	end
 
 	local base = gui.CreatePanel("base", nil, "lol")
@@ -500,7 +488,6 @@ if false then
 		return <Text setup_layout={"top"} is_text=1>
 			{math.random()}
 		</Text>
-		
 	end
 
 	local function Container(props, node)
@@ -510,12 +497,22 @@ if false then
 			panel:SetColor(Color(1, 0.5, 0.5, 1))
 		end
 
-		return <Base size={Vec2() + 200} setup_layout={"center_simple"} is_view=1 from_container={props.is_container}>
-			<Button some_state={state} is_button=1 size={Vec2() + 100 + state} on_release={function()
-				setState(state + 1)
-			end}/><Random/>
+		return <Base
+			size={Vec2() + 200}
+			setup_layout={"center_simple"}
+			is_view=1
+			from_container={props.is_container}
+		>
+			<Button
+				some_state={state}
+				is_button=1
+				size={Vec2() + 100 + state}
+				on_release={function()
+					setState(state + 1)
+				end}
+			/>
+			<Random/>
 		</Base>
-		
 	end
 
 	local function App()
@@ -553,7 +550,13 @@ if true then
 	)
 
 	local function Friend()
-		return <Base cursor="hand" texture={render.CreateTextureFromPath("textures/silkicons/user.png")} size={Rect() + 16} padding={Rect() + 5} setup_layout={{"left", "center_y_simple"}}/>
+		return <Base
+			cursor="hand"
+			texture={render.CreateTextureFromPath("textures/silkicons/user.png")}
+			size={Rect() + 16}
+			padding={Rect() + 5}
+			setup_layout={{"left", "center_y_simple"}}
+		/>
 	end
 
 	local function Avatar(props, node)
@@ -565,58 +568,81 @@ if true then
 	end
 
 	local function Info2()
-		return <Base height=30 style="tab_frame" setup_layout={{"left", "fill_x"}} on_right_click={function()
-			gui.CreateMenu(
-				{
+		return <Base
+			height=30
+			style="tab_frame"
+			setup_layout={{"left", "fill_x"}}
+			on_right_click={function()
+				gui.CreateMenu(
 					{
-						"goto",
-						{{"bring", nil, "textures/silkicons/arrow_in.png"}},
-						"textures/silkicons/arrow_right.png",
-					},
-					{},
-					{
-						"spawn",
-						{{"revive", nil, "textures/silkicons/heart.png"}},
-						"textures/silkicons/heart_add.png",
-					},
-					{
-						"cleanup",
-						{{"kick", nil, "textures/silkicons/connect.png"}},
-						"textures/silkicons/bin.png",
-					},
-					{},
-					{
-						"admin menu",
 						{
-							{"ban weapons", nil, "textures/silkicons/gun.png"},
-							{"kick", nil, "textures/silkicons/door_out.png"},
-							{"ban", nil, "textures/silkicons/delete.png"},
+							"goto",
+							{{"bring", nil, "textures/silkicons/arrow_in.png"}},
+							"textures/silkicons/arrow_right.png",
 						},
-						"textures/silkicons/lock.png",
+						{},
+						{
+							"spawn",
+							{{"revive", nil, "textures/silkicons/heart.png"}},
+							"textures/silkicons/heart_add.png",
+						},
+						{
+							"cleanup",
+							{{"kick", nil, "textures/silkicons/connect.png"}},
+							"textures/silkicons/bin.png",
+						},
+						{},
+						{
+							"admin menu",
+							{
+								{"ban weapons", nil, "textures/silkicons/gun.png"},
+								{"kick", nil, "textures/silkicons/door_out.png"},
+								{"ban", nil, "textures/silkicons/delete.png"},
+							},
+							"textures/silkicons/lock.png",
+						},
+						{
+							"mute",
+							{{"gag", nil, "textures/silkicons/comment_delete.png"}},
+							"textures/silkicons/sound_mute.png",
+						},
 					},
-					{
-						"mute",
-						{{"gag", nil, "textures/silkicons/comment_delete.png"}},
-						"textures/silkicons/sound_mute.png",
-					},
-				},
-				info
-			)
-		end}/>
+					info
+				)
+			end}
+		/>
 	end
 
 	local function TeamContainer(props)
-		return <Base style="text_edit" margin={Rect()} setup_layout={{"layout_children", "top", "size_to_children_height"}} no_draw={true} minimum_size={Vec2()} layout_size={nil} width={200}>
-			<TextButton font={scoreboard_title_2} mode="toggle" margin={Rect() + 5} text={props.id} size_to_text={nil} width={512} color={Color(0.25, 0.5, 1, 1) * 3.75} setup_layout={{"top"}} state={true}/>
+		return <Base
+			style="text_edit"
+			margin={Rect()}
+			setup_layout={{"layout_children", "top", "size_to_children_height"}}
+			no_draw={true}
+			minimum_size={Vec2()}
+			layout_size={nil}
+			width={200}
+		>
+			<TextButton
+				font={scoreboard_title_2}
+				mode="toggle"
+				margin={Rect() + 5}
+				text={props.id}
+				size_to_text={nil}
+				width={512}
+				color={Color(0.25, 0.5, 1, 1) * 3.75}
+				setup_layout={{"top"}}
+				state={true}
+			/>
 		</Base>
-		
 	end
 
 	local function Client()
 		return <Base height={30} setup_layout={{"top", "fill_x"}} no_draw={true} margin={Rect()}>
-			<Friend/><Avatar client={clients.GetLocalClient()}/><Info2/>
+			<Friend/>
+			<Avatar client={clients.GetLocalClient()}/>
+			<Info2/>
 		</Base>
-		
 	end
 
 	local function Info(props, node)
@@ -639,7 +665,15 @@ if true then
 			end
 		end
 
-		return <Base visibile={false} height={30} style={"frame2"} setup_layout={{"top", "fill_x"}} clipping={true} minimum_size={Vec2()} layout_size={nil}>
+		return <Base
+			visibile={false}
+			height={30}
+			style={"frame2"}
+			setup_layout={{"top", "fill_x"}}
+			clipping={true}
+			minimum_size={Vec2()}
+			layout_size={nil}
+		>
 			<Text padding={Rect(10, 5, 10, 5)} setup_layout={{"left", "top"}}>
 				"gm_metrostroi_b47 with 3 players"
 			</Text>
@@ -649,9 +683,7 @@ if true then
 			<Text padding={Rect(10, 5, 10, 5)} setup_layout={{"left", "top"}}>
 				"curtime: 1:24h"
 			</Text>
-			
 		</Base>
-		
 	end
 
 	local function Title(props, node)
@@ -665,28 +697,35 @@ if true then
 			title.label:SetupLayout("left")
 		end
 
-		return <TextButton mode="toggle" font={scoreboard_title} on_state_changed={function(_, b)
-			props.on_expand(b)
-		end}>
+		return <TextButton
+			mode="toggle"
+			font={scoreboard_title}
+			on_state_changed={function(_, b)
+				props.on_expand(b)
+			end}
+		>
 			"Bubu's Server - Subway Simulator"
 		</TextButton>
-		
 	end
 
 	local function Scoreboard(props, node)
 		local expanded, setExpanded = node:useState(false)
 		-- TODO: title will re-render resetting the state
-		return <Base size={window.GetSize() * 0.5} setup_layout={{
-			"layout_children",
-			"size_to_children_height",
-			"center_x_simple",
-			"center_y_simple",
-		}}>
+		return <Base
+			size={window.GetSize() * 0.5}
+			setup_layout={{
+				"layout_children",
+				"size_to_children_height",
+				"center_x_simple",
+				"center_y_simple",
+			}}
+		>
 			<Title on_expand={function(b)
 				setExpanded(b)
-			end}/><Info expanded={expanded}/><Client/>
+			end}/>
+			<Info expanded={expanded}/>
+			<Client/>
 		</Base>
-		
 	end
 
 	local base = gui.CreatePanel("base", nil, "lol")
