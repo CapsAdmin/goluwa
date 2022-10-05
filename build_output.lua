@@ -21192,16 +21192,32 @@ do
 	function META:EmitLSXExpression(node)
 		self:EmitToken(node.tokens["<"])
 		self:EmitExpression(node.tag)
+		local len = 0
 
 		for _, prop in ipairs(node.props) do
+			len = len + prop:GetLength()
+		end
+
+		local line_break = len > self.config.max_line_length
+
+		if line_break then self:Indent() end
+
+		for _, prop in ipairs(node.props) do
+			if line_break then
+				self:Whitespace("\n")
+				self:Whitespace("\t")
+			end
+
 			if prop.kind == "table_spread" then
-				self:Whitespace(" ")
+				if not line_break then self:Whitespace(" ") end
+
 				self:EmitToken(prop.tokens["{"])
 				self:EmitToken(prop.tokens["..."])
 				self:EmitExpression(prop.expression)
 				self:EmitToken(prop.tokens["}"])
 			else
-				self:Whitespace(" ")
+				if not line_break then self:Whitespace(" ") end
+
 				self:EmitToken(prop.tokens["identifier"])
 				self:EmitToken(prop.tokens["="])
 
@@ -21215,13 +21231,20 @@ do
 			end
 		end
 
+		if line_break then self:Outdent() end
+
 		if node.children[1] then
+			if line_break then
+				self:Whitespace("\n")
+				self:Whitespace("\t")
+			end
+
 			self:EmitToken(node.tokens[">"])
 			self:Indent()
 			self:Whitespace("\n")
 			self:Whitespace("\t")
 
-			for _, child in ipairs(node.children) do
+			for i, child in ipairs(node.children) do
 				if child.kind == "value" then
 					self:EmitExpression(child)
 				elseif child.type == "expression" and child.kind == "lsx" then
@@ -21230,6 +21253,11 @@ do
 					self:EmitToken(child.tokens["lsx{"])
 					self:EmitExpression(child)
 					self:EmitToken(child.tokens["lsx}"])
+				end
+
+				if i ~= #node.children then
+					self:Whitespace("\n")
+					self:Whitespace("\t")
 				end
 			end
 
@@ -21240,9 +21268,12 @@ do
 			self:EmitToken(node.tokens["/"])
 			self:EmitToken(node.tokens["type2"])
 			self:EmitToken(node.tokens[">2"])
-			self:Whitespace("\n")
-			self:Whitespace("\t")
 		else
+			if line_break then
+				self:Whitespace("\n")
+				self:Whitespace("\t")
+			end
+
 			self:EmitToken(node.tokens["/"])
 			self:EmitToken(node.tokens[">"])
 		end
@@ -23032,7 +23063,7 @@ do local __M; IMPORTS["nattlua.analyzer.expressions.postfix_index"] = function(.
 	AnalyzePostfixIndex = function(self, node)
 		return self:Assert(
 			self:IndexOperator(
-				self:AnalyzeExpression(node.left),
+				self:AnalyzeExpression(node.left):GetFirstValue(),
 				self:AnalyzeExpression(node.expression):GetFirstValue()
 			)
 		)
