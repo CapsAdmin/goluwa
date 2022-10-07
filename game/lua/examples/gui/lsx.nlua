@@ -259,18 +259,15 @@ do
 		if self:HasParent() then self:GetParent():OnRender(self.panel) end
 	end
 
-	function META:PersistentState(init)
+	function META:PersistentTable(state)
 		self.persistent_states = self.persistent_states or {}
 		self.persistent_state_index = self.persistent_state_index + 1
 
 		if self.persistent_states[self.persistent_state_index] == nil then
-			self.persistent_states[self.persistent_state_index] = init()
-		end
-
-		return self.persistent_states[self.persistent_state_index],
-		function(state)
 			self.persistent_states[self.persistent_state_index] = state
 		end
+
+		return self.persistent_states[self.persistent_state_index]
 	end
 
 	function META:ReRender()
@@ -291,47 +288,42 @@ do
 
 	function META:useEffect(func, deps)
 		self.effects = self.effects or {}
-		local state, update = self:PersistentState(function()
-			return {
-				effect = true,
-				dependencies = deps,
-				func = func,
-			}
-		end)
+		local state = self:PersistentTable({
+			effect = true,
+			dependencies = deps,
+			func = func,
+		})
 	end
 
 	function META:memo(val, deps)
-		local state, update = self:PersistentState({value = val(), deps = deps})
+		local state = self:PersistentTable({value = val(), deps = deps})
 
 		if not table.equal(state.deps, deps) then
 			state.value = val()
 			state.deps = deps
-			update(state)
 		end
 
 		return state.value
 	end
 
 	function META:useState(init)
-		local state, update
-		state, update = self:PersistentState(function()
-			local function set(new_state)
-				if not table.equal(state.value, new_state) then
-					state = {
-						value = new_state,
-						set = set,
-					}
-					update(state)
-					self:ReRender()
-				end
-			end
+		local state
 
-			return {
-				value = init,
-				set = set,
-			}
-		end)
+		local function set(new_state)
+			if not table.equal(state.value, new_state) then
+				state.value = new_state
+				state.set = set
+				self:ReRender()
+			end
+		end
+
+		state = self:PersistentTable({value = init, set = set})
 		return state.value, state.set
+	end
+
+	function META:useRef(init)
+		local state = self:PersistentTable({current = init})
+		return state.current
 	end
 
 	function META:Dump()
