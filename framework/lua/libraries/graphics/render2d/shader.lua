@@ -61,6 +61,7 @@ render2d.shader_data = {
 
 				float radius = lua[border_radius = 0];
 				if (radius > 0) {
+					float softness = 50;
 					vec2 scale = vec2(g_world_2d[0][0], g_world_2d[1][1]);
 					vec2 ratio2 = vec2(scale.y / scale.x, 1);
 					vec2 size = scale;
@@ -70,25 +71,25 @@ render2d.shader_data = {
 					if (uv.x > 1.0 - radius/scale.x && uv.y > 1.0 - radius/scale.y) {
 						float distance = 0;
 						distance += length((uv - vec2(1, 1) + vec2(radius/scale.x, radius/scale.y)) * scale) * 1/radius;
-						frag_color.a *= -pow(distance, 500)+1;
+						frag_color.a *= -pow(distance, softness)+1;
 					}
 
 					if (uv.x < radius/scale.x && uv.y > 1.0 - radius/scale.y) {
 						float distance = 0;
 						distance += length((uv - vec2(0, 1) + vec2(-radius/scale.x, radius/scale.y)) * scale) * 1/radius;
-						frag_color.a *= -pow(distance, 500)+1;
+						frag_color.a *= -pow(distance, softness)+1;
 					}
 
 					if (uv.x > 1.0 - radius/scale.x && uv.y < radius/scale.y) {
 						float distance = 0;
 						distance += length((uv - vec2(1, 0) + vec2(radius/scale.x, -radius/scale.y)) * scale) * 1/radius;
-						frag_color.a *= -pow(distance, 500)+1;
+						frag_color.a *= -pow(distance, softness)+1;
 					}
 
 					if (uv.x < radius/scale.x && uv.y < radius/scale.y) {
 						float distance = 0;
 						distance += length((uv - vec2(0, 0) + vec2(-radius/scale.x, -radius/scale.y)) * scale) * 1/radius;
-						frag_color.a *= -pow(distance, 500)+1;
+						frag_color.a *= -pow(distance, softness)+1;
 					}
 				}
 			}
