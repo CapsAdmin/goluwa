@@ -49,12 +49,16 @@ end
 
 local base_elements = {}
 
-for k, v in pairs(prototype.GetRegisteredSubTypes("panel")) do
-	local name = k:transform_case("foo_bar", "FooBar")
+local function add_panel(name, tag)
 	_G[name] = function(...)
-		return Panel(k, ...)
+		return Panel(tag, ...)
 	end
 	base_elements[_G[name]] = name
+end
+
+for k, v in pairs(prototype.GetRegisteredSubTypes("panel")) do
+	local name = k:transform_case("foo_bar", "FooBar")
+	add_panel(name, k)
 end
 
 do
@@ -540,7 +544,7 @@ if false then
 	x:Evaluate():BuildPanels(base)
 end
 
-if true then
+if false then
 	local scoreboard_title = fonts.CreateFont(
 		{
 			path = "Oswald",
@@ -796,4 +800,117 @@ if true then
 	local x = <Scoreboard/>
 	x.root_panel = base
 	x:Evaluate():BuildPanels(base)
+end
+
+if true then
+	local font = fonts.CreateFont({
+		path = "Oswald",
+		fallback = gfx.GetDefaultFont(),
+		size = 20,
+	})
+
+	local colors = {
+		text = Color(1, 1, 1, 1),
+		button = Color(0.9, 0.5, 0.5, 1),
+		button_hover = Color(0.9, 0.5, 0.5, 1) * 1.1, 
+	}
+	local spacing = {
+		s = 5,
+		m = 10,
+		l = 20,
+	}
+	do
+		local META = prototype.CreateTemplate("view")
+		META:GetSet("BorderRadius", 0)
+
+		function META:DrawRect(x, y, w, h)
+			render2d.PushBorderRadius(self.BorderRadius)
+			render2d.DrawRect(
+				x or 0,
+				y or 0,
+				w or (self.Size.x + self.DrawSizeOffset.x),
+				h or (self.Size.y + self.DrawSizeOffset.y)
+			)
+			render2d.PopBorderRadius()
+		end
+
+		gui.RegisterPanel(META)
+		add_panel("View", "view")
+	end
+
+	local function Button(props, node)
+		local color, setColor = node:useState(colors.button)
+		local mousePos, setMousePos = node:useState(Vec2())
+
+		function node:OnMount(panel)
+			panel:SizeToChildren()
+		end
+
+		return <View
+			setup_layout={{"top"}}
+			color={color}
+			margin={Rect() + spacing.m}
+			padding={Rect(0,0,0,spacing.s)}
+			border_radius=5
+			on_mouse_enter={function()
+				setColor(colors.button_hover)
+			end}
+			on_mouse_exit={function()
+				setColor(colors.button)
+			end}
+			on_mouse_move={function(_, x, y)
+				setMousePos(Vec2(x, y))
+			end}
+			on_mouse_input={function(panel, button, press)
+				if button == "button_1" then
+					if press then
+						panel.DrawScaleCenter = true
+						panel:Animate("DrawScaleOffset", {
+							Vec2() + 0.9, 
+							function() return input.IsMouseDown("button_1") end, 
+							Vec2() + 1,
+						}, 0.1, "*")
+					else
+						if panel:IsMouseOver() then
+							props.on_press()
+						end
+					end
+				end
+					
+			end}
+		>
+			<Text
+				ignore_mouse={true}
+				setup_layout={{"center_simple"}}
+				font={font}
+				text_color={colors.text}
+			>
+				"gyjq Q buik"
+			</Text>
+		</View>
+	end
+
+	local function Column(props)
+		return <View no_draw={true} position={Vec2() + 50} setup_layout={{"size_to_children"}}>
+			{props.children}
+		</View>
+	end
+
+	local function App()
+		return <Column>
+		
+		<Button on_press={function()
+			print("press!")
+		end}/>
+		<Button on_press={function()
+			print("press!")
+		end}/>
+		
+		</Column>
+	end
+
+	local base = create_world()
+	local x = <App/>
+	x = x:Evaluate()
+	x:BuildPanels(base)
 end
