@@ -23,7 +23,10 @@ local function Panel(type: string, node, key, props: Table, panel, parent)
 		local v = kv.v
 		k = k:transform_case("foo_bar", "FooBar")
 
-		if k:starts_with("On") then
+		if k == "OnMount" or k == "OnUnmount" or k == "OnRender" then
+			print(type, k, v)
+			node[k] = v
+		elseif k:starts_with("On") then
 			pnl[k] = v
 		--llog("%s%s.%s = %s", tabs, type, k, v)
 		elseif pnl["Set" .. k] then
@@ -225,18 +228,22 @@ do
 	end
 
 	function META:BuildPanels(parent)
-		local mounted = false
-
 		if self.build_panel then
-			if not self.panel then
-				mounted = true
+			local mounted = self.panel == nil
 
-				if self:HasParent() then self:GetParent():OnUnmount(parent) end
-			end
+			if mounted then self:OnUnmount() end
 
 			self.panel = self.build_panel(self, "nokey", self.props, self.panel, parent)
+
+			if mounted then self:OnMount(self.panel) end
 		else
+			local mounted = self.panel == nil
+
+			if mounted then self:OnUnmount() end
+
 			self.panel = parent
+
+			if mounted then self:OnMount(self.panel) end
 		end
 
 		for _, child in ipairs(self:GetChildren()) do
@@ -250,10 +257,6 @@ do
 				local tabs = string.rep("\t", DEPTH)
 			--llog("%s%s:SetText(%s)", tabs, self.panel.ClassName, str)
 			end
-		end
-
-		if mounted then
-			if self:HasParent() then self:GetParent():OnMount(self.panel) end
 		end
 
 		if self:HasParent() then self:GetParent():OnRender(self.panel) end
@@ -323,7 +326,7 @@ do
 
 	function META:useRef(init)
 		local state = self:PersistentTable({current = init})
-		return state.current
+		return state
 	end
 
 	function META:Dump()
@@ -620,7 +623,7 @@ if true then
 	end
 
 	local function TeamContainer(props, node)
-		--local player_panel, set_player_panel = node:PersistentState(nil)
+		local panels = node:PersistentTable({info = NULL, title = NULL})
 		return <Base
 			style="text_edit"
 			margin={Rect()}
@@ -631,6 +634,10 @@ if true then
 			width={200}
 		>
 			<TextButton
+				on_mount={function(node)
+					panels.title = node.panel
+					print("mount!")
+				end}
 				font={scoreboard_title_2}
 				mode="toggle"
 				margin={Rect() + 5}
@@ -639,18 +646,14 @@ if true then
 				width={512}
 				color={Color(0.25, 0.5, 1, 1) * 3.75}
 				setup_layout={{"top", "fill_x"}}
-				state={true}
+				state={expanded}
 				text={props.team_name}
-				on_state_changed={function(_, b)
-					do
-						return
-					end
-
-					if b then
-						team:SetVisible(true)
-						team:Animate("DrawScaleOffset", {Vec2(1, 0), Vec2(1, 1)}, 0.25, "*", 0.25, true)
+				on_state_changed={function(_, expanded)
+					if expanded then
+						panels.info:SetVisible(true)
+						panels.info:Animate("DrawScaleOffset", {Vec2(1, 0), Vec2(1, 1)}, 0.25, "*", 0.25, true)
 					else
-						team:Animate(
+						panels.info:Animate(
 							"DrawScaleOffset",
 							{Vec2(1, 1), Vec2(1, 0)},
 							0.25,
@@ -658,15 +661,18 @@ if true then
 							0.25,
 							true,
 							function()
-								team:SetVisible(false)
-								title:SetState(false)
-								scoreboard.panel:Layout(true)
+								panels.info:SetVisible(false)
+								panels.title:SetState(false)
+							--scoreboard.panel:Layout(true)
 							end
 						)
 					end
 				end}
 			/>
 			<Base
+				on_mount={function(node)
+					panels.info = node.panel
+				end}
 				margin={Rect()}
 				setup_layout={{"top", "size_to_children_height", "fill_x"}}
 				no_draw={false}
