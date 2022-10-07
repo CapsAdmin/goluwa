@@ -225,8 +225,14 @@ do
 	end
 
 	function META:BuildPanels(parent)
+		local mounted = false
+
 		if self.build_panel then
-			if self:HasParent() then self:GetParent():OnUnmount(parent) end
+			if not self.panel then
+				mounted = true
+
+				if self:HasParent() then self:GetParent():OnUnmount(parent) end
+			end
 
 			self.panel = self.build_panel(self, "nokey", self.props, self.panel, parent)
 		else
@@ -246,7 +252,11 @@ do
 			end
 		end
 
-		if self:HasParent() then self:GetParent():OnMount(self.panel) end
+		if mounted then
+			if self:HasParent() then self:GetParent():OnMount(self.panel) end
+		end
+
+		if self:HasParent() then self:GetParent():OnRender(self.panel) end
 	end
 
 	function META:PersistentState(init)
@@ -274,6 +284,8 @@ do
 	end
 
 	function META:OnMount(parent) end
+
+	function META:OnRender(parent) end
 
 	function META:OnUnmount() end
 
@@ -502,7 +514,7 @@ if false then
 	local function Container(props, node)
 		local state, setState = node:useState(0)
 
-		function node:OnMount(panel)
+		function node:OnRender(panel)
 			panel:SetColor(Color(1, 0.5, 0.5, 1))
 		end
 
@@ -562,7 +574,7 @@ if true then
 	end
 
 	local function Avatar(props, node)
-		function node:OnMount(avatar)
+		function node:OnRender(avatar)
 			prototype.AddPropertyLink(avatar, props.client, "Path", "AvatarPath")
 		end
 
@@ -616,6 +628,7 @@ if true then
 	end
 
 	local function TeamContainer(props, node)
+		--local player_panel, set_player_panel = node:PersistentState(nil)
 		return <Base
 			style="text_edit"
 			margin={Rect()}
@@ -686,7 +699,7 @@ if true then
 	end
 
 	local function TitleInfoBar(props, node)
-		function node:OnMount(info)
+		function node:OnRender(info)
 			if props.expanded then
 				info:SetVisible(true)
 				info:Animate("Size", {Vec2(1, 0), Vec2(1, 1)}, 0.25, "*", 0.25, true)
@@ -727,7 +740,7 @@ if true then
 	end
 
 	local function TitleButton(props, node)
-		function node:OnMount(title)
+		function node:OnRender(title)
 			-- TODO: not sure how to solve this yet
 			-- this is called after all children are "mounted" so we have the text
 			-- the layout stuff is dependent on the prop order
