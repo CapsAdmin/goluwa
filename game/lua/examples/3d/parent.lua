@@ -26,7 +26,7 @@ do
 end
 
 local start = system.GetElapsedTime()
-parent:BuildChildrenList()
+parent:InvalidateChildrenList()
 
 function goluwa.Update()
 	local t = (system.GetElapsedTime() - start) / 50

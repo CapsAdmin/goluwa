@@ -5,28 +5,116 @@ META.OnChildRemove = META.OnChildRemove or function() end
 META.OnUnParent = META.OnUnParent or function() end
 META:GetSet("Parent", NULL)
 META:GetSet("Children", {})
-META:GetSet("Children2", {})
+META:GetSet("ChildrenMap", {})
+META:GetSet("ChildOrder", 0)
 
-function META:GetChildrenList()
-	if not self.children_list then self:BuildChildrenList() end
+do -- children
+	function META:GetChildren()
+		return self.Children
+	end
 
-	return self.children_list
+	local function add_recursive(obj, tbl, index)
+		local source = obj.Children
+
+		for i = 1, #source do
+			tbl[index] = source[i]
+			index = index + 1
+			index = add_recursive(source[i], tbl, index)
+		end
+
+		return index
+	end
+
+	function META:GetChildrenList()
+		if not self.children_list then
+			local tbl = {}
+			add_recursive(self, tbl, 1)
+			self.children_list = tbl
+		end
+
+		return self.children_list
+	end
+
+	function META:InvalidateChildrenList()
+		self.children_list = nil
+
+		for _, parent in ipairs(self:GetParentList()) do
+			parent.children_list = nil
+		end
+	end
 end
 
-function META:GetParentList()
-	if not self.parent_list then self:BuildParentList() end
+do -- parent
+	function META:SetParent(obj)
+		if not obj or not obj:IsValid() then
+			self:UnParent()
+			return false
+		else
+			return obj:AddChild(self)
+		end
+	end
 
-	return self.parent_list
+	function META:ContainsParent(obj)
+		for _, v in ipairs(self:GetParentList()) do
+			if v == obj then return true end
+		end
+	end
+
+	local function quick_copy(input)
+		local output = {}
+
+		for i = 1, #input do
+			output[i + 1] = input[i]
+		end
+
+		return output
+	end
+
+	function META:GetParentList()
+		if not self.parent_list then
+			if self.Parent and self.Parent:IsValid() then
+				self.parent_list = quick_copy(self.Parent:GetParentList())
+				self.parent_list[1] = self.Parent
+			else
+				self.parent_list = {}
+			end
+		end
+
+		return self.parent_list
+	end
+
+	function META:InvalidateParentList()
+		self.parent_list = nil
+
+		for _, child in ipairs(self:GetChildrenList()) do
+			child.parent_list = nil
+		end
+	end
+
+	function META:InvalidateParentListPartial(parent_list, parent)
+		self.parent_list = quick_copy(parent_list)
+		self.parent_list[1] = parent
+
+		for _, child in ipairs(self:GetChildren()) do
+			child:InvalidateParentListPartial(self.parent_list, self)
+		end
+	end
 end
 
 function META:AddChild(obj, pos)
+	if not obj or not obj:IsValid() then
+		self:UnParent()
+		return
+	end
+
 	if self == obj or obj:HasChild(self) then return false end
 
-	obj:UnParent()
+	if obj:HasParent() then obj:UnParent() end
+
 	obj.Parent = self
 
 	if not self:HasChild(obj) then
-		self.Children2[obj] = obj
+		self.ChildrenMap[obj] = obj
 
 		if pos then
 			list.insert(self.Children, pos, obj)
@@ -35,9 +123,7 @@ function META:AddChild(obj, pos)
 		end
 	end
 
-	self.children_list = nil
-	self.parent_list = nil
-	obj.parent_list = nil
+	self:InvalidateChildrenList()
 	obj:OnParent(self)
 
 	if not obj.suppress_child_add then
@@ -46,21 +132,24 @@ function META:AddChild(obj, pos)
 		obj.suppress_child_add = nil
 	end
 
+	if self:HasParent() then self:GetParent():SortChildren() end
+
+	-- why would we need to sort obj's children
+	-- if it is completely unmodified?
+	obj:SortChildren()
+	self:SortChildren()
+	obj:InvalidateParentListPartial(self:GetParentList(), self)
 	return true
 end
 
-function META:SetParent(obj)
-	if not obj:IsValid() then
-		self:UnParent()
-		return
+do
+	local function sort(a, b)
+		return a.ChildOrder < b.ChildOrder
 	end
 
-	return obj:AddChild(self)
-end
-
-function META:ContainsParent(obj)
-	for _, v in ipairs(self:GetParentList()) do
-		if v == obj then return true end
+	function META:SortChildren() -- todo
+	--table.sort(self.Children, sort)
+	--self:InvalidateChildrenList()
 	end
 end
 
@@ -73,87 +162,99 @@ function META:HasChildren()
 end
 
 function META:HasChild(obj)
-	return self.Children2[obj] ~= nil
+	return self.ChildrenMap[obj] ~= nil
 end
 
-function META:UnparentChild(var)
-	local obj = self.Children2[var]
+function META:UnparentChild(obj)
+	self.ChildrenMap[obj] = nil
 
-	if obj == var then
-		obj:OnUnParent(self)
-		self:OnChildRemove(obj)
-		obj.Parent = NULL
-		obj.children_list = nil
-		obj.parent_list = nil
-		self.Children2[obj] = nil
+	for i, val in ipairs(self:GetChildren()) do
+		if val == obj then
+			self:InvalidateChildrenList()
+			table.remove(self.Children, i)
+			obj:OnUnParent(self)
+			self:OnChildRemove(obj)
+			obj.Parent = NULL
+			self.ChildrenMap[obj] = nil
 
-		for i, v in ipairs(self.Children) do
-			if v == var then
-				list.remove(self.Children, i)
-
-				break
-			end
+			break
 		end
 	end
 end
 
 function META:GetRoot()
-	if not self:HasParent() then return self end
+	local list = self:GetParentList()
 
-	self.RootPart = self.RootPart or NULL
+	if list[1] then return list[#list] end
 
-	if not self.RootPart:IsValid() then self:BuildParentList() end
-
-	return self.RootPart
+	return self
 end
 
 function META:RemoveChildren()
-	if self.children_list then
-		for _, obj in ipairs(self.children_list) do
-			if obj:IsValid() then
-				obj:OnUnParent(self)
-				obj:Remove()
-			end
-		end
+	self:InvalidateChildrenList()
 
-		self.children_list = nil
+	for i, obj in ipairs(self:GetChildrenList()) do
+		obj:OnUnParent(self)
+		obj:Remove(true)
 	end
 
 	self.Children = {}
+	self.ChildrenMap = {}
 end
 
 function META:UnParent()
 	local parent = self:GetParent()
 
-	if parent:IsValid() then
-		parent:UnparentChild(self)
-		self:OnUnParent(parent)
+	if parent:IsValid() then parent:RemoveChild(self) end
+
+	self:OnUnParent(parent)
+	self.Parent = NULL
+end
+
+function META:RemoveChild(obj)
+	self.ChildrenMap[obj] = nil
+
+	for i, val in ipairs(self:GetChildren()) do
+		if val == obj then
+			self:InvalidateChildrenList()
+			table.remove(self.Children, i)
+			obj:OnUnParent(self)
+
+			break
+		end
 	end
 end
 
-local function add_children_to_list(parent, lst)
-	for _, child in ipairs(parent:GetChildren()) do
-		list.insert(lst, child)
-		add_children_to_list(child, lst)
-	end
-end
+do
+	function META:CallRecursive(func, a, b, c)
+		assert(c == nil, "EXTEND ME")
 
-function META:BuildChildrenList()
-	self.children_list = {}
-	add_children_to_list(self, self.children_list)
-end
+		if self[func] then self[func](self, a, b, c) end
 
-function META:BuildParentList()
-	self.parent_list = {}
-
-	if not self:HasParent() then return end
-
-	local parent = self:GetParent()
-
-	while parent:IsValid() do
-		list.insert(self.parent_list, parent)
-		parent = parent:GetParent()
+		for _, child in ipairs(self:GetChildrenList()) do
+			if child[func] then child[func](child, a, b, c) end
+		end
 	end
 
-	self.RootPart = self.parent_list[#self.parent_list]
+	function META:CallRecursiveOnClassName(class_name, func, a, b, c)
+		assert(c == nil, "EXTEND ME")
+
+		if self[func] and self.ClassName == class_name then
+			self[func](self, a, b, c)
+		end
+
+		for _, child in ipairs(self:GetChildrenList()) do
+			if child[func] and self.ClassName == class_name then
+				child[func](child, a, b, c)
+			end
+		end
+	end
+
+	function META:SetKeyValueRecursive(key, val)
+		self[key] = val
+
+		for _, child in ipairs(self:GetChildrenList()) do
+			child[key] = val
+		end
+	end
 end
