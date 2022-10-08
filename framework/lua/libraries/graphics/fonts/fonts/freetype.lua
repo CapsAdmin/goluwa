@@ -102,6 +102,7 @@ local providers = {
 		url = "https://fonts.google.com/download?family=", -- roboto/Roboto-Bolditallic.ttf
 		translate = function(path)
 			local family, rest = path:match("(.-) (.+)")
+			family = family or path
 			family = family:capitalize()
 			return family
 		end,
