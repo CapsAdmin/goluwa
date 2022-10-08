@@ -131,7 +131,7 @@ do
 				}
 			end
 
-			--self:RemoveChildren() TODO
+			--self:RemoveChildren() --TODO
 			self.Children = {} -- maybe don't remove but just unparent children?
 			local test = self.evaluate(self.props_evaluate, self)
 
@@ -140,11 +140,10 @@ do
 				test:Evaluate()
 				self:AddChild(test)
 
-				for _, child in ipairs(test:GetChildren()) do
-					if child.Kind == "node" then
-						child:Evaluate()
-						self:AddChild(test)
-					end
+				for _, child in ipairs(self:GetChildren()) do
+					if child.Kind == "node" then child:Evaluate() end
+
+					child:SetParent(self)
 				end
 
 				table.remove(panel_list, 1)
@@ -168,7 +167,7 @@ do
 		for _, child in ipairs(self:GetChildren()) do
 			if child.Kind == "node" then
 				child:Evaluate()
-				child:SetParent(self)
+			--child:SetParent(self)
 			end
 		end
 

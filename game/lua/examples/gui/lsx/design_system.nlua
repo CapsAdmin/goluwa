@@ -101,7 +101,7 @@ local function Column(props)
             {{v}}
         </View>
         
-        wrapped[i] = i == 1 and {child, divider} or {divider, child}
+        wrapped[i] = i == 1 and {child, divider} or i == 2 and {child} or {divider, child}
     end
 
     return <View setup_layout={{"size_to_children"}}>
