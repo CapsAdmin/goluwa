@@ -1,0 +1,40 @@
+local test = 0
+
+local function Test(props)
+    test = test + 1
+
+    if test % 3 == 0 then return nil end
+
+    if test % 3 == 1 then
+        return <Text position={Vec2() + 5}>
+            "1"
+        </Text>
+    end
+
+    return <Text position={Vec2() + 10}>
+        {math.random()}
+    </Text>
+end
+
+local function Custom(props)
+    return <Base size={Vec2() + 50} color={Color(0, 0, 0.3, 1)}>
+        {props.children}
+        <Test/>
+    </Base>
+end
+
+local function App()
+    return <Custom>
+        <Base position={Vec2() + 10} size={Vec2() + 20} color={Color(0.2, 0, 0, 1)}/>
+    </Custom>
+end
+
+local base = gui.TestWorld()
+local x = <App/>
+x = x:Evaluate()
+x:BuildPanels(base)
+local test_node = x:GetChildren()[1]:GetChildren()[1]:GetChildren()[2]
+
+timer.Repeat("test", 0.5, 0, function()
+    test_node:ReRender()
+end)

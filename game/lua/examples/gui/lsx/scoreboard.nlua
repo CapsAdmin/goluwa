@@ -1,0 +1,255 @@
+local scoreboard_title = fonts.CreateFont(
+		{
+			path = "Oswald",
+			fallback = gfx.GetDefaultFont(),
+			size = 17,
+			shadow = 1,
+		}
+	)
+	local scoreboard_title_2 = fonts.CreateFont(
+		{
+			path = "Oswald",
+			fallback = gfx.GetDefaultFont(),
+			size = 11,
+			shadow = 5,
+		}
+	)
+
+	local function Friend()
+		return <Base
+			cursor="hand"
+			texture={render.CreateTextureFromPath("textures/silkicons/user.png")}
+			size={Rect() + 16}
+			padding={Rect() + 5}
+			setup_layout={{"left", "center_y_simple"}}
+		/>
+	end
+
+	local function Avatar(props, node)
+		function node:OnMount(avatar)
+			prototype.AddPropertyLink(avatar, props.client, "Path", "AvatarPath")
+		end
+
+		return <Image size={Vec2() + 30} padding={Rect()} setup_layout={{"left", "center_y_simple"}}/>
+	end
+
+	local function Info2()
+		return <Base
+			height=30
+			style="tab_frame"
+			setup_layout={{"left", "fill_x"}}
+			on_right_click={function()
+				gui.CreateMenu(
+					{
+						{
+							"goto",
+							{{"bring", nil, "textures/silkicons/arrow_in.png"}},
+							"textures/silkicons/arrow_right.png",
+						},
+						{},
+						{
+							"spawn",
+							{{"revive", nil, "textures/silkicons/heart.png"}},
+							"textures/silkicons/heart_add.png",
+						},
+						{
+							"cleanup",
+							{{"kick", nil, "textures/silkicons/connect.png"}},
+							"textures/silkicons/bin.png",
+						},
+						{},
+						{
+							"admin menu",
+							{
+								{"ban weapons", nil, "textures/silkicons/gun.png"},
+								{"kick", nil, "textures/silkicons/door_out.png"},
+								{"ban", nil, "textures/silkicons/delete.png"},
+							},
+							"textures/silkicons/lock.png",
+						},
+						{
+							"mute",
+							{{"gag", nil, "textures/silkicons/comment_delete.png"}},
+							"textures/silkicons/sound_mute.png",
+						},
+					},
+					info
+				)
+			end}
+		/>
+	end
+
+	local function TeamContainer(props, node)
+		local panels = node:PersistentTable({info = NULL, title = NULL})
+		return <Base
+			style="text_edit"
+			margin={Rect()}
+			setup_layout={{"layout_children", "top", "size_to_children_height", "fill_x"}}
+			no_draw={true}
+			minimum_size={Vec2()}
+			layout_size={nil}
+			width={200}
+		>
+			<TextButton
+				on_mount={function(node)
+					panels.title = node.panel
+					print("mount!")
+				end}
+				font={scoreboard_title_2}
+				mode="toggle"
+				margin={Rect() + 5}
+				text={props.id}
+				size_to_text={nil}
+				width={512}
+				color={Color(0.25, 0.5, 1, 1) * 3.75}
+				setup_layout={{"top", "fill_x"}}
+				state={true}
+				text={props.team_name}
+				on_state_changed={function(_, expanded)
+					if expanded then
+						panels.info:SetVisible(true)
+						panels.info:Animate("DrawScaleOffset", {Vec2(1, 0), Vec2(1, 1)}, 0.25, "*", 0.25, true)
+					else
+						panels.info:Animate(
+							"DrawScaleOffset",
+							{Vec2(1, 1), Vec2(1, 0)},
+							0.25,
+							"*",
+							0.25,
+							true,
+							function()
+								panels.info:SetVisible(false)
+								panels.title:SetState(false)
+								panels.title:GetRoot():Layout(true)
+							end
+						)
+					end
+				end}
+			/>
+			<Base
+				no_draw={true}
+				on_mount={function(node)
+					panels.info = node.panel
+				end}
+				margin={Rect()}
+				setup_layout={{"top", "size_to_children_height", "fill_x"}}
+				no_draw={false}
+			>
+				{props.children}
+			</Base>
+		</Base>
+	end
+
+	local function Client()
+		return <Base height={30} setup_layout={{"top", "fill_x"}} no_draw={true} margin={Rect()}>
+			<Friend/>
+			<Avatar client={clients.GetLocalClient()}/>
+			<Info2/>
+		</Base>
+	end
+
+	local function ServerInfoText(props)
+		return <Text padding={Rect(10, 5, 10, 5)} setup_layout={{"left", "top"}}>
+			{props.children}
+		</Text>
+	end
+
+	local function TitleInfoBar(props, node)
+		function node:OnRender(info)
+			if props.expanded then
+				info:SetVisible(true)
+				info:Animate("Size", {Vec2(1, 0), Vec2(1, 1)}, 0.25, "*", 0.25, true)
+			else
+				info:Animate(
+					"Size",
+					{Vec2(1, 1), Vec2(1, 0)},
+					0.25,
+					"*",
+					0.25,
+					true,
+					function()
+						info:SetVisible(false)
+						info:GetParent():GetParent():Layout(true)
+					end
+				)
+			end
+		end
+
+		return <Base
+			no_draw={true}
+			visibile={false}
+			height={30}
+			style={"frame2"}
+			setup_layout={{"top", "fill_x"}}
+			clipping={true}
+			minimum_size={Vec2()}
+			layout_size={nil}
+		>
+			<ServerInfoText>
+				"gm_metrostroi_b47 with 3 players"
+			</ServerInfoText>
+			<ServerInfoText>
+				"tickrate: 67"
+			</ServerInfoText>
+			<ServerInfoText>
+				"curtime: 1:24h"
+			</ServerInfoText>
+		</Base>
+	end
+
+	local function TitleButton(props, node)
+		function node:OnMount(title)
+			-- TODO: not sure how to solve this yet
+			-- this is called after all children are "mounted" so we have the text
+			-- the layout stuff is dependent on the prop order
+			title:SetMargin(Rect() + 7)
+			title:SizeToText()
+			title:SetupLayout("top", "fill_x")
+			title.label:SetupLayout("left")
+		end
+
+		return <TextButton
+			mode="toggle"
+			font={scoreboard_title}
+			on_state_changed={function(_, b)
+				props.on_expand(b)
+			end}
+		>
+			{props.children}
+		</TextButton>
+	end
+
+	local function ScoreboardTitle(props, node)
+		local expanded, setExpanded = node:useState(false)
+		return <Base no_draw={true} setup_layout={{"size_to_children_height", "fill_x"}}>
+			<TitleButton on_expand={function(b)
+				setExpanded(b)
+			end}>
+				"Bubu's Server - Subway Simulator"
+			</TitleButton>
+			<TitleInfoBar expanded={expanded}/>
+		</Base>
+	end
+
+	local function Scoreboard(props, node)
+		return <Base
+			no_draw={true}
+			setup_layout={{
+				"layout_children",
+				"size_to_children_height",
+				"center_x_simple",
+				"center_y_simple",
+				"fill_x",
+			}}
+		>
+			<ScoreboardTitle/>
+			<TeamContainer team_name="players">
+				<Client/>
+			</TeamContainer>
+		</Base>
+	end
+
+	local base = gui.TestWorld()
+	local x = <Scoreboard/>
+	x.root_panel = base
+	x:Evaluate():BuildPanels(base)

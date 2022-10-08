@@ -184,3 +184,15 @@ function gui.CreateMenuBar(bar, parent)
 
 	return menu_bar
 end
+
+function gui.TestWorld()
+	local base = gui.CreatePanel("base", nil, "lol")
+	base:SetSize(window.GetSize() * 0.5)
+	base:CenterSimple()
+	base:SetResizable(true)
+	base:SetDraggable(true)
+	base:SetColor(Color(0.1, 0.1, 0.1, 1))
+	base:SetName("base")
+	base:SetMargin(Rect(0, 0, 0, 0))
+	return base
+end

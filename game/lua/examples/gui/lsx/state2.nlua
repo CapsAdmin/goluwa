@@ -1,0 +1,38 @@
+local function Random()
+    return <Text setup_layout={{"top"}} is_text=1>
+        {math.random()}
+    </Text>
+end
+
+local function Container(props, node)
+    local state, setState = node:useState(0)
+
+    function node:OnMount(panel)
+        panel:SetColor(Color(1, 0.5, 0.5, 1))
+    end
+
+    return <Base
+        size={Vec2() + 200}
+        setup_layout={{"center_simple"}}
+        is_view=1
+        from_container={props.is_container}
+    >
+        <Button
+            some_state={state}
+            is_button=1
+            size={Vec2() + 100 + state}
+            on_release={function()
+                setState(state + 1)
+            end}
+        />
+        <Random/>
+    </Base>
+end
+
+local function App()
+    return <Container is_container=1/>
+end
+
+local base = gui.TestWorld()
+local x = <App/>
+x:Evaluate():BuildPanels(base)

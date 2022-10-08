@@ -1,0 +1,141 @@
+local font = fonts.CreateFont({
+    path = "Oswald",
+    fallback = gfx.GetDefaultFont(),
+    size = 20,
+})
+local colors = {
+    text = Color(1, 1, 1, 1),
+    button = Color(0.9, 0.5, 0.5, 1),
+    button_hover = Color(0.9, 0.5, 0.5, 1) * 1.1,
+}
+local spacing = {
+    s = 5,
+    m = 10,
+    l = 20,
+}
+
+do
+    local META = prototype.CreateTemplate("view")
+    META:GetSet("BorderRadius", 0)
+
+    function META:DrawRect(x, y, w, h)
+        render2d.PushBorderRadius(self.BorderRadius)
+        render2d.DrawRect(
+            x or 0,
+            y or 0,
+            w or (self.Size.x + self.DrawSizeOffset.x),
+            h or (self.Size.y + self.DrawSizeOffset.y)
+        )
+        render2d.PopBorderRadius()
+    end
+
+    gui.RegisterPanel(META)
+    gui.RegisterLSXNodes("View", "view")
+end
+
+local function Text2(props)
+    return <Text
+        ignore_mouse={true}
+        setup_layout={{"center_simple"}}
+        font={font}
+        text_color={colors.text}
+    >
+        {props.children}
+    </Text>
+end
+
+local function Button(props, node)
+    local color, setColor = node:useState(colors.button)
+    local mousePos, setMousePos = node:useState(Vec2())
+
+    function node:OnMount(panel)
+        panel:SizeToChildren()
+    end
+
+    return <View
+        color={color}
+        margin={Rect() + spacing.m}
+        border_radius=5
+        on_mouse_enter={function()
+            setColor(colors.button_hover)
+        end}
+        on_mouse_exit={function()
+            setColor(colors.button)
+        end}
+        on_mouse_move={function(_, x, y)
+            setMousePos(Vec2(x, y))
+        end}
+        on_mouse_input={function(panel, button, press)
+            if button == "button_1" then
+                if press then
+                    panel.DrawScaleCenter = true
+                    panel:Animate(
+                        "DrawScaleOffset",
+                        {
+                            Vec2() + 0.9,
+                            function()
+                                return input.IsMouseDown("button_1")
+                            end,
+                            Vec2() + 1,
+                        },
+                        0.1,
+                        "*"
+                    )
+                else
+                    if panel:IsMouseOver() then props.on_press() end
+                end
+            end
+        end}
+    >
+        {props.children}
+    </View>
+end
+
+local function Column(props)
+    local space = spacing[props.spacing or "m"]
+    local wrapped = {}
+
+    for i, v in ipairs(props.children) do
+        local divider = <View name="space" no_draw={true} height={space} setup_layout={{"top"}}/>
+        local child = <View name="wrapped" no_draw={true} setup_layout={{"top", "size_to_children"}}>
+            {{v}}
+        </View>
+        wrapped[i] = i == 1 and {child, divider} or {divider, child}
+    end
+
+    return <View setup_layout={{"size_to_children"}}>
+        {{wrapped}}
+    </View>
+end
+
+local function App()
+    return <Column spacing="l" row_align="left">
+        <Button on_press={function()
+            print("press!")
+        end}>
+            <Text2>
+                "foo"
+            </Text2>
+        </Button>
+        <Button on_press={function()
+            print("press!")
+        end}>
+            <Text2>
+                "gyjq Q buik"
+            </Text2>
+        </Button>
+        <Button on_press={function()
+            print("press!")
+        end}>
+            <Text2>
+                "gyjq Q buik"
+            </Text2>
+        </Button>
+    </Column>
+end
+
+local base = gui.TestWorld()
+local x = <App/>
+x = x:Evaluate()
+print(x:Dump(true))
+x:BuildPanels(base)

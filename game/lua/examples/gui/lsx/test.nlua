@@ -1,0 +1,95 @@
+	local function eq(a, b)
+		local x = a
+		x:Evaluate()
+		test(x.Dump, x).expect(b)
+	end
+
+	eq(<Base/>, "<Base><Base/>")
+	eq(<Base foo=1/>, "<Base foo=1><Base/>")
+	eq(<Base>
+		"foo"
+	</Base>, "<Base>\"foo\"<Base/>")
+	eq(<Base>
+		"foo"
+		"bar"
+	</Base>, "<Base>\"foobar\"<Base/>")
+	eq(<Base>
+		<Base/>
+	</Base>, "<Base><Base><Base/><Base/>")
+	eq(<Base>
+		<Base/>
+		<Base/>
+	</Base>, "<Base><Base><Base/><Base><Base/><Base/>")
+
+	do
+		local function Custom(props)
+			return <Base>
+				{props.children}
+			</Base>
+		end
+
+		eq(<Custom>
+			<Base/>
+		</Custom>, "<Custom><Base><Base><Base/><Base/><Custom/>")
+	end
+
+	do
+		local function Custom()
+			return <Text/>
+		end
+
+		eq(<Custom>
+			<Base/>
+		</Custom>, "<Custom><Text><Text/><Custom/>")
+	end
+
+	do
+		local function Test()
+			return <Text>
+				"1"
+			</Text>
+		end
+
+		local function Custom(props)
+			return <Base>
+				{props.children}
+				<Test/>
+			</Base>
+		end
+
+		eq(
+			<Custom>
+				<Base/>
+			</Custom>,
+			"<Custom><Base><Base><Base/><Test><Text>\"1\"<Text/><Test/><Base/><Custom/>"
+		)
+	end
+
+	do
+		local function Test2()
+			return <Text>
+				"2"
+			</Text>
+		end
+
+		local function Test()
+			return <Text>
+				"1"
+				<Test2/>
+			</Text>
+		end
+
+		local function Custom(props)
+			return <Base>
+				{props.children}
+				<Test/>
+			</Base>
+		end
+
+		eq(
+			<Custom>
+				<Base/>
+			</Custom>,
+			"<Custom><Base><Base><Base/><Test><Text>\"1\"<Test2><Text>\"2\"<Text/><Test2/><Text/><Test/><Base/><Custom/>"
+		)
+	end
