@@ -139,10 +139,6 @@ input.Bind("o", "cam_ortho", function()
 	render3d.camera:SetOrtho(not render3d.camera:GetOrtho())
 end)
 
-do
-	return
-end
-
 local roll = 0
 local pos = Vec2(0, 0)
 local zoom = 1
@@ -150,10 +146,6 @@ local max_zoom = 100
 local min_zoom = 0.01
 
 event.AddListener("Update", "fly_camera_2d", function(dt)
-	if gui and (gui.GetHoveringPanel() ~= gui.world or gui.focus_panel:IsValid()) then
-		return
-	end
-
 	local speed = dt * 1000
 
 	if input.IsKeyDown("kp_5") then
@@ -200,4 +192,5 @@ event.AddListener("Update", "fly_camera_2d", function(dt)
 	render2d.camera:SetPosition(Vec3(pos.x, pos.y, 0))
 	render2d.camera:SetAngles(Ang3(0, roll))
 	render2d.camera:SetZoom(1 / zoom)
+	render2d.camera:Rebuild()
 end)
