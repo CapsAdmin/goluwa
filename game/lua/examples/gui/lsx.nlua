@@ -255,6 +255,11 @@ do
 				DEPTH = DEPTH - 1
 			elseif self.panel then
 				local str = tostring(child.Value)
+
+				if not self.panel.SetText then
+					error("panel " .. tostring(self) .. " is not a text panel " .. str)
+				end
+
 				self.panel:SetText(str)
 				local tabs = string.rep("\t", DEPTH)
 			--llog("%s%s:SetText(%s)", tabs, self.panel.ClassName, str)
@@ -333,7 +338,8 @@ do
 		return state
 	end
 
-	function META:Dump()
+	function META:Dump(indent, depth)
+		depth = depth or 0
 		local str = ""
 		str = "<" .. self.name
 
@@ -341,15 +347,40 @@ do
 
 		for _, kv in pairs(self.props) do
 			str = str .. kv.k .. "=" .. tostring(kv.v)
+
+			if _ ~= #self.props then str = str .. " " end
 		end
 
 		str = str .. ">"
 
+		if indent then
+			if #self:GetChildren() > 0 then
+				str = str .. "\n"
+				depth = depth + 1
+				str = str .. string.rep("\t", depth)
+			end
+		end
+
 		for _, child in ipairs(self:GetChildren()) do
 			if child.Kind == "node" then
-				str = str .. child:Dump()
+				str = str .. child:Dump(indent, depth)
 			else
 				str = str .. "\"" .. child.Value .. "\""
+			end
+
+			if indent then
+				if _ ~= #self:GetChildren() then
+					str = str .. "\n"
+					str = str .. string.rep("\t", depth)
+				end
+			end
+		end
+
+		if indent then
+			if #self:GetChildren() > 0 then
+				str = str .. "\n"
+				depth = depth - 1
+				str = str .. string.rep("\t", depth)
 			end
 		end
 
@@ -808,17 +839,17 @@ if true then
 		fallback = gfx.GetDefaultFont(),
 		size = 20,
 	})
-
 	local colors = {
 		text = Color(1, 1, 1, 1),
 		button = Color(0.9, 0.5, 0.5, 1),
-		button_hover = Color(0.9, 0.5, 0.5, 1) * 1.1, 
+		button_hover = Color(0.9, 0.5, 0.5, 1) * 1.1,
 	}
 	local spacing = {
 		s = 5,
 		m = 10,
 		l = 20,
 	}
+
 	do
 		local META = prototype.CreateTemplate("view")
 		META:GetSet("BorderRadius", 0)
@@ -838,6 +869,17 @@ if true then
 		add_panel("View", "view")
 	end
 
+	local function Text2(props)
+		return <Text
+			ignore_mouse={true}
+			setup_layout={{"center_simple"}}
+			font={font}
+			text_color={colors.text}
+		>
+			{props.children}
+		</Text>
+	end
+
 	local function Button(props, node)
 		local color, setColor = node:useState(colors.button)
 		local mousePos, setMousePos = node:useState(Vec2())
@@ -847,10 +889,8 @@ if true then
 		end
 
 		return <View
-			setup_layout={{"top"}}
 			color={color}
 			margin={Rect() + spacing.m}
-			padding={Rect(0,0,0,spacing.s)}
 			border_radius=5
 			on_mouse_enter={function()
 				setColor(colors.button_hover)
@@ -865,52 +905,74 @@ if true then
 				if button == "button_1" then
 					if press then
 						panel.DrawScaleCenter = true
-						panel:Animate("DrawScaleOffset", {
-							Vec2() + 0.9, 
-							function() return input.IsMouseDown("button_1") end, 
-							Vec2() + 1,
-						}, 0.1, "*")
+						panel:Animate(
+							"DrawScaleOffset",
+							{
+								Vec2() + 0.9,
+								function()
+									return input.IsMouseDown("button_1")
+								end,
+								Vec2() + 1,
+							},
+							0.1,
+							"*"
+						)
 					else
-						if panel:IsMouseOver() then
-							props.on_press()
-						end
+						if panel:IsMouseOver() then props.on_press() end
 					end
 				end
-					
 			end}
 		>
-			<Text
-				ignore_mouse={true}
-				setup_layout={{"center_simple"}}
-				font={font}
-				text_color={colors.text}
-			>
-				"gyjq Q buik"
-			</Text>
-		</View>
-	end
-
-	local function Column(props)
-		return <View no_draw={true} position={Vec2() + 50} setup_layout={{"size_to_children"}}>
 			{props.children}
 		</View>
 	end
 
+	local function Column(props)
+		local space = spacing[props.spacing or "m"]
+		local wrapped = {}
+
+		for i, v in ipairs(props.children) do
+			local divider = <View name="space" no_draw={true} height={space} setup_layout={{"top"}}/>
+			local child = <View name="wrapped" no_draw={true} setup_layout={{"top", "size_to_children"}}>
+				{{v}}
+			</View>
+			wrapped[i] = i == 1 and {child, divider} or {divider, child}
+		end
+
+		return <View setup_layout={{"size_to_children"}}>
+			{{wrapped}}
+		</View>
+	end
+
 	local function App()
-		return <Column>
-		
-		<Button on_press={function()
-			print("press!")
-		end}/>
-		<Button on_press={function()
-			print("press!")
-		end}/>
-		
+		return <Column spacing="l" row_align="left">
+			<Button on_press={function()
+				print("press!")
+			end}>
+				<Text2>
+					"foo"
+				</Text2>
+			</Button>
+			<Button on_press={function()
+				print("press!")
+			end}>
+				<Text2>
+					"gyjq Q buik"
+				</Text2>
+			</Button>
+			<Button on_press={function()
+				print("press!")
+			end}>
+				<Text2>
+					"gyjq Q buik"
+				</Text2>
+			</Button>
 		</Column>
 	end
 
 	local base = create_world()
 	local x = <App/>
 	x = x:Evaluate()
+	print(x:Dump(true))
 	x:BuildPanels(base)
 end
