@@ -140,10 +140,10 @@ do
 				test:Evaluate()
 				self:AddChild(test)
 
-				for _, child in ipairs(self:GetChildren()) do
+				for _, child in ipairs(test:GetChildren()) do
 					if child.Kind == "node" then
 						child:Evaluate()
-						child:SetParent(self)
+						self:AddChild(test)
 					end
 				end
 
@@ -368,4 +368,9 @@ function gui.RegisterLSXNodes()
 		end
 		gui.BaseLSXElements[_G[name]] = name
 	end
+end
+
+if RELOAD then
+	gui.RegisterLSXNodes()
+	runfile("/home/caps/github/goluwa/game/lua/examples/gui/lsx/design_system.nlua")
 end

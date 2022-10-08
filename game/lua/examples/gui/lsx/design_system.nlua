@@ -100,6 +100,7 @@ local function Column(props)
         local child = <View name="wrapped" no_draw={true} setup_layout={{"top", "size_to_children"}}>
             {{v}}
         </View>
+        
         wrapped[i] = i == 1 and {child, divider} or {divider, child}
     end
 
@@ -110,26 +111,14 @@ end
 
 local function App()
     return <Column spacing="l" row_align="left">
-        <Button on_press={function()
-            print("press!")
-        end}>
-            <Text2>
-                "foo"
-            </Text2>
+        <Button on_press={function()print("press!")end}>
+            <Text2>"foo"</Text2>
         </Button>
-        <Button on_press={function()
-            print("press!")
-        end}>
-            <Text2>
-                "gyjq Q buik"
-            </Text2>
+        <Button on_press={function()print("press!")end}>
+            <Text2>"gyjq Q buik"</Text2>
         </Button>
-        <Button on_press={function()
-            print("press!")
-        end}>
-            <Text2>
-                "gyjq Q buik"
-            </Text2>
+        <Button on_press={function()print("press!")end}>
+            <Text2>"gyjq Q buik"</Text2>
         </Button>
     </Column>
 end
