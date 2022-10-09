@@ -2044,6 +2044,8 @@ do -- layout
 			if self.StackSizeToChildren then self:SetSize(size) end
 		end
 
+		if self.Flex then self:FlexLayout() end
+
 		self:OnPostLayout()
 		self:MarkCacheDirty()
 		self.in_layout = self.in_layout - 1
@@ -2467,6 +2469,139 @@ do -- layout
 			self:SetY(panel:GetY() - self:GetHeight())
 			self.laid_out_x = true
 			self.laid_out_y = true
+		end
+	end
+end
+
+do -- flex layout
+	META:GetSet("Flex", false)
+	META:GetSet("FlexDirection", "row")
+	META:GetSet("FlexGap", 0)
+	META:GetSet("FlexJustifyContent", "start")
+	META:GetSet("FlexAlignItems", "start")
+	META:GetSet("FlexAlignSelf", "start")
+
+	function META:SetAxisPosition(axis, pos)
+		if axis == "x" then
+			self:SetX(pos)
+		else
+			self:SetY(pos)
+		end
+	end
+
+	function META:GetAxisPosition(axis)
+		if axis == "x" then
+			return self:GetX()
+		else
+			return self:GetY()
+		end
+	end
+
+	function META:SetAxisSize(axis, size)
+		if axis == "x" then
+			self:SetWidth(size)
+		else
+			self:SetHeight(size)
+		end
+	end
+
+	function META:GetAxisSize(axis)
+		if axis == "x" then
+			return self:GetWidth()
+		else
+			return self:GetHeight()
+		end
+	end
+
+
+	function META:FlexLayout() 
+		if self.flex_size_to_children then return end
+
+		local pos = Vec2(self:GetMargin().x, self:GetMargin().y)
+
+		local axis = "x"
+		local axis2 = "y"
+		
+		if self.FlexDirection == "row" then
+			axis = "x"
+			axis2 = "y"
+		elseif self.FlexDirection == "column" then
+			axis = "y"
+			axis2 = "x"
+		end
+
+		local children = self:GetVisibleChildren()
+
+		for i, child in ipairs(children) do
+			child:SetPosition(pos:Copy())
+			child:SetAxisSize(axis, math.min(self:GetAxisSize(axis)/#children, child:GetAxisSize(axis)))
+
+			pos[axis] = pos[axis] + child:GetAxisSize(axis)
+
+			if i ~= #children then
+				pos[axis] = pos[axis] + self.FlexGap
+			end
+		end
+
+		local diff = self:GetAxisSize(axis) - pos[axis]
+		if self.FlexJustifyContent == "center" then
+
+			for i, child in ipairs(children) do
+				child:SetAxisPosition(axis, child:GetAxisPosition(axis) + diff/2)
+			end
+		elseif self.FlexJustifyContent == "end" then
+
+			for i, child in ipairs(children) do
+				child:SetAxisPosition(axis, child:GetAxisPosition(axis) + diff)
+			end
+		elseif self.FlexJustifyContent == "space-between" then
+
+			for i, child in ipairs(children) do
+				child:SetAxisPosition(axis, child:GetAxisPosition(axis) + diff/(#children - 1) * (i - 1))
+			end
+		elseif self.FlexJustifyContent == "space-around" then
+
+			for i, child in ipairs(children) do
+				child:SetAxisPosition(axis, child:GetAxisPosition(axis) + diff/(#children) * (i - 0.5))
+			end
+		end
+
+
+		self.flex_size_to_children = true
+		local h = self:GetAxisSize(axis2)
+		if axis2 == "y" then
+			self:SizeToChildrenHeight()
+		else
+			self:SizeToChildrenWidth()
+		end
+		local h2 = self:GetAxisSize(axis2)
+		self:SetAxisSize(axis2, math.max(h, h2))
+		self.flex_size_to_children = nil
+
+		if self.FlexAlignItems == "end" then
+			local h = 0
+
+			for i, child in ipairs(children) do
+				h = math.max(h, child:GetAxisSize(axis2))
+			end
+
+			for i, child in ipairs(children) do
+				child:SetAxisPosition(axis2, self:GetAxisSize(axis2) - h2)
+			end
+		elseif self.FlexAlignItems == "center" then
+			local h = 0
+
+			for i, child in ipairs(children) do
+				h = math.max(h, child:GetAxisSize(axis2))
+			end
+
+			for i, child in ipairs(children) do
+				child:SetAxisPosition(axis2, (self:GetAxisSize(axis2) - h2)/2)
+			end
+		elseif self.FlexAlignItems == "stretch" then
+			for i, child in ipairs(children) do
+				child:SetAxisPosition(axis2, self:GetAxisSize(axis2) - self:GetMargin()[axis2]*2)
+			end
 		end
 	end
 end

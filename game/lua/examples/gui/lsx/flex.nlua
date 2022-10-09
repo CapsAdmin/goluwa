@@ -1,0 +1,40 @@
+do
+	local META = prototype.CreateTemplate("view")
+	META:GetSet("BorderRadius", 0)
+
+	function META:DrawRect(x, y, w, h)
+		render2d.PushBorderRadius(self.BorderRadius)
+		render2d.DrawRect(
+			x or 0,
+			y or 0,
+			w or (self.Size.x + self.DrawSizeOffset.x),
+			h or (self.Size.y + self.DrawSizeOffset.y)
+		)
+		render2d.PopBorderRadius()
+	end
+
+	gui.RegisterPanel(META)
+	gui.RegisterLSXNodes("View", "view")
+end
+
+local function App()
+	return <View
+		flex={true}
+		flex_direction="column"
+		color={Color(1, 1, 0, 1)}
+		flex_gap={5}
+		margin={Rect() + 0}
+		width=300
+		height=300
+		flex_justify_content="space-around"
+	>
+		<View color={Color(1, 0, 0, 1)} size={Vec2() + 50}/>
+		<View color={Color(0, 1, 0, 1)} size={Vec2() + 50}/>
+		<View flex_align_self="end" color={Color(0, 0, 1, 1)} size={Vec2() + 50}/>
+	</View>
+end
+
+local base = gui.TestWorld()
+local x = <App/>
+x = x:Evaluate()
+x:BuildPanels(base)
