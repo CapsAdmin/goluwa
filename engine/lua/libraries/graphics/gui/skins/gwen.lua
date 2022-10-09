@@ -28,9 +28,9 @@ for i, sub_skin in ipairs(skins) do
 		local scale = self:GetScale()
 		local font = fonts.CreateFont(
 			{
-				path = "Roboto Regular",
+				path = "fonts/Roboto-Regular.ttf",
 				fallback = gfx.GetDefaultFont(),
-				size = 6 * scale,
+				size = 3 * scale,
 				filtering = "nearest",
 			}
 		)

@@ -57,7 +57,7 @@ function scoreboard.SetupContainer(id)
 	local title = container:CreatePanel("text_button")
 	title:SetFont(scoreboard_title_2)
 	title:SetMode("toggle")
-	title:SetPadding(Rect() + 5)
+	title:SetPadding(Rect() + 10)
 	title:SetText(id)
 	title:SizeToText()
 	title:SetWidth(scoreboard.panel:GetWidth())
@@ -255,17 +255,17 @@ end
 function scoreboard.Initialize()
 	scoreboard_title = fonts.CreateFont(
 		{
-			path = "Oswald",
+			path = "fonts/Roboto-Bold.ttf",
 			fallback = gfx.GetDefaultFont(),
-			size = 17,
+			size = 15,
 			shadow = 1,
 		}
 	)
 	scoreboard_title_2 = fonts.CreateFont(
 		{
-			path = "Oswald",
+			path = "fonts/Roboto-Regular.ttf",
 			fallback = gfx.GetDefaultFont(),
-			size = 11,
+			size = 10,
 			shadow = 5,
 		}
 	)

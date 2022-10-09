@@ -261,7 +261,28 @@ function META:Initialize()
 			self.face_ref = face
 			face = face[0]
 			self.face = face
-			freetype.SetCharSize(face, 0, self.Size * fonts.font_dpi, fonts.font_dpi, fonts.font_dpi)
+
+			--[[
+				local xMin = tonumber(face.bbox.xMin) / fonts.font_dpi 
+				local yMin = tonumber(face.bbox.yMin) / fonts.font_dpi 
+				local xMax = tonumber(face.bbox.xMax) / fonts.font_dpi 
+				local yMax = tonumber(face.bbox.yMax) / fonts.font_dpi
+				local ascender = tonumber(face.ascender) / fonts.font_dpi
+				local descender = tonumber(face.descender) / fonts.font_dpi
+				local height = tonumber(face.height) / fonts.font_dpi
+				local units_per_EM = tonumber(face.units_per_EM) / fonts.font_dpi
+				local max_advance_height = tonumber(face.max_advance_height) / fonts.font_dpi
+				table.print({
+					yMin = yMin,
+					yMax = yMax,
+					ascender = ascender,
+					descender = descender,
+					height = height,
+					max_advance_height = max_advance_height,
+					units_per_EM = units_per_EM,
+				})]]
+
+			freetype.SetCharSize(face, 0, self.Size * 2 * fonts.font_dpi, fonts.font_dpi, fonts.font_dpi)
 			self.line_height = face.height / fonts.font_dpi
 			self.max_height = (face.ascender - face.descender) / fonts.font_dpi
 			self:CreateTextureAtlas()
@@ -367,7 +388,8 @@ function META:GetGlyphData(code)
 			x_advance = tonumber(glyph.advance.x) / fonts.font_dpi,
 			y_advance = tonumber(glyph.advance.y) / fonts.font_dpi,
 			bitmap_left = tonumber(glyph.bitmap_left),
-			bitmap_top = tonumber(glyph.bitmap_top) + 1,
+			bitmap_top = tonumber(glyph.bitmap_top),
+			ascender = (self.Size / 2 / fonts.font_dpi) * tonumber(self.face.bbox.yMax - self.face.bbox.yMin) / fonts.font_dpi,
 		}
 		local copy = ffi.typeof("unsigned char[$][$][$]", char.w, char.h, 4)()
 		local i = 0

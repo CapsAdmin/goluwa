@@ -209,7 +209,7 @@ function META:SetPolyChar(poly, i, x, y, char, r)
 	if ch then
 		local x_, y_, w, h, sx, sy = self.texture_atlas:GetUV(char)
 		poly:SetUV(x_, y_, w, h, sx, sy)
-		y = y - ch.bitmap_top + self.Size
+		y = y - ch.bitmap_top + self.Size + ch.ascender
 		x = x - (self.Padding / 2)
 		y = y - (self.Padding / 2)
 		x = x * self.Scale.x
@@ -404,7 +404,7 @@ function META:GetTextSize(str)
 
 	if max_x ~= 0 then X = max_x end
 
-	return X * self.Scale.x, Y * self.Scale.y
+	return X * self.Scale.x, Y * self.Scale.y + self:GetChar(" ").ascender
 end
 
 function META:WrapString(str, max_width, max_word_length)
@@ -455,6 +455,7 @@ if RELOAD then
 			v.string_cache = {}
 			v.total_strings_stored = 0
 			v:CreateTextureAtlas()
+			gfx.InvalidateFontSizeCache(v)
 			v:Rebuild()
 		end
 	end

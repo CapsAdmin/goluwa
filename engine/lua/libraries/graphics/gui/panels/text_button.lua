@@ -33,3 +33,20 @@ function META:OnLayout(S)
 end
 
 gui.RegisterPanel(META)
+
+if RELOAD then
+	local font = fonts.CreateFont(
+		{
+			path = "fonts/Roboto-Regular.ttf",
+			fallback = gfx.GetDefaultFont(),
+			size = 10,
+			shadow = 1,
+		}
+	)
+
+	local lol = gui.CreatePanel("text_button", nil, "lol")
+	lol:SetFont(font)
+	lol:SetPosition(Vec2()+ 500)
+	lol:SetText("Lb")
+	lol:SizeToText()
+end

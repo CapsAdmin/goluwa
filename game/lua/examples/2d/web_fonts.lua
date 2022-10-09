@@ -26,11 +26,11 @@ local fonts = {
 		size = 30,
 	}),
 	fonts.CreateFont({
-		path = "roboto bold",
+		path = "fonts/Roboto-Bold.ttf",
 		size = 60,
 	}),
 	fonts.CreateFont({
-		path = "roboto italic",
+		path = "fonts/Roboto-Italic.ttf",
 		size = 60,
 	}),
 	fonts.CreateFont(
@@ -137,6 +137,6 @@ function goluwa.PreDrawGUI()
 		render2d.SetTexture()
 		render2d.SetColor(1, 0, 0, 0.25)
 		--render2d.DrawRect(30, 30 + y, size.x, size.y)
-		y = y + size.y + 10
+		y = y + size.y + 40
 	end
 end

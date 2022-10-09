@@ -98,6 +98,7 @@ function META:GetGlyphData(code)
 			y_advance = info.h,
 			bitmap_left = info.w,
 			bitmap_top = info.h,
+			ascender = 0,
 		}
 		return info.buffer, char
 	end

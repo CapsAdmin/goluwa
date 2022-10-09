@@ -1,116 +1,193 @@
 local font = fonts.CreateFont({
-    path = "Oswald",
-    fallback = gfx.GetDefaultFont(),
-    size = 20,
+	path = "fonts/Roboto-Regular.ttf",
+	fallback = gfx.GetDefaultFont(),
+	size = 20,
 })
 local colors = {
-    text = Color(1, 1, 1, 1),
-    button = Color(0.9, 0.5, 0.5, 1),
-    button_hover = Color(0.9, 0.5, 0.5, 1) * 1.1,
+	text = Color(1, 1, 1, 1),
+	button = Color(0.9, 0.5, 0.5, 1),
+	button_hover = Color(0.9, 0.5, 0.5, 1) * 1.1,
 }
 local spacing = {
-    s = 5,
-    m = 10,
-    l = 20,
+	s = 5,
+	m = 10,
+	l = 20,
 }
 
 do
-    local META = prototype.CreateTemplate("view")
-    META:GetSet("BorderRadius", 0)
+	local META = prototype.CreateTemplate("view")
+	META:GetSet("BorderRadius", 0)
 
-    function META:DrawRect(x, y, w, h)
-        render2d.PushBorderRadius(self.BorderRadius)
-        render2d.DrawRect(
-            x or 0,
-            y or 0,
-            w or (self.Size.x + self.DrawSizeOffset.x),
-            h or (self.Size.y + self.DrawSizeOffset.y)
-        )
-        render2d.PopBorderRadius()
-    end
+	function META:DrawRect(x, y, w, h)
+		render2d.PushBorderRadius(self.BorderRadius)
+		render2d.DrawRect(
+			x or 0,
+			y or 0,
+			w or (self.Size.x + self.DrawSizeOffset.x),
+			h or (self.Size.y + self.DrawSizeOffset.y)
+		)
+		render2d.PopBorderRadius()
+	end
 
-    gui.RegisterPanel(META)
-    gui.RegisterLSXNodes("View", "view")
+	gui.RegisterPanel(META)
+	gui.RegisterLSXNodes("View", "view")
 end
 
 local function Text2(props)
-    return <Text
-        ignore_mouse={true}
-        setup_layout={{"center_simple"}}
-        font={font}
-        text_color={colors.text}
-    >
-        {props.children}
-    </Text>
+	return <Text
+		ignore_mouse={true}
+		setup_layout={{"center_simple"}}
+		font={font}
+		text_color={colors.text}
+	>
+		{props.children}
+	</Text>
 end
 
 local function Button(props, node)
-    local color, setColor = node:useState(colors.button)
-    local mousePos, setMousePos = node:useState(Vec2())
+	local color, setColor = node:useState(colors.button)
+	local mousePos, setMousePos = node:useState(Vec2())
 
-    function node:OnMount(panel)
-        panel:SizeToChildren()
-    end
+	function node:OnMount(panel)
+		panel:SizeToChildren()
+	end
 
-    return <View
-        color={color}
-        padding={Rect() + spacing.m}
-        border_radius=5
-        on_mouse_enter={function()
-            setColor(colors.button_hover)
-        end}
-        on_mouse_exit={function()
-            setColor(colors.button)
-        end}
-        on_mouse_move={function(_, x, y)
-            setMousePos(Vec2(x, y))
-        end}
-        on_mouse_input={function(panel, button, press)
-            if button == "button_1" then
-                if press then
-                    panel.DrawScaleCenter = true
-                    panel:Animate(
-                        "DrawScaleOffset",
-                        {
-                            Vec2() + 0.9,
-                            function()
-                                return input.IsMouseDown("button_1")
-                            end,
-                            Vec2() + 1,
-                        },
-                        0.1,
-                        "*"
-                    )
-                else
-                    if panel:IsMouseOver() then props.on_press() end
-                end
-            end
-        end}
-    >
-        {props.children}
-    </View>
+	return <View
+		color={color}
+		padding={Rect() + spacing.m}
+		border_radius=5
+		on_mouse_enter={function()
+			setColor(colors.button_hover)
+		end}
+		on_mouse_exit={function()
+			setColor(colors.button)
+		end}
+		on_mouse_move={function(_, x, y)
+			setMousePos(Vec2(x, y))
+		end}
+		on_mouse_input={function(panel, button, press)
+			if button == "button_1" then
+				if press then
+					panel.DrawScaleCenter = true
+					panel:Animate(
+						"DrawScaleOffset",
+						{
+							Vec2() + 0.9,
+							function()
+								return input.IsMouseDown("button_1")
+							end,
+							Vec2() + 1,
+						},
+						0.1,
+						"*"
+					)
+				else
+					if panel:IsMouseOver() then props.on_press() end
+				end
+			end
+		end}
+	>
+		{props.children}
+	</View>
 end
 
-local function Column(props)
-    local space = spacing[props.spacing or "m"]
-    
-    return <View flex={true} flex_gap={space} flex_direction={"column"} flex_align_items={props.row_align}>
-        {props.children}
-    </View>
+local type Node = any -- todo
+local type BoxProps = {
+	width = number | nil,
+	height = number | nil,
+	min_width = number | nil,
+	min_height = number | nil,
+	direction = "row" | "column",
+	gap = keysof<|spacing|> | nil,
+	justify_content = "start" | "end" | "center" | "stretch" | "space-between" | "space-around" | nil,
+	align_items = "start" | "end" | "center" | "stretch" | nil,
+	children = List<|Node|>,
+}
+
+local function Box(props: BoxProps)
+	return <View
+		width={props.width or
+		0}
+		height={props.height or
+		0}
+		min_width={props.min_width or
+		0}
+		min_height={props.min_height or
+		0}
+		flex={true}
+		flex_gap={spacing[props.gap or
+		"m"]}
+		flex_direction={props.direction}
+		flex_justify_content={props.justify_content}
+		flex_align_items={props.align_items}
+	>
+		{props.children}
+	</View>
+end
+
+local function Column(
+	props: BoxProps & {
+		column_align = (typeof BoxProps).justify_content,
+		row_align = (typeof BoxProps).align_items,
+	}
+)
+	return <Box
+		direction={"row"}
+		width={props.width}
+		height={props.height}
+		min_width={props.width}
+		min_height={props.height}
+		gap={props.gap}
+		justify_content={props.column_align}
+		align_items={props.row_align}
+	>
+		{props.children}
+	</Box>
+end
+
+local function Row(
+	props: BoxProps & {
+		column_align = (typeof BoxProps).align_items,
+		row_align = (typeof BoxProps).justify_content,
+	}
+)
+	return <Box
+		direction={"row"}
+		width={props.width}
+		height={props.height}
+		min_width={props.width}
+		min_height={props.height}
+		gap={props.gap}
+		justify_content={props.row_align}
+		align_items={props.column_align}
+	>
+		{props.children}
+	</Box>
 end
 
 local function App()
-    return <Column spacing="l" row_align="center">
-        <Button on_press={function()print("press!")end}>
-            <Text2>"foo"</Text2>
-        </Button>
-        <Button on_press={function()print("press!")end}>
-            <Text2>"gyjq Q buik"</Text2>
-        </Button>
-        <Button on_press={function()print("press!")end}>
-            <Text2>"gyjq Q buik"</Text2>
-        </Button>
-    </Column>
+	return <Row gap="l" row_align="center" column_align="center" width=500 height=200>
+		<Button>
+			<Text2>
+				"GAME"
+			</Text2>
+		</Button>
+		<Button>
+			<Text2>
+				"CONFIG"
+			</Text2>
+		</Button>
+		<Button>
+			<Text2>
+				"NETPLAY"
+			</Text2>
+		</Button>
+		<Button>
+			<Text2>
+				"MISC"
+			</Text2>
+		</Button>
+	</Row>
 end
 
 local base = gui.TestWorld()

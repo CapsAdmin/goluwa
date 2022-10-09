@@ -12,8 +12,8 @@ META:GetSet("MousePosition", Vec2())
 META:GetSet("SelectionColor", Color(1, 1, 1, 0.5))
 META:GetSet("CaretColor", Color(1, 1, 1, 1))
 META:IsSet("Selectable", true)
-META:GetSet("MinimumHeight", 10)
-META:GetSet("HeightSpacing", 2)
+META:GetSet("MinimumHeight", 0)
+META:GetSet("HeightSpacing", 15)
 META:GetSet("LightMode", false)
 META:GetSet("SuperLightMode", false)
 META:GetSet("CopyTags", true)
@@ -1281,18 +1281,18 @@ do -- invalidate
 		if chunk.type == "string" then
 			local w, h = get_text_size(self, chunk.val)
 			chunk.w = w
-			chunk.h = h + self.HeightSpacing
+			chunk.h = h
 
 			if chunk.internal then
 				chunk.w = 0
 				chunk.h = 0
-				chunk.real_h = h + self.HeightSpacing
+				chunk.real_h = h
 				chunk.real_w = w
 			end
 		elseif chunk.type == "newline" then
 			local w, h = get_text_size(self, "|")
 			chunk.w = w
-			chunk.h = h + self.HeightSpacing
+			chunk.h = h
 		elseif chunk.type == "custom" and not chunk.val.stop_tag then
 			if not chunk.init_called and not chunk.val.stop_tag then
 				self:CallTagFunction(chunk, "init")
@@ -1300,9 +1300,6 @@ do -- invalidate
 			end
 
 			local _, w, h = self:CallTagFunction(chunk, "get_size")
-
-			if h then h = h + self.HeightSpacing end
-
 			chunk.w = w
 			chunk.h = h
 			chunk.pre_called = false
@@ -1493,7 +1490,7 @@ do -- invalidate
 					local left_over_space = x - self.MaxWidth
 
 					if not chunk.nolinebreak then
-						y = y + chunk_height
+						y = y + chunk_height + self.HeightSpacing
 						x = 0
 						chunk_height = 0
 					--[[
@@ -1522,7 +1519,7 @@ do -- invalidate
 
 			if chunk.type == "newline" then
 				if not chunk.nolinebreak then
-					y = y + chunk_height
+					y = y + chunk_height + self.HeightSpacing
 					x = 0
 				end
 
@@ -3033,23 +3030,22 @@ end
 META:Register()
 
 if RELOAD then
-	do
-		return
-	end
-
 	--runfile("lua/examples/2d/markup.lua")
 	local markup = ... or gfx.CreateMarkup()
-	markup:AddString("hello world\nnewline!")
+	markup:AddString("hello world")
 	markup:Invalidate()
 
 	function goluwa.PreDrawGUI()
 		local x = gfx.GetMousePosition()
-		render2d.PushMatrix(50, 50)
+		render2d.PushMatrix(0, 0)
 		markup:Update()
 		markup:Draw()
 		markup:SetMaxWidth(x)
 		render2d.SetColor(1, 1, 1, 1)
 		gfx.DrawLine(x, 0, x, 1000)
+		local w = markup.chunks[#markup.chunks].right
+		local h = markup.chunks[#markup.chunks].top
+		gfx.DrawRect(0, 0, w, h, nil, 1, 0, 0, 0.5)
 		render2d.PopMatrix()
 	end
 end

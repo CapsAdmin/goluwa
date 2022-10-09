@@ -410,7 +410,8 @@ do -- drawing
 	function META:DrawDebug()
 		if self.debug_mp then
 			local x, y = self.Padding.x, self.Padding.y
-			local w, h = self.Size.x - self.Padding.w - self.Padding.x, self.Size.y - self.Padding.h - self.Padding.y
+			local w, h = self.Size.x - self.Padding.w - self.Padding.x,
+			self.Size.y - self.Padding.h - self.Padding.y
 			gfx.DrawOutlinedRect(x, y, w, h, 1, 1, 0, 0, 1)
 			gfx.DrawOutlinedRect(x, y, w, h, self.Padding, 1, 0, 0, 0.25)
 			local x, y = -self.Margin.x, -self.Margin.y
@@ -2036,6 +2037,9 @@ do -- layout
 		self.in_layout = self.in_layout + 1
 		gui.in_layout = gui.in_layout + 1
 		self:OnLayout(self:GetLayoutScale(), self:GetSkin())
+
+		if self.Flex then self:FlexLayout() end
+
 		self:ExecuteLayoutCommands()
 
 		if self.Stack then
@@ -2043,8 +2047,6 @@ do -- layout
 
 			if self.StackSizeToChildren then self:SetSize(size) end
 		end
-
-		if self.Flex then self:FlexLayout() end
 
 		self:OnPostLayout()
 		self:MarkCacheDirty()
@@ -2482,27 +2484,15 @@ do -- flex layout
 	META:GetSet("FlexAlignSelf", "start")
 
 	function META:SetAxisPosition(axis, pos)
-		if axis == "x" then
-			self:SetX(pos)
-		else
-			self:SetY(pos)
-		end
+		if axis == "x" then self:SetX(pos) else self:SetY(pos) end
 	end
 
 	function META:GetAxisPosition(axis)
-		if axis == "x" then
-			return self:GetX()
-		else
-			return self:GetY()
-		end
+		if axis == "x" then return self:GetX() else return self:GetY() end
 	end
 
 	function META:SetAxisLength(axis, len)
-		if axis == "x" then
-			self:SetWidth(len)
-		else
-			self:SetHeight(len)
-		end
+		if axis == "x" then self:SetWidth(len) else self:SetHeight(len) end
 	end
 
 	function META:GetAxisLength(axis)
@@ -2513,15 +2503,13 @@ do -- flex layout
 		end
 	end
 
-
-	function META:FlexLayout() 
+	function META:FlexLayout()
 		if self.flex_size_to_children then return end
 
 		local pos = Vec2(self:GetPadding().x, self:GetPadding().y)
-
 		local axis = "x"
 		local axis2 = "y"
-		
+
 		if self.FlexDirection == "row" then
 			axis = "x"
 			axis2 = "y"
@@ -2531,89 +2519,81 @@ do -- flex layout
 		end
 
 		local children = self:GetVisibleChildren()
-		local parent_length = self:GetAxisLength(axis)/#children
+		local parent_length = self:GetAxisLength(axis) / #children
 
 		for i, child in ipairs(children) do
 			child:SetPosition(pos:Copy())
 			local child_length = child:GetAxisLength(axis)
 
-			if parent_length < child_length then
-				
-			else
+			if parent_length > child_length then
 				child:SetAxisLength(axis, math.min(parent_length, child:GetAxisLength(axis)))
 			end
 
 			pos[axis] = pos[axis] + child:GetAxisLength(axis)
 
-			if i ~= #children then
-				pos[axis] = pos[axis] + self.FlexGap
-			end
+			if i ~= #children then pos[axis] = pos[axis] + self.FlexGap end
 		end
 
-		self:SetAxisLength(axis, pos[axis])
-
+		self:SetAxisLength(axis, math.max(pos[axis], self:GetAxisLength(axis)))
 		local diff = self:GetAxisLength(axis) - pos[axis]
-		if self.FlexJustifyContent == "center" then
 
+		if self.FlexJustifyContent == "center" then
 			for i, child in ipairs(children) do
-				child:SetAxisPosition(axis, child:GetAxisPosition(axis) + diff/2)
+				child:SetAxisPosition(axis, child:GetAxisPosition(axis) + diff / 2)
 			end
 		elseif self.FlexJustifyContent == "end" then
-
 			for i, child in ipairs(children) do
 				child:SetAxisPosition(axis, child:GetAxisPosition(axis) + diff)
 			end
 		elseif self.FlexJustifyContent == "space-between" then
-
 			for i, child in ipairs(children) do
-				child:SetAxisPosition(axis, child:GetAxisPosition(axis) + diff/(#children - 1) * (i - 1))
+				child:SetAxisPosition(axis, child:GetAxisPosition(axis) + diff / (#children - 1) * (i - 1))
 			end
 		elseif self.FlexJustifyContent == "space-around" then
-
 			for i, child in ipairs(children) do
-				child:SetAxisPosition(axis, child:GetAxisPosition(axis) + diff/(#children) * (i - 0.5))
+				child:SetAxisPosition(axis, child:GetAxisPosition(axis) + diff / (#children) * (i - 0.5))
 			end
 		end
 
-
 		self.flex_size_to_children = true
 		local h = self:GetAxisLength(axis2)
-		if axis2 == "y" then
+
+		if self.FlexDirection == "row" then
 			self:SizeToChildrenHeight()
 		else
 			self:SizeToChildrenWidth()
 		end
+
 		local h2 = self:GetAxisLength(axis2)
 		self:SetAxisLength(axis2, math.max(h, h2))
 		self.flex_size_to_children = nil
-
-		self:SetAxisLength(axis, self:GetAxisLength(axis) + self:GetPadding()[axis2 == "y" and "w" or "h"])
-
+		self:SetAxisLength(
+			axis,
+			math.max(
+				self:GetAxisLength(axis) + self:GetPadding()[self.FlexDirection == "row" and
+					"h" or
+					"w"],
+				self:GetAxisLength(axis)
+			)
+		)
 
 		if self.FlexAlignItems == "end" then
-			local h = 0
-
 			for i, child in ipairs(children) do
-				h = math.max(h, child:GetAxisLength(axis2))
-			end
-
-			for i, child in ipairs(children) do
-				child:SetAxisPosition(axis2, self:GetAxisLength(axis2) - h2)
+				child:SetAxisPosition(axis2, self:GetAxisLength(axis2) - child:GetAxisLength(axis2))
 			end
 		elseif self.FlexAlignItems == "center" then
-			local h = 0
-
 			for i, child in ipairs(children) do
-				h = math.max(h, child:GetAxisLength(axis2))
-			end
-
-			for i, child in ipairs(children) do
-				child:SetAxisPosition(axis2, (self:GetAxisLength(axis2) - h2)/2)
+				child:SetAxisPosition(axis2, (self:GetAxisLength(axis2) - child:GetAxisLength(axis2)) / 2)
 			end
 		elseif self.FlexAlignItems == "stretch" then
 			for i, child in ipairs(children) do
 				child:SetAxisPosition(axis2, self:GetPadding()[axis2])
-				child:SetAxisLength(axis2, self:GetAxisLength(axis2) - self:GetPadding()[axis2]*2)
+				child:SetAxisLength(
+					axis2,
+					self:GetAxisLength(axis2) - self:GetPadding()[axis2] - self:GetPadding()[self.FlexDirection == "column" and
+						"w" or
+						"h"]
+				)
 			end
 		end
 
@@ -2621,10 +2601,15 @@ do -- flex layout
 			if child.FlexAlignSelf == "end" then
 				child:SetAxisPosition(axis2, self:GetAxisLength(axis2) - child:GetAxisLength(axis2))
 			elseif child.FlexAlignSelf == "center" then
-				child:SetAxisPosition(axis2, (self:GetAxisLength(axis2) - child:GetAxisLength(axis2))/2)
+				child:SetAxisPosition(axis2, (self:GetAxisLength(axis2) - child:GetAxisLength(axis2)) / 2)
 			elseif child.FlexAlignSelf == "stretch" then
 				child:SetAxisPosition(axis2, self:GetPadding()[axis2])
-				child:SetAxisLength(axis2, self:GetAxisLength(axis2) - self:GetPadding()[axis2] - self:GetPadding()[axis2 == "x" and "w" or "h"])
+				child:SetAxisLength(
+					axis2,
+					self:GetAxisLength(axis2) - self:GetPadding()[axis2] - self:GetPadding()[self.FlexDirection == "column" and
+						"w" or
+						"h"]
+				)
 			end
 		end
 	end

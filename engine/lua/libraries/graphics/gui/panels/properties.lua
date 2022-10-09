@@ -810,7 +810,7 @@ function META:OnLayout(S)
 
 		if left.expand then left.expand:SetMargin(Rect() + S * 2) end
 
-		left.label:SetMargin(Rect(S * 2, S * 2, left.label.label_offset or S * 2, S * 2))
+		left.label:SetMargin(Rect(S * 2, 0, left.label.label_offset or S * 2, 0))
 
 		if self.first_time then
 			left:Layout(true)

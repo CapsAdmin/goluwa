@@ -143,6 +143,7 @@ function META:GetGlyphData(char)
 		y_advance = 0,
 		bitmap_left = 0,
 		bitmap_top = HEIGHT,
+		ascender = 0,
 	}
 end
 

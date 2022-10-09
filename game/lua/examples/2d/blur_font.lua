@@ -23,7 +23,7 @@ local source = [[
 local radius = 0.5
 local font = fonts.CreateFont(
 	{
-		path = "Roboto",
+		path = "fonts/Roboto-Regular.ttf",
 		size = 20,
 		padding = 8,
 		shade = {
