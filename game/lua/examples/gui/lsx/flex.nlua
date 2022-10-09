@@ -23,14 +23,15 @@ local function App()
 		flex_direction="column"
 		color={Color(1, 1, 0, 1)}
 		flex_gap={5}
-		padding={Rect() + 0}
+		padding={Rect() + 5}
 		width=300
 		height=300
 		flex_justify_content="space-around"
+		flex_align_items="start"
 	>
 		<View color={Color(1, 0, 0, 1)} size={Vec2() + 50}/>
 		<View color={Color(0, 1, 0, 1)} size={Vec2() + 50}/>
-		<View flex_align_self="end" color={Color(0, 0, 1, 1)} size={Vec2() + 50}/>
+		<View flex_align_self="stretch" color={Color(0, 0, 1, 1)} size={Vec2() + 50}/>
 	</View>
 end
 

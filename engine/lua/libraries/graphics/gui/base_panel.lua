@@ -2600,7 +2600,19 @@ do -- flex layout
 			end
 		elseif self.FlexAlignItems == "stretch" then
 			for i, child in ipairs(children) do
-				child:SetAxisPosition(axis2, self:GetAxisSize(axis2) - self:GetPadding()[axis2]*2)
+				child:SetAxisPosition(axis2, self:GetPadding()[axis2])
+				child:SetAxisSize(axis2, self:GetAxisSize(axis2) - self:GetPadding()[axis2]*2)
+			end
+		end
+
+		for i, child in ipairs(children) do
+			if child.FlexAlignSelf == "end" then
+				child:SetAxisPosition(axis2, self:GetAxisSize(axis2) - child:GetAxisSize(axis2))
+			elseif child.FlexAlignSelf == "center" then
+				child:SetAxisPosition(axis2, (self:GetAxisSize(axis2) - child:GetAxisSize(axis2))/2)
+			elseif child.FlexAlignSelf == "stretch" then
+				child:SetAxisPosition(axis2, self:GetPadding()[axis2])
+				child:SetAxisSize(axis2, self:GetAxisSize(axis2) - self:GetPadding()[axis2]*2)
 			end
 		end
 	end
