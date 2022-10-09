@@ -171,8 +171,8 @@ do
 		obj.vgui_type = class
 		--self:SetPaintBackgroundEnabled(true)
 		obj:SetSize(Vec2(64, 24))
-		obj:SetPadding(Rect())
 		obj:SetMargin(Rect())
+		obj:SetPadding(Rect())
 		obj:ResetLayout()
 		--		obj:SetAllowKeyboardInput(false)
 		obj:SetFocusOnClick(false)
@@ -376,8 +376,8 @@ do
 				if w > panel:GetWidth() then panel.text_offset.x = 0 end
 
 				panel.text_offset = panel.text_offset + panel.text_inset
-			--panel.text_offset.x = panel.text_offset.x + panel:GetPadding():GetLeft()
-			--panel.text_offset.y = panel.text_offset.y + panel:GetPadding():GetTop()
+			--panel.text_offset.x = panel.text_offset.x + panel:GetMargin():GetLeft()
+			--panel.text_offset.y = panel.text_offset.y + panel:GetMargin():GetTop()
 			end
 
 			if not obj.gine_prepared then
@@ -596,11 +596,11 @@ do
 		return panel.__obj:HasChild(self.__obj)
 	end
 
-	function META:DockPadding(left, top, right, bottom)
+	function META:DockMargin(left, top, right, bottom)
 		self.__obj:SetMargin(Rect(right, bottom, left, top))
 	end
 
-	function META:DockMargin(left, top, right, bottom)
+	function META:DockPadding(left, top, right, bottom)
 		self.__obj:SetPadding(Rect(left, top, right, bottom))
 	end
 

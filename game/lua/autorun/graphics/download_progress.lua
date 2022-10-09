@@ -1,12 +1,12 @@
-local margin = 4
-local padding = 1
+local padding = 4
+local margin = 1
 local downprog = {}
 downprog.downloads = {}
 
 function downprog.Start(url)
 	local pnl = gui.CreatePanel("base")
 	pnl:SetSize(Vec2(300, 80))
-	pnl:SetMargin(Rect() + margin)
+	pnl:SetPadding(Rect() + padding)
 	pnl:SetStyle("frame")
 	pnl:SetColor(Color(1, 1, 1, 0.25))
 	pnl:SetupLayout("right", "bottom")
@@ -15,7 +15,7 @@ function downprog.Start(url)
 	local title = pnl:CreatePanel("text")
 	title:SetText(url:match(".+/(.+)"))
 	title:SetupLayout("top", "left")
-	title:SetPadding(Rect() + padding)
+	title:SetMargin(Rect() + margin)
 	local progress = pnl:CreatePanel("progress_bar")
 	progress:SetHeight(15)
 	progress:SetupLayout("top", "fill_x")
@@ -23,14 +23,14 @@ function downprog.Start(url)
 	local details = pnl:CreatePanel("text")
 	details:SetText("???")
 	details:SetupLayout("top", "left")
-	details:SetPadding(Rect() + padding)
+	details:SetMargin(Rect() + margin)
 	local details2 = pnl:CreatePanel("text")
 	details2:SetText("???")
 	details2:SetupLayout(details, "right", "center_x_simple")
-	details2:SetPadding(Rect() + padding)
+	details2:SetMargin(Rect() + margin)
 	local timeleft = pnl:CreatePanel("text")
 	timeleft:SetupLayout(details2, "right")
-	timeleft:SetPadding(Rect() + padding)
+	timeleft:SetMargin(Rect() + margin)
 	pnl:SizeToChildrenHeight()
 	downprog.downloads[url] = {
 		pnl = pnl,

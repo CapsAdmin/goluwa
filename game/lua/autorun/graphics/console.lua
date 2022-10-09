@@ -20,13 +20,13 @@ function console.Open()
 	local frame = gui.CreatePanel("frame", menu.panel, "console")
 	frame:SetSize(Vec2(render.GetScreenSize().x / 2, render.GetScreenSize().y / 1.25))
 	frame:NoCollide()
-	frame:SetPadding(Rect() + 20)
+	frame:SetMargin(Rect() + 20)
 	frame:MoveRight()
 	frame:MoveUp()
 
 	do -- edit line
 		local edit = frame:CreatePanel("text_input")
-		edit:SetMargin(Rect() + 3)
+		edit:SetPadding(Rect() + 3)
 		edit:SetHeight(20)
 		edit:SetHistoryPath("data/console_history.txt")
 

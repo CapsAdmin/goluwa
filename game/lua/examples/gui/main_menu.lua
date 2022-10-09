@@ -11,7 +11,7 @@ do
 				path = "Roboto Black",
 				fallback = gfx.GetDefaultFont(),
 				size = 30 * s,
-				padding = 50,
+				margin = 50,
 				shadow = {
 					order = 1,
 					dir = Vec2(-1, 1) * 5 * s,
@@ -25,7 +25,7 @@ do
 				path = "propaganda squaregear", --"russian dollmaker",
 				fallback = gfx.GetDefaultFont(),
 				size = 100 * s,
-				padding = 50,
+				margin = 50,
 				color = {
 					order = 2,
 					color = ColorBytes(171, 211, 50),
@@ -40,8 +40,8 @@ do
 			}
 		)
 		self:SetSize(render.GetScreenSize():Copy())
-		self:SetMargin(Rect(100, 100, 100, 50) * s)
-		self.logo:SetMargin(Rect() + 20 * s)
+		self:SetPadding(Rect(100, 100, 100, 50) * s)
+		self.logo:SetPadding(Rect() + 20 * s)
 		self.logo.image:SetSizeKeepAspectRatio(200 * s)
 		self.logo.image:SetPosition(Vec2(35, 15) * s)
 		self.logo.title:SetFont(title_font)
@@ -50,8 +50,8 @@ do
 
 		for i, btn in ipairs(self.buttons:GetChildren()) do
 			btn:SetFont(menu_font)
-			btn:SetMargin(Rect(1, 1, 1, 1) * 5 * s)
 			btn:SetPadding(Rect(1, 1, 1, 1) * 5 * s)
+			btn:SetMargin(Rect(1, 1, 1, 1) * 5 * s)
 			btn:SizeToText()
 			btn:SetupLayout("top", "fill_x")
 		end

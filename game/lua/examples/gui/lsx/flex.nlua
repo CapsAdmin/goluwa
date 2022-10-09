@@ -23,7 +23,7 @@ local function App()
 		flex_direction="column"
 		color={Color(1, 1, 0, 1)}
 		flex_gap={5}
-		margin={Rect() + 0}
+		padding={Rect() + 0}
 		width=300
 		height=300
 		flex_justify_content="space-around"

@@ -9,7 +9,7 @@ META:GetSet("Cursor", "arrow")
 META:GetSet("TrapChildren", false)
 META:GetSet("Texture", render.GetWhiteTexture())
 META:GetSet("RedirectFocus", NULL)
-META:GetSet("ObeyMargin", true)
+META:GetSet("ObeyPadding", true)
 META:GetSet("BringToFrontOnClick", false)
 META:GetSet("LayoutParentOnLayout", false)
 META:GetSet("LayoutWhenInvisible", true)
@@ -42,7 +42,7 @@ function META:GetSizeOfChildren()
 	local total_size = Vec2()
 
 	for _, v in ipairs(self:GetVisibleChildren()) do
-		local pos = v:GetPosition() + v:GetSize() + v.Padding:GetPosition()
+		local pos = v:GetPosition() + v:GetSize() + v.Margin:GetPosition()
 
 		if pos.x > total_size.x then total_size.x = pos.x end
 
@@ -64,15 +64,15 @@ function META:SizeToChildrenHeight()
 	local max_pos = 0
 
 	for i, v in ipairs(self:GetVisibleChildren()) do
-		min_pos = math.min(min_pos, v.Position.y - v.Padding.y - v:GetParentMargin().y)
+		min_pos = math.min(min_pos, v.Position.y - v.Margin.y - v:GetParentPadding().y)
 	end
 
 	for i, v in ipairs(self:GetVisibleChildren()) do
 		local pos_y = v.Position.y - min_pos
-		max_pos = math.max(max_pos, pos_y + v.Size.y + v.Padding.h)
+		max_pos = math.max(max_pos, pos_y + v.Size.y + v.Margin.h)
 	end
 
-	self.Size.y = max_pos + self.Margin:GetSize().y
+	self.Size.y = max_pos + self.Padding:GetSize().y
 	self.LayoutSize = self.Size:Copy()
 	--self:SetY(0)
 	self.laid_out_y = true
@@ -90,15 +90,15 @@ function META:SizeToChildrenWidth()
 	local max_pos = 0
 
 	for i, v in ipairs(self:GetVisibleChildren()) do
-		min_pos = math.min(min_pos, v.Position.x - v.Padding.x - v:GetParentMargin().x)
+		min_pos = math.min(min_pos, v.Position.x - v.Margin.x - v:GetParentPadding().x)
 	end
 
 	for i, v in ipairs(self:GetVisibleChildren()) do
 		local pos_x = v.Position.x - min_pos
-		max_pos = math.max(max_pos, pos_x + v.Size.x + v.Padding.w)
+		max_pos = math.max(max_pos, pos_x + v.Size.x + v.Margin.w)
 	end
 
-	self.Size.x = max_pos + self.Margin:GetSize().x
+	self.Size.x = max_pos + self.Padding:GetSize().x
 	self.LayoutSize = self.Size:Copy()
 	--self:SetX(0)
 	self.laid_out_x = true
@@ -116,18 +116,18 @@ function META:SizeToChildren()
 	local max_pos = Vec2()
 
 	for i, v in ipairs(self:GetVisibleChildren()) do
-		min_pos.x = math.min(min_pos.x, v.Position.x - v.Padding.x - self.Margin.x)
-		min_pos.y = math.min(min_pos.y, v.Position.y - v.Padding.y - self.Margin.y)
+		min_pos.x = math.min(min_pos.x, v.Position.x - v.Margin.x - self.Padding.x)
+		min_pos.y = math.min(min_pos.y, v.Position.y - v.Margin.y - self.Padding.y)
 	end
 
 	for i, v in ipairs(self:GetVisibleChildren()) do
 		local pos_x = v.Position.x - min_pos.x
 		local pos_y = v.Position.y - min_pos.y
-		max_pos.x = math.max(max_pos.x, pos_x + v.Size.x + v.Padding.w)
-		max_pos.y = math.max(max_pos.y, pos_y + v.Size.y + v.Padding.h)
+		max_pos.x = math.max(max_pos.x, pos_x + v.Size.x + v.Margin.w)
+		max_pos.y = math.max(max_pos.y, pos_y + v.Size.y + v.Margin.h)
 	end
 
-	self.Size = max_pos + self.Margin:GetSize()
+	self.Size = max_pos + self.Padding:GetSize()
 	self.LayoutSize = self.Size:Copy()
 	--self:SetPosition(Vec2())
 	self.laid_out_x = true
@@ -409,16 +409,16 @@ do -- drawing
 
 	function META:DrawDebug()
 		if self.debug_mp then
-			local x, y = self.Margin.x, self.Margin.y
-			local w, h = self.Size.x - self.Margin.w - self.Margin.x, self.Size.y - self.Margin.h - self.Margin.y
+			local x, y = self.Padding.x, self.Padding.y
+			local w, h = self.Size.x - self.Padding.w - self.Padding.x, self.Size.y - self.Padding.h - self.Padding.y
 			gfx.DrawOutlinedRect(x, y, w, h, 1, 1, 0, 0, 1)
-			gfx.DrawOutlinedRect(x, y, w, h, self.Margin, 1, 0, 0, 0.25)
-			local x, y = -self.Padding.x, -self.Padding.y
-			local w, h = self.Size.x + self.Padding.w + self.Padding.x,
-			self.Size.y + self.Padding.h + self.Padding.y
+			gfx.DrawOutlinedRect(x, y, w, h, self.Padding, 1, 0, 0, 0.25)
+			local x, y = -self.Margin.x, -self.Margin.y
+			local w, h = self.Size.x + self.Margin.w + self.Margin.x,
+			self.Size.y + self.Margin.h + self.Margin.y
 			gfx.DrawOutlinedRect(0, 0, self.Size.x, self.Size.y, 1, 0.25, 0.5, 1, 1)
 			gfx.DrawOutlinedRect(x, y, w, h, 1, 0.25, 0.5, 1, 1)
-			gfx.DrawOutlinedRect(x, y, w, h, -self.Padding, 0.25, 0.5, 1, 0.25)
+			gfx.DrawOutlinedRect(x, y, w, h, -self.Margin, 0.25, 0.5, 1, 0.25)
 		end
 
 		if self.debug_flash and self.debug_flash > system.GetElapsedTime() then
@@ -509,8 +509,8 @@ do -- orientation
 	META:GetSet("Z", 0)
 	META:GetSet("Size", Vec2(4, 4))
 	META:GetSet("MinimumSize", Vec2(4, 4))
-	META:GetSet("Padding", Rect(0, 0, 0, 0))
 	META:GetSet("Margin", Rect(0, 0, 0, 0))
+	META:GetSet("Padding", Rect(0, 0, 0, 0))
 	META:GetSet("Angle", 0)
 	META:GetSet("Order", 0)
 	META:GetSet("ThreeDee", false)
@@ -636,22 +636,22 @@ do -- orientation
 		end
 	end
 
-	function META:SetPadding(rect)
-		self.Padding = rect
-		self:Layout()
-	end
-
 	function META:SetMargin(rect)
 		self.Margin = rect
 		self:Layout()
 	end
 
-	function META:GetParentMargin()
-		if not self.ObeyMargin then return Rect(0, 0, 0, 0) end
+	function META:SetPadding(rect)
+		self.Padding = rect
+		self:Layout()
+	end
 
-		if self:IsWorld() then return self:GetMargin() end
+	function META:GetParentPadding()
+		if not self.ObeyPadding then return Rect(0, 0, 0, 0) end
 
-		return self.Parent:GetMargin()
+		if self:IsWorld() then return self:GetPadding() end
+
+		return self.Parent:GetPadding()
 	end
 
 	function META:WorldToLocal(wpos)
@@ -1065,81 +1065,81 @@ do -- magnet snap
 	META:GetSet("SnapWhileDragging", false)
 	local snapped = false
 
-	local function check1(pos, size, parent, margin, pos2, axis1, axis2)
+	local function check1(pos, size, parent, padding, pos2, axis1, axis2)
 		if
 			pos[axis1] < pos2[axis1] + (
-				parent.Padding[axis1] * 1.5
+				parent.Margin[axis1] * 1.5
 			)
 			and
 			pos[axis1] > pos2[axis1] + (
-				parent.Padding[axis1] / 4
+				parent.Margin[axis1] / 4
 			)
 		then
-			pos[axis1] = pos2[axis1] + parent.Padding[axis1]
+			pos[axis1] = pos2[axis1] + parent.Margin[axis1]
 			snapped = true
 		elseif
-			pos[axis1] < pos2[axis1] + parent.Padding[axis1] and
-			pos[axis1] > pos2[axis1] + -parent.Padding[axis1]
+			pos[axis1] < pos2[axis1] + parent.Margin[axis1] and
+			pos[axis1] > pos2[axis1] + -parent.Margin[axis1]
 		then
 			pos[axis1] = pos2[axis1]
 			snapped = true
 		elseif pos[axis1] + size[axis2] < pos2[axis1] then
 			if
-				pos[axis1] + size[axis2] < pos2[axis1] + margin[axis1] and
-				pos[axis1] + size[axis2] > pos2[axis1] + -margin[axis1]
+				pos[axis1] + size[axis2] < pos2[axis1] + padding[axis1] and
+				pos[axis1] + size[axis2] > pos2[axis1] + -padding[axis1]
 			then
 				pos[axis1] = pos2[axis1] + -size[axis2]
 				snapped = true
 			elseif
 				pos[axis1] + size[axis2] > pos2[axis1] + (
-					-margin[axis1] * 1.5
+					-padding[axis1] * 1.5
 				)
 				and
 				pos[axis1] + size[axis2] < pos2[axis1] + (
-					margin[axis1] / 4
+					padding[axis1] / 4
 				)
 			then
-				pos[axis1] = pos2[axis1] + -size[axis2] - margin[axis1]
+				pos[axis1] = pos2[axis1] + -size[axis2] - padding[axis1]
 				snapped = true
 			end
 		end
 	end
 
-	local function check2(pos, size, parent, margin, pos2, axis1, axis2)
+	local function check2(pos, size, parent, padding, pos2, axis1, axis2)
 		if
 			pos[axis1] + size[axis2] > pos2[axis1] + parent.Size[axis2] - (
-				parent.Padding[axis1] * 1.5
+				parent.Margin[axis1] * 1.5
 			)
 			and
 			pos[axis1] + size[axis2] < pos2[axis1] + parent.Size[axis2] - (
-				parent.Padding[axis1] / 4
+				parent.Margin[axis1] / 4
 			)
 		then
-			pos[axis1] = pos2[axis1] + parent.Size[axis2] - parent.Padding[axis1] - size[axis2]
+			pos[axis1] = pos2[axis1] + parent.Size[axis2] - parent.Margin[axis1] - size[axis2]
 			snapped = true
 		elseif
-			pos[axis1] + size[axis2] > pos2[axis1] + parent.Size[axis2] - parent.Padding[axis1] and
-			pos[axis1] + size[axis2] < pos2[axis1] + parent.Size[axis2] + parent.Padding[axis1]
+			pos[axis1] + size[axis2] > pos2[axis1] + parent.Size[axis2] - parent.Margin[axis1] and
+			pos[axis1] + size[axis2] < pos2[axis1] + parent.Size[axis2] + parent.Margin[axis1]
 		then
 			pos[axis1] = pos2[axis1] + parent.Size[axis2] - size[axis2]
 			snapped = true
 		elseif pos[axis1] > pos2[axis1] + parent.Size[axis2] then
 			if
-				pos[axis1] < pos2[axis1] + parent.Size[axis2] + margin[axis1] and
-				pos[axis1] > pos2[axis1] + parent.Size[axis2] - margin[axis1]
+				pos[axis1] < pos2[axis1] + parent.Size[axis2] + padding[axis1] and
+				pos[axis1] > pos2[axis1] + parent.Size[axis2] - padding[axis1]
 			then
 				pos[axis1] = pos2[axis1] + parent.Size[axis2]
 				snapped = true
 			elseif
 				pos[axis1] < pos2[axis1] + parent.Size[axis2] + (
-					margin[axis1] * 1.5
+					padding[axis1] * 1.5
 				)
 				and
 				pos[axis1] > pos2[axis1] + parent.Size[axis2] + (
-					margin[axis1] / 4
+					padding[axis1] / 4
 				)
 			then
-				pos[axis1] = pos2[axis1] + parent.Size[axis2] + margin[axis1]
+				pos[axis1] = pos2[axis1] + parent.Size[axis2] + padding[axis1]
 				snapped = true
 			end
 		end
@@ -1151,10 +1151,10 @@ do -- magnet snap
 		local pos2 = panel:GetWorldPosition()
 		local size = self:GetSize()
 		snapped = false
-		check1(pos, size, panel, self:GetParentMargin(), pos2, "x", "w")
-		check1(pos, size, panel, self:GetParentMargin(), pos2, "y", "h")
-		check2(pos, size, panel, self:GetParentMargin(), pos2, "x", "w")
-		check2(pos, size, panel, self:GetParentMargin(), pos2, "y", "h")
+		check1(pos, size, panel, self:GetParentPadding(), pos2, "x", "w")
+		check1(pos, size, panel, self:GetParentPadding(), pos2, "y", "h")
+		check2(pos, size, panel, self:GetParentPadding(), pos2, "x", "w")
+		check2(pos, size, panel, self:GetParentPadding(), pos2, "y", "h")
 
 		if snapped then
 			pos = self:WorldToLocal(pos)
@@ -1479,7 +1479,7 @@ do -- mouse
 			local tooltip = gui.CreatePanel("text_button", nil, "gui_tooltip")
 			tooltip:SetSkin(self:GetSkin())
 			tooltip:SetPosition(self:GetWorldPosition())
-			tooltip:SetMargin(Rect() + 4)
+			tooltip:SetPadding(Rect() + 4)
 			tooltip:SetText(self.Tooltip)
 			tooltip:SizeToText()
 			tooltip:SetIgnoreMouse(true)
@@ -1912,30 +1912,30 @@ do -- layout
 
 			if dir.x < 0 then
 				hit_pos.y = self:GetY()
-				hit_pos.x = hit_pos.x + child:GetWidth() + self.Padding:GetRight() + child.Padding:GetLeft()
+				hit_pos.x = hit_pos.x + child:GetWidth() + self.Margin:GetRight() + child.Margin:GetLeft()
 			elseif dir.x > 0 then
 				hit_pos.y = self:GetY()
-				hit_pos.x = hit_pos.x - self:GetWidth() - self.Padding:GetLeft() - child.Padding:GetRight()
+				hit_pos.x = hit_pos.x - self:GetWidth() - self.Margin:GetLeft() - child.Margin:GetRight()
 			elseif dir.y < 0 then
 				hit_pos.x = self:GetX()
-				hit_pos.y = hit_pos.y + child:GetHeight() + self.Padding:GetTop() + child.Padding:GetBottom()
+				hit_pos.y = hit_pos.y + child:GetHeight() + self.Margin:GetTop() + child.Margin:GetBottom()
 			elseif dir.y > 0 then
 				hit_pos.x = self:GetX()
-				hit_pos.y = hit_pos.y - self:GetHeight() - self.Padding:GetBottom() - child.Padding:GetTop()
+				hit_pos.y = hit_pos.y - self:GetHeight() - self.Margin:GetBottom() - child.Margin:GetTop()
 			end
 		else
 			if dir.x < 0 then
-				hit_pos.x = hit_pos.x + self.Padding:GetRight()
-				hit_pos.x = hit_pos.x + self:GetParentMargin():GetLeft()
+				hit_pos.x = hit_pos.x + self.Margin:GetRight()
+				hit_pos.x = hit_pos.x + self:GetParentPadding():GetLeft()
 			elseif dir.x > 0 then
-				hit_pos.x = hit_pos.x - self.Padding:GetLeft()
-				hit_pos.x = hit_pos.x - self:GetParentMargin():GetRight()
+				hit_pos.x = hit_pos.x - self.Margin:GetLeft()
+				hit_pos.x = hit_pos.x - self:GetParentPadding():GetRight()
 			elseif dir.y < 0 then
-				hit_pos.y = hit_pos.y + self.Padding:GetTop()
-				hit_pos.y = hit_pos.y + self:GetParentMargin():GetBottom()
+				hit_pos.y = hit_pos.y + self.Margin:GetTop()
+				hit_pos.y = hit_pos.y + self:GetParentPadding():GetBottom()
 			elseif dir.y > 0 then
-				hit_pos.y = hit_pos.y - self.Padding:GetBottom()
-				hit_pos.y = hit_pos.y - self:GetParentMargin():GetTop()
+				hit_pos.y = hit_pos.y - self.Margin:GetBottom()
+				hit_pos.y = hit_pos.y - self:GetParentPadding():GetTop()
 			end
 
 			hit_pos.x = math.max(hit_pos.x, 0)
@@ -2324,7 +2324,7 @@ do -- layout
 			self:SetX(
 				(
 						left.x + right.x
-					) / 2 - self:GetWidth() / 2 - self.Padding:GetLeft() + self.Padding:GetRight()
+					) / 2 - self:GetWidth() / 2 - self.Margin:GetLeft() + self.Margin:GetRight()
 			)
 			self.laid_out_x = true
 		end
@@ -2337,7 +2337,7 @@ do -- layout
 			self:SetY(
 				(
 						top.y + bottom.y
-					) / 2 - self:GetHeight() / 2 - self.Padding:GetTop() + self.Padding:GetBottom()
+					) / 2 - self:GetHeight() / 2 - self.Margin:GetTop() + self.Margin:GetBottom()
 			)
 			self.laid_out_y = true
 		end
@@ -2367,9 +2367,9 @@ do -- layout
 			local right = self:RayCast(self:GetPosition(), Vec2(parent:GetWidth(), left.y))
 
 			if
-				self:GetX() + self:GetWidth() + self.Padding:GetRight() < right.x + self:GetWidth() - self.Padding:GetRight()
+				self:GetX() + self:GetWidth() + self.Margin:GetRight() < right.x + self:GetWidth() - self.Margin:GetRight()
 				and
-				self:GetX() - self.Padding.x > left.x
+				self:GetX() - self.Margin.x > left.x
 			then
 				self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
 			end
@@ -2403,8 +2403,8 @@ do -- layout
 		end
 
 		function META:Confine()
-			local m = self:GetParent():GetMargin()
-			local p = self:GetPadding()
+			local m = self:GetParent():GetPadding()
+			local p = self:GetMargin()
 			self.Position.x = math.clamp(
 				self.Position.x,
 				m:GetLeft() + p:GetLeft(),
@@ -2517,7 +2517,7 @@ do -- flex layout
 	function META:FlexLayout() 
 		if self.flex_size_to_children then return end
 
-		local pos = Vec2(self:GetMargin().x, self:GetMargin().y)
+		local pos = Vec2(self:GetPadding().x, self:GetPadding().y)
 
 		local axis = "x"
 		local axis2 = "y"
@@ -2600,7 +2600,7 @@ do -- flex layout
 			end
 		elseif self.FlexAlignItems == "stretch" then
 			for i, child in ipairs(children) do
-				child:SetAxisPosition(axis2, self:GetAxisSize(axis2) - self:GetMargin()[axis2]*2)
+				child:SetAxisPosition(axis2, self:GetAxisSize(axis2) - self:GetPadding()[axis2]*2)
 			end
 		end
 	end
@@ -2619,7 +2619,7 @@ do -- stacking
 	function META:StackChildren()
 		local w = 0
 		local h
-		local pad = self:GetMargin()
+		local pad = self:GetPadding()
 
 		for _, pnl in ipairs(self:GetChildren()) do
 			if pnl:IsStackable() then
@@ -2629,8 +2629,8 @@ do -- stacking
 
 				if self.ForcedStackSize.y ~= 0 then siz.y = self.ForcedStackSize.y end
 
-				siz.x = siz.x + pnl.Padding.w
-				siz.y = siz.y + pnl.Padding.h
+				siz.x = siz.x + pnl.Margin.w
+				siz.y = siz.y + pnl.Margin.h
 
 				if self.StackRight then
 					h = h or siz.y
@@ -2641,14 +2641,14 @@ do -- stacking
 						w = siz.x
 					end
 
-					pnl.Position.x = w + pad.x - siz.x + pnl.Padding.x
-					pnl.Position.y = h + pad.y - siz.y + pnl.Padding.y
+					pnl.Position.x = w + pad.x - siz.x + pnl.Margin.x
+					pnl.Position.y = h + pad.y - siz.y + pnl.Margin.y
 				else
 					h = h or 0
 					h = h + siz.y
 					w = siz.x > w and siz.x or w
-					pnl.Position.x = pad.x + pnl.Padding.x
-					pnl.Position.y = h + pad.y - siz.y + pnl.Padding.y
+					pnl.Position.x = pad.x + pnl.Margin.x
+					pnl.Position.y = h + pad.y - siz.y + pnl.Margin.y
 				end
 
 				if not self.ForcedStackSize:IsZero() then

@@ -1,7 +1,7 @@
 local gui = ... or _G.gui
 local gate_size = 64
 local connection_size = 8
-local connection_padding = 2
+local connection_margin = 2
 local META = prototype.CreateTemplate("logic_gate")
 
 function META:Initialize()
@@ -17,7 +17,7 @@ function META:OnMouseHoverTrigger(entered, x, y)
 	if entered then
 		local tooltip = gui.CreatePanel("text_button")
 		tooltip:SetPosition(Vec2(gfx.GetMousePosition()))
-		tooltip:SetMargin(Rect() + 4)
+		tooltip:SetPadding(Rect() + 4)
 		self.tooltip = tooltip
 	else
 		gui.RemovePanel(self.tooltip)
@@ -120,7 +120,7 @@ function META:AddOutput(i, info)
 	self.outputs[i] = btn
 end
 
-local connection_height = connection_size + connection_padding
+local connection_height = connection_size + connection_margin
 
 function META:OnLayout()
 	do

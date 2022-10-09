@@ -29,7 +29,7 @@ do -- base property
 	end
 
 	function META:OnLayout(S)
-		self.label:SetPadding(Rect() + S)
+		self.label:SetMargin(Rect() + S)
 	end
 
 	function META:OnUpdate()
@@ -130,7 +130,7 @@ do -- base property
 		edit:SetText(self:GetEncodedValue())
 		edit:SetSize(self:GetSize())
 		edit.OnLayout = function(self, S)
-			self.label:SetPadding(Rect() + S)
+			self.label:SetMargin(Rect() + S)
 		end
 		edit.OnEnter = function()
 			self:StopEditing()
@@ -440,7 +440,7 @@ do -- boolean
 
 	function META:OnLayout(S)
 		prototype.GetRegistered(self.Type, META.Base).OnLayout(self, S)
-		self.panel:SetPadding(Rect() + S)
+		self.panel:SetMargin(Rect() + S)
 	end
 
 	gui.RegisterPanel(META)
@@ -493,7 +493,7 @@ do -- color
 	function META:OnLayout(S)
 		prototype.GetRegistered(self.Type, META.Base).OnLayout(self, S)
 		self.panel:SetLayoutSize(Vec2(S * 8, S * 8) - S * 2)
-		self.panel:SetPadding(Rect() + S * 2)
+		self.panel:SetMargin(Rect() + S * 2)
 	end
 
 	gui.RegisterPanel(META)
@@ -546,7 +546,7 @@ do -- texture
 	function META:OnLayout(S)
 		prototype.GetRegistered(self.Type, META.Base).OnLayout(self, S)
 		self.panel:SetLayoutSize(Vec2(S * 8, S * 8) - S * 2)
-		self.panel:SetPadding(Rect() + S)
+		self.panel:SetMargin(Rect() + S)
 	end
 
 	gui.RegisterPanel(META)
@@ -797,7 +797,7 @@ function META:AddProperty(name, set_value, get_value, default, extra_info, obj)
 end
 
 function META:OnLayout(S)
-	self:SetMargin(Rect() + S * 2) -- TODO
+	self:SetPadding(Rect() + S * 2) -- TODO
 	self.left_max_width = self.left_max_width or 0
 	self.right_max_width = self.right_max_width or 0
 
@@ -808,9 +808,9 @@ function META:OnLayout(S)
 			left:SetDrawPositionOffset(Vec2(left.left_offset * S, 0))
 		end
 
-		if left.expand then left.expand:SetPadding(Rect() + S * 2) end
+		if left.expand then left.expand:SetMargin(Rect() + S * 2) end
 
-		left.label:SetPadding(Rect(S * 2, S * 2, left.label.label_offset or S * 2, S * 2))
+		left.label:SetMargin(Rect(S * 2, S * 2, left.label.label_offset or S * 2, S * 2))
 
 		if self.first_time then
 			left:Layout(true)
@@ -818,7 +818,7 @@ function META:OnLayout(S)
 				self.left_max_width,
 				left.label:GetWidth() + left.label:GetX() + (
 						self.left_offset * S
-					) + left.label:GetPadding():GetRight()
+					) + left.label:GetMargin():GetRight()
 			)
 		end
 	end
@@ -846,7 +846,7 @@ function META:OnLayout(S)
 		self.divider:SetDividerPosition(self.left_max_width)
 	end
 
-	local h = self.left:GetSizeOfChildren().y + self.Margin:GetBottom() + S * 2 -- TODO
+	local h = self.left:GetSizeOfChildren().y + self.Padding:GetBottom() + S * 2 -- TODO
 	self.divider:SetSize(Vec2(self.left_max_width + self.right_max_width, h))
 	self:SetWidth(self.left_max_width + self.right_max_width)
 	self:SetHeight(h)

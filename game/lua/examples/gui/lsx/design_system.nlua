@@ -54,7 +54,7 @@ local function Button(props, node)
 
     return <View
         color={color}
-        margin={Rect() + spacing.m}
+        padding={Rect() + spacing.m}
         border_radius=5
         on_mouse_enter={function()
             setColor(colors.button_hover)

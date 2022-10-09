@@ -4,9 +4,9 @@ base:CenterSimple()
 base:SetResizable(true)
 base:SetDraggable(true)
 base:SetColor(Color(0.1, 0.1, 0.1, 1))
---base:SetMargin(Rect()+16)
+--base:SetPadding(Rect()+16)
 base:SetName("base")
-base:SetMargin(Rect(0, 8, 0, 8))
+base:SetPadding(Rect(0, 8, 0, 8))
 local i = 0
 
 function base:Add(w, h)

@@ -7,7 +7,7 @@ function META:Initialize()
 	self.list = NULL
 	local top = self:CreatePanel("base", "top")
 	--top:SetLayoutParentOnLayout(true)
-	top:SetMargin(Rect())
+	top:SetPadding(Rect())
 	--top:SetClipping(true)
 	top:SetNoDraw(true)
 	local list = self:CreatePanel("base", "list")
@@ -75,14 +75,14 @@ function META:OnLayout(S)
 
 	--self:SizeColumnsToFit()
 	for k, v in pairs(self.columns) do
-		v.label:SetPadding(Rect() + S * 2)
-		v.icon:SetPadding(Rect() + S * 2)
+		v.label:SetMargin(Rect() + S * 2)
+		v.icon:SetMargin(Rect() + S * 2)
 		v:SetHeight(self.top:GetHeight())
 		v.div:SetHeight(v:GetHeight())
 	end
 
 	local column = self.columns[1]
-	--column:SetMargin(Rect()+2*S)
+	--column:SetPadding(Rect()+2*S)
 	--column:SetHeight(S*10)
 	column.div:SetWidth(self:GetWidth())
 

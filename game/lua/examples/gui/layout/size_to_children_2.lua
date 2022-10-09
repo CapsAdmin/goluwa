@@ -4,9 +4,9 @@ base:CenterSimple()
 base:SetResizable(true)
 base:SetDraggable(true)
 base:SetColor(Color(0.1, 0.1, 0.1, 1))
---base:SetMargin(Rect()+16)
+--base:SetPadding(Rect()+16)
 base:SetName("base")
-base:SetMargin(Rect() + 8)
+base:SetPadding(Rect() + 8)
 
 local function add(self, w, h)
 	self.i = self.i or 0
@@ -23,7 +23,7 @@ local function add(self, w, h)
 end
 
 local hm = add(base, 100)
-hm:SetMargin(Rect() + 4)
+hm:SetPadding(Rect() + 4)
 hm:SetupLayout("SizeToChildren")
 add(hm, 32):SetupLayout("top")
 add(hm, 32):SetupLayout("top")

@@ -87,8 +87,8 @@ end
 
 local function dock(color, size, dir, lol)
 	g("base")
-	Margin = Rect() + 20
 	Padding = Rect() + 20
+	Margin = Rect() + 20
 	self.debug_mp = true
 
 	if dir == "top" or dir == "bottom" then
@@ -99,7 +99,7 @@ local function dock(color, size, dir, lol)
 		self.laid_out_x = true
 	end
 
-	Position = rect:GetPosition() + self:GetPadding():GetPosition()
+	Position = rect:GetPosition() + self:GetMargin():GetPosition()
 	Color = ColorName(color)
 
 	if dir == "top" then
@@ -117,12 +117,12 @@ local function dock(color, size, dir, lol)
 		FillY()
 	end
 
-	rect = shrink(rect, self:GetRect() + self:GetPadding() + self:GetParent():GetMargin(), dir)
+	rect = shrink(rect, self:GetRect() + self:GetMargin() + self:GetParent():GetPadding(), dir)
 	g()
 end
 
-Margin = Rect() + 20
 Padding = Rect() + 20
+Margin = Rect() + 20
 dock("#bbbbbbb", 500, "top")
 
 do
@@ -167,7 +167,7 @@ Size = Texture:GetSize()
 SetupLayout("MoveLeft", "CenterYSimple")
 g()
 g("text")
-Padding = Rect() + 4
+Margin = Rect() + 4
 Text = "temp.txt already exist.\nDo you want to replace it?"
 SetupLayout("MoveLeft")
 g()
@@ -178,7 +178,7 @@ SetupLayout("MoveUp", "FillX", "SizeToChildrenHeight")
 
 local function button(str)
 	g("text_button")
-	Padding = Rect() + 4
+	Margin = Rect() + 4
 	Text = str
 	Size = Vec2(90, 25)
 	label:SetupLayout("CenterSimple")

@@ -20,7 +20,7 @@ local scoreboard_title = fonts.CreateFont(
 			cursor="hand"
 			texture={render.CreateTextureFromPath("textures/silkicons/user.png")}
 			size={Rect() + 16}
-			padding={Rect() + 5}
+			margin={Rect() + 5}
 			setup_layout={{"left", "center_y_simple"}}
 		/>
 	end
@@ -30,7 +30,7 @@ local scoreboard_title = fonts.CreateFont(
 			prototype.AddPropertyLink(avatar, props.client, "Path", "AvatarPath")
 		end
 
-		return <Image size={Vec2() + 30} padding={Rect()} setup_layout={{"left", "center_y_simple"}}/>
+		return <Image size={Vec2() + 30} margin={Rect()} setup_layout={{"left", "center_y_simple"}}/>
 	end
 
 	local function Info2()
@@ -83,7 +83,7 @@ local scoreboard_title = fonts.CreateFont(
 		local panels = node:PersistentTable({info = NULL, title = NULL})
 		return <Base
 			style="text_edit"
-			margin={Rect()}
+			padding={Rect()}
 			setup_layout={{"layout_children", "top", "size_to_children_height", "fill_x"}}
 			no_draw={true}
 			minimum_size={Vec2()}
@@ -97,7 +97,7 @@ local scoreboard_title = fonts.CreateFont(
 				end}
 				font={scoreboard_title_2}
 				mode="toggle"
-				margin={Rect() + 5}
+				padding={Rect() + 5}
 				text={props.id}
 				size_to_text={nil}
 				width={512}
@@ -131,7 +131,7 @@ local scoreboard_title = fonts.CreateFont(
 				on_mount={function(node)
 					panels.info = node.panel
 				end}
-				margin={Rect()}
+				padding={Rect()}
 				setup_layout={{"top", "size_to_children_height", "fill_x"}}
 				no_draw={false}
 			>
@@ -141,7 +141,7 @@ local scoreboard_title = fonts.CreateFont(
 	end
 
 	local function Client()
-		return <Base height={30} setup_layout={{"top", "fill_x"}} no_draw={true} margin={Rect()}>
+		return <Base height={30} setup_layout={{"top", "fill_x"}} no_draw={true} padding={Rect()}>
 			<Friend/>
 			<Avatar client={clients.GetLocalClient()}/>
 			<Info2/>
@@ -149,7 +149,7 @@ local scoreboard_title = fonts.CreateFont(
 	end
 
 	local function ServerInfoText(props)
-		return <Text padding={Rect(10, 5, 10, 5)} setup_layout={{"left", "top"}}>
+		return <Text margin={Rect(10, 5, 10, 5)} setup_layout={{"left", "top"}}>
 			{props.children}
 		</Text>
 	end
@@ -202,7 +202,7 @@ local scoreboard_title = fonts.CreateFont(
 			-- TODO: not sure how to solve this yet
 			-- this is called after all children are "mounted" so we have the text
 			-- the layout stuff is dependent on the prop order
-			title:SetMargin(Rect() + 7)
+			title:SetPadding(Rect() + 7)
 			title:SizeToText()
 			title:SetupLayout("top", "fill_x")
 			title.label:SetupLayout("left")

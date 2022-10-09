@@ -32,10 +32,10 @@ function gui.RayCast(world, start_pos, stop_pos, ray_rect)
 
 	for _, child in ipairs(world:GetChildren()) do
 		local b_lft, b_top, b_rgt, b_btm = child:GetWorldRectFast()
-		b_lft = b_lft - child.Padding.x
-		b_rgt = b_rgt + child.Padding.w
-		b_top = b_top - child.Padding.y
-		b_btm = b_btm + child.Padding.h
+		b_lft = b_lft - child.Margin.x
+		b_rgt = b_rgt + child.Margin.w
+		b_top = b_top - child.Margin.y
+		b_btm = b_btm + child.Margin.h
 
 		if
 			(
@@ -114,7 +114,7 @@ function gui.RayCast(world, start_pos, stop_pos, ray_rect)
 			render2d.SetColor(0, 1, 0, 1)
 			gfx.DrawRect(hit_pos_x - offset_x, hit_pos_y - offset_y, a_lft - a_rgt, a_btm - a_top)
 			render2d.SetColor(1, 1, 1, 0.5)
-			gfx.DrawRect(child.Padding.x + x, child.Padding.y + y, child.Size.x, child.Size.y)
+			gfx.DrawRect(child.Margin.x + x, child.Margin.y + y, child.Size.x, child.Size.y)
 			render2d.SetColor(0, 0, 0, 1)
 			gfx.DrawText(
 				distance,
@@ -128,10 +128,10 @@ function gui.RayCast(world, start_pos, stop_pos, ray_rect)
 	end
 
 	local b_lft, b_top, b_rgt, b_btm = world:GetWorldRectFast()
-	b_lft = b_lft + world.Margin.x
-	b_rgt = b_rgt - world.Margin.w
-	b_top = b_top + world.Margin.y
-	b_btm = b_btm - world.Margin.h
+	b_lft = b_lft + world.Padding.x
+	b_rgt = b_rgt - world.Padding.w
+	b_top = b_top + world.Padding.y
+	b_btm = b_btm - world.Padding.h
 	render2d.SetColor(1, 1, 0, 1)
 	gfx.DrawRect(b_lft, b_top, 5, 5)
 
@@ -260,7 +260,7 @@ pnl:SetDraggable(true)
 local pnl = pnl:CreatePanel("base")
 pnl:SetDraggable(true)
 pnl:SetResizable(true)
-pnl:SetMargin(Rect() + 25)
+pnl:SetPadding(Rect() + 25)
 pnl.debug_mp = true
 pnl:SetSize(Vec2() + 600)
 pnl:CenterSimple()
@@ -276,7 +276,7 @@ for i = 1, 20 do
 	sub:SetSize(Vec2() + math.random(32, 64))
 	sub:SetColor(ColorHSV(math.random(), 1, 1))
 	sub:SetName(ColorToName(sub:GetColor()))
-	sub:SetPadding(
+	sub:SetMargin(
 		Rect(math.random(10, 25), math.random(10, 25), math.random(10, 25), math.random(10, 25))
 	)
 	sub.debug_mp = true

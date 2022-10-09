@@ -52,7 +52,7 @@ function chathud.Initialize()
 			path = "Roboto",
 			fallback = gfx.GetDefaultFont(),
 			size = 16,
-			padding = 50,
+			margin = 50,
 			shadow = {
 				order = 1,
 				dir = 0,

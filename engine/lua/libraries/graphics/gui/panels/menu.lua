@@ -43,7 +43,7 @@ do
 	end
 
 	function META:OnLayout(S)
-		self:SetMargin(Rect() + S * 2)
+		self:SetPadding(Rect() + S * 2)
 		self:SetSize(Vec2() + 500)
 		self:SetLayoutSize(Vec2() + 500)
 		local w = 0
@@ -54,12 +54,12 @@ do
 			else
 				v:SetHeight(S * 10)
 				v:Layout(true)
-				w = math.max(w, v.label:GetX() + v.label:GetWidth() + v.label:GetPadding():GetRight() * 8)
+				w = math.max(w, v.label:GetX() + v.label:GetWidth() + v.label:GetMargin():GetRight() * 8)
 			end
 		end
 
-		self:SetHeight(self:StackChildren().y + self:GetMargin():GetBottom())
-		self:SetWidth(w + self:GetMargin():GetRight())
+		self:SetHeight(self:StackChildren().y + self:GetPadding():GetBottom())
+		self:SetWidth(w + self:GetPadding():GetRight())
 	end
 
 	gui.RegisterPanel(META)
@@ -107,9 +107,9 @@ do
 	end
 
 	function META:OnLayout(S)
-		self:SetMargin(Rect() + S * 2)
-		self.label:SetPadding(Rect() + S * 2)
-		self.image:SetPadding(Rect() + S * 2)
+		self:SetPadding(Rect() + S * 2)
+		self.label:SetMargin(Rect() + S * 2)
+		self.image:SetMargin(Rect() + S * 2)
 
 		if self.image.Texture then
 			self.image:SetLayoutSize(

@@ -54,9 +54,9 @@ function META:ScrollToCaret()
 
 	else
 		local scroll = cpos.x - self.Size.x
-		local padding = self.label.Padding:GetRight() + self.label.Padding:GetLeft()
-		scroll = scroll + self:GetSize().x - padding
-		scroll = scroll + padding
+		local margin = self.label.Margin:GetRight() + self.label.Margin:GetLeft()
+		scroll = scroll + self:GetSize().x - margin
+		scroll = scroll + margin
 		local prev = self:GetScroll()
 		prev.x = scroll
 		self:SetScroll(prev)
@@ -81,9 +81,9 @@ function META:ScrollToCaret()
 
 	else
 		local scroll = cpos.y - self.Size.y
-		local padding = self.label.Padding:GetTop() + self.label.Padding:GetBottom()
-		scroll = scroll + self:GetSize().y - padding
-		scroll = scroll + padding
+		local margin = self.label.Margin:GetTop() + self.label.Margin:GetBottom()
+		scroll = scroll + self:GetSize().y - margin
+		scroll = scroll + margin
 		local prev = self:GetScroll()
 		prev.y = scroll
 		self:SetScroll(prev)
@@ -118,7 +118,7 @@ function META:OnStyleChanged(skin)
 end
 
 function META:OnLayout(S)
-	self.label:SetPadding(Rect() + S)
+	self.label:SetMargin(Rect() + S)
 end
 
 function META:SetCaretPosition(pos)
@@ -152,7 +152,7 @@ function META:SetEditable(b)
 end
 
 function META:SizeToText()
-	local marg = self:GetMargin()
+	local marg = self:GetPadding()
 	self.label:SetPosition(marg:GetPosition())
 	self:SetSize(self.label:GetSize() + marg:GetSize() * 2)
 end

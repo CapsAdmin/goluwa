@@ -36,10 +36,10 @@ end
 function META:OnCheck(b) end
 
 function META:SizeToText()
-	local marg = self:GetMargin()
+	local marg = self:GetPadding()
 	self.checkbox:SetX(0)
 	self.label:SetX(
-		self.checkbox:GetPosition().x + marg:GetLeft() + self.checkbox:GetWidth() + self.checkbox:GetPadding():GetRight()
+		self.checkbox:GetPosition().x + marg:GetLeft() + self.checkbox:GetWidth() + self.checkbox:GetMargin():GetRight()
 	)
 	self:SetSize(
 		self.label:GetPosition() + Vec2(marg:GetLeft(), 0) + self.label:GetSize() + marg:GetSize()

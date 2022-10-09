@@ -19,10 +19,10 @@ function META:Initialize()
 	markup:SetEditable(false)
 	markup.OnInvalidate = function()
 		if not self.ObeyPanelWidth then
-			self.Size.x = markup.width + self.Padding:GetLeft() + self.Padding:GetRight()
+			self.Size.x = markup.width + self.Margin:GetLeft() + self.Margin:GetRight()
 		end
 
-		self.Size.y = markup.height + self.Padding:GetTop() + self.Padding:GetBottom()
+		self.Size.y = markup.height + self.Margin:GetTop() + self.Margin:GetBottom()
 		self.LayoutSize = self.Size
 		self.markup_invalidated = true
 		self:MarkCacheDirty()
@@ -30,8 +30,8 @@ function META:Initialize()
 	self.markup = markup
 end
 
-function META:SetPadding(rect)
-	self.Padding = rect
+function META:SetMargin(rect)
+	self.Margin = rect
 	self.markup:Invalidate()
 end
 
@@ -108,7 +108,7 @@ function META:OnPostDraw()
 end
 
 function META:OnPostMatrixBuild()
-	self.Matrix:Translate(self.Padding:GetLeft(), self.Padding:GetTop(), 0)
+	self.Matrix:Translate(self.Margin:GetLeft(), self.Margin:GetTop(), 0)
 end
 
 function META:OnMouseMove(x, y)

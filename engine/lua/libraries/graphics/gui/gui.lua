@@ -402,9 +402,9 @@ function gui.CreateWorld()
 	world:SetCursor("arrow")
 	world:SetTrapChildren(true)
 	world:SetNoDraw(true)
-	--world:SetPadding(Rect(10, 10, 10, 10))
-	world:SetPadding(Rect(0, 0, 0, 0))
+	--world:SetMargin(Rect(10, 10, 10, 10))
 	world:SetMargin(Rect(0, 0, 0, 0))
+	world:SetPadding(Rect(0, 0, 0, 0))
 	world.is_world = true
 	return world
 end
@@ -491,10 +491,10 @@ function gui.Initialize()
 
 			function bar:OnLayout(S)
 				self:SetHeight(S * 14)
-				self:SetMargin(Rect() + S * 2)
+				self:SetPadding(Rect() + S * 2)
 
 				for i, v in ipairs(self:GetChildren()) do
-					v:SetMargin(Rect() + 2.5 * S)
+					v:SetPadding(Rect() + 2.5 * S)
 					v:SizeToText()
 				end
 

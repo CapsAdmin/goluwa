@@ -41,7 +41,7 @@ function chat.GetPanel()
 
 	do -- edit line
 		local edit = frame:CreatePanel("text_input")
-		edit:SetMargin(Rect() + 3)
+		edit:SetPadding(Rect() + 3)
 		edit:SetHeight(20)
 		edit:SetAutocomplete("chatsounds")
 		edit:SetHistoryPath("data/chat_history.txt")
@@ -80,7 +80,7 @@ function chat.GetPanel()
 		frame.text = text
 		local old = text.OnStyleChanged -- API ME
 		function text:OnStyleChanged(skin)
-			text:SetPadding(Rect() + skin:GetScale() * 2)
+			text:SetMargin(Rect() + skin:GetScale() * 2)
 			old(self, skin)
 		end
 

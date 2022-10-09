@@ -45,8 +45,8 @@ do -- tree node
 	end
 
 	function META:OnLayout(S)
-		self.expand:SetPadding(Rect() + 2 * S)
-		self.image:SetPadding(Rect() + 2 * S)
+		self.expand:SetMargin(Rect() + 2 * S)
+		self.image:SetMargin(Rect() + 2 * S)
 		self.image:SetSize(
 			Vec2(
 				math.min(S * 8, self.image.Texture:GetSize().x),
@@ -54,11 +54,11 @@ do -- tree node
 			)
 		)
 		self.image:SetupLayout("center_left")
-		self.button:SetPadding(Rect() + 2 * S)
 		self.button:SetMargin(Rect() + 2 * S)
+		self.button:SetPadding(Rect() + 2 * S)
 		self.button:SizeToText()
 		self.button:SetupLayout("center_left")
-		self:SetMargin(Rect(self.offset * S, 0, 0, 0))
+		self:SetPadding(Rect(self.offset * S, 0, 0, 0))
 	end
 
 	function META:OnPress()

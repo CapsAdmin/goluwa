@@ -22,7 +22,7 @@ function META:Initialize()
 end
 
 function META:SizeToText()
-	local marg = self:GetMargin()
+	local marg = self:GetPadding()
 	self.label:SetPosition(marg:GetPosition())
 	self:SetSize(self.label:GetSize() + marg:GetSize() * 2)
 	self.LayoutSize = self:GetSize():Copy()

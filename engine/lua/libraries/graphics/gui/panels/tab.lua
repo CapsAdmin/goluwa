@@ -10,7 +10,7 @@ function META:Initialize()
 	tab_bar:SetStackDown(false)
 	tab_bar:SetClipping(true)
 	tab_bar:SetScrollable(true)
-	tab_bar:SetMargin(Rect())
+	tab_bar:SetPadding(Rect())
 end
 
 function META:AddTab(name)
@@ -92,7 +92,7 @@ function META:OnLayout(S, skin)
 			v.button:SetTextColor(skin.text_color)
 		end
 
-		v.button:SetMargin(Rect() + 2 * S)
+		v.button:SetPadding(Rect() + 2 * S)
 		v.button:SizeToText()
 		v.button:SetHeight(S * 10)
 	end
