@@ -17,7 +17,7 @@ end
 
 local function additional_split(word, max_width, out)
 	out = out or {}
-	local left_word, right_word = word:umidsplit()
+	local left_word, right_word = utf8.mid_split(word)
 	local left_width = font:GetTextSize(left_word)
 
 	if left_width >= max_width and left_word:utf8_length() > 1 then
