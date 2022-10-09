@@ -93,24 +93,14 @@ end
 
 local function Column(props)
     local space = spacing[props.spacing or "m"]
-    local wrapped = {}
-
-    for i, v in ipairs(props.children) do
-        local divider = <View name="space" no_draw={true} height={space} setup_layout={{"top"}}/>
-        local child = <View name="wrapped" no_draw={true} setup_layout={{"top", "size_to_children"}}>
-            {{v}}
-        </View>
-        
-        wrapped[i] = i == 1 and {child, divider} or i == 2 and {child} or {divider, child}
-    end
-
-    return <View setup_layout={{"size_to_children"}}>
-        {{wrapped}}
+    
+    return <View flex={true} flex_gap={space} flex_direction={"column"} flex_align_items={props.row_align}>
+        {props.children}
     </View>
 end
 
 local function App()
-    return <Column spacing="l" row_align="left">
+    return <Column spacing="l" row_align="center">
         <Button on_press={function()print("press!")end}>
             <Text2>"foo"</Text2>
         </Button>
@@ -126,5 +116,4 @@ end
 local base = gui.TestWorld()
 local x = <App/>
 x = x:Evaluate()
-print(x:Dump(true))
 x:BuildPanels(base)
