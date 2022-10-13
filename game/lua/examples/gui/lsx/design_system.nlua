@@ -1,8 +1,11 @@
-local font = fonts.CreateFont({
-	path = "fonts/Roboto-Regular.ttf",
-	fallback = gfx.GetDefaultFont(),
-	size = 20,
-})
+local type Node = any -- todo
+local font = fonts.CreateFont(
+	{
+		path = "fonts/Roboto-Regular.ttf",
+		fallback = gfx.GetDefaultFont(),
+		size = 10,
+	}
+)
 local colors = {
 	text = Color(1, 1, 1, 1),
 	button = Color(0.9, 0.5, 0.5, 1),
@@ -44,7 +47,7 @@ local function Text2(props)
 	</Text>
 end
 
-local function Button(props, node)
+local function Button(props: {children = List<|Node|>, on_press = function=()>()}, node: Node)
 	local color, setColor = node:useState(colors.button)
 	local mousePos, setMousePos = node:useState(Vec2())
 
@@ -91,7 +94,6 @@ local function Button(props, node)
 	</View>
 end
 
-local type Node = any -- todo
 local type BoxProps = {
 	width = number | nil,
 	height = number | nil,
@@ -102,6 +104,7 @@ local type BoxProps = {
 	justify_content = "start" | "end" | "center" | "stretch" | "space-between" | "space-around" | nil,
 	align_items = "start" | "end" | "center" | "stretch" | nil,
 	children = List<|Node|>,
+	color = any,
 }
 
 local function Box(props: BoxProps)
@@ -120,6 +123,8 @@ local function Box(props: BoxProps)
 		flex_direction={props.direction}
 		flex_justify_content={props.justify_content}
 		flex_align_items={props.align_items}
+		no_draw={not props.color}
+		color={props.color}
 	>
 		{props.children}
 	</View>
@@ -132,7 +137,7 @@ local function Column(
 	}
 )
 	return <Box
-		direction={"row"}
+		direction={"column"}
 		width={props.width}
 		height={props.height}
 		min_width={props.width}
@@ -140,6 +145,7 @@ local function Column(
 		gap={props.gap}
 		justify_content={props.column_align}
 		align_items={props.row_align}
+		color={props.color}
 	>
 		{props.children}
 	</Box>
@@ -160,34 +166,72 @@ local function Row(
 		gap={props.gap}
 		justify_content={props.row_align}
 		align_items={props.column_align}
+		color={props.color}
 	>
 		{props.children}
 	</Box>
 end
 
-local function App()
-	return <Row gap="l" row_align="center" column_align="center" width=500 height=200>
-		<Button>
-			<Text2>
-				"GAME"
-			</Text2>
-		</Button>
-		<Button>
-			<Text2>
-				"CONFIG"
-			</Text2>
-		</Button>
-		<Button>
-			<Text2>
-				"NETPLAY"
-			</Text2>
-		</Button>
-		<Button>
-			<Text2>
-				"MISC"
-			</Text2>
-		</Button>
+local function MenuItem(props: {children = List<|node|>})
+	return <Button>
+		<Text2>
+			{props.children}
+		</Text2>
+	</Button>
+end
+
+local function MenuBar()
+	return <Row gap="l" row_align="center" column_align="center">
+		<MenuItem>
+			"↓"
+		</MenuItem>
+		<MenuItem>
+			"GAME"
+		</MenuItem>
+		<MenuItem>
+			"CONFIG"
+		</MenuItem>
+		<MenuItem>
+			"NETPLAY"
+		</MenuItem>
+		<MenuItem>
+			"MISC"
+		</MenuItem>
 	</Row>
+end
+
+local function List()
+	return <Column color={Color(0, 0, 0, 1)} row_align="stretch">
+		<Button>
+			<Text2>
+				"NAME"
+			</Text2>
+		</Button>
+		<Text2>
+			"ANGLES.LUA"
+		</Text2>
+		<Text2>
+			"ASYNC_IO.LUA"
+		</Text2>
+		<Text2>
+			"BARCODE.LUA"
+		</Text2>
+	</Column>
+end
+
+local function LoadLua()
+	return <Column row_align="stretch">
+		<Text2>
+			"FILENAME"
+		</Text2>
+		<List/>
+	</Column>
+end
+
+local function App()
+	return <Column>
+		<LoadLua/>
+	</Column>
 end
 
 local base = gui.TestWorld()
