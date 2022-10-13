@@ -19,10 +19,10 @@ function META:Initialize()
 	markup:SetEditable(false)
 	markup.OnInvalidate = function()
 		if not self.ObeyPanelWidth then
-			self.Size.x = markup.width + self.Padding:GetLeft() + self.Padding:GetRight()
+			self.Size.x = math.round(markup.width + self.Padding:GetLeft() + self.Padding:GetRight())
 		end
 
-		self.Size.y = markup.height + self.Padding:GetTop() + self.Padding:GetBottom()
+		self.Size.y = math.round(markup.height + self.Padding:GetTop() + self.Padding:GetBottom())
 		self.LayoutSize = self.Size
 		self.markup_invalidated = true
 		self:MarkCacheDirty()
@@ -105,7 +105,7 @@ end
 
 function META:OnPostDraw()
 	self.markup:Draw(self.ConcatenateTextToSize and (self.markup.cull_w - self.markup.cull_x))
-	--gfx.DrawRect(0,0, self:GetSize().x, self:GetSize().y, nil, 1,0,0,0.1)
+--gfx.DrawRect(0,0, self:GetSize().x, self:GetSize().y, nil, 1,0,0,0.1)
 end
 
 function META:OnPostMatrixBuild()
@@ -277,7 +277,7 @@ gui.RegisterPanel(META)
 
 if RELOAD then
 	local lol = gui.CreatePanel("text", nil, "lol")
-	lol:SetPosition(Vec2()+ 500)
+	lol:SetPosition(Vec2() + 500)
 	lol:SetText("hello world")
 	lol:SetObeyPanelWidth(true)
 	lol:SetTextWrap(true)
