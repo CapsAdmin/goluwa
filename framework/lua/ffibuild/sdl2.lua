@@ -3,12 +3,8 @@ ffibuild.Build(
 		name = "SDL2",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 		strip_undefined_symbols = true,
-		linux = [[
-			FROM ubuntu:20.04
+		linux = ffibuild.GetDefaultDockerHeader() .. [[
 
-			ARG DEBIAN_FRONTEND=noninteractive
-			ENV TZ=America/New_York
-			RUN apt-get update
 			
 			# https://github.com/libsdl-org/SDL/blob/main/.github/workflows/main.yml
 			RUN apt-get install -y \

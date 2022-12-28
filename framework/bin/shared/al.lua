@@ -1544,7 +1544,7 @@ library.FilterParams = {
 		},
 	},
 	gainhf_auto = {
-		enum = 131084,
+		enum = 131082,
 		params = {
 		},
 	},

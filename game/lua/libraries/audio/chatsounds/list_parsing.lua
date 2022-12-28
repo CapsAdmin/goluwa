@@ -106,11 +106,11 @@ end
 function chatsounds.TableToList(tbl)
 	local str = {}
 
-	for realm, list in table.sorted_pairs(tbl, sort) do
+	for realm, lst in table.sorted_pairs(tbl, sort) do
 		str[#str + 1] = "realm=" .. realm
 		local done = {}
 
-		for trigger, sounds in pairs(list) do
+		for trigger, sounds in pairs(lst) do
 			for _, data in table.sorted_pairs(sounds, sort2) do
 				local val = data.path .. "=" .. trigger
 
@@ -128,8 +128,8 @@ end
 function chatsounds.TableToTree(tbl)
 	local tree = {}
 
-	for realm, list in pairs(tbl) do
-		for trigger, sounds in pairs(list) do
+	for realm, lst in pairs(tbl) do
+		for trigger, sounds in pairs(lst) do
 			local words = {}
 
 			for word in (trigger .. " "):gmatch("(.-)%s+") do

@@ -2,13 +2,8 @@ ffibuild.Build(
 	{
 		name = "sndfile",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
-		linux = [[
-			FROM ubuntu:20.04
+		linux = ffibuild.GetDefaultDockerHeader() .. [[
 
-			ARG DEBIAN_FRONTEND=noninteractive
-			ENV TZ=America/New_York
-
-			RUN apt-get update
 			RUN apt-get install -y autogen ninja-build libogg-dev libvorbis-dev libflac-dev libopus-dev libasound2-dev libsqlite3-dev libspeex-dev libmp3lame-dev libmpg123-dev cmake g++ python3
 			RUN apt-get install -y git
 		

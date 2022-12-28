@@ -5,12 +5,8 @@ for lib_name, enum_name in pairs({al = "AL_", alc = "ALC_"}) do
 			addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 			lua_name = lib_name,
 			shared_library_name = "openal",
-			linux = [[
-				FROM ubuntu:20.04
+			linux = ffibuild.GetDefaultDockerHeader() .. [[
 
-				ARG DEBIAN_FRONTEND=noninteractive
-				ENV TZ=America/New_York
-				RUN apt-get update
 
 				RUN apt-get install -y libpulse-dev portaudio19-dev libasound2-dev libjack-dev qtbase5-dev libdbus-1-dev cmake g++ 
 				RUN apt-get install -y git

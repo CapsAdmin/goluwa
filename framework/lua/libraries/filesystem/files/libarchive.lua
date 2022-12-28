@@ -1,7 +1,7 @@
 local archive, err = desire("libarchive")
 
 if not archive or not archive.ReadNew then
-	if not archive.ReadNew then err = "lol" end
+	if archive and archive.ReadNew then err = "lol" end
 
 	wlog("cannot load libarchive, zip archive are not supported: " .. err)
 	return

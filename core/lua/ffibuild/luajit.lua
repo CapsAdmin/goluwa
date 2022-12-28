@@ -38,13 +38,7 @@ local instructions = {
 		s = s .. "return library\n"
 		return s
 	end,
-	linux = [[
-		FROM ubuntu:20.04
-		
-		ARG DEBIAN_FRONTEND=noninteractive
-		ENV TZ=America/New_York
-
-		RUN apt-get update 
+	linux = ffibuild.GetDefaultDockerHeader() .. [[
 		RUN apt-get install -y git make gcc 
 	
 		WORKDIR /src

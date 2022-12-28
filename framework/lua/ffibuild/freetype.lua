@@ -1,11 +1,7 @@
 ffibuild.Build(
 	{
 		name = "freetype",
-		linux = [[
-			FROM ubuntu:20.04
-			ARG DEBIAN_FRONTEND=noninteractive
-			ENV TZ=America/New_York
-			RUN apt-get update
+		linux = ffibuild.GetDefaultDockerHeader() .. [[
 			RUN apt-get install -y git make cmake libx11-dev libpng-dev zlib1g-dev libbz2-dev libharfbuzz-dev tree libbrotli-dev
 
 			WORKDIR /src

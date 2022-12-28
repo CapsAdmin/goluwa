@@ -1,5 +1,16 @@
 local ffibuild = _G.ffibuild or {}
 
+function ffibuild.GetDefaultDockerHeader() 
+	return [[
+		FROM ubuntu:22.10
+			
+		ARG DEBIAN_FRONTEND=noninteractive
+		ENV TZ=America/New_York
+		
+		RUN apt-get update 
+	]]
+end
+
 function ffibuild.GetSharedLibrariesInDirectory(dir)
 	local out = {}
 
@@ -1522,13 +1533,13 @@ do -- lua helper functions
 		ffi.load = function(...)
 			local clib, err = old(...)
 
-			if not clib then wlog(err) end
+			if not clib then error(err) end
 
 			return setmetatable(
 				{},
 				{
 					__index = function(_, key)
-						local ok, ret = pcall(function()
+						local ok, ret = system.pcall(function()
 							return clib[key]
 						end)
 

@@ -849,9 +849,9 @@ void(archive_set_error)(struct archive*,int,const char*,...);
 }
 library.e = {
 	H_INCLUDED = 1,
-	VERSION_NUMBER = 3006002,
-	VERSION_ONLY_STRING = "3.6.2dev",
-	VERSION_STRING = "libarchive 3.6.2dev",
+	VERSION_NUMBER = 3006003,
+	VERSION_ONLY_STRING = "3.6.3dev",
+	VERSION_STRING = "libarchive 3.6.3dev",
 	EOF = 1,
 	OK = 0,
 	RETRY = -10,

@@ -7,15 +7,11 @@
 	{
 		name = "libarchive",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
-		linux = [[
-			FROM ubuntu:20.04
-
-			ARG DEBIAN_FRONTEND=noninteractive
-			ENV TZ=America/New_York
-			RUN apt-get update
-
+		linux = ffibuild.GetDefaultDockerHeader() .. [[
 			# https://github.com/libarchive/libarchive/blob/master/.github/workflows/ci.yml
 			RUN apt-get install -y \
+				nettle-dev \
+				libmbedtls-dev \
 				autoconf \
 				automake \
 				bsdmainutils \
@@ -34,13 +30,13 @@
 				pkg-config \
 				zip \
 				zlib1g-dev \
-				libtool
+				libtool 
 
 			WORKDIR /src
 
 			RUN git clone https://github.com/libarchive/libarchive.git --depth 1 .
 			
-			RUN mkdir out && cd out && cmake .. && make --jobs 16
+			RUN mkdir out && cd out && cmake .. -DENABLE_TEST=OFF && make --jobs 16
 		]],
 		c_source = [[
 		#include "archive.h"
@@ -50,7 +46,6 @@
 		strip_undefined_symbols = true,
 		process_header = function(header)
 			local meta_data = ffibuild.GetMetaData(header)
-			table.print(meta_data)
 			meta_data.structs["struct timespec"] = nil
 			meta_data.structs["struct stat"] = nil
 			meta_data.structs["struct _IO_marker"] = nil

@@ -2,7 +2,7 @@ local chatsounds = ... or chatsounds
 
 local function read_list(base_url, sounds, list_id, skip_list)
 	local tree = {}
-	local list = {}
+	local lst = {}
 	local count = 0
 
 	for i = 1, #sounds do
@@ -15,13 +15,13 @@ local function read_list(base_url, sounds, list_id, skip_list)
 			count = count + 1
 		else
 			tree[realm] = tree[realm] or {}
-			list[realm] = list[realm] or {}
+			lst[realm] = lst[realm] or {}
 			tree[realm][trigger] = tree[realm][trigger] or {}
 			list.insert(tree[realm][trigger], {
 				path = path,
 				base_path = base_url,
 			})
-			list[realm][trigger] = path
+			lst[realm][trigger] = path
 		end
 	end
 
@@ -31,13 +31,13 @@ local function read_list(base_url, sounds, list_id, skip_list)
 		chatsounds.custom = chatsounds.custom or {}
 		chatsounds.custom[list_id] = {
 			tree = tree,
-			list = list,
+			list = lst,
 		}
 	else
 		chatsounds.tree = chatsounds.tree or {}
 		table.merge(chatsounds.tree, tree)
 		chatsounds.list = chatsounds.list or {}
-		table.merge(chatsounds.list, list, true)
+		table.merge(chatsounds.list, lst, true)
 	end
 
 	chatsounds.GenerateAutocomplete()

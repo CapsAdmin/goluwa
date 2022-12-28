@@ -4,12 +4,7 @@ ffibuild.Build(
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 		c_source = [[#include "enet/enet.h"]],
 		gcc_flags = "-I./include",
-		linux = [[		
-			FROM ubuntu:20.04
-			ARG DEBIAN_FRONTEND=noninteractive
-			ENV TZ=America/New_York
-			RUN apt-get update
-
+		linux = ffibuild.GetDefaultDockerHeader() .. [[
 			RUN apt-get install -y git gcc automake libtool make
 
 			WORKDIR /src

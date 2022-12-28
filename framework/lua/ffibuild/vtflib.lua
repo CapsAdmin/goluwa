@@ -2,13 +2,8 @@ ffibuild.Build(
 	{
 		name = "vtflib",
 		addon = vfs.GetAddonFromPath(SCRIPT_PATH),
-		linux = [[
-			FROM ubuntu:20.04
+		linux = ffibuild.GetDefaultDockerHeader() .. [[
 
-			ARG DEBIAN_FRONTEND=noninteractive
-			ENV TZ=America/New_York
-
-			RUN apt-get update
 			RUN apt-get install -y git cmake g++
 		
 			WORKDIR /src
