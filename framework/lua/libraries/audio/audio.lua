@@ -21,15 +21,12 @@ function audio.Initialize(name)
 	if audio.debug then llog("opening device %q for sound output", name) end
 
 	local device
-	print(name, "?????????????")
 
 	if name == "loopback" then
-		device = alc.LoopbackOpenDeviceSOFT("default")
+		device = alc.LoopbackOpenDeviceSOFT("OpenAL Soft")
 	else
 		device = alc.OpenDevice(name)
 	end
-
-	print(name, "!!!!!!!!!!!!")
 
 	if device == nil then
 		llog("opening device failed: ", alc.GetErrorString(device))
