@@ -1,1 +1,5 @@
 storage/
+.git/
+.github/
+
+!storage/shared/cert.pem
